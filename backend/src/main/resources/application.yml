@@ -27,6 +27,9 @@ spring:
     property-naming-strategy: SNAKE_CASE
     default-property-inclusion: non_null
 
+ai:
+  base-url: ${AI_BASE_URL:http://localhost:8001}
+
 server:
   port: ${PORT:8080}
 

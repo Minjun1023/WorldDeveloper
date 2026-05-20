@@ -26,6 +26,8 @@ export default function RootLayout({
             <div className="mx-auto max-w-container px-4 py-4 flex items-center justify-between">
               <a href="/" className="font-semibold text-lg">dev-jobs</a>
               <nav className="flex items-center gap-3 text-body-sm text-muted-foreground">
+                <a href="/" className="hover:text-foreground transition-colors">검색</a>
+                <a href="/recommend" className="hover:text-foreground transition-colors">추천</a>
                 <a href="/about" className="hover:text-foreground transition-colors">소개</a>
                 <ThemeToggle />
               </nav>

@@ -60,3 +60,42 @@ export interface JobListResponse {
   total: number;
   facets: Facets;
 }
+
+export interface RecommendProfile {
+  skills: string[];
+  seniority: string;
+  years_experience?: number;
+  bio?: string;
+  resume_text?: string;
+  needs_visa_sponsorship?: boolean;
+  preferred_locations?: string[];
+  remote_preference?: string;
+  desired_salary_usd?: number;
+  excluded_companies?: string[];
+  top_k?: number;
+  max_per_company?: number;
+}
+
+export interface ScoreBreakdown {
+  final_score: number;
+  stack: number;
+  visa: number;
+  location: number;
+  seniority: number;
+  salary: number;
+  semantic: number;
+  penalty_applied: number;
+  reasons: string[];
+  deal_breakers: string[];
+}
+
+export interface RecommendationItem {
+  job: Job;
+  score: ScoreBreakdown;
+}
+
+export interface RecommendResponse {
+  total_candidates: number;
+  returned: number;
+  recommendations: RecommendationItem[];
+}

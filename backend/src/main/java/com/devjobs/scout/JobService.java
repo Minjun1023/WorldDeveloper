@@ -114,7 +114,7 @@ public class JobService {
         return new FacetsDto(visa, remote);
     }
 
-    private JobDto toDto(JobEntity j) {
+    public JobDto toDto(JobEntity j) {
         CompanyEntity c = j.getCompany();
         CompanyDto company = c != null
             ? new CompanyDto(c.getSlug(), c.getDisplayName(), c.getTags())
