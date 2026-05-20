@@ -55,6 +55,12 @@ def _embed_cached(text: str) -> tuple | None:
     return tuple(vec.tolist())  # tuple 로 만들어야 lru_cache 가능
 
 
+def embed_text(text: str) -> list[float] | None:
+    """단일 텍스트 임베딩 (ETL/검색용). 모델 없으면 None."""
+    v = _embed_cached(text)
+    return list(v) if v is not None else None
+
+
 def cosine_similarity(text_a: str, text_b: str) -> float:
     """두 텍스트의 임베딩 코사인 유사도 (0~1, 실패 시 0)."""
     a = _embed_cached(text_a)

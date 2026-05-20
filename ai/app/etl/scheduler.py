@@ -6,7 +6,7 @@ import logging
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 
 from ..config import settings
-from .jobs import run_full_cycle_stub
+from .jobs import run_full_cycle
 
 log = logging.getLogger(__name__)
 _scheduler: AsyncIOScheduler | None = None
@@ -18,7 +18,7 @@ def start_scheduler() -> None:
         return
     _scheduler = AsyncIOScheduler()
     _scheduler.add_job(
-        run_full_cycle_stub,
+        run_full_cycle,
         "interval",
         minutes=settings.etl_interval_minutes,
         next_run_time=None,  # 첫 실행은 interval 후
