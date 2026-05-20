@@ -5,7 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export const metadata: Metadata = {
-  title: "dev-jobs",
+  title: "WorldDeveloper",
   description: "해외(EU) 진출용 채용 공고 — 한국 개발자 대상",
 };
 
@@ -26,7 +26,7 @@ export default function RootLayout({
         >
           <header className="border-b border-border">
             <div className="mx-auto max-w-container px-4 py-4 flex items-center justify-between">
-              <a href="/" className="font-semibold text-lg">dev-jobs</a>
+              <a href="/" className="font-semibold text-lg">WorldDeveloper</a>
               <nav className="flex items-center gap-3 text-body-sm text-muted-foreground">
                 <a href="/" className="hover:text-foreground transition-colors">검색</a>
                 <a href="/recommend" className="hover:text-foreground transition-colors">추천</a>
@@ -39,7 +39,7 @@ export default function RootLayout({
           </header>
           <main className="mx-auto max-w-container px-4 py-8">{children}</main>
           <footer className="mx-auto max-w-container px-4 py-8 text-caption text-muted-foreground border-t border-border mt-12">
-            Beta — for personal use only. © dev-jobs.
+            Beta — for personal use only. © WorldDeveloper.
           </footer>
         </ThemeProvider>
        </Providers>
