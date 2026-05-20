@@ -70,3 +70,6 @@ huggingface/
 
 # TS incremental build cache
 *.tsbuildinfo
+
+# 로컬 dev 로그
+.dev-logs/
