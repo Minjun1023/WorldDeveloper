@@ -1,0 +1,90 @@
+/**
+ * Spring 백엔드 호출 클라이언트.
+ * 환경 변수 BACKEND_URL (기본 http://localhost:8080).
+ */
+import type { JobDetail, JobListResponse } from "@/lib/types";
+
+const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
+
+type BackendHealthResult =
+  | { ok: true; service: string; timestamp: string }
+  | { ok: false; error: string };
+
+export async function fetchBackendHealth(): Promise<BackendHealthResult> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/health`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(2000),
+    });
+    if (!res.ok) {
+      return { ok: false, error: `HTTP ${res.status}` };
+    }
+    const data = (await res.json()) as { service: string; timestamp: string };
+    return { ok: true, service: data.service, timestamp: data.timestamp };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+export interface JobQuery {
+  q?: string;
+  visa?: string;
+  location?: string;
+  remote?: boolean;
+  page?: number;
+  pageSize?: number;
+}
+
+export type JobsResult =
+  | { ok: true; data: JobListResponse }
+  | { ok: false; error: string };
+
+export async function fetchJobs(query: JobQuery = {}): Promise<JobsResult> {
+  const url = new URL(`${BACKEND_URL}/api/v1/jobs`);
+  if (query.q) url.searchParams.set("q", query.q);
+  if (query.visa) url.searchParams.set("visa", query.visa);
+  if (query.location) url.searchParams.set("location", query.location);
+  if (query.remote !== undefined) url.searchParams.set("remote", String(query.remote));
+  if (query.page) url.searchParams.set("page", String(query.page));
+  if (query.pageSize) url.searchParams.set("page_size", String(query.pageSize));
+
+  try {
+    const res = await fetch(url, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) {
+      return { ok: false, error: `HTTP ${res.status}` };
+    }
+    const data = (await res.json()) as JobListResponse;
+    return { ok: true, data };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+export type JobResult =
+  | { ok: true; data: JobDetail }
+  | { ok: false; error: string; status?: number };
+
+export async function fetchJob(id: string): Promise<JobResult> {
+  // job_id 는 "source:token:native" (콜론/하이픈/영숫자) 형식이라 path 에 안전.
+  // encodeURIComponent 로 콜론을 %3A 로 인코딩하면 Tomcat/Security 가 거부(400)하므로 raw 로.
+  const url = `${BACKEND_URL}/api/v1/jobs/${id}`;
+  try {
+    const res = await fetch(url, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.status === 404) {
+      return { ok: false, error: "not found", status: 404 };
+    }
+    if (!res.ok) {
+      return { ok: false, error: `HTTP ${res.status}`, status: res.status };
+    }
+    const data = (await res.json()) as JobDetail;
+    return { ok: true, data };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}

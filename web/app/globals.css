@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * 디자인 토큰 — web/DESIGN.md (Stitch 포맷) 의 colors.light/dark 구현.
+ * shadcn/ui 컨벤션 변수명 사용 → 추후 shadcn init 시 그대로 호환.
+ */
+@layer base {
+  :root {
+    --background: #ffffff;
+    --surface: #ffffff;
+    --surface-2: #f4f4f5;
+    --foreground: #09090b;
+    --muted-foreground: #71717a;
+    --border: #e4e4e7;
+    --input: #e4e4e7;
+    --primary: #4f46e5;
+    --primary-foreground: #ffffff;
+    --ring: #4f46e5;
+    --accent: #f4f4f5;
+    --success: #16a34a;
+    --warning: #d97706;
+    --destructive: #dc2626;
+
+    /* score 6차원 (recharts) */
+    --score-stack: #6366f1;
+    --score-visa: #10b981;
+    --score-location: #0ea5e9;
+    --score-seniority: #8b5cf6;
+    --score-salary: #f59e0b;
+    --score-semantic: #f43f5e;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: #09090b;
+    --surface: #18181b;
+    --surface-2: #27272a;
+    --foreground: #fafafa;
+    --muted-foreground: #a1a1aa;
+    --border: #27272a;
+    --input: #27272a;
+    --primary: #6366f1;
+    --primary-foreground: #ffffff;
+    --ring: #6366f1;
+    --accent: #27272a;
+    --success: #22c55e;
+    --warning: #f59e0b;
+    --destructive: #ef4444;
+  }
+}
+
+@layer base {
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-feature-settings: "ss01", "tnum";
+  }
+}

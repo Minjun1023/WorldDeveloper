@@ -1,0 +1,69 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs
+*.log
+
+# Secrets / env
+.env
+.env.local
+.env.*.local
+*.pem
+
+# Node
+node_modules/
+.next/
+.turbo/
+out/
+build/
+.vercel/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.python-version
+dist/
+*.egg-info/
+
+# Java / Gradle
+.gradle/
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+out/
+bin/
+target/
+*.class
+
+# Docker / DB
+postgres-data/
+.docker/
+
+# AI / ML cache
+.cache/
+huggingface/
+
+# Playwright MCP 임시 산출물 (snapshot/console)
+.playwright-mcp/
+
+# 검증용 스크린샷 — 정적/디자인 자산은 web/public/ 에 보관
+*.png
+*.jpg
+*.jpeg
+!web/public/**/*.png
+!web/public/**/*.jpg
+!web/public/**/*.jpeg
