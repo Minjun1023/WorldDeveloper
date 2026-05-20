@@ -67,3 +67,6 @@ huggingface/
 !web/public/**/*.png
 !web/public/**/*.jpg
 !web/public/**/*.jpeg
+
+# TS incremental build cache
+*.tsbuildinfo

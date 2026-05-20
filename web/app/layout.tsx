@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { Providers } from "@/components/providers";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 
@@ -16,6 +17,7 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className="min-h-screen antialiased">
+       <Providers>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -29,6 +31,7 @@ export default function RootLayout({
                 <a href="/" className="hover:text-foreground transition-colors">검색</a>
                 <a href="/recommend" className="hover:text-foreground transition-colors">추천</a>
                 <a href="/companies" className="hover:text-foreground transition-colors">회사</a>
+                <a href="/me/applications" className="hover:text-foreground transition-colors">내 지원</a>
                 <a href="/about" className="hover:text-foreground transition-colors">소개</a>
                 <ThemeToggle />
               </nav>
@@ -39,6 +42,7 @@ export default function RootLayout({
             Beta — for personal use only. © dev-jobs.
           </footer>
         </ThemeProvider>
+       </Providers>
       </body>
     </html>
   );

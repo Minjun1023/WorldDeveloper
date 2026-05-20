@@ -5,13 +5,20 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 /**
- * MVP 단계 보안: 게스트 트래픽은 모두 허용, /api/v1/me/** 만 인증 필요.
- * NextAuth JWT 검증 필터는 v0.7 에서 추가 (DESIGN.md 5.3).
+ * 게스트 트래픽(검색·추천·회사)은 허용, 지원 추적(/applications)은 JWT 인증 필요.
+ * JwtAuthFilter 가 Bearer 토큰을 검증해 SecurityContext 에 user_id 주입 (DESIGN.md 5.3).
  */
 @Configuration
 public class SecurityConfig {
+
+    private final JwtAuthFilter jwtAuthFilter;
+
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -19,9 +26,10 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/v1/me/**").authenticated()
+                .requestMatchers("/api/v1/applications/**").authenticated()
                 .anyRequest().permitAll()
-            );
+            )
+            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 }
