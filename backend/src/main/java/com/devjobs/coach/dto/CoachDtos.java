@@ -35,15 +35,19 @@ public final class CoachDtos {
 
     public record ResumeOptimizeRequest(String resumeText) {}
 
-    public record KeywordGap(String keyword, boolean present) {}
+    public record ReorderedLine(String line, List<String> matched, int score) {}
 
     public record ResumeOptimizeResponse(
         String jobId,
         String title,
         String company,
         double matchScore,
-        List<String> matchedKeywords,
+        List<String> jobKeywords,
+        List<String> presentKeywords,
         List<String> missingKeywords,
+        List<String> leadWith,
+        List<ReorderedLine> reorderedLines,
+        int totalLines,
         List<String> suggestions,
         String note
     ) {}

@@ -1,6 +1,7 @@
 package com.devjobs.coach;
 
 import com.devjobs.coach.dto.CoachDtos.InterviewPrepResponse;
+import com.devjobs.coach.dto.CoachDtos.ResumeOptimizeResponse;
 import com.devjobs.domain.JobEntity;
 import com.devjobs.scout.JobRepository;
 import java.util.Optional;
@@ -17,6 +18,10 @@ public class CoachService {
 
     public Optional<InterviewPrepResponse> interviewPrep(String jobId) {
         return activeJob(jobId).map(InterviewPrep::generate);
+    }
+
+    public Optional<ResumeOptimizeResponse> resumeOptimize(String jobId, String resumeText) {
+        return activeJob(jobId).map(job -> ResumeOptimizer.optimize(job, resumeText));
     }
 
     private Optional<JobEntity> activeJob(String jobId) {

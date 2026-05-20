@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { InterviewPrepSection } from "@/components/job/InterviewPrepSection";
+import { ResumeOptimizeSection } from "@/components/job/ResumeOptimizeSection";
 import { VisaBadge } from "@/components/job/VisaBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -97,6 +98,8 @@ export default async function JobDetailPage({ params }: { params: { id: string }
       )}
 
       {prep && <InterviewPrepSection prep={prep} />}
+
+      <ResumeOptimizeSection jobId={job.id} />
 
       <div className="pt-2">
         <a href={job.apply_url ?? "#"} target="_blank" rel="noopener noreferrer">

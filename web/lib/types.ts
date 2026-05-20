@@ -142,13 +142,23 @@ export interface InterviewPrep {
 }
 
 // 이력서 최적화 (coach: POST /jobs/{id}/resume-optimize)
+export interface ReorderedLine {
+  line: string;
+  matched: string[];
+  score: number;
+}
+
 export interface ResumeOptimize {
   job_id: string;
   title: string;
   company: string;
   match_score: number;
-  matched_keywords: string[];
+  job_keywords: string[];
+  present_keywords: string[];
   missing_keywords: string[];
+  lead_with: string[];
+  reordered_lines: ReorderedLine[];
+  total_lines: number;
   suggestions: string[];
   note: string;
 }
