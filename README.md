@@ -1,4 +1,4 @@
-# dev-jobs-site
+# WorldDeveloper
 
 한국 개발자가 해외(특히 EU) 진출용 채용 공고를 찾는 사이트.
 
@@ -7,7 +7,7 @@
 ## Monorepo 구조
 
 ```
-dev-jobs-site/
+WorldDeveloper/
 ├── web/         Next.js 14 (App Router)
 ├── backend/     Spring Boot (Java 17+)
 ├── ai/          FastAPI (Python 3.12+, 임베딩 + ETL)
