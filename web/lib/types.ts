@@ -162,3 +162,30 @@ export interface ResumeOptimize {
   suggestions: string[];
   note: string;
 }
+
+// 거절 회복 (recovery: POST /applications/{jobId}/recovery)
+export interface SimilarCompany {
+  slug: string;
+  display_name: string;
+  job_count: number;
+}
+
+export interface RecoveryStats {
+  total_applications: number;
+  rejected_count: number;
+  rejection_rate: number;
+  stage_breakdown: Record<string, number>;
+}
+
+export interface Recovery {
+  rejected_job_id: string;
+  job_title?: string;
+  company?: string;
+  reason_logged?: string | null;
+  tracker_updated: boolean;
+  shared_tags: string[];
+  similar_companies: SimilarCompany[];
+  stats: RecoveryStats;
+  next_actions: string[];
+  encouragement: string;
+}

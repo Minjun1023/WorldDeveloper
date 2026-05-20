@@ -3,6 +3,7 @@
 import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
+import { RecoveryPanel } from "@/components/me/RecoveryPanel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -31,12 +32,16 @@ export default function MyApplicationsPage() {
   const [items, setItems] = useState<AppItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (status !== "authenticated") return;
+  function load() {
     fetch("/api/me/applications")
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
       .then((d) => setItems(d.items ?? []))
       .catch((e) => setError(e.message));
+  }
+
+  useEffect(() => {
+    if (status !== "authenticated") return;
+    load();
   }, [status]);
 
   if (status === "loading") {
@@ -74,12 +79,17 @@ export default function MyApplicationsPage() {
       ) : (
         <div className="divide-y divide-border rounded-lg border border-border bg-surface">
           {items.map((a) => (
-            <div key={a.job_id} className="flex items-center justify-between gap-3 p-4">
-              <div className="min-w-0">
-                <p className="truncate font-medium">{a.job_title ?? a.job_id}</p>
-                <p className="text-caption text-muted-foreground">{a.company_name}</p>
+            <div key={a.job_id} className="p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="truncate font-medium">{a.job_title ?? a.job_id}</p>
+                  <p className="text-caption text-muted-foreground">{a.company_name}</p>
+                </div>
+                <Badge variant="outline">{STATUS_LABEL[a.status] ?? a.status}</Badge>
               </div>
-              <Badge variant="outline">{STATUS_LABEL[a.status] ?? a.status}</Badge>
+              <div className="mt-2">
+                <RecoveryPanel jobId={a.job_id} onRecovered={load} />
+              </div>
             </div>
           ))}
         </div>
