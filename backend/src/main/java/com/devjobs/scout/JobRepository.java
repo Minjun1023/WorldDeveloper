@@ -10,6 +10,8 @@ import org.springframework.data.repository.query.Param;
 public interface JobRepository
     extends JpaRepository<JobEntity, String>, JpaSpecificationExecutor<JobEntity> {
 
+    List<JobEntity> findByCompanySlugAndIsActiveTrueOrderByPostedAtDesc(String companySlug);
+
     @Query(value = "SELECT visa_status, count(*) FROM jobs WHERE is_active = true GROUP BY visa_status",
         nativeQuery = true)
     List<Object[]> countByVisaStatus();

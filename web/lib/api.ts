@@ -2,7 +2,13 @@
  * Spring 백엔드 호출 클라이언트.
  * 환경 변수 BACKEND_URL (기본 http://localhost:8080).
  */
-import type { JobDetail, JobListResponse } from "@/lib/types";
+import type {
+  CompanyDetail,
+  CompanyListResponse,
+  Job,
+  JobDetail,
+  JobListResponse,
+} from "@/lib/types";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
 
@@ -86,5 +92,34 @@ export async function fetchJob(id: string): Promise<JobResult> {
     return { ok: true, data };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+export async function fetchCompanies(tag?: string): Promise<CompanyListResponse | null> {
+  const url = new URL(`${BACKEND_URL}/api/v1/companies`);
+  if (tag) url.searchParams.set("tag", tag);
+  try {
+    const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(5000) });
+    if (!res.ok) return null;
+    return (await res.json()) as CompanyListResponse;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchCompany(
+  slug: string,
+): Promise<{ company: CompanyDetail; jobs: Job[] } | null> {
+  try {
+    const [cRes, jRes] = await Promise.all([
+      fetch(`${BACKEND_URL}/api/v1/companies/${slug}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }),
+      fetch(`${BACKEND_URL}/api/v1/companies/${slug}/jobs`, { cache: "no-store", signal: AbortSignal.timeout(5000) }),
+    ]);
+    if (!cRes.ok) return null;
+    const company = (await cRes.json()) as CompanyDetail;
+    const jobs = jRes.ok ? ((await jRes.json()) as Job[]) : [];
+    return { company, jobs };
+  } catch {
+    return null;
   }
 }

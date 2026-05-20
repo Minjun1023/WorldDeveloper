@@ -99,3 +99,24 @@ export interface RecommendResponse {
   returned: number;
   recommendations: RecommendationItem[];
 }
+
+export interface CompanySummary {
+  slug: string;
+  display_name: string;
+  tags?: string[];
+  job_count: number;
+}
+
+export interface CompanyDetail {
+  slug: string;
+  display_name: string;
+  ats?: string;
+  tags?: string[];
+  website_url?: string;
+  job_count: number;
+}
+
+export interface CompanyListResponse {
+  total: number;
+  items: CompanySummary[];
+}

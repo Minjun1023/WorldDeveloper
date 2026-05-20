@@ -62,6 +62,11 @@ public class JobService {
             items, safePage, safeSize, result.getTotalElements(), computeFacets());
     }
 
+    public List<JobDto> listByCompany(String slug) {
+        return repository.findByCompanySlugAndIsActiveTrueOrderByPostedAtDesc(slug)
+            .stream().map(this::toDto).toList();
+    }
+
     public Optional<JobDetailDto> findById(String id) {
         return repository.findById(id)
             .filter(j -> Boolean.TRUE.equals(j.getIsActive()))
