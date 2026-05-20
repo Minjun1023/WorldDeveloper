@@ -17,6 +17,7 @@ class JobPosting:
     description: str = ""             # 전체 description (HTML/마크다운 가능)
     apply_url: str = ""
     posted_at: str = ""               # ISO8601 문자열
+    closes_at: str = ""               # 마감일 (소스 제공 시; ISO8601/날짜 문자열)
 
     # 분석 후 채워지는 필드
     tags: list[str] = field(default_factory=list)         # 기술 스택 태그

@@ -52,12 +52,28 @@ async def fetch(company: str, query: str = "", limit: int = 100) -> list[JobPost
             description=description,
             apply_url=item.get("absolute_url", ""),
             posted_at=item.get("updated_at", ""),
+            # Greenhouse 만 마감일 필드를 줌 (대부분 null). 문자열/객체 모두 방어적으로.
+            closes_at=_parse_deadline(item.get("application_deadline")),
         ))
 
         if len(postings) >= limit:
             break
 
     return postings
+
+
+def _parse_deadline(value) -> str:
+    """application_deadline → 날짜 문자열. None/object 모두 방어적으로 처리."""
+    if not value:
+        return ""
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        # 일부 보드는 {"date": "..."} 형태로 줄 수 있음
+        for k in ("date", "deadline", "value"):
+            if value.get(k):
+                return str(value[k])
+    return ""
 
 
 def _strip_html(html: str) -> str:

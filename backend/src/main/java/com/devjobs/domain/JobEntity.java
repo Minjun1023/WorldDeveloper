@@ -49,6 +49,9 @@ public class JobEntity {
     @Column(name = "posted_at")
     private OffsetDateTime postedAt;
 
+    @Column(name = "closes_at")
+    private OffsetDateTime closesAt;
+
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(columnDefinition = "text[]")
     private List<String> tags;
@@ -85,6 +88,7 @@ public class JobEntity {
     public String getDescriptionText() { return descriptionText; }
     public String getApplyUrl() { return applyUrl; }
     public OffsetDateTime getPostedAt() { return postedAt; }
+    public OffsetDateTime getClosesAt() { return closesAt; }
     public List<String> getTags() { return tags; }
     public Integer getSalaryMinUsd() { return salaryMinUsd; }
     public Integer getSalaryMaxUsd() { return salaryMaxUsd; }

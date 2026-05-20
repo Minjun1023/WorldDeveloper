@@ -15,7 +15,14 @@ from datetime import datetime, timezone
 from dev_jobs_core import registry
 from dev_jobs_core.sources import arbeitnow, ashby, greenhouse, lever, remoteok
 
-from ..db import deactivate_stale, get_conn, upsert_company, upsert_job
+from ..config import settings
+from ..db import (
+    deactivate_expired,
+    deactivate_stale,
+    get_conn,
+    upsert_company,
+    upsert_job,
+)
 from .transform import transform
 
 log = logging.getLogger(__name__)
@@ -107,7 +114,8 @@ async def run_full_cycle(
             except Exception as e:  # noqa: BLE001 — 한 공고 실패가 전체를 막지 않도록
                 failed += 1
                 log.warning("upsert 실패 %s: %s", p.job_id, e)
-        deactivated = deactivate_stale(conn, days=7)
+        deactivated_stale = deactivate_stale(conn, days=settings.stale_days)
+        deactivated_expired = deactivate_expired(conn, max_age_days=settings.job_max_age_days)
         conn.commit()
     finally:
         conn.close()
@@ -118,7 +126,8 @@ async def run_full_cycle(
         "unique": len(unique),
         "upserted": upserted,
         "failed": failed,
-        "deactivated": deactivated,
+        "deactivated_stale": deactivated_stale,
+        "deactivated_expired": deactivated_expired,
         "duration_sec": round((datetime.now(timezone.utc) - started).total_seconds(), 1),
     }
     log.info("ETL cycle 완료: %s", result)

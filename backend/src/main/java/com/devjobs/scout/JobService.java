@@ -100,6 +100,7 @@ public class JobService {
             description,
             j.getApplyUrl(),
             j.getPostedAt(),
+            j.getClosesAt(),
             j.getTags(),
             visa,
             salary);
@@ -143,6 +144,7 @@ public class JobService {
             preview(j.getDescriptionText()),
             j.getApplyUrl(),
             j.getPostedAt(),
+            j.getClosesAt(),
             j.getTags(),
             visa,
             salary);

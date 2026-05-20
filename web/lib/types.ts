@@ -28,6 +28,7 @@ export interface Job {
   description_preview?: string;
   apply_url?: string;
   posted_at?: string;
+  closes_at?: string | null;
   tags?: string[];
   visa?: JobVisa;
   salary?: JobSalary;
@@ -43,6 +44,7 @@ export interface JobDetail {
   description?: string;
   apply_url?: string;
   posted_at?: string;
+  closes_at?: string | null;
   tags?: string[];
   visa?: JobVisa;
   salary?: JobSalary;

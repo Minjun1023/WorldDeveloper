@@ -44,6 +44,10 @@ export default async function JobDetailPage({ params }: { params: { id: string }
   const posted = job.posted_at
     ? new Date(job.posted_at).toLocaleDateString("ko-KR")
     : null;
+  const closes = job.closes_at ? new Date(job.closes_at) : null;
+  const daysLeft = closes
+    ? Math.ceil((closes.getTime() - Date.now()) / 86_400_000)
+    : null;
   const metaParts = [job.company.display_name, job.location, job.is_remote ? "Remote" : null].filter(
     Boolean,
   );
@@ -74,6 +78,12 @@ export default async function JobDetailPage({ params }: { params: { id: string }
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-muted-foreground">
           {salary && <span className="font-mono text-foreground">{salary}</span>}
           {posted && <span>{posted} 게시</span>}
+          {closes && daysLeft !== null && (
+            <span className={daysLeft <= 7 ? "text-foreground font-medium" : undefined}>
+              마감 {closes.toLocaleDateString("ko-KR")}
+              {daysLeft >= 0 ? ` (D-${daysLeft})` : " (마감)"}
+            </span>
+          )}
           <span className="font-mono">{job.id}</span>
         </div>
       </header>

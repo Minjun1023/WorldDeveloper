@@ -28,6 +28,7 @@ public final class JobDtos {
         String descriptionPreview,
         String applyUrl,
         OffsetDateTime postedAt,
+        OffsetDateTime closesAt,
         List<String> tags,
         VisaDto visa,
         SalaryDto salary
@@ -44,6 +45,7 @@ public final class JobDtos {
         String description,
         String applyUrl,
         OffsetDateTime postedAt,
+        OffsetDateTime closesAt,
         List<String> tags,
         VisaDto visa,
         SalaryDto salary

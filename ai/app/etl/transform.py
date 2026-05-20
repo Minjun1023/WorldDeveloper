@@ -88,6 +88,7 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
         "description_text": plain or None,
         "apply_url": j.apply_url or None,
         "posted_at": parse_dt(j.posted_at),
+        "closes_at": parse_dt(j.closes_at),
         "tags": tags,
         "salary_min_usd": _usd(j.salary_min, j.salary_currency, j.salary_period),
         "salary_max_usd": _usd(j.salary_max, j.salary_currency, j.salary_period),

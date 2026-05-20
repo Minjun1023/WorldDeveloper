@@ -22,6 +22,9 @@ class Settings(BaseSettings):
     # ETL
     etl_enabled: bool = False  # MVP skeleton 에서는 비활성
     etl_interval_minutes: int = 60
+    # 공고 비활성화 정책
+    stale_days: int = 7          # 소스 피드에서 N일 미관측 시 비활성화
+    job_max_age_days: int = 180  # 마감일 없는 공고: 게시 N일 후 자동 만료(보수적 안전망)
 
 
 settings = Settings()
