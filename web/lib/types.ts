@@ -120,3 +120,35 @@ export interface CompanyListResponse {
   total: number;
   items: CompanySummary[];
 }
+
+// 인터뷰 준비 (coach: GET /jobs/{id}/interview-prep)
+export interface InterviewStageKit {
+  stage: string;
+  label: string;
+  duration: string;
+  focus: string;
+  common_questions: string[];
+  preparation_actions: string[];
+}
+
+export interface InterviewPrep {
+  job_id: string;
+  title: string;
+  company: string;
+  stack_specific_topics: string[];
+  questions_to_ask_them: string[];
+  stages: InterviewStageKit[];
+  note: string;
+}
+
+// 이력서 최적화 (coach: POST /jobs/{id}/resume-optimize)
+export interface ResumeOptimize {
+  job_id: string;
+  title: string;
+  company: string;
+  match_score: number;
+  matched_keywords: string[];
+  missing_keywords: string[];
+  suggestions: string[];
+  note: string;
+}

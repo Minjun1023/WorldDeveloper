@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { InterviewPrepSection } from "@/components/job/InterviewPrepSection";
 import { VisaBadge } from "@/components/job/VisaBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { fetchJob } from "@/lib/api";
+import { fetchInterviewPrep, fetchJob } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,10 @@ function formatSalary(min?: number | null, max?: number | null): string | null {
 }
 
 export default async function JobDetailPage({ params }: { params: { id: string } }) {
-  const result = await fetchJob(params.id);
+  const [result, prep] = await Promise.all([
+    fetchJob(params.id),
+    fetchInterviewPrep(params.id),
+  ]);
 
   if (!result.ok && result.status === 404) {
     notFound();
@@ -91,6 +95,8 @@ export default async function JobDetailPage({ params }: { params: { id: string }
           <div className="whitespace-pre-line text-body text-foreground/90">{job.description}</div>
         </section>
       )}
+
+      {prep && <InterviewPrepSection prep={prep} />}
 
       <div className="pt-2">
         <a href={job.apply_url ?? "#"} target="_blank" rel="noopener noreferrer">

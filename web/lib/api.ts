@@ -5,6 +5,7 @@
 import type {
   CompanyDetail,
   CompanyListResponse,
+  InterviewPrep,
   Job,
   JobDetail,
   JobListResponse,
@@ -92,6 +93,20 @@ export async function fetchJob(id: string): Promise<JobResult> {
     return { ok: true, data };
   } catch (e) {
     return { ok: false, error: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+export async function fetchInterviewPrep(id: string): Promise<InterviewPrep | null> {
+  // job_id 는 raw 콜론 그대로 (fetchJob 과 동일한 이유)
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/jobs/${id}/interview-prep`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as InterviewPrep;
+  } catch {
+    return null;
   }
 }
 
