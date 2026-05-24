@@ -14,6 +14,8 @@ import httpx
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
+from ..config import settings
+
 log = logging.getLogger(__name__)
 router = APIRouter()
 
@@ -64,7 +66,8 @@ def _parse(text: str, fallback_title: str) -> tuple[str, str]:
 
 @router.post("/translate", response_model=TranslateResponse)
 async def translate(req: TranslateRequest) -> TranslateResponse:
-    key = os.getenv("OPENAI_API_KEY")
+    # .env(settings) 우선, 없으면 실제 환경변수
+    key = settings.openai_api_key or os.getenv("OPENAI_API_KEY")
     if not key:
         raise HTTPException(503, "OPENAI_API_KEY not set — 번역 기능 미설정")
     if not req.title and not req.description:

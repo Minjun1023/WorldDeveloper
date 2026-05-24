@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     port: int = 8001
     internal_auth_token: str = "dev-local-token"
 
+    # 번역 (OpenAI). .env 또는 OPENAI_API_KEY 환경변수로 주입. 미설정 시 번역 비활성.
+    openai_api_key: str = ""
+
     # 임베딩 모델
     embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"
     embedding_dim: int = 384
