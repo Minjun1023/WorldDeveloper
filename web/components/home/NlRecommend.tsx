@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { RecommendationCard } from "@/components/recommend/RecommendationCard";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,7 @@ export function NlRecommend() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<RecommendResponse | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -25,14 +26,19 @@ export function NlRecommend() {
     e.preventDefault();
     const q = text.trim();
     if (!q) return;
+    if (abortRef.current) abortRef.current.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
     setLoading(true);
     setError(null);
+    setResult(null);
     localStorage.setItem(STORAGE_KEY, q);
     try {
       const res = await fetch("/api/recommend-nl", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ text: q, top_k: 6 }),
+        signal: controller.signal,
       });
       if (res.status === 429) {
         setError("요청이 많습니다. 잠시 후 다시 시도해주세요.");
@@ -43,7 +49,8 @@ export function NlRecommend() {
         return;
       }
       setResult((await res.json()) as RecommendResponse);
-    } catch {
+    } catch (err) {
+      if ((err as Error)?.name === "AbortError") return;
       setError("네트워크 오류가 발생했습니다.");
     } finally {
       setLoading(false);
@@ -77,7 +84,7 @@ export function NlRecommend() {
       )}
 
       {result && result.recommendations.length > 0 && (
-        <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {result.recommendations.map((item, i) => (
             <RecommendationCard key={item.job.id} item={item} rank={i + 1} />
           ))}
