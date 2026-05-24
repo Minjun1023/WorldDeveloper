@@ -2,7 +2,7 @@ import { CompanySpotlight } from "@/components/home/CompanySpotlight";
 import { CountryTiles } from "@/components/home/CountryTiles";
 import { Hero } from "@/components/home/Hero";
 import { JobScrollRow } from "@/components/home/JobScrollRow";
-import { RecommendCta } from "@/components/home/RecommendCta";
+import { NlRecommend } from "@/components/home/NlRecommend";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { fetchCompanies, fetchJobs } from "@/lib/api";
 
@@ -25,7 +25,7 @@ export default async function HomePage() {
 
       <section>
         <SectionHeader title="나에게 맞는 공고" accent="recommend" href="/recommend" hrefLabel="정교한 추천 설정" />
-        <RecommendCta />
+        <NlRecommend />
       </section>
 
       {visaJobs.length > 0 && (
