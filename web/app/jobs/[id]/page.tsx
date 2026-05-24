@@ -32,7 +32,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
       <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
         공고를 불러오지 못했습니다 ({result.error}).
         <div className="mt-3">
-          <Link href="/" className="text-primary hover:underline">
+          <Link href="/search" className="text-primary hover:underline">
             ← 목록으로
           </Link>
         </div>
@@ -55,7 +55,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
 
   return (
     <article className="mx-auto max-w-3xl space-y-6">
-      <Link href="/" className="inline-block text-body-sm text-muted-foreground hover:text-foreground">
+      <Link href="/search" className="inline-block text-body-sm text-muted-foreground hover:text-foreground">
         ← 목록으로
       </Link>
 
