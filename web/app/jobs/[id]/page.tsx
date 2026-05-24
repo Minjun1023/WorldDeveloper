@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { InterviewPrepSection } from "@/components/job/InterviewPrepSection";
+import { JobDescription } from "@/components/job/JobDescription";
 import { ResumeOptimizeSection } from "@/components/job/ResumeOptimizeSection";
 import { VisaBadge } from "@/components/job/VisaBadge";
 import { Badge } from "@/components/ui/badge";
@@ -100,11 +101,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
       )}
 
       {job.description && (
-        <section className="space-y-2">
-          <h2 className="text-h3">상세 설명</h2>
-          {/* MVP: plain text (whitespace 보존). 실제 HTML 본문은 sanitize 후 렌더 예정 */}
-          <div className="whitespace-pre-line text-body text-foreground/90">{job.description}</div>
-        </section>
+        <JobDescription jobId={job.id} original={job.description} />
       )}
 
       {prep && <InterviewPrepSection prep={prep} />}

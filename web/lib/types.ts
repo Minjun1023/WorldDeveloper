@@ -165,6 +165,16 @@ export interface ResumeOptimize {
   note: string;
 }
 
+// 번역 (translate: GET /jobs/{id}/translation?lang=ko)
+export interface Translation {
+  job_id: string;
+  lang: string;
+  title: string;
+  description: string;
+  engine: string;
+  cached: boolean;
+}
+
 // 거절 회복 (recovery: POST /applications/{jobId}/recovery)
 export interface SimilarCompany {
   slug: string;
