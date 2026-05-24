@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 
 export function RecommendCta() {
   return (
@@ -8,8 +8,8 @@ export function RecommendCta() {
       <p className="text-body-sm text-muted-foreground">
         스택·연차·선호 지역을 입력하면 6차원 점수로 맞춤 공고를 추천해드려요.
       </p>
-      <Link href="/recommend" className="mt-4 inline-block">
-        <Button>맞춤 추천 받기</Button>
+      <Link href="/recommend" className={`mt-4 inline-block ${buttonVariants()}`}>
+        맞춤 추천 받기
       </Link>
     </div>
   );
