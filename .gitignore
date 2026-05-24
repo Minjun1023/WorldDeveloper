@@ -73,3 +73,6 @@ huggingface/
 
 # 로컬 dev 로그
 .dev-logs/
+
+# 브레인스토밍 비주얼 컴패니언 산출물
+.superpowers/
