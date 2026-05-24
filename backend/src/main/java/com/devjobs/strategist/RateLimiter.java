@@ -12,6 +12,8 @@ public class RateLimiter {
     private final int capacity;
     private final long windowMillis;
     private final LongSupplier clock;
+    // 항목이 자동으로 제거되지 않음 — 단일 인스턴스 베타용으로 허용 가능 (고유 IP 수에 의해 상한이 정해짐).
+    // 다중 인스턴스로 확장 시 Redis로 교체할 것.
     private final Map<String, Window> windows = new ConcurrentHashMap<>();
 
     private static final class Window {

@@ -11,7 +11,7 @@ import java.time.Instant;
 public class NlProfileCacheEntity {
 
     @Id
-    @Column(name = "input_hash")
+    @Column(name = "input_hash", length = 64)
     private String inputHash;
 
     @Column(name = "profile_json", nullable = false)
