@@ -1,7 +1,8 @@
-"""POST /internal/translate — 공고 제목/본문 기계 번역 (Claude).
+"""POST /internal/translate — 공고 제목/본문 기계 번역 (OpenAI gpt-4o-mini).
 
-ANTHROPIC_API_KEY 미설정 시 503 (백엔드/프론트가 '번역 미설정'으로 안내).
+OPENAI_API_KEY 미설정 시 503 (백엔드/프론트가 '번역 미설정'으로 안내).
 순수 번역만 담당 — 캐싱은 백엔드(job_translations)가 처리한다.
+엔진 교체 시 이 파일만 수정하면 backend/web 은 그대로.
 """
 from __future__ import annotations
 
@@ -16,8 +17,8 @@ from pydantic import BaseModel, Field
 log = logging.getLogger(__name__)
 router = APIRouter()
 
-ANTHROPIC_URL = "https://api.anthropic.com/v1/messages"
-MODEL = "claude-haiku-4-5-20251001"
+OPENAI_URL = "https://api.openai.com/v1/chat/completions"
+MODEL = "gpt-4o-mini"
 
 LANG_NAMES = {"ko": "Korean", "en": "English", "ja": "Japanese", "zh": "Chinese"}
 
@@ -63,9 +64,9 @@ def _parse(text: str, fallback_title: str) -> tuple[str, str]:
 
 @router.post("/translate", response_model=TranslateResponse)
 async def translate(req: TranslateRequest) -> TranslateResponse:
-    key = os.getenv("ANTHROPIC_API_KEY")
+    key = os.getenv("OPENAI_API_KEY")
     if not key:
-        raise HTTPException(503, "ANTHROPIC_API_KEY not set — 번역 기능 미설정")
+        raise HTTPException(503, "OPENAI_API_KEY not set — 번역 기능 미설정")
     if not req.title and not req.description:
         raise HTTPException(400, "title/description 모두 비어있음")
 
@@ -75,26 +76,30 @@ async def translate(req: TranslateRequest) -> TranslateResponse:
     try:
         async with httpx.AsyncClient(timeout=60) as client:
             resp = await client.post(
-                ANTHROPIC_URL,
+                OPENAI_URL,
                 headers={
-                    "x-api-key": key,
-                    "anthropic-version": "2023-06-01",
+                    "Authorization": f"Bearer {key}",
                     "content-type": "application/json",
                 },
                 json={
                     "model": MODEL,
                     "max_tokens": 4096,
-                    "system": system,
-                    "messages": [{"role": "user", "content": user}],
+                    "temperature": 0.2,
+                    # 구조화 출력 — content 가 항상 JSON 객체로 옴
+                    "response_format": {"type": "json_object"},
+                    "messages": [
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": user},
+                    ],
                 },
             )
         if resp.status_code != 200:
-            log.warning("anthropic HTTP %s: %s", resp.status_code, resp.text[:300])
+            log.warning("openai HTTP %s: %s", resp.status_code, resp.text[:300])
             raise HTTPException(502, f"translation upstream error ({resp.status_code})")
         data = resp.json()
-        text = "".join(b.get("text", "") for b in data.get("content", []))
+        text = data["choices"][0]["message"]["content"] or ""
         title, description = _parse(text, req.title)
         return TranslateResponse(title=title, description=description, engine=MODEL)
-    except httpx.HTTPError as e:
-        log.warning("anthropic 호출 실패: %s", e)
+    except (httpx.HTTPError, KeyError, IndexError) as e:
+        log.warning("openai 호출 실패: %s", e)
         raise HTTPException(502, f"translation request failed: {e}") from e
