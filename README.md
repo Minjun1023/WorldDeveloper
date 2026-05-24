@@ -8,10 +8,11 @@
 
 ```
 WorldDeveloper/
-├── web/         Next.js 14 (App Router)
-├── backend/     Spring Boot (Java 17+)
-├── ai/          FastAPI (Python 3.12+, 임베딩 + ETL)
-├── db/          Flyway SQL 마이그레이션
+├── web/            Next.js 14 (App Router)
+├── backend/        Spring Boot (Java 17+)
+├── ai/             FastAPI (Python 3.12+, 임베딩 + ETL)
+├── db/             Flyway SQL 마이그레이션
+├── dev-jobs-mcp/   채용 공고 MCP 서버 (Python, 독립 패키지 — .venv 는 미커밋)
 └── docker-compose.yml   로컬 Postgres+pgvector
 ```
 
