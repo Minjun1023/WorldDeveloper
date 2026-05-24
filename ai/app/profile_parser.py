@@ -78,6 +78,8 @@ def parse_rules(text: str) -> ParsedProfile:
 
     if any(k in low for k in ("원격", "재택", "remote")):
         p.remote_preference = "remote"
+        if "Remote" not in p.preferred_locations:
+            p.preferred_locations.append("Remote")
 
     sal = re.search(r"[€$]?\s*(\d{2,3})\s*k\b", low)
     if sal:

@@ -16,6 +16,7 @@ def test_remote_and_salary_english():
     assert "React" in p.skills
     assert p.seniority == "junior"
     assert p.remote_preference == "remote"
+    assert "Remote" in p.preferred_locations
     assert p.desired_salary_usd == int(60000 * 1.08)
     assert p.sufficient is True
 
