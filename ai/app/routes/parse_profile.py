@@ -10,7 +10,7 @@ import os
 
 import httpx
 from fastapi import APIRouter
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ValidationError
 
 from ..config import settings
 from ..profile_parser import ParsedProfile, parse_rules
@@ -89,7 +89,7 @@ async def _llm_fallback(text: str) -> ProfilePayload | None:
         obj = json.loads(resp.json()["choices"][0]["message"]["content"] or "{}")
         data = {k: obj[k] for k in ProfilePayload.model_fields if k in obj and obj[k] is not None}
         return ProfilePayload(**data)
-    except (httpx.HTTPError, KeyError, IndexError, ValueError) as e:
+    except (httpx.HTTPError, KeyError, IndexError, ValueError, ValidationError) as e:
         log.warning("parse llm 실패: %s", e)
         return None
 

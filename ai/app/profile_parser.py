@@ -66,7 +66,11 @@ def parse_rules(text: str) -> ParsedProfile:
             p.seniority = "senior"
 
     for key, canon in KNOWN_LOCATIONS.items():
-        if key in low and canon not in p.preferred_locations:
+        if key.isascii() and key.isalpha():
+            matched = re.search(rf"\b{re.escape(key)}\b", low) is not None
+        else:
+            matched = key in low
+        if matched and canon not in p.preferred_locations:
             p.preferred_locations.append(canon)
 
     if any(k in low for k in ("비자", "sponsor", "visa")):
@@ -75,7 +79,7 @@ def parse_rules(text: str) -> ParsedProfile:
     if any(k in low for k in ("원격", "재택", "remote")):
         p.remote_preference = "remote"
 
-    sal = re.search(r"[€$]?\s*(\d{2,3})\s*k", low)
+    sal = re.search(r"[€$]?\s*(\d{2,3})\s*k\b", low)
     if sal:
         amount = int(sal.group(1)) * 1000
         if "€" in text:
