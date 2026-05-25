@@ -5,6 +5,8 @@ import { SESSION_COOKIE, sessionCookieOptions } from "@/lib/session";
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
 const APP_BASE_URL = process.env.APP_BASE_URL ?? "http://localhost:3000";
 
+// Spring OAuth 성공 핸들러가 ${APP_BASE_URL}/auth/callback?code=... 로 리다이렉트한다.
+// 여기서 일회용 code 를 Spring /exchange 로 교환해 세션 쿠키(JWT)를 심고 홈으로 보낸다.
 export async function GET(req: Request) {
   const code = new URL(req.url).searchParams.get("code");
   if (!code) {
