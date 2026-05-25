@@ -2,6 +2,7 @@ package com.devjobs.auth;
 
 import java.time.OffsetDateTime;
 import java.util.Locale;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -54,6 +55,17 @@ public class AuthService {
             u.getId(), TokenHasher.sha256Hex(raw), OffsetDateTime.now().plusHours(24));
         tokenRepo.save(t);
         mailService.sendVerification(u.getEmail(), appBaseUrl + "/verify-email?token=" + raw);
+    }
+
+    @Transactional
+    public void resendVerification(String email) {
+        Optional<UserEntity> ou = userRepo.findByEmail(normalize(email));
+        if (ou.isEmpty()) return;                       // 열거 방지
+        UserEntity u = ou.get();
+        if (u.getEmailVerifiedAt() != null) return;     // 이미 인증됨
+        if (u.getPasswordHash() == null) return;         // OAuth 전용 계정 — 해당 없음
+        tokenRepo.deleteByUserId(u.getId());             // 이전 토큰 정리
+        issueAndSendVerification(u);
     }
 
     @Transactional

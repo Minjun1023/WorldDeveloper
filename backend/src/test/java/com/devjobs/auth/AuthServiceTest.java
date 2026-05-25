@@ -80,4 +80,20 @@ class AuthServiceTest {
     void verifyEmailRejectsUnknownToken() {
         assertThrows(ResponseStatusException.class, () -> authService.verifyEmail("deadbeef"));
     }
+
+    @Test
+    void resendForUnverifiedUserSendsNewMail() {
+        authService.register("resend@example.com", "password123", "R");
+        org.mockito.Mockito.reset(mailService);
+        authService.resendVerification("resend@example.com");
+        verify(mailService, times(1)).sendVerification(
+            org.mockito.ArgumentMatchers.eq("resend@example.com"),
+            org.mockito.ArgumentMatchers.contains("/verify-email?token="));
+    }
+
+    @Test
+    void resendForUnknownEmailIsEnumerationSafeNoop() {
+        authService.resendVerification("nobody@example.com"); // 예외 없음, 메일 없음
+        verifyNoMoreInteractions(mailService);
+    }
 }
