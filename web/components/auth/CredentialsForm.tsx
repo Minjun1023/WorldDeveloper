@@ -5,6 +5,8 @@ import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { checkPassword, isPasswordValid } from "@/lib/password";
+import { PasswordChecklist } from "@/components/auth/PasswordChecklist";
 
 type Mode = "login" | "register";
 
@@ -99,14 +101,22 @@ export function CredentialsForm({
       />
       <Input
         type="password"
-        placeholder="비밀번호 (최소 8자)"
-        minLength={8}
+        placeholder={
+          mode === "register" ? "비밀번호 (최소 10자, 대/소문자·숫자 포함)" : "비밀번호"
+        }
+        minLength={mode === "register" ? 10 : undefined}
+        maxLength={72}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
       />
+      {mode === "register" && <PasswordChecklist checks={checkPassword(password)} />}
       {error && <p className="text-destructive text-body-sm">{error}</p>}
-      <Button type="submit" disabled={pending} className="w-full">
+      <Button
+        type="submit"
+        disabled={pending || (mode === "register" && !isPasswordValid(password))}
+        className="w-full"
+      >
         {pending ? "처리 중…" : mode === "register" ? "가입하기" : "로그인"}
       </Button>
     </form>
