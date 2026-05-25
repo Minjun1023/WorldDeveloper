@@ -119,4 +119,38 @@ public class AiClient {
             return null;
         }
     }
+
+    /** AI /internal/summarize 응답 (4섹션 + 엔진). */
+    public record AiSummary(
+        List<String> responsibilities,
+        List<String> requirements,
+        List<String> visa,
+        List<String> compensation,
+        String engine
+    ) {}
+
+    /** 공고를 한국어 4섹션으로 요약. 실패(키 미설정/업스트림 오류 포함) 시 null. */
+    public AiSummary summarize(String title, String description) {
+        try {
+            String json = mapper.writeValueAsString(Map.of(
+                "title", title == null ? "" : title,
+                "description", description == null ? "" : description,
+                "lang", "ko"));
+            HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/internal/summarize"))
+                .header("content-type", "application/json")
+                .timeout(Duration.ofSeconds(70))
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+            HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() != 200) {
+                log.warn("ai summarize HTTP {}: {}", resp.statusCode(), resp.body());
+                return null;
+            }
+            return mapper.readValue(resp.body(), AiSummary.class);
+        } catch (Exception e) {
+            log.warn("ai summarize 실패: {}", e.getMessage());
+            return null;
+        }
+    }
 }
