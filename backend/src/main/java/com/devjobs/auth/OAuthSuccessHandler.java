@@ -46,6 +46,11 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
             sub = u.getAttribute("sub");
             email = u.getAttribute("email");
             name = u.getAttribute("name");
+            Object emailVerified = u.getAttribute("email_verified");
+            if (!Boolean.TRUE.equals(emailVerified) && !"true".equals(String.valueOf(emailVerified))) {
+                getRedirectStrategy().sendRedirect(request, response, appBaseUrl + "/signin?error=email_unverified");
+                return;
+            }
         }
 
         UserEntity user = auth.oauthUpsert(provider, sub, email, name);

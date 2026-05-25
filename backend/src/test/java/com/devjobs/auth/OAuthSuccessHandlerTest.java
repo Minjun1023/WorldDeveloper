@@ -30,7 +30,7 @@ class OAuthSuccessHandlerTest {
 
         DefaultOAuth2User principal = new DefaultOAuth2User(
             List.of(new SimpleGrantedAuthority("ROLE_USER")),
-            Map.of("sub", "sub-1", "email", "g@example.com", "name", "G"),
+            Map.of("sub", "sub-1", "email", "g@example.com", "name", "G", "email_verified", Boolean.TRUE),
             "sub");
         OAuth2AuthenticationToken token =
             new OAuth2AuthenticationToken(principal, principal.getAuthorities(), "google");

@@ -62,7 +62,7 @@ auth:
 ai:
   base-url: ${AI_BASE_URL:http://localhost:8001}
 
-# NextAuth 와 공유하는 JWT 서명 시크릿 (HS256, 최소 32바이트). 운영은 반드시 env 로 교체.
+# 세션 JWT 서명 시크릿 (HS256, 최소 32바이트). web 미들웨어가 동일 시크릿으로 검증. 운영은 반드시 env 로 교체.
 jwt:
   secret: ${JWT_SECRET:dev-local-jwt-secret-change-me-min-32-bytes!!}
 

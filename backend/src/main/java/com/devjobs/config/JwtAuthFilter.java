@@ -18,7 +18,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
- * NextAuth 가 발급한 JWT(HS256, 공유 시크릿) 를 검증해 SecurityContext 에 user_id 주입.
+ * Spring(JwtService)이 발급한 JWT(HS256, web 과 공유하는 시크릿)를 검증해 SecurityContext 에 user_id 주입.
  * 토큰이 없거나 무효면 인증 미설정 → 보호 경로는 401.
  */
 @Component
