@@ -98,4 +98,26 @@ public class AuthService {
         String token = jwtService.issue(u.getId().toString());
         return new AuthResult(token, u.getId().toString(), u.getEmail(), u.getDisplayName());
     }
+
+    @Transactional
+    public UserEntity oauthUpsert(String provider, String providerSub, String email, String displayName) {
+        Optional<UserIdentityEntity> existingIdentity =
+            identityRepo.findByProviderAndProviderSub(provider, providerSub);
+        if (existingIdentity.isPresent()) {
+            return userRepo.findById(existingIdentity.get().getUserId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "user_missing"));
+        }
+        String norm = normalize(email);
+        if (norm == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "oauth_email_required");
+        }
+        UserEntity user = userRepo.findByEmail(norm).orElse(null);
+        if (user == null) {
+            user = new UserEntity(norm, null, displayName); // OAuth 전용: password_hash = null
+            user.markEmailVerified(OffsetDateTime.now());    // 공급자 검증분
+            userRepo.save(user);
+        }
+        identityRepo.save(new UserIdentityEntity(user.getId(), provider, providerSub));
+        return user;
+    }
 }

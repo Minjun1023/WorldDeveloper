@@ -39,6 +39,7 @@ class AuthServiceTest {
     @Autowired AuthService authService;
     @Autowired UserRepository userRepo;
     @Autowired EmailVerificationTokenRepository tokenRepo;
+    @Autowired UserIdentityRepository identityRepo;
 
     @Test
     void registerCreatesUnverifiedUserAndSendsMail() {
@@ -129,5 +130,32 @@ class AuthServiceTest {
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
             () -> authService.login("wrong@example.com", "nope"));
         assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatusCode());
+    }
+
+    @Test
+    void oauthUpsertCreatesNewUserWhenNoMatch() {
+        UserEntity u = authService.oauthUpsert("google", "g-sub-1", "OAuth@Example.com", "OAuth User");
+        assertNotNull(u.getId());
+        assertEquals("oauth@example.com", u.getEmail());
+        assertNotNull(u.getEmailVerifiedAt(), "OAuth 이메일은 공급자 검증분 → 즉시 인증");
+        assertTrue(identityRepo.findByProviderAndProviderSub("google", "g-sub-1").isPresent());
+    }
+
+    @Test
+    void oauthUpsertReturnsExistingByIdentity() {
+        UserEntity first = authService.oauthUpsert("github", "gh-1", "same@example.com", "X");
+        UserEntity again = authService.oauthUpsert("github", "gh-1", "same@example.com", "X");
+        assertEquals(first.getId(), again.getId());
+    }
+
+    @Test
+    void oauthUpsertLinksToExistingUserByVerifiedEmail() {
+        authService.register("link@example.com", "password123", "Link");
+        UserEntity u = userRepo.findByEmail("link@example.com").orElseThrow();
+        u.markEmailVerified(java.time.OffsetDateTime.now());
+        userRepo.save(u);
+        UserEntity linked = authService.oauthUpsert("google", "g-link", "link@example.com", "Link");
+        assertEquals(u.getId(), linked.getId());
+        assertTrue(identityRepo.findByProviderAndProviderSub("google", "g-link").isPresent());
     }
 }
