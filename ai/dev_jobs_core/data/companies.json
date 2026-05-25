@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "description": "회사명 → ATS 매핑. 추가 가능. ats: greenhouse / lever / ashby",
-    "last_updated": "2026-05"
+    "description": "회사명 → ATS 매핑. 추가 가능. ats: greenhouse / lever / ashby / smartrecruiters",
+    "last_updated": "2026-05-26"
   },
   "stripe":      {"ats": "greenhouse", "token": "stripe",      "tags": ["fintech", "payments"]},
   "anthropic":   {"ats": "greenhouse", "token": "anthropic",   "tags": ["ai", "research"]},
