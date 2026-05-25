@@ -13,7 +13,7 @@
 
 **포함**
 - ai `/internal/summarize` (gpt-4o-mini, 영문→한국어 4섹션 JSON)
-- `job_summaries` 캐시 테이블 (V6) + Spring `GET /api/v1/jobs/{id}/summary`
+- `job_summaries` 캐시 테이블 (V7) + Spring `GET /api/v1/jobs/{id}/summary`
 - Next 프록시 `POST /api/job-summary`
 - 공고 상세 페이지의 `JobSummary` 온디맨드 컴포넌트
 
@@ -76,7 +76,7 @@ ai 서비스(FastAPI)에 추가. `translate.py` 와 동일한 httpx/`response_fo
 | 503 | `OPENAI_API_KEY` 미설정 (translate 와 동일 — 백엔드가 503 전달) |
 | 502 | OpenAI 업스트림 오류 |
 
-## 5. DB 캐시 — `job_summaries` (V6 마이그레이션)
+## 5. DB 캐시 — `job_summaries` (V7 마이그레이션)
 
 `job_translations` 와 동일 구조. 공고+언어당 1회만 요약.
 
