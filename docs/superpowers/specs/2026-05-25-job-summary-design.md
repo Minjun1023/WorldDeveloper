@@ -35,7 +35,7 @@
        · 미스 → AiClient.summarize(title, description) → JSON → 캐시 저장
        · AI 미설정/오류 → 503
   → [ai] POST /internal/summarize {title, description}
-       · gpt-4o-mini, JSON 모드, max_tokens ~500 → 4섹션 한국어 불릿
+       · gpt-4o-mini, JSON 모드, max_tokens 1024 → 4섹션 한국어 불릿
   → [프론트] 4섹션 렌더
 ```
 
@@ -131,7 +131,7 @@ CREATE TABLE IF NOT EXISTS job_summaries (
 
 - **온디맨드 클릭에만** 호출 (자동 X).
 - **공고+언어당 1회 캐시** (`job_summaries`) → 같은 공고 재요약 없음.
-- gpt-4o-mini, `max_tokens` ~500, JSON 모드 (출력 상한).
+- gpt-4o-mini, `max_tokens` 1024, JSON 모드 (출력 상한).
 - 번역과 동일한 비용 프로파일 (저렴).
 
 ## 11. 검증
