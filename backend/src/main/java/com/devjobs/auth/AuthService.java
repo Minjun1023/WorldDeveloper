@@ -3,9 +3,11 @@ package com.devjobs.auth;
 import java.time.OffsetDateTime;
 import java.util.Locale;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class AuthService {
@@ -52,5 +54,18 @@ public class AuthService {
             u.getId(), TokenHasher.sha256Hex(raw), OffsetDateTime.now().plusHours(24));
         tokenRepo.save(t);
         mailService.sendVerification(u.getEmail(), appBaseUrl + "/verify-email?token=" + raw);
+    }
+
+    @Transactional
+    public void verifyEmail(String rawToken) {
+        EmailVerificationTokenEntity t = tokenRepo.findByTokenHash(TokenHasher.sha256Hex(rawToken))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_token"));
+        if (t.getConsumedAt() != null || t.getExpiresAt().isBefore(OffsetDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_token");
+        }
+        UserEntity u = userRepo.findById(t.getUserId())
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_token"));
+        u.markEmailVerified(OffsetDateTime.now());
+        t.consume(OffsetDateTime.now());
     }
 }

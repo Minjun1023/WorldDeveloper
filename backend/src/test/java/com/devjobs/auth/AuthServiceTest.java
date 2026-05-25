@@ -3,10 +3,12 @@ package com.devjobs.auth;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import org.springframework.web.server.ResponseStatusException;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,5 +58,26 @@ class AuthServiceTest {
         authService.register("dup@example.com", "otherpass456", "B");
         verifyNoMoreInteractions(mailService);
         assertEquals(1, userRepo.findByEmail("dup@example.com").stream().count());
+    }
+
+    @Test
+    void verifyEmailMarksUserVerifiedAndConsumesToken() {
+        authService.register("verify@example.com", "password123", "V");
+        // register 가 만든 토큰의 원문은 메일로만 나가므로, 테스트는 새 토큰을 직접 발급해 검증 경로를 탄다
+        UserEntity u = userRepo.findByEmail("verify@example.com").orElseThrow();
+        String raw = TokenHasher.randomToken();
+        tokenRepo.save(new EmailVerificationTokenEntity(
+            u.getId(), TokenHasher.sha256Hex(raw), java.time.OffsetDateTime.now().plusHours(1)));
+
+        authService.verifyEmail(raw);
+
+        assertNotNull(userRepo.findByEmail("verify@example.com").orElseThrow().getEmailVerifiedAt());
+        // 단회용: 같은 토큰 재사용 시 실패
+        assertThrows(ResponseStatusException.class, () -> authService.verifyEmail(raw));
+    }
+
+    @Test
+    void verifyEmailRejectsUnknownToken() {
+        assertThrows(ResponseStatusException.class, () -> authService.verifyEmail("deadbeef"));
     }
 }
