@@ -1,11 +1,9 @@
 "use client";
 
-import { signIn, useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 
 import { RecoveryPanel } from "@/components/me/RecoveryPanel";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 interface AppItem {
   job_id: string;
@@ -28,7 +26,6 @@ const STATUS_LABEL: Record<string, string> = {
 };
 
 export default function MyApplicationsPage() {
-  const { data: session, status } = useSession();
   const [items, setItems] = useState<AppItem[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -40,32 +37,13 @@ export default function MyApplicationsPage() {
   }
 
   useEffect(() => {
-    if (status !== "authenticated") return;
     load();
-  }, [status]);
-
-  if (status === "loading") {
-    return <p className="text-muted-foreground">불러오는 중…</p>;
-  }
-
-  if (status !== "authenticated") {
-    return (
-      <div className="space-y-4">
-        <h1 className="text-display">내 지원 현황</h1>
-        <p className="text-muted-foreground">지원 추적은 로그인이 필요해요.</p>
-        <div className="flex gap-2">
-          <Button onClick={() => signIn("github")}>GitHub 로그인</Button>
-          <Button variant="secondary" onClick={() => signIn("google")}>Google 로그인</Button>
-        </div>
-      </div>
-    );
-  }
+  }, []);
 
   return (
     <div className="space-y-6">
       <div className="flex items-baseline justify-between">
         <h1 className="text-display">내 지원 현황</h1>
-        <span className="text-body-sm text-muted-foreground">{session.user?.email}</span>
       </div>
 
       {error && <p className="text-destructive text-body-sm">불러오기 실패: {error}</p>}

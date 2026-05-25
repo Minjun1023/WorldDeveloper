@@ -3,6 +3,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/auth/UserMenu";
 
 export const metadata: Metadata = {
   title: "WorldDeveloper",
@@ -33,6 +34,7 @@ export default function RootLayout({
                 <a href="/companies" className="hover:text-foreground transition-colors">회사</a>
                 <a href="/me/applications" className="hover:text-foreground transition-colors">내 지원</a>
                 <a href="/about" className="hover:text-foreground transition-colors">소개</a>
+                <UserMenu />
                 <ThemeToggle />
               </nav>
             </div>
