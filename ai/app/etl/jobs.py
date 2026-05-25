@@ -13,7 +13,9 @@ import logging
 from datetime import datetime, timezone
 
 from dev_jobs_core import registry
-from dev_jobs_core.sources import arbeitnow, ashby, greenhouse, lever, remoteok
+from dev_jobs_core.sources import adzuna, arbeitnow, ashby, greenhouse, lever, remoteok, weworkremotely
+from dev_jobs_core.dedup import dedup
+from dev_jobs_core.filter import is_dev_role
 
 from ..config import settings
 from ..db import (
@@ -58,7 +60,7 @@ async def run_full_cycle(
     fetch_stats: dict[str, object] = {}
 
     # 1a. 잡보드 (병렬, 소스 실패 격리)
-    boards = {"remoteok": remoteok.fetch, "arbeitnow": arbeitnow.fetch}
+    boards = {"remoteok": remoteok.fetch, "arbeitnow": arbeitnow.fetch, "wwr": weworkremotely.fetch}
     board_results = await asyncio.gather(
         *[fn("", limit=limit_per_source) for fn in boards.values()],
         return_exceptions=True,
@@ -97,15 +99,38 @@ async def run_full_cycle(
         fetch_stats["ats_companies_failed"] = ats_failed
         fetch_stats["ats_jobs"] = ats_jobs
 
-    # 2. dedup (job_id)
-    unique = {p.job_id: p for p in postings}
+    # 1c. Adzuna (다국가, 키 있을 때만, 실패 격리)
+    if adzuna.is_enabled():
+        try:
+            adz = await adzuna.fetch(
+                countries=settings.adzuna_countries_list,
+                per_country=settings.adzuna_per_country,
+                max_pages=settings.adzuna_max_pages,
+            )
+            postings.extend(adz)
+            fetch_stats["adzuna"] = len(adz)
+        except Exception as e:  # noqa: BLE001
+            fetch_stats["adzuna"] = f"error: {type(e).__name__}"
+            log.warning("adzuna 실패: %s", e)
+    else:
+        fetch_stats["adzuna"] = "disabled (no key)"
+
+    # 1d. 개발 직무 필터
+    before_filter = len(postings)
+    postings = [p for p in postings if is_dev_role(p.title, p.tags, p.description)]
+    fetch_stats["filtered_out"] = before_filter - len(postings)
+
+    # 2. dedup (job_id 완전일치 + 크로스소스 정규화 키 + 소스 우선순위)
+    unique_list = dedup(postings)
+    fetch_stats["deduped_from"] = len(postings)
+    fetch_stats["deduped_to"] = len(unique_list)
 
     # 3. transform + 4. upsert
     upserted = 0
     failed = 0
     conn = get_conn()
     try:
-        for p in unique.values():
+        for p in unique_list:
             try:
                 company_row, job_row = transform(p)
                 upsert_company(conn, company_row)
@@ -123,7 +148,7 @@ async def run_full_cycle(
     result = {
         "started_at": started.isoformat(),
         "fetched": fetch_stats,
-        "unique": len(unique),
+        "unique": len(unique_list),
         "upserted": upserted,
         "failed": failed,
         "deactivated_stale": deactivated_stale,
