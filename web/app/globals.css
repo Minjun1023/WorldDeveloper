@@ -59,3 +59,10 @@
     font-feature-settings: "ss01", "tnum";
   }
 }
+
+.hero-gradient {
+  background: linear-gradient(125deg, #f5f3ff 0%, #faf5ff 35%, #ffffff 80%);
+}
+.dark .hero-gradient {
+  background: radial-gradient(60% 80% at 50% 0%, rgba(99, 102, 241, 0.12), transparent 70%), #09090b;
+}

@@ -1,80 +1,58 @@
-import { JobCard } from "@/components/job/JobCard";
-import { Pagination } from "@/components/search/Pagination";
-import { SearchBar } from "@/components/search/SearchBar";
-import { SearchFilters } from "@/components/search/SearchFilters";
-import { fetchJobs } from "@/lib/api";
+import { CompanySpotlight } from "@/components/home/CompanySpotlight";
+import { CountryTiles } from "@/components/home/CountryTiles";
+import { Hero } from "@/components/home/Hero";
+import { JobScrollRow } from "@/components/home/JobScrollRow";
+import { NlRecommend } from "@/components/home/NlRecommend";
+import { SectionHeader } from "@/components/home/SectionHeader";
+import { fetchCompanies, fetchJobs } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-const PAGE_SIZE = 12;
+export default async function HomePage() {
+  const [visaRes, latestRes, companies] = await Promise.all([
+    fetchJobs({ visa: "sponsors", pageSize: 8 }),
+    fetchJobs({ pageSize: 6 }),
+    fetchCompanies(),
+  ]);
 
-type SearchParams = { [key: string]: string | string[] | undefined };
-
-function str(v: string | string[] | undefined): string | undefined {
-  return typeof v === "string" && v.length > 0 ? v : undefined;
-}
-
-export default async function HomePage({
-  searchParams,
-}: {
-  searchParams: SearchParams;
-}) {
-  const q = str(searchParams.q);
-  const visa = str(searchParams.visa);
-  const location = str(searchParams.location);
-  const remote = searchParams.remote === "true" ? true : undefined;
-  const page = Number(searchParams.page) || 1;
-
-  const result = await fetchJobs({ q, visa, location, remote, page, pageSize: PAGE_SIZE });
+  const visaJobs = visaRes.ok ? visaRes.data.items : [];
+  const latestJobs = latestRes.ok ? latestRes.data.items : [];
+  const spotlight = companies?.items.slice(0, 6) ?? [];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-12">
+      <Hero />
+
       <section>
-        <h1 className="text-display">한국 개발자의 해외 채용 공고</h1>
-        <p className="mt-2 text-muted-foreground">
-          유럽 진출 — 비자 스폰서십 명시 공고 + 6차원 점수 추천.
-        </p>
+        <SectionHeader title="나에게 맞는 공고" accent="recommend" href="/recommend" hrefLabel="정교한 추천 설정" />
+        <NlRecommend />
       </section>
 
-      <section className="space-y-3">
-        <SearchBar />
-        <SearchFilters facets={result.ok ? result.data.facets : undefined} />
+      {visaJobs.length > 0 && (
+        <section>
+          <SectionHeader title="비자 스폰서십 공고" accent="visa" href="/search?visa=sponsors" />
+          <JobScrollRow jobs={visaJobs} />
+        </section>
+      )}
+
+      <section>
+        <SectionHeader title="국가별로 찾기" />
+        <CountryTiles />
       </section>
 
-      <section className="space-y-4">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-h2">공고</h2>
-          {result.ok && (
-            <span className="text-caption text-muted-foreground">{result.data.total}건</span>
-          )}
-        </div>
+      {latestJobs.length > 0 && (
+        <section>
+          <SectionHeader title="새로 올라온 공고" href="/search" hrefLabel="더 보기" />
+          <JobScrollRow jobs={latestJobs} />
+        </section>
+      )}
 
-        {!result.ok ? (
-          <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
-            백엔드에 연결할 수 없습니다 ({result.error}).
-            <br />
-            <code className="font-mono text-foreground">cd backend &amp;&amp; ./gradlew bootRun</code>{" "}
-            으로 실행하세요.
-          </div>
-        ) : result.data.items.length === 0 ? (
-          <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
-            조건에 맞는 공고가 없습니다. 필터를 조정해보세요.
-          </div>
-        ) : (
-          <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {result.data.items.map((job) => (
-                <JobCard key={job.id} job={job} />
-              ))}
-            </div>
-            <Pagination
-              page={result.data.page}
-              pageSize={result.data.page_size}
-              total={result.data.total}
-            />
-          </>
-        )}
-      </section>
+      {spotlight.length > 0 && (
+        <section>
+          <SectionHeader title="주목할 회사" href="/companies" hrefLabel="회사 디렉터리" />
+          <CompanySpotlight companies={spotlight} />
+        </section>
+      )}
     </div>
   );
 }

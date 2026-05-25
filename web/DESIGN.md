@@ -72,6 +72,9 @@ shadow:
   sm: "0 1px 2px 0 rgb(0 0 0 / 0.05)"
   md: "0 2px 8px -1px rgb(0 0 0 / 0.08)"
   lg: "0 8px 24px -4px rgb(0 0 0 / 0.12)"
+gradients:
+  hero_light: "linear-gradient(125deg, #f5f3ff 0%, #faf5ff 35%, #ffffff 80%)"
+  hero_dark: "radial-gradient(60% 80% at 50% 0%, rgba(99,102,241,0.12), transparent 70%), #09090b"
 breakpoints:
   sm: "640px"
   md: "768px"
@@ -147,6 +150,35 @@ container:
 ### ScoreBreakdownBars
 - recharts 가로 막대. 6차원 각각 `domain_tokens.score` 색.
 - 0~1 점수를 0~100% 폭으로.
+
+## 랜딩 페이지 컴포넌트
+
+> `/`(메인)를 큐레이션형 랜딩으로 전환하며 추가된 재사용 컴포넌트. 기능/데이터 흐름은 `../docs/superpowers/specs/2026-05-24-main-landing-page-design.md` 참고. 톤은 "하이브리드" — 기존 미니멀 유지 + Hero 그라데이션 + 의미색 강조만.
+
+### Hero
+- 풀폭 배너. 배경 `gradients.hero_light`(라이트) / `gradients.hero_dark`(다크). 중앙 정렬.
+- `display` 타이포 헤드라인(핵심어만 `primary` indigo) + `body` 보조 카피 + 큰 검색 입력(우측 `primary` 버튼) + 빠른 필터칩(`pill`).
+- 검색/칩 → `/search?...` 이동.
+
+### SectionHeader
+- 섹션 제목(`h2`) + 좌측 의미색 점(옵션) + 우측 "전체 보기" 링크(`primary`, `body-sm`).
+- 의미색 점은 신호로만: 비자 섹션 = `success`(green), 추천 섹션 = `primary`(indigo).
+
+### JobScrollRow
+- `JobCard` 를 가로 스크롤(overflow-x, 모바일 스와이프). 카드 min-width 고정.
+- 비자 스폰서십·신규 공고 행에 사용.
+
+### CountryTile
+- 국가 바로가기 타일. `surface-2` 배경, radius `lg`. 국가명 + 도시 보조(`caption`).
+- 클릭 → `/search?location=...`.
+
+### CompanySpotlight
+- 회사 카드 그리드. 로고 자리(이니셜 박스, `accent` 배경 + `primary` 글자) + 회사명 + 공고 수(`caption`).
+- 클릭 → `/companies/[slug]`.
+
+### NlRecommend (클라이언트)
+- 자연어 한 문장 입력 + "추천 받기" 버튼. 결과는 `RecommendationCard` + `ScoreBreakdownBars` 재사용.
+- 상태: 미입력(입력창+예시) / 로딩(스켈레톤) / 결과 / 에러(섹션 내 안내). 마지막 입력 `localStorage` 기억.
 
 ## 구현 매핑
 

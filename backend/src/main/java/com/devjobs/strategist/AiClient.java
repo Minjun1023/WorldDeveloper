@@ -1,5 +1,6 @@
 package com.devjobs.strategist;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -80,6 +81,75 @@ public class AiClient {
             return parsed.embedding();
         } catch (Exception e) {
             log.warn("ai embed 실패: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /** /internal/parse-profile 응답. */
+    public record ParseResult(Profile profile, String source, boolean sufficient) {
+        public record Profile(
+            List<String> skills,
+            String seniority,
+            @JsonProperty("years_experience") Integer yearsExperience,
+            @JsonProperty("needs_visa_sponsorship") Boolean needsVisaSponsorship,
+            @JsonProperty("preferred_locations") List<String> preferredLocations,
+            @JsonProperty("remote_preference") String remotePreference,
+            @JsonProperty("desired_salary_usd") Integer desiredSalaryUsd
+        ) {}
+    }
+
+    /** 자연어 → 파싱 프로필. 실패 시 null. */
+    public ParseResult parseProfile(String text) {
+        try {
+            String json = mapper.writeValueAsString(Map.of("text", text, "lang", "ko"));
+            HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/internal/parse-profile"))
+                .header("content-type", "application/json")
+                .timeout(Duration.ofSeconds(30))
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+            HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() != 200) {
+                log.warn("ai parse-profile HTTP {}: {}", resp.statusCode(), resp.body());
+                return null;
+            }
+            return mapper.readValue(resp.body(), ParseResult.class);
+        } catch (Exception e) {
+            log.warn("ai parse-profile 실패: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /** AI /internal/summarize 응답 (4섹션 + 엔진). */
+    public record AiSummary(
+        List<String> responsibilities,
+        List<String> requirements,
+        List<String> visa,
+        List<String> compensation,
+        String engine
+    ) {}
+
+    /** 공고를 한국어 4섹션으로 요약. 실패(키 미설정/업스트림 오류 포함) 시 null. */
+    public AiSummary summarize(String title, String description) {
+        try {
+            String json = mapper.writeValueAsString(Map.of(
+                "title", title == null ? "" : title,
+                "description", description == null ? "" : description,
+                "lang", "ko"));
+            HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/internal/summarize"))
+                .header("content-type", "application/json")
+                .timeout(Duration.ofSeconds(70))
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+            HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() != 200) {
+                log.warn("ai summarize HTTP {}: {}", resp.statusCode(), resp.body());
+                return null;
+            }
+            return mapper.readValue(resp.body(), AiSummary.class);
+        } catch (Exception e) {
+            log.warn("ai summarize 실패: {}", e.getMessage());
             return null;
         }
     }

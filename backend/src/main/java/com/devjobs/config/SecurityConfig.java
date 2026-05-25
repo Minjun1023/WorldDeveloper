@@ -1,5 +1,8 @@
 package com.devjobs.config;
 
+import com.devjobs.auth.CustomOAuth2UserService;
+import com.devjobs.auth.OAuthSuccessHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,19 +18,36 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final CustomOAuth2UserService oAuth2UserService;
+    private final OAuthSuccessHandler oAuthSuccessHandler;
+    private final String appBaseUrl;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter,
+                          CustomOAuth2UserService oAuth2UserService,
+                          OAuthSuccessHandler oAuthSuccessHandler,
+                          @Value("${app.base-url}") String appBaseUrl) {
         this.jwtAuthFilter = jwtAuthFilter;
+        this.oAuth2UserService = oAuth2UserService;
+        this.oAuthSuccessHandler = oAuthSuccessHandler;
+        this.appBaseUrl = appBaseUrl;
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable())
-            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            // API 는 JwtAuthFilter(Bearer)로 무상태 인증. 세션은 OAuth2 인가요청 왕복에만 일시적으로 사용된다.
+            .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/api/v1/applications/**").authenticated()
                 .anyRequest().permitAll()
+            )
+            .oauth2Login(oauth -> oauth
+                .userInfoEndpoint(ui -> ui.userService(oAuth2UserService))
+                .successHandler(oAuthSuccessHandler)
+                .failureUrl(appBaseUrl + "/signin?error=oauth")
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();

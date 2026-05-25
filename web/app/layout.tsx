@@ -3,6 +3,7 @@ import "./globals.css";
 import { Providers } from "@/components/providers";
 import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { UserMenu } from "@/components/auth/UserMenu";
 
 export const metadata: Metadata = {
   title: "WorldDeveloper",
@@ -28,11 +29,12 @@ export default function RootLayout({
             <div className="mx-auto max-w-container px-4 py-4 flex items-center justify-between">
               <a href="/" className="font-semibold text-lg">WorldDeveloper</a>
               <nav className="flex items-center gap-3 text-body-sm text-muted-foreground">
-                <a href="/" className="hover:text-foreground transition-colors">검색</a>
+                <a href="/search" className="hover:text-foreground transition-colors">검색</a>
                 <a href="/recommend" className="hover:text-foreground transition-colors">추천</a>
                 <a href="/companies" className="hover:text-foreground transition-colors">회사</a>
                 <a href="/me/applications" className="hover:text-foreground transition-colors">내 지원</a>
                 <a href="/about" className="hover:text-foreground transition-colors">소개</a>
+                <UserMenu />
                 <ThemeToggle />
               </nav>
             </div>
