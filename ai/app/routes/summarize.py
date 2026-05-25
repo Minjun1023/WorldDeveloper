@@ -59,7 +59,7 @@ async def summarize(req: SummarizeRequest) -> SummarizeResponse:
                 headers={"Authorization": f"Bearer {key}", "content-type": "application/json"},
                 json={
                     "model": MODEL,
-                    "max_tokens": 500,
+                    "max_tokens": 1024,
                     "temperature": 0.2,
                     "response_format": {"type": "json_object"},
                     "messages": [
@@ -84,6 +84,6 @@ async def summarize(req: SummarizeRequest) -> SummarizeResponse:
             compensation=arr("compensation"),
             engine=MODEL,
         )
-    except (httpx.HTTPError, KeyError, IndexError, ValueError) as e:
+    except (httpx.HTTPError, KeyError, IndexError, ValueError, AttributeError) as e:
         log.warning("openai summarize 실패: %s", e)
         raise HTTPException(502, f"summarize request failed: {e}") from e
