@@ -158,4 +158,34 @@ class AuthServiceTest {
         assertEquals(u.getId(), linked.getId());
         assertTrue(identityRepo.findByProviderAndProviderSub("google", "g-link").isPresent());
     }
+
+    @Test
+    void registerRejectsDuplicateDisplayName() {
+        authService.register("first@example.com", "Password123", "SameName");
+        org.springframework.web.server.ResponseStatusException ex =
+            org.junit.jupiter.api.Assertions.assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> authService.register("second@example.com", "Password123", "SameName"));
+        org.junit.jupiter.api.Assertions.assertEquals(409, ex.getStatusCode().value());
+    }
+
+    @Test
+    void registerRejectsInvalidEmail() {
+        org.springframework.web.server.ResponseStatusException ex =
+            org.junit.jupiter.api.Assertions.assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> authService.register("not-an-email", "Password123", "ValidName"));
+        org.junit.jupiter.api.Assertions.assertEquals(400, ex.getStatusCode().value());
+    }
+
+    @Test
+    void availabilityChecks() {
+        authService.register("taken-mail@example.com", "Password123", "TakenName");
+        org.junit.jupiter.api.Assertions.assertFalse(authService.isDisplayNameAvailable("TakenName"));
+        org.junit.jupiter.api.Assertions.assertFalse(authService.isDisplayNameAvailable("takenname")); // 대소문자무시
+        org.junit.jupiter.api.Assertions.assertTrue(authService.isDisplayNameAvailable("FreshName"));
+        org.junit.jupiter.api.Assertions.assertFalse(authService.checkEmail("taken-mail@example.com").available());
+        org.junit.jupiter.api.Assertions.assertTrue(authService.checkEmail("fresh-mail@example.com").available());
+        org.junit.jupiter.api.Assertions.assertFalse(authService.checkEmail("bad-email").valid());
+    }
 }
