@@ -44,6 +44,7 @@ public class AuthService {
 
     @Transactional
     public void register(String email, String rawPassword, String displayName) {
+        PasswordPolicy.validate(rawPassword);   // 약한 비밀번호 즉시 400
         String norm = normalize(email);
         if (userRepo.findByEmail(norm).isPresent()) {
             return; // 계정 열거 방지: 조용히 반환
