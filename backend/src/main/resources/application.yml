@@ -27,6 +27,38 @@ spring:
     property-naming-strategy: SNAKE_CASE
     default-property-inclusion: non_null
 
+  mail:
+    host: ${MAIL_HOST:}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: ${MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${MAIL_SMTP_STARTTLS:false}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            client-id: ${GITHUB_CLIENT_ID:dummy-client-id}
+            client-secret: ${GITHUB_CLIENT_SECRET:dummy-client-secret}
+            scope: read:user,user:email
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:dummy-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:dummy-client-secret}
+            scope: openid,email,profile
+
+app:
+  base-url: ${APP_BASE_URL:http://localhost:3000}
+  mail-from: ${MAIL_FROM:no-reply@worlddeveloper.local}
+
+auth:
+  internal-secret: ${INTERNAL_AUTH_SECRET:dev-internal-secret-change-me}
+
 ai:
   base-url: ${AI_BASE_URL:http://localhost:8001}
 
