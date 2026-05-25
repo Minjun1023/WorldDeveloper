@@ -175,6 +175,18 @@ export interface Translation {
   cached: boolean;
 }
 
+// 공고 요약 (summarize: GET /jobs/{id}/summary?lang=ko)
+export interface JobSummary {
+  job_id: string;
+  lang: string;
+  responsibilities: string[];
+  requirements: string[];
+  visa: string[];
+  compensation: string[];
+  engine: string;
+  cached: boolean;
+}
+
 // 거절 회복 (recovery: POST /applications/{jobId}/recovery)
 export interface SimilarCompany {
   slug: string;
