@@ -29,5 +29,16 @@ class Settings(BaseSettings):
     stale_days: int = 7          # 소스 피드에서 N일 미관측 시 비활성화
     job_max_age_days: int = 180  # 마감일 없는 공고: 게시 N일 후 자동 만료(보수적 안전망)
 
+    # Adzuna (무료 집계 소스). ADZUNA_APP_ID/KEY 없으면 비활성(다른 소스는 정상).
+    adzuna_app_id: str = ""
+    adzuna_app_key: str = ""
+    adzuna_countries: str = "us,gb,de,nl,ca,fr,ie,au,sg"
+    adzuna_per_country: int = 50
+    adzuna_max_pages: int = 1
+
+    @property
+    def adzuna_countries_list(self) -> list[str]:
+        return [c.strip() for c in self.adzuna_countries.split(",") if c.strip()]
+
 
 settings = Settings()
