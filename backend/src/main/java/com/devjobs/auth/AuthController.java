@@ -8,13 +8,16 @@ import com.devjobs.auth.dto.AuthDtos.ResendRequest;
 import com.devjobs.auth.dto.AuthDtos.VerifyRequest;
 import com.devjobs.strategist.RateLimiter;
 import jakarta.servlet.http.HttpServletRequest;
+import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -67,6 +70,19 @@ public class AuthController {
         rateLimit("resend", req);
         auth.resendVerification(r.email());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/check-name")
+    public Map<String, Boolean> checkName(@RequestParam String name, HttpServletRequest req) {
+        rateLimit("check", req);
+        return Map.of("available", auth.isDisplayNameAvailable(name));
+    }
+
+    @GetMapping("/check-email")
+    public Map<String, Boolean> checkEmail(@RequestParam String email, HttpServletRequest req) {
+        rateLimit("check", req);
+        AuthService.EmailAvailability r = auth.checkEmail(email);
+        return Map.of("valid", r.valid(), "available", r.available());
     }
 
     @PostMapping("/exchange")

@@ -1,6 +1,8 @@
 package com.devjobs.auth;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -38,14 +40,14 @@ class AuthControllerTest {
     @Test
     void registerReturns200() throws Exception {
         mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
-                .content(json(Map.of("email", "ctrl-reg@example.com", "password", "Password123", "displayName", "C"))))
+                .content(json(Map.of("email", "ctrl-reg@example.com", "password", "Password123", "displayName", "C1"))))
             .andExpect(status().isOk());
     }
 
     @Test
     void loginUnverifiedReturns403() throws Exception {
         mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
-                .content(json(Map.of("email", "ctrl-unv@example.com", "password", "Password123", "displayName", "C"))))
+                .content(json(Map.of("email", "ctrl-unv@example.com", "password", "Password123", "displayName", "C2"))))
             .andExpect(status().isOk());
         mvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
                 .content(json(Map.of("email", "ctrl-unv@example.com", "password", "Password123"))))
@@ -57,5 +59,26 @@ class AuthControllerTest {
         mvc.perform(post("/api/v1/auth/exchange").contentType(MediaType.APPLICATION_JSON)
                 .content(json(Map.of("code", "whatever"))))
             .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void checkNameEndpoint() throws Exception {
+        mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
+                .content(json(Map.of("email", "cn@example.com", "password", "Password123", "display_name", "TakenCtrl"))))
+            .andExpect(status().isOk());
+        mvc.perform(get("/api/v1/auth/check-name").param("name", "TakenCtrl"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.available").value(false));
+        mvc.perform(get("/api/v1/auth/check-name").param("name", "FreshCtrl"))
+            .andExpect(jsonPath("$.available").value(true));
+    }
+
+    @Test
+    void checkEmailEndpoint() throws Exception {
+        mvc.perform(get("/api/v1/auth/check-email").param("email", "bad"))
+            .andExpect(jsonPath("$.valid").value(false));
+        mvc.perform(get("/api/v1/auth/check-email").param("email", "free-ctrl@example.com"))
+            .andExpect(jsonPath("$.valid").value(true))
+            .andExpect(jsonPath("$.available").value(true));
     }
 }
