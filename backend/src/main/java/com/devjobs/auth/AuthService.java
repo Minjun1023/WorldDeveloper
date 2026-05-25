@@ -9,6 +9,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+import com.devjobs.auth.dto.AuthDtos.AuthResult;
 
 @Service
 public class AuthService {
@@ -18,6 +19,7 @@ public class AuthService {
     private final EmailVerificationTokenRepository tokenRepo;
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
+    private final JwtService jwtService;
     private final String appBaseUrl;
 
     public AuthService(UserRepository userRepo,
@@ -25,12 +27,14 @@ public class AuthService {
                        EmailVerificationTokenRepository tokenRepo,
                        PasswordEncoder passwordEncoder,
                        MailService mailService,
+                       JwtService jwtService,
                        @Value("${app.base-url}") String appBaseUrl) {
         this.userRepo = userRepo;
         this.identityRepo = identityRepo;
         this.tokenRepo = tokenRepo;
         this.passwordEncoder = passwordEncoder;
         this.mailService = mailService;
+        this.jwtService = jwtService;
         this.appBaseUrl = appBaseUrl;
     }
 
@@ -79,5 +83,19 @@ public class AuthService {
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_token"));
         u.markEmailVerified(OffsetDateTime.now());
         t.consume(OffsetDateTime.now());
+    }
+
+    @Transactional(readOnly = true)
+    public AuthResult login(String email, String rawPassword) {
+        UserEntity u = userRepo.findByEmail(normalize(email))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials"));
+        if (u.getPasswordHash() == null || !passwordEncoder.matches(rawPassword, u.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "invalid_credentials");
+        }
+        if (u.getEmailVerifiedAt() == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "email_not_verified");
+        }
+        String token = jwtService.issue(u.getId().toString());
+        return new AuthResult(token, u.getId().toString(), u.getEmail(), u.getDisplayName());
     }
 }

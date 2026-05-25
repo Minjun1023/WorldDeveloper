@@ -9,6 +9,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import org.springframework.web.server.ResponseStatusException;
+import com.devjobs.auth.dto.AuthDtos.AuthResult;
+import org.springframework.http.HttpStatus;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,5 +97,37 @@ class AuthServiceTest {
     void resendForUnknownEmailIsEnumerationSafeNoop() {
         authService.resendVerification("nobody@example.com"); // 예외 없음, 메일 없음
         verifyNoMoreInteractions(mailService);
+    }
+
+    @Test
+    void loginSucceedsAfterVerification() {
+        authService.register("login@example.com", "password123", "L");
+        UserEntity u = userRepo.findByEmail("login@example.com").orElseThrow();
+        u.markEmailVerified(java.time.OffsetDateTime.now());
+        userRepo.save(u);
+
+        AuthResult res = authService.login("login@example.com", "password123");
+        assertNotNull(res.token());
+        assertEquals(u.getId().toString(), res.userId());
+        assertEquals("login@example.com", res.email());
+    }
+
+    @Test
+    void loginBlockedWhenEmailNotVerified() {
+        authService.register("unverified@example.com", "password123", "U");
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+            () -> authService.login("unverified@example.com", "password123"));
+        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+    }
+
+    @Test
+    void loginRejectsWrongPassword() {
+        authService.register("wrong@example.com", "password123", "W");
+        UserEntity u = userRepo.findByEmail("wrong@example.com").orElseThrow();
+        u.markEmailVerified(java.time.OffsetDateTime.now());
+        userRepo.save(u);
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+            () -> authService.login("wrong@example.com", "nope"));
+        assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatusCode());
     }
 }
