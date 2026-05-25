@@ -7,7 +7,7 @@ from .models import JobPosting
 
 # 높을수록 우선 채택 (신뢰도: ATS > 네이티브 보드 > 집계)
 _SOURCE_PRIORITY = {
-    "greenhouse": 3, "lever": 3, "ashby": 3,
+    "greenhouse": 3, "lever": 3, "ashby": 3, "smartrecruiters": 3,
     "remoteok": 2, "arbeitnow": 2, "wwr": 2,
     "adzuna": 1,
 }

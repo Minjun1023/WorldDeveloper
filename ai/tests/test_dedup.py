@@ -24,3 +24,11 @@ def test_different_jobs_kept():
     a = _p("adzuna:us:1", "adzuna", "Acme", "Backend Engineer")
     b = _p("adzuna:us:2", "adzuna", "Acme", "Frontend Engineer")
     assert len(dedup([a, b])) == 2
+
+
+def test_smartrecruiters_beats_aggregator():
+    adz = _p("adzuna:us:9", "adzuna", "Visa", "Backend Engineer", "Austin")
+    smr = _p("smartrecruiters:Visa:5", "smartrecruiters", "Visa", "Backend Engineer", "Austin")
+    out = dedup([adz, smr])
+    assert len(out) == 1
+    assert out[0].source == "smartrecruiters"
