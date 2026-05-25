@@ -9,7 +9,7 @@ const ITEMS: { key: keyof PasswordChecks; label: string }[] = [
 
 export function PasswordChecklist({ checks }: { checks: PasswordChecks }) {
   return (
-    <ul className="space-y-1 text-caption">
+    <ul aria-label="비밀번호 요건" className="space-y-1 text-caption">
       {ITEMS.map(({ key, label }) => (
         <li
           key={key}

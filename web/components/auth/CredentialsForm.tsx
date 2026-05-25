@@ -105,7 +105,7 @@ export function CredentialsForm({
           mode === "register" ? "비밀번호 (최소 10자, 대/소문자·숫자 포함)" : "비밀번호"
         }
         minLength={mode === "register" ? 10 : undefined}
-        maxLength={72}
+        maxLength={mode === "register" ? 72 : undefined}
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         required
