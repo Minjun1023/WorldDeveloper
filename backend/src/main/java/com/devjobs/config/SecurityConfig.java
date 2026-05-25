@@ -1,11 +1,12 @@
 package com.devjobs.config;
 
+import com.devjobs.auth.CustomOAuth2UserService;
+import com.devjobs.auth.OAuthSuccessHandler;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -17,14 +18,18 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+    private final CustomOAuth2UserService oAuth2UserService;
+    private final OAuthSuccessHandler oAuthSuccessHandler;
+    private final String appBaseUrl;
 
-    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter,
+                          CustomOAuth2UserService oAuth2UserService,
+                          OAuthSuccessHandler oAuthSuccessHandler,
+                          @Value("${app.base-url}") String appBaseUrl) {
         this.jwtAuthFilter = jwtAuthFilter;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        this.oAuth2UserService = oAuth2UserService;
+        this.oAuthSuccessHandler = oAuthSuccessHandler;
+        this.appBaseUrl = appBaseUrl;
     }
 
     @Bean
@@ -37,6 +42,11 @@ public class SecurityConfig {
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/api/v1/applications/**").authenticated()
                 .anyRequest().permitAll()
+            )
+            .oauth2Login(oauth -> oauth
+                .userInfoEndpoint(ui -> ui.userService(oAuth2UserService))
+                .successHandler(oAuthSuccessHandler)
+                .failureUrl(appBaseUrl + "/signin?error=oauth")
             )
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
