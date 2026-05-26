@@ -18,17 +18,17 @@ _VALID = {"sponsors", "no_sponsor", "unclear"}
 SYSTEM = (
     "You decide a software job posting's VISA SPONSORSHIP status for an international (non-local) "
     "candidate, using ONLY explicit statements in the posting text. "
-    'Respond with ONLY a JSON object: {"status": "sponsors"|"no_sponsor"|"unclear", '
-    '"reason": "<short Korean phrase>"}. '
-    'DEFAULT to "unclear". Choose sponsors or no_sponsor ONLY when the posting EXPLICITLY states it. '
-    '"sponsors": the posting explicitly offers visa/work-permit sponsorship OR relocation assistance. '
-    '"no_sponsor": the posting explicitly requires existing work authorization / right to work, states it does '
+    'Respond with ONLY a JSON object: {"status": "sponsors"|"no_sponsor"|"unclear", "reason": "<verbatim quote>"}. '
+    'DEFAULT to "unclear". '
+    "Choose sponsors or no_sponsor ONLY if the posting contains an explicit phrase about visa, work permit, work "
+    'authorization, sponsorship, or relocation. In that case set "reason" to the EXACT phrase copied VERBATIM from '
+    "the posting (in its original language, max ~15 words) that proves it — do NOT paraphrase or translate. "
+    '"sponsors": the quoted phrase explicitly offers visa/work-permit sponsorship OR relocation assistance. '
+    '"no_sponsor": the quoted phrase explicitly requires existing work authorization / right to work, says it does '
     "NOT sponsor, or restricts to citizens/permanent residents. "
-    '"unclear": the posting does not explicitly address visa, work authorization, or relocation. '
-    "CRITICAL: Remote work, 'work from anywhere', distributed/global team, or hiring across multiple countries is "
-    "NOT visa sponsorship — never use it as evidence for sponsors. Do NOT infer from company name, country, "
-    "location, or the ABSENCE of a statement. If sponsorship is not explicitly stated either way, you MUST return "
-    '"unclear". The Korean reason must reference the explicit phrase you relied on.'
+    'If you cannot copy such an explicit phrase verbatim, you MUST return {"status": "unclear", "reason": ""}. '
+    "CRITICAL: Remote work, 'work from anywhere', distributed/global team, or hiring across countries is NOT visa "
+    "sponsorship. Do NOT infer from company, country, location, or the ABSENCE of a statement."
 )
 
 
