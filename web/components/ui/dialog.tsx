@@ -1,7 +1,7 @@
 "use client";
 
 import { X } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,7 @@ export function Dialog({
   children: React.ReactNode;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     const el = ref.current;
@@ -28,6 +29,7 @@ export function Dialog({
   return (
     <dialog
       ref={ref}
+      aria-labelledby={titleId}
       onClose={onClose}
       onClick={(e) => {
         if (e.target === ref.current) onClose();
@@ -38,7 +40,7 @@ export function Dialog({
       )}
     >
       <div className="flex items-center justify-between border-b border-border p-4">
-        <h2 className="text-h3 font-semibold">{title}</h2>
+        <h2 id={titleId} className="text-h3 font-semibold">{title}</h2>
         <button
           type="button"
           onClick={onClose}
@@ -48,7 +50,7 @@ export function Dialog({
           <X className="h-5 w-5" />
         </button>
       </div>
-      <div className="max-h-[60vh] overflow-y-auto p-4">{children}</div>
+      <div tabIndex={0} className="max-h-[60vh] overflow-y-auto p-4">{children}</div>
       <div className="flex justify-end border-t border-border p-4">
         <button
           type="button"
