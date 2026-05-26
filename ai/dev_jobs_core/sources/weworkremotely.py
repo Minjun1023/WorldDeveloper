@@ -10,6 +10,13 @@ from ..models import JobPosting
 RSS_URL = "https://weworkremotely.com/categories/remote-programming-jobs.rss"
 
 
+def _native_id(guid: str) -> str:
+    """guid(보통 전체 URL https://weworkremotely.com/remote-jobs/{slug})에서
+    path segment 로 안전한 slug 만 native id 로 추출한다.
+    job_id 는 /api/v1/jobs/{id} 의 단일 segment 로 쓰이므로 슬래시가 있으면 안 된다."""
+    return guid.rstrip("/").rsplit("/", 1)[-1] or guid
+
+
 def _parse_rss(xml_text: str) -> list[JobPosting]:
     out: list[JobPosting] = []
     root = ET.fromstring(xml_text)
@@ -25,7 +32,7 @@ def _parse_rss(xml_text: str) -> list[JobPosting]:
             company, title = "", raw_title
         guid = (item.findtext("guid") or link).strip()
         out.append(JobPosting(
-            job_id=f"wwr:{guid}",
+            job_id=f"wwr:{_native_id(guid)}",
             source="wwr",
             title=title,
             company=company,
