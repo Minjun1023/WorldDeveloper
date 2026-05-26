@@ -4,15 +4,16 @@ import { Hero } from "@/components/home/Hero";
 import { JobScrollRow } from "@/components/home/JobScrollRow";
 import { NlRecommend } from "@/components/home/NlRecommend";
 import { SectionHeader } from "@/components/home/SectionHeader";
-import { fetchCompanies, fetchJobs } from "@/lib/api";
+import { fetchCompanies, fetchJobs, fetchRegions } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [visaRes, latestRes, companies] = await Promise.all([
+  const [visaRes, latestRes, companies, regions] = await Promise.all([
     fetchJobs({ visa: "sponsors", pageSize: 8 }),
     fetchJobs({ pageSize: 6 }),
     fetchCompanies(),
+    fetchRegions(),
   ]);
 
   const visaJobs = visaRes.ok ? visaRes.data.items : [];
@@ -21,7 +22,7 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-12">
-      <Hero />
+      <Hero regions={regions} />
 
       <section>
         <SectionHeader title="나에게 맞는 공고" accent="recommend" href="/recommend" hrefLabel="정교한 추천 설정" />
