@@ -93,3 +93,31 @@ async def test_ungrounded_reason_returns_unclear(monkeypatch):
         )
 
     assert result == ("unclear", [])
+
+
+@pytest.mark.asyncio
+async def test_grounded_but_not_visa_relevant_returns_unclear(monkeypatch):
+    """Relevance gate: reason IS present in description (grounded) but contains no visa keyword → ("unclear", [])."""
+    monkeypatch.setattr(settings, "openai_api_key", "test-key")
+
+    # The reason is verbatim in the description (grounding passes) but is about language
+    # requirements, not visa/work-authorization — relevance gate must reject it.
+    description = (
+        "Wir suchen einen erfahrenen Entwickler. "
+        "Gute Deutschkenntnisse sind Voraussetzung. "
+        "Remote-Arbeit ist moeglich."
+    )
+    mock_resp = _make_mock_response(
+        {"status": "no_sponsor", "reason": "Gute Deutschkenntnisse sind Voraussetzung"}
+    )
+
+    mock_post = AsyncMock(return_value=mock_resp)
+    mock_client = AsyncMock()
+    mock_client.post = mock_post
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+
+    with patch("app.etl.visa_llm.httpx.AsyncClient", return_value=mock_client):
+        result = await classify_visa_llm("Software Engineer", description)
+
+    assert result == ("unclear", [])

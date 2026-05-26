@@ -23,6 +23,24 @@ def _quote_in_text(quote: str, text: str) -> bool:
     """LLM 이 인용한 근거 문구가 공고 원문에 실제로 있는지(공백/대소문자 무시)."""
     q = _norm(quote)
     return len(q) >= 6 and q in _norm(text)
+
+
+# 인용 근거가 실제로 비자/취업허가/이주에 관한 것인지 확인하는 관련성 키워드(다국어, 부분일치)
+_VISA_RELEVANT = (
+    "visa", "visum", "sponsor", "work authoriz", "work authoris", "work permit",
+    "authorized to work", "authorised to work", "authorization to work", "right to work",
+    "eligible to work", "citizen", "permanent resident", "green card", "relocat",
+    "immigration", "immigrant", "blue card", "blaue karte", "arbeitserlaubnis",
+    "arbeitsvisum", "aufenthalt", "umzug", "visumsponsoring", "werkvergunning",
+    "kennismigrant", "就労", "在留", "永住", "ビザ", "リロケーション",
+)
+
+
+def _visa_relevant(quote: str) -> bool:
+    q = _norm(quote)
+    return any(tok in q for tok in _VISA_RELEVANT)
+
+
 MODEL = "gpt-4o-mini"
 _VALID = {"sponsors", "no_sponsor", "unclear"}
 
@@ -73,8 +91,11 @@ async def classify_visa_llm(title: str, description: str) -> tuple[str, list[str
             return None
         reason = obj.get("reason")
         reason = reason if isinstance(reason, str) else ""
-        # 근거 검증: sponsors/no_sponsor 는 인용문이 공고 원문에 실제 있어야 인정. 없으면(의역/추정) unclear.
-        if status in ("sponsors", "no_sponsor") and not _quote_in_text(reason, description):
+        # 근거 검증: sponsors/no_sponsor 는 인용문이 공고 원문에 실제 있어야 하고(grounding),
+        # 비자/취업허가/이주 관련 키워드도 포함해야 인정(relevance). 둘 중 하나라도 실패 시 unclear.
+        if status in ("sponsors", "no_sponsor") and not (
+            _quote_in_text(reason, description) and _visa_relevant(reason)
+        ):
             return "unclear", []
         evidence = [f"AI: {reason}"] if reason.strip() else ["AI 분류"]
         return status, evidence
