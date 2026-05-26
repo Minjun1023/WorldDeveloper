@@ -1,12 +1,5 @@
-import Link from "next/link";
-
 import { HeroSearch } from "@/components/home/HeroSearch";
 import type { RegionCount } from "@/lib/api";
-
-const CHIPS: { label: string; href: string }[] = [
-  { label: "비자 스폰서", href: "/search?visa=sponsors" },
-  { label: "원격 가능", href: "/search?remote=true" },
-];
 
 export function Hero({ regions }: { regions: RegionCount[] }) {
   return (
@@ -19,17 +12,6 @@ export function Hero({ regions }: { regions: RegionCount[] }) {
       </p>
       <div className="mt-6">
         <HeroSearch regions={regions} />
-      </div>
-      <div className="mt-4 flex flex-wrap justify-center gap-2">
-        {CHIPS.map((c) => (
-          <Link
-            key={c.href}
-            href={c.href}
-            className="rounded-full border border-border bg-surface px-3 py-1.5 text-caption text-muted-foreground hover:text-foreground"
-          >
-            {c.label}
-          </Link>
-        ))}
       </div>
     </section>
   );
