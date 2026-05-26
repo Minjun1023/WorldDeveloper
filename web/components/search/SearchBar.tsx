@@ -7,16 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Dropdown, type DropdownOption } from "@/components/ui/dropdown";
 import { Input } from "@/components/ui/input";
 import type { RegionCount } from "@/lib/api";
+import { DISCIPLINES } from "@/lib/disciplines";
 import { useUpdateQuery } from "@/lib/use-update-query";
-
-const DISCIPLINES: DropdownOption[] = [
-  { value: "backend", label: "백엔드" },
-  { value: "frontend", label: "프론트엔드" },
-  { value: "fullstack", label: "풀스택" },
-  { value: "mobile", label: "모바일" },
-  { value: "data-ml", label: "데이터·ML" },
-  { value: "devops", label: "DevOps·인프라" },
-];
+import { VISA_OPTIONS } from "@/lib/visa-options";
 
 export function SearchBar({ regions }: { regions: RegionCount[] }) {
   const searchParams = useSearchParams();
@@ -58,6 +51,14 @@ export function SearchBar({ regions }: { regions: RegionCount[] }) {
           options={DISCIPLINES}
           value={searchParams.get("discipline")}
           onSelect={(v) => update({ discipline: v })}
+        />
+      </div>
+      <div className="sm:w-40">
+        <Dropdown
+          placeholder="비자"
+          options={VISA_OPTIONS}
+          value={searchParams.get("visa")}
+          onSelect={(v) => update({ visa: v })}
         />
       </div>
       <Button type="submit">검색</Button>

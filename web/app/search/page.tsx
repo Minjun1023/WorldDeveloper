@@ -45,7 +45,7 @@ export default async function SearchPage({
 
       <section className="space-y-3">
         <SearchBar regions={regions} />
-        <SearchFilters facets={result.ok ? result.data.facets : undefined} />
+        <SearchFilters />
       </section>
 
       <section className="space-y-4">
