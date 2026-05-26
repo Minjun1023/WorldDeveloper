@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "description": "회사명 → ATS 매핑. 추가 가능. ats: greenhouse / lever / ashby",
-    "last_updated": "2026-05"
+    "description": "회사명 → ATS 매핑. 추가 가능. ats: greenhouse / lever / ashby / smartrecruiters",
+    "last_updated": "2026-05-26"
   },
   "stripe":      {"ats": "greenhouse", "token": "stripe",      "tags": ["fintech", "payments"]},
   "anthropic":   {"ats": "greenhouse", "token": "anthropic",   "tags": ["ai", "research"]},
@@ -55,5 +55,12 @@
   "pleo":        {"ats": "ashby",      "token": "pleo",        "tags": ["fintech", "europe"]},
   "qonto":       {"ats": "ashby",      "token": "qonto",       "tags": ["fintech", "europe"]},
   "deel":        {"ats": "ashby",      "token": "deel",        "tags": ["hr", "remote-first"]},
-  "remote":      {"ats": "ashby",      "token": "remotecom",   "tags": ["hr", "remote-first"]}
+  "remote":      {"ats": "ashby",      "token": "remotecom",   "tags": ["hr", "remote-first"]},
+  "visa":        {"ats": "smartrecruiters", "token": "Visa",        "tags": ["fintech", "payments"]},
+  "uber":        {"ats": "smartrecruiters", "token": "Uber",        "tags": ["mobility", "marketplace"]},
+  "asos":        {"ats": "smartrecruiters", "token": "ASOS",        "tags": ["ecommerce", "europe"]},
+  "grab":        {"ats": "smartrecruiters", "token": "Grab",        "tags": ["mobility", "fintech", "asia"]},
+  "servicenow":  {"ats": "smartrecruiters", "token": "ServiceNow",  "tags": ["saas", "enterprise"]},
+  "freshworks":  {"ats": "smartrecruiters", "token": "Freshworks",  "tags": ["saas", "crm"]},
+  "hibob":       {"ats": "smartrecruiters", "token": "HiBob",       "tags": ["hr", "europe"]}
 }
