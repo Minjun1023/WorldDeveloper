@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import { PasswordChecklist } from "@/components/auth/PasswordChecklist";
 import { PasswordInput } from "@/components/auth/PasswordInput";
+import { TermsAgreement } from "@/components/auth/TermsAgreement";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { checkPassword, isPasswordValid } from "@/lib/password";
@@ -23,6 +24,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
   const [registered, setRegistered] = useState(false);
   const [nameAvail, setNameAvail] = useState<Avail>("idle");
   const [emailAvail, setEmailAvail] = useState<Avail>("idle");
+  const [termsOk, setTermsOk] = useState(false);
 
   // 이름 실시간 확인 (register, debounce 500ms)
   useEffect(() => {
@@ -93,7 +95,8 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
   const namePass = nameAvail === "ok" || nameAvail === "error";
   const emailPass = emailAvail === "ok" || emailAvail === "error";
   const canSubmit =
-    !pending && (mode === "login" || (namePass && emailPass && pwValid && pwMatch));
+    !pending &&
+    (mode === "login" || (namePass && emailPass && pwValid && pwMatch && termsOk));
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -157,61 +160,94 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
     return null;
   };
 
-  return (
-    <form onSubmit={submit} className="space-y-3">
-      {mode === "register" && (
+  if (mode === "login") {
+    return (
+      <form onSubmit={submit} className="space-y-3">
         <div className="space-y-1">
           <Input
-            type="text"
-            placeholder="이름"
-            value={displayName}
-            onChange={(e) => setDisplayName(e.target.value)}
+            type="email"
+            placeholder="이메일"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
-          {availMsg(nameAvail, "사용 가능한 이름이에요", "이미 사용 중인 이름이에요")}
         </div>
-      )}
+        <PasswordInput
+          placeholder="비밀번호"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        {error && <p className="text-destructive text-body-sm">{error}</p>}
+        <Button type="submit" disabled={!canSubmit} className="w-full">
+          {pending ? "처리 중…" : "로그인"}
+        </Button>
+      </form>
+    );
+  }
+
+  return (
+    <form onSubmit={submit} className="space-y-4">
+      <div className="space-y-1">
+        <label htmlFor="reg-name" className="text-body-sm font-medium">이름</label>
+        <Input
+          id="reg-name"
+          type="text"
+          placeholder="이름을 입력해 주세요"
+          value={displayName}
+          onChange={(e) => setDisplayName(e.target.value)}
+          required
+        />
+        {availMsg(nameAvail, "사용 가능한 이름이에요", "이미 사용 중인 이름이에요")}
+      </div>
 
       <div className="space-y-1">
+        <label htmlFor="reg-email" className="text-body-sm font-medium">이메일</label>
         <Input
+          id="reg-email"
           type="email"
-          placeholder="이메일"
+          placeholder="이메일을 입력해 주세요"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-        {mode === "register" &&
-          availMsg(emailAvail, "사용 가능한 이메일이에요", "이미 사용 중인 이메일이에요", "이메일 형식이 올바르지 않아요")}
+        {availMsg(emailAvail, "사용 가능한 이메일이에요", "이미 사용 중인 이메일이에요", "이메일 형식이 올바르지 않아요")}
       </div>
 
-      <PasswordInput
-        placeholder={mode === "register" ? "비밀번호 (최소 10자, 대/소문자·숫자 포함)" : "비밀번호"}
-        minLength={mode === "register" ? 10 : undefined}
-        maxLength={mode === "register" ? 72 : undefined}
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      {mode === "register" && <PasswordChecklist checks={checkPassword(password)} />}
+      <div className="space-y-1">
+        <label htmlFor="reg-password" className="text-body-sm font-medium">비밀번호</label>
+        <PasswordInput
+          id="reg-password"
+          placeholder="비밀번호를 입력해 주세요"
+          minLength={10}
+          maxLength={72}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <PasswordChecklist checks={checkPassword(password)} />
+      </div>
 
-      {mode === "register" && (
-        <div className="space-y-1">
-          <PasswordInput
-            placeholder="비밀번호 확인"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            required
-          />
-          {confirm.length > 0 && !pwMatch && (
-            <p className="text-caption text-destructive">비밀번호가 일치하지 않아요</p>
-          )}
-        </div>
-      )}
+      <div className="space-y-1">
+        <label htmlFor="reg-confirm" className="text-body-sm font-medium">비밀번호 확인</label>
+        <PasswordInput
+          id="reg-confirm"
+          placeholder="비밀번호를 한 번 더 입력해 주세요"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          required
+        />
+        {confirm.length > 0 && !pwMatch && (
+          <p className="text-caption text-destructive">비밀번호가 일치하지 않아요</p>
+        )}
+      </div>
+
+      <TermsAgreement onChange={setTermsOk} />
 
       {error && <p className="text-destructive text-body-sm">{error}</p>}
 
       <Button type="submit" disabled={!canSubmit} className="w-full">
-        {pending ? "처리 중…" : mode === "register" ? "가입하기" : "로그인"}
+        {pending ? "처리 중…" : "계정 만들기"}
       </Button>
     </form>
   );
