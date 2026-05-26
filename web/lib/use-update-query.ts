@@ -1,14 +1,15 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
 
 /**
  * URL 쿼리스트링을 갱신하는 훅. 검색/필터 상태는 URL 이 single source of truth.
- * page 키가 아닌 값을 바꾸면 page 를 리셋(1페이지로).
+ * page 키가 아닌 값을 바꾸면 page 를 리셋(1페이지로). 현재 경로(pathname)는 유지.
  */
 export function useUpdateQuery() {
   const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
 
   return useCallback(
@@ -25,8 +26,8 @@ export function useUpdateQuery() {
         params.delete("page");
       }
       const qs = params.toString();
-      router.push(qs ? `/?${qs}` : "/");
+      router.push(qs ? `${pathname}?${qs}` : pathname);
     },
-    [router, searchParams],
+    [router, pathname, searchParams],
   );
 }

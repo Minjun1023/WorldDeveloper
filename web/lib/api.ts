@@ -38,6 +38,7 @@ export interface JobQuery {
   visa?: string;
   location?: string;
   remote?: boolean;
+  sort?: string;
   page?: number;
   pageSize?: number;
 }
@@ -52,6 +53,7 @@ export async function fetchJobs(query: JobQuery = {}): Promise<JobsResult> {
   if (query.visa) url.searchParams.set("visa", query.visa);
   if (query.location) url.searchParams.set("location", query.location);
   if (query.remote !== undefined) url.searchParams.set("remote", String(query.remote));
+  if (query.sort) url.searchParams.set("sort", query.sort);
   if (query.page) url.searchParams.set("page", String(query.page));
   if (query.pageSize) url.searchParams.set("page_size", String(query.pageSize));
 
