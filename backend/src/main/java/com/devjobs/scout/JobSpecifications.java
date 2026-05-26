@@ -12,14 +12,6 @@ final class JobSpecifications {
         return (root, query, cb) -> cb.isTrue(root.get("isActive"));
     }
 
-    static Specification<JobEntity> textQuery(String q) {
-        String like = "%" + q.toLowerCase() + "%";
-        return (root, query, cb) -> cb.or(
-            cb.like(cb.lower(root.get("title")), like),
-            cb.like(cb.lower(root.get("descriptionText")), like)
-        );
-    }
-
     static Specification<JobEntity> visaStatus(String status) {
         return (root, query, cb) -> cb.equal(root.get("visaStatus"), status);
     }

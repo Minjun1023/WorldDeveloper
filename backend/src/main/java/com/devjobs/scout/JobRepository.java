@@ -50,7 +50,8 @@ public interface JobRepository
           AND (CAST(:remote AS boolean) IS NULL OR is_remote = CAST(:remote AS boolean))
         ORDER BY
           CASE WHEN :byRelevance THEN ts_rank(search_tsv, websearch_to_tsquery('english', :q)) END DESC NULLS LAST,
-          posted_at DESC NULLS LAST
+          posted_at DESC NULLS LAST,
+          id DESC
         LIMIT :lim OFFSET :off
         """, nativeQuery = true)
     List<String> searchKeywordIds(

@@ -1,5 +1,6 @@
 -- jobs 풀텍스트 검색: 제목(A)/회사명(B)/태그(B)/설명(D) 가중치 tsvector + GIN 인덱스.
 -- 트리거로 유지(회사명은 슬러그로 companies 조회). ddl-auto=validate 안전(엔티티 미매핑 → 추가 컬럼 무시).
+-- 한계: 'english' 설정은 코드형 태그(c++, c#, .net)의 특수문자를 토큰화에서 떨어뜨림(정확 구분 약함). 영어 공고엔 충분.
 ALTER TABLE jobs ADD COLUMN search_tsv tsvector;
 
 CREATE OR REPLACE FUNCTION jobs_search_tsv_update() RETURNS trigger AS $$
