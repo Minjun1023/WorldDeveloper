@@ -39,6 +39,10 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
         const res = await fetch(`/api/auth/check-name?name=${encodeURIComponent(n)}`, {
           signal: controller.signal,
         });
+        if (!res.ok) {
+          setNameAvail("error");
+          return;
+        }
         const d = (await res.json()) as { available: boolean };
         setNameAvail(d.available ? "ok" : "taken");
       } catch (err) {
@@ -67,6 +71,10 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
         const res = await fetch(`/api/auth/check-email?email=${encodeURIComponent(e)}`, {
           signal: controller.signal,
         });
+        if (!res.ok) {
+          setEmailAvail("error");
+          return;
+        }
         const d = (await res.json()) as { valid: boolean; available: boolean };
         setEmailAvail(!d.valid ? "invalid" : d.available ? "ok" : "taken");
       } catch (err) {
