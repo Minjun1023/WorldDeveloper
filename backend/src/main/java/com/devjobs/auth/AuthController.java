@@ -72,15 +72,23 @@ public class AuthController {
         return ResponseEntity.ok().build();
     }
 
+    private static final int CHECK_CAPACITY = 60; // availability 확인은 디바운스로 자주 호출됨 → 더 넉넉히
+
+    private void rateLimitChecks(HttpServletRequest req) {
+        if (!rateLimiter.tryAcquire("check:" + req.getRemoteAddr(), CHECK_CAPACITY)) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "rate_limited");
+        }
+    }
+
     @GetMapping("/check-name")
     public Map<String, Boolean> checkName(@RequestParam String name, HttpServletRequest req) {
-        rateLimit("check", req);
+        rateLimitChecks(req);
         return Map.of("available", auth.isDisplayNameAvailable(name));
     }
 
     @GetMapping("/check-email")
     public Map<String, Boolean> checkEmail(@RequestParam String email, HttpServletRequest req) {
-        rateLimit("check", req);
+        rateLimitChecks(req);
         AuthService.EmailAvailability r = auth.checkEmail(email);
         return Map.of("valid", r.valid(), "available", r.available());
     }
