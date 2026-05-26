@@ -2,6 +2,7 @@ import { JobCard } from "@/components/job/JobCard";
 import { Pagination } from "@/components/search/Pagination";
 import { SearchBar } from "@/components/search/SearchBar";
 import { SearchFilters } from "@/components/search/SearchFilters";
+import { SortToggle } from "@/components/search/SortToggle";
 import { fetchJobs } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
@@ -24,8 +25,9 @@ export default async function SearchPage({
   const location = str(searchParams.location);
   const remote = searchParams.remote === "true" ? true : undefined;
   const page = Number(searchParams.page) || 1;
+  const sort = str(searchParams.sort) ?? (q ? "relevance" : "recent");
 
-  const result = await fetchJobs({ q, visa, location, remote, page, pageSize: PAGE_SIZE });
+  const result = await fetchJobs({ q, visa, location, remote, sort, page, pageSize: PAGE_SIZE });
 
   return (
     <div className="space-y-8">
@@ -42,11 +44,14 @@ export default async function SearchPage({
       </section>
 
       <section className="space-y-4">
-        <div className="flex items-baseline justify-between">
+        <div className="flex items-baseline justify-between gap-3">
           <h2 className="text-h2">공고</h2>
-          {result.ok && (
-            <span className="text-caption text-muted-foreground">{result.data.total}건</span>
-          )}
+          <div className="flex items-center gap-3">
+            {q && <SortToggle />}
+            {result.ok && (
+              <span className="text-caption text-muted-foreground">{result.data.total}건</span>
+            )}
+          </div>
         </div>
 
         {!result.ok ? (
