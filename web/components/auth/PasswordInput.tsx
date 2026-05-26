@@ -13,7 +13,7 @@ export function PasswordInput({
   const [show, setShow] = useState(false);
   return (
     <div className="relative">
-      <Input type={show ? "text" : "password"} className={cn("pr-10", className)} {...props} />
+      <Input {...props} type={show ? "text" : "password"} className={cn("pr-10", className)} />
       <button
         type="button"
         onClick={() => setShow((s) => !s)}

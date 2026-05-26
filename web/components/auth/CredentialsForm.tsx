@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { checkPassword, isPasswordValid } from "@/lib/password";
 
 type Mode = "login" | "register";
-type Avail = "idle" | "checking" | "ok" | "taken" | "invalid";
+type Avail = "idle" | "checking" | "ok" | "taken" | "invalid" | "error";
 
 export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callbackUrl?: string }) {
   const router = useRouter();
@@ -33,16 +33,23 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
       return;
     }
     setNameAvail("checking");
+    const controller = new AbortController();
     const t = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/auth/check-name?name=${encodeURIComponent(n)}`);
+        const res = await fetch(`/api/auth/check-name?name=${encodeURIComponent(n)}`, {
+          signal: controller.signal,
+        });
         const d = (await res.json()) as { available: boolean };
         setNameAvail(d.available ? "ok" : "taken");
-      } catch {
-        setNameAvail("idle");
+      } catch (err) {
+        if ((err as { name?: string }).name === "AbortError") return;
+        setNameAvail("error");
       }
     }, 500);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      controller.abort();
+    };
   }, [displayName, mode]);
 
   // 이메일 실시간 확인 (register, debounce 500ms)
@@ -54,24 +61,31 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
       return;
     }
     setEmailAvail("checking");
+    const controller = new AbortController();
     const t = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/auth/check-email?email=${encodeURIComponent(e)}`);
+        const res = await fetch(`/api/auth/check-email?email=${encodeURIComponent(e)}`, {
+          signal: controller.signal,
+        });
         const d = (await res.json()) as { valid: boolean; available: boolean };
         setEmailAvail(!d.valid ? "invalid" : d.available ? "ok" : "taken");
-      } catch {
-        setEmailAvail("idle");
+      } catch (err) {
+        if ((err as { name?: string }).name === "AbortError") return;
+        setEmailAvail("error");
       }
     }, 500);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      controller.abort();
+    };
   }, [email, mode]);
 
   const pwValid = isPasswordValid(password);
   const pwMatch = password.length > 0 && password === confirm;
+  const namePass = nameAvail === "ok" || nameAvail === "error";
+  const emailPass = emailAvail === "ok" || emailAvail === "error";
   const canSubmit =
-    !pending &&
-    (mode === "login" ||
-      (nameAvail === "ok" && emailAvail === "ok" && pwValid && pwMatch));
+    !pending && (mode === "login" || (namePass && emailPass && pwValid && pwMatch));
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -130,6 +144,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
     if (s === "ok") return <p className="text-caption text-success">{okMsg}</p>;
     if (s === "taken") return <p className="text-caption text-destructive">{takenMsg}</p>;
     if (s === "invalid" && invalidMsg) return <p className="text-caption text-destructive">{invalidMsg}</p>;
+    if (s === "error") return <p className="text-caption text-muted-foreground">지금은 확인할 수 없어요. 가입할 때 확인할게요</p>;
     if (s === "checking") return <p className="text-caption text-muted-foreground">확인 중…</p>;
     return null;
   };
@@ -180,7 +195,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
             required
           />
           {confirm.length > 0 && !pwMatch && (
-            <p className="text-caption text-destructive">비밀번호가 일치하지 않습니다</p>
+            <p className="text-caption text-destructive">비밀번호가 일치하지 않아요</p>
           )}
         </div>
       )}
