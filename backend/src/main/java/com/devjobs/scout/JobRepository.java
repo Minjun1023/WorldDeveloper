@@ -40,34 +40,40 @@ public interface JobRepository
         """, nativeQuery = true)
     List<Object[]> findRecentCandidates(@Param("lim") int lim);
 
-    // 풀텍스트 키워드 검색: 매칭 job id (관련도/최신 정렬, 필터 동시 적용, 페이지). CAST 로 null 파라미터 타입 명시.
+    // 풀텍스트 검색(키워드 q + 직무 disc 모두 optional). disc 는 서버 큐레이션 tsquery 문자열.
     @Query(value = """
         SELECT id FROM jobs
         WHERE is_active = true
-          AND search_tsv @@ websearch_to_tsquery('english', :q)
+          AND (CAST(:q AS text) IS NULL OR search_tsv @@ websearch_to_tsquery('english', CAST(:q AS text)))
+          AND (CAST(:disc AS text) IS NULL OR search_tsv @@ to_tsquery('english', CAST(:disc AS text)))
           AND (CAST(:visa AS text) IS NULL OR visa_status = CAST(:visa AS text))
           AND (CAST(:loc AS text) IS NULL OR lower(location) LIKE CAST(:loc AS text))
           AND (CAST(:remote AS boolean) IS NULL OR is_remote = CAST(:remote AS boolean))
         ORDER BY
-          CASE WHEN :byRelevance THEN ts_rank(search_tsv, websearch_to_tsquery('english', :q)) END DESC NULLS LAST,
+          CASE WHEN :byRelevance THEN ts_rank(search_tsv, websearch_to_tsquery('english', CAST(:q AS text))) END DESC NULLS LAST,
           posted_at DESC NULLS LAST,
           id DESC
         LIMIT :lim OFFSET :off
         """, nativeQuery = true)
-    List<String> searchKeywordIds(
-        @Param("q") String q, @Param("visa") String visa, @Param("loc") String loc,
-        @Param("remote") Boolean remote, @Param("byRelevance") boolean byRelevance,
+    List<String> searchIds(
+        @Param("q") String q, @Param("disc") String disc, @Param("visa") String visa,
+        @Param("loc") String loc, @Param("remote") Boolean remote, @Param("byRelevance") boolean byRelevance,
         @Param("lim") int lim, @Param("off") int off);
 
     @Query(value = """
         SELECT count(*) FROM jobs
         WHERE is_active = true
-          AND search_tsv @@ websearch_to_tsquery('english', :q)
+          AND (CAST(:q AS text) IS NULL OR search_tsv @@ websearch_to_tsquery('english', CAST(:q AS text)))
+          AND (CAST(:disc AS text) IS NULL OR search_tsv @@ to_tsquery('english', CAST(:disc AS text)))
           AND (CAST(:visa AS text) IS NULL OR visa_status = CAST(:visa AS text))
           AND (CAST(:loc AS text) IS NULL OR lower(location) LIKE CAST(:loc AS text))
           AND (CAST(:remote AS boolean) IS NULL OR is_remote = CAST(:remote AS boolean))
         """, nativeQuery = true)
-    long countKeyword(
-        @Param("q") String q, @Param("visa") String visa, @Param("loc") String loc,
-        @Param("remote") Boolean remote);
+    long countSearch(
+        @Param("q") String q, @Param("disc") String disc, @Param("visa") String visa,
+        @Param("loc") String loc, @Param("remote") Boolean remote);
+
+    @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND location ILIKE CAST(:pattern AS text)",
+        nativeQuery = true)
+    long countActiveByLocationLike(@Param("pattern") String pattern);
 }

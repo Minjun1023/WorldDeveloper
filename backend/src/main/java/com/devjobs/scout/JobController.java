@@ -1,7 +1,9 @@
 package com.devjobs.scout;
 
+import com.devjobs.scout.dto.JobDtos.CountryCount;
 import com.devjobs.scout.dto.JobDtos.JobDetailDto;
 import com.devjobs.scout.dto.JobDtos.JobListResponse;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,9 +28,15 @@ public class JobController {
         @RequestParam(required = false) String location,
         @RequestParam(required = false) Boolean remote,
         @RequestParam(required = false) String sort,
+        @RequestParam(required = false) String discipline,
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(name = "page_size", defaultValue = "20") int pageSize) {
-        return service.search(q, visa, location, remote, sort, page, pageSize);
+        return service.search(q, visa, location, remote, sort, discipline, page, pageSize);
+    }
+
+    @GetMapping("/countries")
+    public List<CountryCount> countries() {
+        return service.countryCounts();
     }
 
     // id 는 콜론 포함 ("greenhouse:stripe:7737237") — {id:.+} 로 전체 segment 매칭

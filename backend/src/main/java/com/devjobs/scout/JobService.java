@@ -3,6 +3,7 @@ package com.devjobs.scout;
 import com.devjobs.domain.CompanyEntity;
 import com.devjobs.domain.JobEntity;
 import com.devjobs.scout.dto.JobDtos.CompanyDto;
+import com.devjobs.scout.dto.JobDtos.CountryCount;
 import com.devjobs.scout.dto.JobDtos.FacetsDto;
 import com.devjobs.scout.dto.JobDtos.JobDetailDto;
 import com.devjobs.scout.dto.JobDtos.JobDto;
@@ -28,6 +29,22 @@ public class JobService {
     private static final int MAX_PAGE_SIZE = 100;
     private static final int PREVIEW_LEN = 200;
 
+    // 직무 카테고리 → tsquery 토큰(서버 큐레이션, ' | ' OR). 튜닝 가능.
+    private static final Map<String, String> DISCIPLINE_TERMS = Map.of(
+        "backend", "backend | server | api | spring | django | rails | golang | node",
+        "frontend", "frontend | react | vue | angular | svelte",
+        "fullstack", "fullstack",
+        "mobile", "mobile | ios | android | swift | kotlin | flutter",
+        "data-ml", "ml | ai | nlp | scientist | analytics",
+        "devops", "devops | sre | kubernetes | infrastructure | terraform | platform");
+
+    private record Country(String value, String label) {}
+    private static final List<Country> COUNTRIES = List.of(
+        new Country("Germany", "독일"),
+        new Country("Netherlands", "네덜란드"),
+        new Country("United Kingdom", "영국"),
+        new Country("Ireland", "아일랜드"));
+
     private final JobRepository repository;
 
     public JobService(JobRepository repository) {
@@ -35,16 +52,37 @@ public class JobService {
     }
 
     public JobListResponse search(
-        String q, String visa, String location, Boolean remote, String sort, int page, int pageSize) {
+        String q, String visa, String location, Boolean remote, String sort, String discipline,
+        int page, int pageSize) {
 
         int safePage = Math.max(1, page);
         int safeSize = Math.min(Math.max(1, pageSize), MAX_PAGE_SIZE);
 
-        if (q != null && !q.isBlank()) {
-            return keywordSearch(q.trim(), visa, location, remote, sort, safePage, safeSize);
+        boolean hasQuery = q != null && !q.isBlank();
+        String discTerms = discipline == null ? null : DISCIPLINE_TERMS.get(discipline);
+
+        if (hasQuery || discTerms != null) {
+            boolean byRelevance = hasQuery && !"recent".equals(sort);
+            String qParam = hasQuery ? q.trim() : null;
+            String visaParam = (visa != null && !visa.isBlank()) ? visa.trim() : null;
+            String locParam = (location != null && !location.isBlank())
+                ? "%" + location.trim().toLowerCase() + "%" : null;
+            int offset = (safePage - 1) * safeSize;
+
+            List<String> ids = repository.searchIds(
+                qParam, discTerms, visaParam, locParam, remote, byRelevance, safeSize, offset);
+            long total = repository.countSearch(qParam, discTerms, visaParam, locParam, remote);
+
+            Map<String, JobEntity> byId = new HashMap<>();
+            for (JobEntity j : repository.findAllById(ids)) {
+                byId.put(j.getId(), j);
+            }
+            List<JobDto> items = ids.stream()
+                .map(byId::get).filter(Objects::nonNull).map(this::toDto).toList();
+            return new JobListResponse(items, safePage, safeSize, total, computeFacets());
         }
 
-        // 키워드 없음: 기존 Specification 경로(최신순) — 회귀 없음
+        // q·discipline 없음: 기존 Specification 경로(최신순)
         Specification<JobEntity> spec = JobSpecifications.isActive();
         if (visa != null && !visa.isBlank()) {
             spec = spec.and(JobSpecifications.visaStatus(visa.trim()));
@@ -63,27 +101,11 @@ public class JobService {
             items, safePage, safeSize, result.getTotalElements(), computeFacets());
     }
 
-    private JobListResponse keywordSearch(
-        String q, String visa, String location, Boolean remote, String sort, int safePage, int safeSize) {
-
-        boolean byRelevance = !"recent".equals(sort);
-        String visaParam = (visa != null && !visa.isBlank()) ? visa.trim() : null;
-        String locParam = (location != null && !location.isBlank())
-            ? "%" + location.trim().toLowerCase() + "%" : null;
-        int offset = (safePage - 1) * safeSize;
-
-        List<String> ids = repository.searchKeywordIds(
-            q, visaParam, locParam, remote, byRelevance, safeSize, offset);
-        long total = repository.countKeyword(q, visaParam, locParam, remote);
-
-        Map<String, JobEntity> byId = new HashMap<>();
-        for (JobEntity j : repository.findAllById(ids)) {
-            byId.put(j.getId(), j);
-        }
-        List<JobDto> items = ids.stream()
-            .map(byId::get).filter(Objects::nonNull).map(this::toDto).toList();
-
-        return new JobListResponse(items, safePage, safeSize, total, computeFacets());
+    public List<CountryCount> countryCounts() {
+        return COUNTRIES.stream()
+            .map(c -> new CountryCount(c.value(), c.label(),
+                repository.countActiveByLocationLike("%" + c.value().toLowerCase() + "%")))
+            .toList();
     }
 
     public List<JobDto> listByCompany(String slug) {
