@@ -37,8 +37,10 @@ export interface JobQuery {
   q?: string;
   visa?: string;
   location?: string;
+  region?: string;
   remote?: boolean;
   sort?: string;
+  discipline?: string;
   page?: number;
   pageSize?: number;
 }
@@ -52,8 +54,10 @@ export async function fetchJobs(query: JobQuery = {}): Promise<JobsResult> {
   if (query.q) url.searchParams.set("q", query.q);
   if (query.visa) url.searchParams.set("visa", query.visa);
   if (query.location) url.searchParams.set("location", query.location);
+  if (query.region) url.searchParams.set("region", query.region);
   if (query.remote !== undefined) url.searchParams.set("remote", String(query.remote));
   if (query.sort) url.searchParams.set("sort", query.sort);
+  if (query.discipline) url.searchParams.set("discipline", query.discipline);
   if (query.page) url.searchParams.set("page", String(query.page));
   if (query.pageSize) url.searchParams.set("page_size", String(query.pageSize));
 
@@ -109,6 +113,21 @@ export async function fetchInterviewPrep(id: string): Promise<InterviewPrep | nu
     return (await res.json()) as InterviewPrep;
   } catch {
     return null;
+  }
+}
+
+export type RegionCount = { value: string; label: string; count: number };
+
+export async function fetchRegions(): Promise<RegionCount[]> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/jobs/regions`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return [];
+    return (await res.json()) as RegionCount[];
+  } catch {
+    return [];
   }
 }
 

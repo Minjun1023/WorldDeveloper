@@ -50,7 +50,7 @@ class JobSearchTest {
         company("acme", "Acme Inc");
         job("j1", "Backend Engineer", "acme", "we use python", "backend,go", false, "now()");
         job("j2", "Data Analyst", "acme", "occasional backend chores", "sql", false, "now()");
-        JobListResponse res = service.search("backend", null, null, null, null, 1, 20);
+        JobListResponse res = service.search("backend", null, null, null, null, null, null, 1, 20);
         assertTrue(res.total() >= 2, "둘 다 매칭");
         assertEquals("j1", res.items().get(0).id(), "제목 매칭이 설명 매칭보다 상위");
     }
@@ -59,7 +59,7 @@ class JobSearchTest {
     void matchesCompanyName() {
         company("stripe", "Stripe");
         job("s1", "Software Engineer", "stripe", "build payments", "go", false, "now()");
-        JobListResponse res = service.search("stripe", null, null, null, null, 1, 20);
+        JobListResponse res = service.search("stripe", null, null, null, null, null, null, 1, 20);
         assertTrue(res.items().stream().anyMatch(j -> j.id().equals("s1")), "회사명으로 매칭");
     }
 
@@ -67,7 +67,7 @@ class JobSearchTest {
     void matchesTag() {
         company("acme2", "Acme Two");
         job("t1", "Engineer", "acme2", "no keyword in text", "kubernetes,docker", false, "now()");
-        JobListResponse res = service.search("kubernetes", null, null, null, null, 1, 20);
+        JobListResponse res = service.search("kubernetes", null, null, null, null, null, null, 1, 20);
         assertTrue(res.items().stream().anyMatch(j -> j.id().equals("t1")), "태그로 매칭");
     }
 
@@ -76,7 +76,7 @@ class JobSearchTest {
         company("acme3", "Acme Three");
         job("old", "Backend Dev", "acme3", "x", "backend", false, "now() - interval '5 days'");
         job("new", "Backend Dev", "acme3", "x", "backend", false, "now()");
-        JobListResponse res = service.search("backend", null, null, null, "recent", 1, 20);
+        JobListResponse res = service.search("backend", null, null, null, "recent", null, null, 1, 20);
         assertEquals("new", res.items().get(0).id(), "최신순이면 새 공고 먼저");
     }
 
@@ -85,7 +85,7 @@ class JobSearchTest {
         company("acme4", "Acme Four");
         job("r1", "Backend Engineer", "acme4", "x", "backend", true, "now()");
         job("r2", "Backend Engineer", "acme4", "x", "backend", false, "now()");
-        JobListResponse res = service.search("backend", null, null, true, null, 1, 20);
+        JobListResponse res = service.search("backend", null, null, true, null, null, null, 1, 20);
         assertTrue(res.items().stream().allMatch(j -> j.id().equals("r1")) && res.total() == 1,
             "원격 필터 + 키워드 동시 적용");
     }
@@ -94,7 +94,7 @@ class JobSearchTest {
     void noKeywordReturnsActiveJobs() {
         company("acme5", "Acme Five");
         job("n1", "Whatever", "acme5", "x", null, false, "now()");
-        JobListResponse res = service.search(null, null, null, null, null, 1, 20);
+        JobListResponse res = service.search(null, null, null, null, null, null, null, 1, 20);
         assertTrue(res.total() >= 1, "키워드 없으면 기존 경로로 active 공고 반환");
     }
 }

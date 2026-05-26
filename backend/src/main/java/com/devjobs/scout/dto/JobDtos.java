@@ -63,4 +63,6 @@ public final class JobDtos {
         long total,
         FacetsDto facets
     ) {}
+
+    public record RegionCount(String value, String label, long count) {}
 }
