@@ -8,12 +8,14 @@ import { Dropdown, type DropdownOption } from "@/components/ui/dropdown";
 import { Input } from "@/components/ui/input";
 import type { RegionCount } from "@/lib/api";
 import { DISCIPLINES } from "@/lib/disciplines";
+import { VISA_OPTIONS } from "@/lib/visa-options";
 
 export function HeroSearch({ regions }: { regions: RegionCount[] }) {
   const router = useRouter();
   const [q, setQ] = useState("");
   const [region, setRegion] = useState<string | null>(null);
   const [discipline, setDiscipline] = useState<string | null>(null);
+  const [visa, setVisa] = useState<string | null>(null);
 
   const regionOptions: DropdownOption[] = regions.map((r) => ({
     value: r.value,
@@ -28,12 +30,13 @@ export function HeroSearch({ regions }: { regions: RegionCount[] }) {
     if (kw) params.set("q", kw);
     if (region) params.set("region", region);
     if (discipline) params.set("discipline", discipline);
+    if (visa) params.set("visa", visa);
     const qs = params.toString();
     router.push(qs ? `/search?${qs}` : "/search");
   }
 
   return (
-    <form onSubmit={submit} className="mx-auto flex max-w-3xl flex-col gap-2 sm:flex-row">
+    <form onSubmit={submit} className="mx-auto flex max-w-4xl flex-col gap-2 sm:flex-row">
       <Input
         value={q}
         onChange={(e) => setQ(e.target.value)}
@@ -41,11 +44,14 @@ export function HeroSearch({ regions }: { regions: RegionCount[] }) {
         aria-label="공고 검색"
         className="font-mono sm:flex-1"
       />
-      <div className="sm:w-40">
+      <div className="sm:w-36">
         <Dropdown placeholder="지역 선택" options={regionOptions} value={region} onSelect={setRegion} />
       </div>
-      <div className="sm:w-40">
+      <div className="sm:w-36">
         <Dropdown placeholder="직무 선택" options={DISCIPLINES} value={discipline} onSelect={setDiscipline} />
+      </div>
+      <div className="sm:w-36">
+        <Dropdown placeholder="비자" options={VISA_OPTIONS} value={visa} onSelect={setVisa} />
       </div>
       <Button type="submit">검색</Button>
     </form>

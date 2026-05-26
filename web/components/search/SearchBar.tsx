@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import type { RegionCount } from "@/lib/api";
 import { DISCIPLINES } from "@/lib/disciplines";
 import { useUpdateQuery } from "@/lib/use-update-query";
+import { VISA_OPTIONS } from "@/lib/visa-options";
 
 export function SearchBar({ regions }: { regions: RegionCount[] }) {
   const searchParams = useSearchParams();
@@ -50,6 +51,14 @@ export function SearchBar({ regions }: { regions: RegionCount[] }) {
           options={DISCIPLINES}
           value={searchParams.get("discipline")}
           onSelect={(v) => update({ discipline: v })}
+        />
+      </div>
+      <div className="sm:w-40">
+        <Dropdown
+          placeholder="비자"
+          options={VISA_OPTIONS}
+          value={searchParams.get("visa")}
+          onSelect={(v) => update({ visa: v })}
         />
       </div>
       <Button type="submit">검색</Button>
