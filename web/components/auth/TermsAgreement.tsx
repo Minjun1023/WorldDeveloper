@@ -60,16 +60,29 @@ function TermsRow({
   onToggle: () => void;
   withLink?: boolean;
 }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div className="flex items-center justify-between gap-2 text-body-sm">
-      <label className="flex cursor-pointer items-center gap-2">
-        <Checkbox checked={checked} onChange={onToggle} />
-        <span>{label}</span>
-      </label>
-      {withLink && (
-        <button type="button" className="shrink-0 text-caption text-muted-foreground underline">
-          전체보기
-        </button>
+    <div className="space-y-1">
+      <div className="flex items-center justify-between gap-2 text-body-sm">
+        <label className="flex cursor-pointer items-center gap-2">
+          <Checkbox checked={checked} onChange={onToggle} />
+          <span>{label}</span>
+        </label>
+        {withLink && (
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            className="shrink-0 text-caption text-muted-foreground underline"
+          >
+            전체보기
+          </button>
+        )}
+      </div>
+      {open && (
+        <p className="pl-6 text-caption text-muted-foreground">
+          약관 전문은 준비 중이에요. 정식 오픈 시 제공됩니다.
+        </p>
       )}
     </div>
   );
