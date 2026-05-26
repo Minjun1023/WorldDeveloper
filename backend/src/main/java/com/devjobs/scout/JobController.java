@@ -25,9 +25,10 @@ public class JobController {
         @RequestParam(required = false) String visa,
         @RequestParam(required = false) String location,
         @RequestParam(required = false) Boolean remote,
+        @RequestParam(required = false) String sort,
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(name = "page_size", defaultValue = "20") int pageSize) {
-        return service.search(q, visa, location, remote, page, pageSize);
+        return service.search(q, visa, location, remote, sort, page, pageSize);
     }
 
     // id 는 콜론 포함 ("greenhouse:stripe:7737237") — {id:.+} 로 전체 segment 매칭

@@ -9,9 +9,11 @@ import com.devjobs.scout.dto.JobDtos.JobDto;
 import com.devjobs.scout.dto.JobDtos.JobListResponse;
 import com.devjobs.scout.dto.JobDtos.SalaryDto;
 import com.devjobs.scout.dto.JobDtos.VisaDto;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -33,15 +35,17 @@ public class JobService {
     }
 
     public JobListResponse search(
-        String q, String visa, String location, Boolean remote, int page, int pageSize) {
+        String q, String visa, String location, Boolean remote, String sort, int page, int pageSize) {
 
         int safePage = Math.max(1, page);
         int safeSize = Math.min(Math.max(1, pageSize), MAX_PAGE_SIZE);
 
-        Specification<JobEntity> spec = JobSpecifications.isActive();
         if (q != null && !q.isBlank()) {
-            spec = spec.and(JobSpecifications.textQuery(q.trim()));
+            return keywordSearch(q.trim(), visa, location, remote, sort, safePage, safeSize);
         }
+
+        // 키워드 없음: 기존 Specification 경로(최신순) — 회귀 없음
+        Specification<JobEntity> spec = JobSpecifications.isActive();
         if (visa != null && !visa.isBlank()) {
             spec = spec.and(JobSpecifications.visaStatus(visa.trim()));
         }
@@ -51,15 +55,35 @@ public class JobService {
         if (remote != null) {
             spec = spec.and(JobSpecifications.remote(remote));
         }
-
         Pageable pageable = PageRequest.of(
             safePage - 1, safeSize, Sort.by(Sort.Direction.DESC, "postedAt"));
         Page<JobEntity> result = repository.findAll(spec, pageable);
-
         List<JobDto> items = result.getContent().stream().map(this::toDto).toList();
-
         return new JobListResponse(
             items, safePage, safeSize, result.getTotalElements(), computeFacets());
+    }
+
+    private JobListResponse keywordSearch(
+        String q, String visa, String location, Boolean remote, String sort, int safePage, int safeSize) {
+
+        boolean byRelevance = !"recent".equals(sort);
+        String visaParam = (visa != null && !visa.isBlank()) ? visa.trim() : null;
+        String locParam = (location != null && !location.isBlank())
+            ? "%" + location.trim().toLowerCase() + "%" : null;
+        int offset = (safePage - 1) * safeSize;
+
+        List<String> ids = repository.searchKeywordIds(
+            q, visaParam, locParam, remote, byRelevance, safeSize, offset);
+        long total = repository.countKeyword(q, visaParam, locParam, remote);
+
+        Map<String, JobEntity> byId = new HashMap<>();
+        for (JobEntity j : repository.findAllById(ids)) {
+            byId.put(j.getId(), j);
+        }
+        List<JobDto> items = ids.stream()
+            .map(byId::get).filter(Objects::nonNull).map(this::toDto).toList();
+
+        return new JobListResponse(items, safePage, safeSize, total, computeFacets());
     }
 
     public List<JobDto> listByCompany(String slug) {
