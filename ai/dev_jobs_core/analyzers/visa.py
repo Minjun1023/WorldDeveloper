@@ -38,9 +38,6 @@ NO_SPONSOR_PATTERNS = [
     r"永住権(?:\s*が)?必須",
     r"就労ビザ\s*(?:不可|なし)",
     # 고신뢰 영어 추가 패턴
-    r"\bauthorized\s+to\s+work\s+in\b",
-    r"\b(?:legally\s+)?(?:eligible|entitled)\s+to\s+work\s+(?:in|without)\b",
-    r"\bright\s+to\s+work\s+in\b",
     r"\bwithout\s+(?:visa\s+)?sponsorship\b",
     r"\bdo(?:es)?\s+not\s+(?:provide|offer)\s+(?:visa\s+)?sponsorship\b",
     r"\bwork\s+authorization\s+(?:is\s+)?required\b",
