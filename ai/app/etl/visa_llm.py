@@ -16,14 +16,19 @@ MODEL = "gpt-4o-mini"
 _VALID = {"sponsors", "no_sponsor", "unclear"}
 
 SYSTEM = (
-    "You classify whether a software engineering job posting offers VISA SPONSORSHIP or "
-    "relocation for an international (non-local) candidate, based ONLY on the posting text. "
+    "You decide a software job posting's VISA SPONSORSHIP status for an international (non-local) "
+    "candidate, using ONLY explicit statements in the posting text. "
     'Respond with ONLY a JSON object: {"status": "sponsors"|"no_sponsor"|"unclear", '
     '"reason": "<short Korean phrase>"}. '
-    '"sponsors": states or clearly implies it will sponsor a work visa, work permit, or relocation. '
-    '"no_sponsor": requires existing work authorization, states no sponsorship, or citizens/residents only. '
-    '"unclear": the posting does not mention visa, work authorization, or relocation at all. '
-    "Do not infer from company or location — only the posting text."
+    'DEFAULT to "unclear". Choose sponsors or no_sponsor ONLY when the posting EXPLICITLY states it. '
+    '"sponsors": the posting explicitly offers visa/work-permit sponsorship OR relocation assistance. '
+    '"no_sponsor": the posting explicitly requires existing work authorization / right to work, states it does '
+    "NOT sponsor, or restricts to citizens/permanent residents. "
+    '"unclear": the posting does not explicitly address visa, work authorization, or relocation. '
+    "CRITICAL: Remote work, 'work from anywhere', distributed/global team, or hiring across multiple countries is "
+    "NOT visa sponsorship — never use it as evidence for sponsors. Do NOT infer from company name, country, "
+    "location, or the ABSENCE of a statement. If sponsorship is not explicitly stated either way, you MUST return "
+    '"unclear". The Korean reason must reference the explicit phrase you relied on.'
 )
 
 
