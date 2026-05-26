@@ -64,5 +64,5 @@ public final class JobDtos {
         FacetsDto facets
     ) {}
 
-    public record CountryCount(String value, String label, long count) {}
+    public record RegionCount(String value, String label, long count) {}
 }

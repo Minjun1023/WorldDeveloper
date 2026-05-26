@@ -40,12 +40,13 @@ public interface JobRepository
         """, nativeQuery = true)
     List<Object[]> findRecentCandidates(@Param("lim") int lim);
 
-    // 풀텍스트 검색(키워드 q + 직무 disc 모두 optional). disc 는 서버 큐레이션 tsquery 문자열.
+    // 풀텍스트 검색(키워드 q + 직무 disc + 지역 regionRegex 모두 optional). disc 는 서버 큐레이션 tsquery 문자열.
     @Query(value = """
         SELECT id FROM jobs
         WHERE is_active = true
           AND (CAST(:q AS text) IS NULL OR search_tsv @@ websearch_to_tsquery('english', CAST(:q AS text)))
           AND (CAST(:disc AS text) IS NULL OR search_tsv @@ to_tsquery('english', CAST(:disc AS text)))
+          AND (CAST(:regionRegex AS text) IS NULL OR location ~* CAST(:regionRegex AS text))
           AND (CAST(:visa AS text) IS NULL OR visa_status = CAST(:visa AS text))
           AND (CAST(:loc AS text) IS NULL OR lower(location) LIKE CAST(:loc AS text))
           AND (CAST(:remote AS boolean) IS NULL OR is_remote = CAST(:remote AS boolean))
@@ -56,24 +57,29 @@ public interface JobRepository
         LIMIT :lim OFFSET :off
         """, nativeQuery = true)
     List<String> searchIds(
-        @Param("q") String q, @Param("disc") String disc, @Param("visa") String visa,
-        @Param("loc") String loc, @Param("remote") Boolean remote, @Param("byRelevance") boolean byRelevance,
-        @Param("lim") int lim, @Param("off") int off);
+        @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
+        @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
+        @Param("byRelevance") boolean byRelevance, @Param("lim") int lim, @Param("off") int off);
 
     @Query(value = """
         SELECT count(*) FROM jobs
         WHERE is_active = true
           AND (CAST(:q AS text) IS NULL OR search_tsv @@ websearch_to_tsquery('english', CAST(:q AS text)))
           AND (CAST(:disc AS text) IS NULL OR search_tsv @@ to_tsquery('english', CAST(:disc AS text)))
+          AND (CAST(:regionRegex AS text) IS NULL OR location ~* CAST(:regionRegex AS text))
           AND (CAST(:visa AS text) IS NULL OR visa_status = CAST(:visa AS text))
           AND (CAST(:loc AS text) IS NULL OR lower(location) LIKE CAST(:loc AS text))
           AND (CAST(:remote AS boolean) IS NULL OR is_remote = CAST(:remote AS boolean))
         """, nativeQuery = true)
     long countSearch(
-        @Param("q") String q, @Param("disc") String disc, @Param("visa") String visa,
-        @Param("loc") String loc, @Param("remote") Boolean remote);
+        @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
+        @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote);
 
-    @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND location ILIKE CAST(:pattern AS text)",
+    @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND is_remote = true",
         nativeQuery = true)
-    long countActiveByLocationLike(@Param("pattern") String pattern);
+    long countActiveRemote();
+
+    @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND location ~* CAST(:regex AS text)",
+        nativeQuery = true)
+    long countActiveByLocationRegex(@Param("regex") String regex);
 }

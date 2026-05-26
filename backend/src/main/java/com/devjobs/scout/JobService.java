@@ -3,11 +3,11 @@ package com.devjobs.scout;
 import com.devjobs.domain.CompanyEntity;
 import com.devjobs.domain.JobEntity;
 import com.devjobs.scout.dto.JobDtos.CompanyDto;
-import com.devjobs.scout.dto.JobDtos.CountryCount;
 import com.devjobs.scout.dto.JobDtos.FacetsDto;
 import com.devjobs.scout.dto.JobDtos.JobDetailDto;
 import com.devjobs.scout.dto.JobDtos.JobDto;
 import com.devjobs.scout.dto.JobDtos.JobListResponse;
+import com.devjobs.scout.dto.JobDtos.RegionCount;
 import com.devjobs.scout.dto.JobDtos.SalaryDto;
 import com.devjobs.scout.dto.JobDtos.VisaDto;
 import java.util.HashMap;
@@ -38,12 +38,16 @@ public class JobService {
         "data-ml", "ml | ai | nlp | scientist | analytics",
         "devops", "devops | sre | kubernetes | infrastructure | terraform | platform");
 
-    private record Country(String value, String label) {}
-    private static final List<Country> COUNTRIES = List.of(
-        new Country("Germany", "독일"),
-        new Country("Netherlands", "네덜란드"),
-        new Country("United Kingdom", "영국"),
-        new Country("Ireland", "아일랜드"));
+    private record Region(String key, String label, String regex) {} // regex null = 원격(is_remote)
+    private static final List<Region> REGIONS = List.of(
+        new Region("remote", "원격", null),
+        new Region("us", "미국", "united states|usa|san francisco|new york|san mateo|seattle|austin|boston|los angeles|bay area|mountain view|palo alto|chicago|denver"),
+        new Region("germany", "독일", "germany|berlin|munich|münchen|hamburg|frankfurt|cologne|köln|stuttgart|düsseldorf"),
+        new Region("uk", "영국", "united kingdom|england|london|manchester|edinburgh|scotland"),
+        new Region("netherlands", "네덜란드", "netherlands|amsterdam|rotterdam|utrecht|hague|eindhoven"),
+        new Region("ireland", "아일랜드", "ireland|dublin|cork"),
+        new Region("canada", "캐나다", "canada|toronto|vancouver|montreal|ottawa|waterloo"),
+        new Region("france", "프랑스", "france|paris|lyon|toulouse"));
 
     private final JobRepository repository;
 
@@ -51,9 +55,18 @@ public class JobService {
         this.repository = repository;
     }
 
+    public List<RegionCount> regionCounts() {
+        return REGIONS.stream().map(r -> {
+            long count = "remote".equals(r.key())
+                ? repository.countActiveRemote()
+                : repository.countActiveByLocationRegex(r.regex());
+            return new RegionCount(r.key(), r.label(), count);
+        }).toList();
+    }
+
     public JobListResponse search(
         String q, String visa, String location, Boolean remote, String sort, String discipline,
-        int page, int pageSize) {
+        String region, int page, int pageSize) {
 
         int safePage = Math.max(1, page);
         int safeSize = Math.min(Math.max(1, pageSize), MAX_PAGE_SIZE);
@@ -61,7 +74,15 @@ public class JobService {
         boolean hasQuery = q != null && !q.isBlank();
         String discTerms = discipline == null ? null : DISCIPLINE_TERMS.get(discipline);
 
-        if (hasQuery || discTerms != null) {
+        Region reg = (region == null) ? null
+            : REGIONS.stream().filter(x -> x.key().equals(region)).findFirst().orElse(null);
+        String regionRegex = (reg != null) ? reg.regex() : null;    // null for 원격/unknown
+        Boolean remoteParam = remote;
+        if (reg != null && "remote".equals(reg.key())) {
+            remoteParam = Boolean.TRUE;                              // 원격 지역 → remote 필터
+        }
+
+        if (hasQuery || discTerms != null || regionRegex != null) {
             boolean byRelevance = hasQuery && !"recent".equals(sort);
             String qParam = hasQuery ? q.trim() : null;
             String visaParam = (visa != null && !visa.isBlank()) ? visa.trim() : null;
@@ -70,42 +91,24 @@ public class JobService {
             int offset = (safePage - 1) * safeSize;
 
             List<String> ids = repository.searchIds(
-                qParam, discTerms, visaParam, locParam, remote, byRelevance, safeSize, offset);
-            long total = repository.countSearch(qParam, discTerms, visaParam, locParam, remote);
+                qParam, discTerms, regionRegex, visaParam, locParam, remoteParam, byRelevance, safeSize, offset);
+            long total = repository.countSearch(qParam, discTerms, regionRegex, visaParam, locParam, remoteParam);
 
             Map<String, JobEntity> byId = new HashMap<>();
-            for (JobEntity j : repository.findAllById(ids)) {
-                byId.put(j.getId(), j);
-            }
-            List<JobDto> items = ids.stream()
-                .map(byId::get).filter(Objects::nonNull).map(this::toDto).toList();
+            for (JobEntity j : repository.findAllById(ids)) byId.put(j.getId(), j);
+            List<JobDto> items = ids.stream().map(byId::get).filter(Objects::nonNull).map(this::toDto).toList();
             return new JobListResponse(items, safePage, safeSize, total, computeFacets());
         }
 
-        // q·discipline 없음: 기존 Specification 경로(최신순)
+        // q·discipline·region(regex) 없음: 기존 Specification 경로(최신순) — remoteParam(원격 지역 포함) 적용
         Specification<JobEntity> spec = JobSpecifications.isActive();
-        if (visa != null && !visa.isBlank()) {
-            spec = spec.and(JobSpecifications.visaStatus(visa.trim()));
-        }
-        if (location != null && !location.isBlank()) {
-            spec = spec.and(JobSpecifications.location(location.trim()));
-        }
-        if (remote != null) {
-            spec = spec.and(JobSpecifications.remote(remote));
-        }
-        Pageable pageable = PageRequest.of(
-            safePage - 1, safeSize, Sort.by(Sort.Direction.DESC, "postedAt"));
+        if (visa != null && !visa.isBlank()) spec = spec.and(JobSpecifications.visaStatus(visa.trim()));
+        if (location != null && !location.isBlank()) spec = spec.and(JobSpecifications.location(location.trim()));
+        if (remoteParam != null) spec = spec.and(JobSpecifications.remote(remoteParam));
+        Pageable pageable = PageRequest.of(safePage - 1, safeSize, Sort.by(Sort.Direction.DESC, "postedAt"));
         Page<JobEntity> result = repository.findAll(spec, pageable);
         List<JobDto> items = result.getContent().stream().map(this::toDto).toList();
-        return new JobListResponse(
-            items, safePage, safeSize, result.getTotalElements(), computeFacets());
-    }
-
-    public List<CountryCount> countryCounts() {
-        return COUNTRIES.stream()
-            .map(c -> new CountryCount(c.value(), c.label(),
-                repository.countActiveByLocationLike("%" + c.value().toLowerCase() + "%")))
-            .toList();
+        return new JobListResponse(items, safePage, safeSize, result.getTotalElements(), computeFacets());
     }
 
     public List<JobDto> listByCompany(String slug) {
