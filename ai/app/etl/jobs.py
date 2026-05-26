@@ -26,6 +26,7 @@ from ..db import (
     upsert_job,
 )
 from .transform import transform
+from .visa_reclassify import reclassify_unclear_visa
 
 log = logging.getLogger(__name__)
 
@@ -156,5 +157,13 @@ async def run_full_cycle(
         "deactivated_expired": deactivated_expired,
         "duration_sec": round((datetime.now(timezone.utc) - started).total_seconds(), 1),
     }
+
+    # 5. unclear 비자 재분류 (확장키워드 → LLM → 회사 추론)
+    try:
+        result["visa_reclassified"] = await reclassify_unclear_visa()
+    except Exception as e:  # noqa: BLE001
+        log.warning("visa 재분류 실패: %s", e)
+        result["visa_reclassified"] = {"error": str(e)}
+
     log.info("ETL cycle 완료: %s", result)
     return result

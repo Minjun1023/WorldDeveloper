@@ -80,6 +80,33 @@ def upsert_job(conn: psycopg.Connection, job: dict[str, Any]) -> None:
     )
 
 
+def fetch_unclear_jobs(conn: psycopg.Connection, limit: int | None = None) -> list[dict[str, Any]]:
+    sql = (
+        "SELECT id, title, description_text, company_slug FROM jobs "
+        "WHERE is_active = true AND visa_status = 'unclear' "
+        "ORDER BY posted_at DESC NULLS LAST"
+    )
+    rows = conn.execute(sql + (" LIMIT %s" if limit else ""), (limit,) if limit else None).fetchall()
+    return [
+        {"id": r[0], "title": r[1], "description_text": r[2], "company_slug": r[3]}
+        for r in rows
+    ]
+
+
+def sponsor_company_slugs(conn: psycopg.Connection) -> set[str]:
+    rows = conn.execute(
+        "SELECT DISTINCT company_slug FROM jobs WHERE is_active = true AND visa_status = 'sponsors'"
+    ).fetchall()
+    return {r[0] for r in rows if r[0]}
+
+
+def update_visa(conn: psycopg.Connection, job_id: str, status: str, evidence: list[str]) -> None:
+    conn.execute(
+        "UPDATE jobs SET visa_status = %s, visa_evidence = %s WHERE id = %s",
+        (status, Json(evidence or []), job_id),
+    )
+
+
 def deactivate_stale(conn: psycopg.Connection, days: int = 7) -> int:
     """days 일 이상 미관측 공고를 soft delete (is_active=false)."""
     cur = conn.execute(

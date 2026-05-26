@@ -4,8 +4,17 @@ from __future__ import annotations
 from fastapi import APIRouter, HTTPException
 
 from ..etl.jobs import run_full_cycle
+from ..etl.visa_reclassify import reclassify_unclear_visa
 
 router = APIRouter()
+
+
+@router.post("/etl/reclassify-visa")
+async def reclassify_visa_endpoint(limit: int | None = None) -> dict:
+    try:
+        return {"status": "ok", "result": await reclassify_unclear_visa(limit)}
+    except Exception as e:
+        raise HTTPException(500, f"reclassify failed: {e}") from e
 
 
 @router.post("/etl/trigger")
