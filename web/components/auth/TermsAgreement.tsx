@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 
 import { Checkbox } from "@/components/ui/checkbox";
+import { Dialog } from "@/components/ui/dialog";
+import { TERMS, type TermsKey } from "@/lib/terms";
 
 type Terms = {
   tos: boolean;
@@ -15,6 +17,7 @@ const INITIAL: Terms = { tos: false, privacy: false, age14: false, marketing: fa
 
 export function TermsAgreement({ onChange }: { onChange: (requiredAccepted: boolean) => void }) {
   const [terms, setTerms] = useState<Terms>(INITIAL);
+  const [openDoc, setOpenDoc] = useState<TermsKey | null>(null);
 
   const allChecked = terms.tos && terms.privacy && terms.age14 && terms.marketing;
   const requiredAccepted = terms.tos && terms.privacy && terms.age14;
@@ -39,12 +42,29 @@ export function TermsAgreement({ onChange }: { onChange: (requiredAccepted: bool
         </label>
 
         <div className="space-y-2 border-t border-border pt-3">
-          <TermsRow label="(필수) 서비스 이용약관 동의" checked={terms.tos} onToggle={() => toggle("tos")} withLink />
-          <TermsRow label="(필수) 개인정보 수집 및 이용 동의" checked={terms.privacy} onToggle={() => toggle("privacy")} withLink />
-          <TermsRow label="(선택) 마케팅 정보 수신 및 프로모션 안내 동의" checked={terms.marketing} onToggle={() => toggle("marketing")} withLink />
+          <TermsRow label="(필수) 서비스 이용약관 동의" checked={terms.tos} onToggle={() => toggle("tos")} docKey="service" onView={setOpenDoc} />
+          <TermsRow label="(필수) 개인정보 수집 및 이용 동의" checked={terms.privacy} onToggle={() => toggle("privacy")} docKey="privacy" onView={setOpenDoc} />
+          <TermsRow label="(선택) 마케팅 정보 수신 및 프로모션 안내 동의" checked={terms.marketing} onToggle={() => toggle("marketing")} docKey="marketing" onView={setOpenDoc} />
           <TermsRow label="만 14세 이상입니다." checked={terms.age14} onToggle={() => toggle("age14")} />
         </div>
       </div>
+
+      <Dialog
+        open={openDoc !== null}
+        onClose={() => setOpenDoc(null)}
+        title={openDoc ? TERMS[openDoc].title : ""}
+      >
+        {openDoc && (
+          <div className="space-y-4">
+            {TERMS[openDoc].sections.map((s) => (
+              <section key={s.heading} className="space-y-1">
+                <h3 className="text-body-sm font-semibold">{s.heading}</h3>
+                <p className="whitespace-pre-line text-body-sm text-muted-foreground">{s.body}</p>
+              </section>
+            ))}
+          </div>
+        )}
+      </Dialog>
     </div>
   );
 }
@@ -53,36 +73,29 @@ function TermsRow({
   label,
   checked,
   onToggle,
-  withLink = false,
+  docKey,
+  onView,
 }: {
   label: string;
   checked: boolean;
   onToggle: () => void;
-  withLink?: boolean;
+  docKey?: TermsKey;
+  onView?: (key: TermsKey) => void;
 }) {
-  const [open, setOpen] = useState(false);
   return (
-    <div className="space-y-1">
-      <div className="flex items-center justify-between gap-2 text-body-sm">
-        <label className="flex cursor-pointer items-center gap-2">
-          <Checkbox checked={checked} onChange={onToggle} />
-          <span>{label}</span>
-        </label>
-        {withLink && (
-          <button
-            type="button"
-            onClick={() => setOpen((o) => !o)}
-            aria-expanded={open}
-            className="shrink-0 text-caption text-muted-foreground underline"
-          >
-            전체보기
-          </button>
-        )}
-      </div>
-      {open && (
-        <p className="pl-6 text-caption text-muted-foreground">
-          약관 전문은 준비 중이에요. 정식 오픈 시 제공됩니다.
-        </p>
+    <div className="flex items-center justify-between gap-2 text-body-sm">
+      <label className="flex cursor-pointer items-center gap-2">
+        <Checkbox checked={checked} onChange={onToggle} />
+        <span>{label}</span>
+      </label>
+      {docKey && onView && (
+        <button
+          type="button"
+          onClick={() => onView(docKey)}
+          className="shrink-0 text-caption text-muted-foreground underline"
+        >
+          전체보기
+        </button>
       )}
     </div>
   );
