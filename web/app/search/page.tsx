@@ -3,7 +3,7 @@ import { Pagination } from "@/components/search/Pagination";
 import { SearchBar } from "@/components/search/SearchBar";
 import { SearchFilters } from "@/components/search/SearchFilters";
 import { SortToggle } from "@/components/search/SortToggle";
-import { fetchCountries, fetchJobs } from "@/lib/api";
+import { fetchJobs, fetchRegions } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -23,14 +23,15 @@ export default async function SearchPage({
   const q = str(searchParams.q);
   const visa = str(searchParams.visa);
   const location = str(searchParams.location);
+  const region = str(searchParams.region);
   const remote = searchParams.remote === "true" ? true : undefined;
   const page = Number(searchParams.page) || 1;
   const sort = str(searchParams.sort) ?? (q ? "relevance" : "recent");
   const discipline = str(searchParams.discipline);
 
-  const [result, countries] = await Promise.all([
-    fetchJobs({ q, visa, location, remote, sort, discipline, page, pageSize: PAGE_SIZE }),
-    fetchCountries(),
+  const [result, regions] = await Promise.all([
+    fetchJobs({ q, visa, location, region, remote, sort, discipline, page, pageSize: PAGE_SIZE }),
+    fetchRegions(),
   ]);
 
   return (
@@ -43,7 +44,7 @@ export default async function SearchPage({
       </section>
 
       <section className="space-y-3">
-        <SearchBar countries={countries} />
+        <SearchBar regions={regions} />
         <SearchFilters facets={result.ok ? result.data.facets : undefined} />
       </section>
 

@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dropdown, type DropdownOption } from "@/components/ui/dropdown";
 import { Input } from "@/components/ui/input";
-import type { CountryCount } from "@/lib/api";
+import type { RegionCount } from "@/lib/api";
 import { useUpdateQuery } from "@/lib/use-update-query";
 
 const DISCIPLINES: DropdownOption[] = [
@@ -18,15 +18,15 @@ const DISCIPLINES: DropdownOption[] = [
   { value: "devops", label: "DevOps·인프라" },
 ];
 
-export function SearchBar({ countries }: { countries: CountryCount[] }) {
+export function SearchBar({ regions }: { regions: RegionCount[] }) {
   const searchParams = useSearchParams();
   const update = useUpdateQuery();
   const [value, setValue] = useState(searchParams.get("q") ?? "");
 
-  const regionOptions: DropdownOption[] = countries.map((c) => ({
-    value: c.value,
-    label: c.label,
-    count: c.count,
+  const regionOptions: DropdownOption[] = regions.map((r) => ({
+    value: r.value,
+    label: r.label,
+    count: r.count,
   }));
 
   return (
@@ -48,8 +48,8 @@ export function SearchBar({ countries }: { countries: CountryCount[] }) {
         <Dropdown
           placeholder="지역 선택"
           options={regionOptions}
-          value={searchParams.get("location")}
-          onSelect={(v) => update({ location: v })}
+          value={searchParams.get("region")}
+          onSelect={(v) => update({ region: v })}
         />
       </div>
       <div className="sm:w-44">
