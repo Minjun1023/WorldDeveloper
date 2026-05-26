@@ -37,6 +37,14 @@ NO_SPONSOR_PATTERNS = [
     r"ビザ\s*(?:サポート|支援)\s*(?:なし|不可|はありません|は提供しません)",
     r"永住権(?:\s*が)?必須",
     r"就労ビザ\s*(?:不可|なし)",
+    # 고신뢰 영어 추가 패턴
+    r"\bauthorized\s+to\s+work\s+in\b",
+    r"\b(?:legally\s+)?(?:eligible|entitled)\s+to\s+work\s+(?:in|without)\b",
+    r"\bright\s+to\s+work\s+in\b",
+    r"\bwithout\s+(?:visa\s+)?sponsorship\b",
+    r"\bdo(?:es)?\s+not\s+(?:provide|offer)\s+(?:visa\s+)?sponsorship\b",
+    r"\bwork\s+authorization\s+(?:is\s+)?required\b",
+    r"\bexisting\s+work\s+authorization\b",
 ]
 
 # --- 명시적 스폰서십 제공 패턴 ---
@@ -74,6 +82,12 @@ SPONSOR_PATTERNS = [
     r"就労ビザ\s*(?:取得)?支援",
     r"在留資格\s*(?:取得)?支援",
     r"リロケーション\s*(?:支援|サポート)",
+    # 고신뢰 영어 추가 패턴
+    r"\bvisa\s+support\b",
+    r"\bwe\s+sponsor\s+(?:work\s+)?visas?\b",
+    r"\bsponsor\s+(?:your\s+)?(?:work\s+)?visa\b",
+    r"\brelocation\s+(?:reimbursement|stipend)\b",
+    r"\bvisa\s+(?:and\s+|&\s+)?relocation\b",
 ]
 
 # 컴파일된 패턴 (대소문자 무시)
