@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 
 import httpx
 
@@ -12,6 +13,16 @@ from ..config import settings
 log = logging.getLogger(__name__)
 
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
+
+
+def _norm(s: str) -> str:
+    return re.sub(r"\s+", " ", s or "").strip().lower()
+
+
+def _quote_in_text(quote: str, text: str) -> bool:
+    """LLM 이 인용한 근거 문구가 공고 원문에 실제로 있는지(공백/대소문자 무시)."""
+    q = _norm(quote)
+    return len(q) >= 6 and q in _norm(text)
 MODEL = "gpt-4o-mini"
 _VALID = {"sponsors", "no_sponsor", "unclear"}
 
@@ -61,7 +72,11 @@ async def classify_visa_llm(title: str, description: str) -> tuple[str, list[str
         if status not in _VALID:
             return None
         reason = obj.get("reason")
-        evidence = [f"AI: {reason}"] if isinstance(reason, str) and reason.strip() else ["AI 분류"]
+        reason = reason if isinstance(reason, str) else ""
+        # 근거 검증: sponsors/no_sponsor 는 인용문이 공고 원문에 실제 있어야 인정. 없으면(의역/추정) unclear.
+        if status in ("sponsors", "no_sponsor") and not _quote_in_text(reason, description):
+            return "unclear", []
+        evidence = [f"AI: {reason}"] if reason.strip() else ["AI 분류"]
         return status, evidence
     except (httpx.HTTPError, KeyError, IndexError, ValueError, AttributeError) as e:
         log.warning("visa LLM 실패: %s", e)

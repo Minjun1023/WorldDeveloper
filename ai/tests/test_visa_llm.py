@@ -22,10 +22,10 @@ def _make_mock_response(payload: dict, status_code: int = 200) -> MagicMock:
 
 @pytest.mark.asyncio
 async def test_valid_sponsors_response(monkeypatch):
-    """Valid JSON {"status":"sponsors","reason":"비자 지원 명시"} → ("sponsors", ["AI: 비자 지원 명시"])"""
+    """Valid JSON with reason verbatim in description → ("sponsors", ["AI: we offer visa sponsorship"])"""
     monkeypatch.setattr(settings, "openai_api_key", "test-key")
 
-    mock_resp = _make_mock_response({"status": "sponsors", "reason": "비자 지원 명시"})
+    mock_resp = _make_mock_response({"status": "sponsors", "reason": "we offer visa sponsorship"})
 
     mock_post = AsyncMock(return_value=mock_resp)
     mock_client = AsyncMock()
@@ -34,9 +34,12 @@ async def test_valid_sponsors_response(monkeypatch):
     mock_client.__aexit__ = AsyncMock(return_value=False)
 
     with patch("app.etl.visa_llm.httpx.AsyncClient", return_value=mock_client):
-        result = await classify_visa_llm("Senior Engineer", "We are looking for a senior engineer.")
+        result = await classify_visa_llm(
+            "Senior Engineer",
+            "We are looking for a senior engineer. We offer visa sponsorship for qualified candidates.",
+        )
 
-    assert result == ("sponsors", ["AI: 비자 지원 명시"])
+    assert result == ("sponsors", ["AI: we offer visa sponsorship"])
 
 
 @pytest.mark.asyncio
@@ -66,3 +69,27 @@ async def test_invalid_status_returns_none(monkeypatch):
         result = await classify_visa_llm("Engineer", "Some description text here.")
 
     assert result is None
+
+
+@pytest.mark.asyncio
+async def test_ungrounded_reason_returns_unclear(monkeypatch):
+    """Grounding gate: no_sponsor reason not present in description → ("unclear", [])."""
+    monkeypatch.setattr(settings, "openai_api_key", "test-key")
+
+    mock_resp = _make_mock_response(
+        {"status": "no_sponsor", "reason": "must be authorized to work in the US"}
+    )
+
+    mock_post = AsyncMock(return_value=mock_resp)
+    mock_client = AsyncMock()
+    mock_client.post = mock_post
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+
+    with patch("app.etl.visa_llm.httpx.AsyncClient", return_value=mock_client):
+        result = await classify_visa_llm(
+            "Engineer",
+            "We are a remote-friendly global company hiring across many countries.",
+        )
+
+    assert result == ("unclear", [])
