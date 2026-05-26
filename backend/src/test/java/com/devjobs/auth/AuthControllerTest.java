@@ -40,14 +40,14 @@ class AuthControllerTest {
     @Test
     void registerReturns200() throws Exception {
         mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
-                .content(json(Map.of("email", "ctrl-reg@example.com", "password", "Password123", "displayName", "C1"))))
+                .content(json(Map.of("email", "ctrl-reg@example.com", "password", "Password123", "display_name", "C1"))))
             .andExpect(status().isOk());
     }
 
     @Test
     void loginUnverifiedReturns403() throws Exception {
         mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
-                .content(json(Map.of("email", "ctrl-unv@example.com", "password", "Password123", "displayName", "C2"))))
+                .content(json(Map.of("email", "ctrl-unv@example.com", "password", "Password123", "display_name", "C2"))))
             .andExpect(status().isOk());
         mvc.perform(post("/api/v1/auth/login").contentType(MediaType.APPLICATION_JSON)
                 .content(json(Map.of("email", "ctrl-unv@example.com", "password", "Password123"))))

@@ -53,7 +53,7 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "name_taken");
         }
         String norm = normalize(email);
-        if (userRepo.findByEmail(norm).isPresent()) {
+        if (userRepo.existsByEmail(norm)) {
             return; // 계정 열거 방지: 조용히 반환
         }
         UserEntity u = new UserEntity(norm, passwordEncoder.encode(rawPassword), name);
