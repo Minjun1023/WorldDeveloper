@@ -32,6 +32,10 @@ public class RateLimiter {
     }
 
     public boolean tryAcquire(String key) {
+        return tryAcquire(key, this.capacity);
+    }
+
+    public boolean tryAcquire(String key, int capacity) {
         long now = clock.getAsLong();
         Window w = windows.computeIfAbsent(key, k -> new Window());
         synchronized (w) {

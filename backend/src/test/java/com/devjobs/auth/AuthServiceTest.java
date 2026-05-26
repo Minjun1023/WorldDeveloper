@@ -43,7 +43,7 @@ class AuthServiceTest {
 
     @Test
     void registerCreatesUnverifiedUserAndSendsMail() {
-        authService.register("New@Example.com", "password123", "New User");
+        authService.register("New@Example.com", "Password123", "New User");
 
         UserEntity u = userRepo.findByEmail("new@example.com").orElseThrow();
         assertNotNull(u.getPasswordHash());
@@ -55,17 +55,17 @@ class AuthServiceTest {
 
     @Test
     void registerDuplicateEmailIsEnumerationSafeNoop() {
-        authService.register("dup@example.com", "password123", "A");
+        authService.register("dup@example.com", "Password123", "A");
         org.mockito.Mockito.reset(mailService);
         // 같은 이메일 재가입 시도 → 예외 없이 조용히 반환, 메일 미발송
-        authService.register("dup@example.com", "otherpass456", "B");
+        authService.register("dup@example.com", "Otherpass456", "B");
         verifyNoMoreInteractions(mailService);
         assertEquals(1, userRepo.findByEmail("dup@example.com").stream().count());
     }
 
     @Test
     void verifyEmailMarksUserVerifiedAndConsumesToken() {
-        authService.register("verify@example.com", "password123", "V");
+        authService.register("verify@example.com", "Password123", "V");
         // register 가 만든 토큰의 원문은 메일로만 나가므로, 테스트는 새 토큰을 직접 발급해 검증 경로를 탄다
         UserEntity u = userRepo.findByEmail("verify@example.com").orElseThrow();
         String raw = TokenHasher.randomToken();
@@ -86,7 +86,7 @@ class AuthServiceTest {
 
     @Test
     void resendForUnverifiedUserSendsNewMail() {
-        authService.register("resend@example.com", "password123", "R");
+        authService.register("resend@example.com", "Password123", "R");
         org.mockito.Mockito.reset(mailService);
         authService.resendVerification("resend@example.com");
         verify(mailService, times(1)).sendVerification(
@@ -102,12 +102,12 @@ class AuthServiceTest {
 
     @Test
     void loginSucceedsAfterVerification() {
-        authService.register("login@example.com", "password123", "L");
+        authService.register("login@example.com", "Password123", "L");
         UserEntity u = userRepo.findByEmail("login@example.com").orElseThrow();
         u.markEmailVerified(java.time.OffsetDateTime.now());
         userRepo.save(u);
 
-        AuthResult res = authService.login("login@example.com", "password123");
+        AuthResult res = authService.login("login@example.com", "Password123");
         assertNotNull(res.token());
         assertEquals(u.getId().toString(), res.userId());
         assertEquals("login@example.com", res.email());
@@ -115,15 +115,15 @@ class AuthServiceTest {
 
     @Test
     void loginBlockedWhenEmailNotVerified() {
-        authService.register("unverified@example.com", "password123", "U");
+        authService.register("unverified@example.com", "Password123", "U");
         ResponseStatusException ex = assertThrows(ResponseStatusException.class,
-            () -> authService.login("unverified@example.com", "password123"));
+            () -> authService.login("unverified@example.com", "Password123"));
         assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
     }
 
     @Test
     void loginRejectsWrongPassword() {
-        authService.register("wrong@example.com", "password123", "W");
+        authService.register("wrong@example.com", "Password123", "W");
         UserEntity u = userRepo.findByEmail("wrong@example.com").orElseThrow();
         u.markEmailVerified(java.time.OffsetDateTime.now());
         userRepo.save(u);
@@ -150,12 +150,42 @@ class AuthServiceTest {
 
     @Test
     void oauthUpsertLinksToExistingUserByVerifiedEmail() {
-        authService.register("link@example.com", "password123", "Link");
+        authService.register("link@example.com", "Password123", "Link");
         UserEntity u = userRepo.findByEmail("link@example.com").orElseThrow();
         u.markEmailVerified(java.time.OffsetDateTime.now());
         userRepo.save(u);
         UserEntity linked = authService.oauthUpsert("google", "g-link", "link@example.com", "Link");
         assertEquals(u.getId(), linked.getId());
         assertTrue(identityRepo.findByProviderAndProviderSub("google", "g-link").isPresent());
+    }
+
+    @Test
+    void registerRejectsDuplicateDisplayName() {
+        authService.register("first@example.com", "Password123", "SameName");
+        org.springframework.web.server.ResponseStatusException ex =
+            org.junit.jupiter.api.Assertions.assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> authService.register("second@example.com", "Password123", "SameName"));
+        org.junit.jupiter.api.Assertions.assertEquals(409, ex.getStatusCode().value());
+    }
+
+    @Test
+    void registerRejectsInvalidEmail() {
+        org.springframework.web.server.ResponseStatusException ex =
+            org.junit.jupiter.api.Assertions.assertThrows(
+                org.springframework.web.server.ResponseStatusException.class,
+                () -> authService.register("not-an-email", "Password123", "ValidName"));
+        org.junit.jupiter.api.Assertions.assertEquals(400, ex.getStatusCode().value());
+    }
+
+    @Test
+    void availabilityChecks() {
+        authService.register("taken-mail@example.com", "Password123", "TakenName");
+        org.junit.jupiter.api.Assertions.assertFalse(authService.isDisplayNameAvailable("TakenName"));
+        org.junit.jupiter.api.Assertions.assertFalse(authService.isDisplayNameAvailable("takenname")); // 대소문자무시
+        org.junit.jupiter.api.Assertions.assertTrue(authService.isDisplayNameAvailable("FreshName"));
+        org.junit.jupiter.api.Assertions.assertFalse(authService.checkEmail("taken-mail@example.com").available());
+        org.junit.jupiter.api.Assertions.assertTrue(authService.checkEmail("fresh-mail@example.com").available());
+        org.junit.jupiter.api.Assertions.assertFalse(authService.checkEmail("bad-email").valid());
     }
 }

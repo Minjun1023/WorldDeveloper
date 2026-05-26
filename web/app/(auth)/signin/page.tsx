@@ -17,9 +17,9 @@ export default function SignInPage({
       {searchParams.error === "oauth" && (
         <p className="text-destructive text-body-sm">소셜 로그인에 실패했어요. 다시 시도해 주세요.</p>
       )}
-      <OAuthButtons backendPublicUrl={BACKEND_PUBLIC_URL} />
-      <div className="text-center text-caption text-muted-foreground">또는</div>
       <CredentialsForm mode="login" callbackUrl={callbackUrl} />
+      <div className="text-center text-caption text-muted-foreground">또는</div>
+      <OAuthButtons backendPublicUrl={BACKEND_PUBLIC_URL} />
       <p className="text-body-sm text-muted-foreground">
         계정이 없나요?{" "}
         <Link href="/signup" className="text-primary underline">

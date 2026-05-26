@@ -44,14 +44,39 @@ public class AuthService {
 
     @Transactional
     public void register(String email, String rawPassword, String displayName) {
+        PasswordPolicy.validate(rawPassword);
+        if (!EmailFormat.isValid(email)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_email");
+        }
+        String name = displayName == null ? null : displayName.trim();
+        if (name != null && !name.isEmpty() && userRepo.existsByDisplayNameIgnoreCase(name)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "name_taken");
+        }
         String norm = normalize(email);
-        if (userRepo.findByEmail(norm).isPresent()) {
+        if (userRepo.existsByEmail(norm)) {
             return; // 계정 열거 방지: 조용히 반환
         }
-        UserEntity u = new UserEntity(norm, passwordEncoder.encode(rawPassword), displayName);
+        UserEntity u = new UserEntity(norm, passwordEncoder.encode(rawPassword), name);
         userRepo.save(u);
         issueAndSendVerification(u);
     }
+
+    /** 표시이름 사용 가능 여부 (비어있지 않고 중복 아님). */
+    @Transactional(readOnly = true)
+    public boolean isDisplayNameAvailable(String displayName) {
+        String n = displayName == null ? "" : displayName.trim();
+        return !n.isEmpty() && !userRepo.existsByDisplayNameIgnoreCase(n);
+    }
+
+    /** 이메일 형식 유효성 + 사용 가능 여부. */
+    @Transactional(readOnly = true)
+    public EmailAvailability checkEmail(String email) {
+        boolean valid = EmailFormat.isValid(email);
+        boolean available = valid && !userRepo.existsByEmail(normalize(email));
+        return new EmailAvailability(valid, available);
+    }
+
+    public record EmailAvailability(boolean valid, boolean available) {}
 
     private void issueAndSendVerification(UserEntity u) {
         String raw = TokenHasher.randomToken();
