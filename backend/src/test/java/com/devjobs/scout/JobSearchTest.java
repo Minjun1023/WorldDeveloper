@@ -45,6 +45,10 @@ class JobSearchTest {
                 : new Object[]{ id, title, slug, descText, tagsCsv, remote });
     }
 
+    private void setVisa(String id, String status) {
+        jdbc.update("UPDATE jobs SET visa_status = ? WHERE id = ?", status, id);
+    }
+
     @Test
     void relevanceRanksTitleAboveDescription() {
         company("acme", "Acme Inc");
@@ -95,6 +99,35 @@ class JobSearchTest {
         company("acme5", "Acme Five");
         job("n1", "Whatever", "acme5", "x", null, false, "now()");
         JobListResponse res = service.search(null, null, null, null, null, null, null, 1, 20);
-        assertTrue(res.total() >= 1, "키워드 없으면 기존 경로로 active 공고 반환");
+        assertTrue(res.total() >= 1, "키워드 없으면 native 경로로 active 공고 반환(티어 정렬)");
+    }
+
+    @Test
+    void visaPriorityOrdersSponsorsFirst() {
+        company("vp", "VP Co");
+        // posted_at: no_sponsor 가 가장 최신 → 티어가 없으면 no_sponsor 가 맨 위로 올 것
+        job("vp_spon", "Platform Engineer", "vp", "x", "backend", false, "now() - interval '2 days'");
+        job("vp_unc",  "Platform Engineer", "vp", "x", "backend", false, "now() - interval '1 days'");
+        job("vp_no",   "Platform Engineer", "vp", "x", "backend", false, "now()");
+        setVisa("vp_spon", "sponsors");
+        setVisa("vp_unc", "unclear");
+        setVisa("vp_no", "no_sponsor");
+        JobListResponse res = service.search(null, null, null, null, null, null, null, 1, 20);
+        var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("vp_")).toList();
+        assertEquals(java.util.List.of("vp_spon", "vp_unc", "vp_no"), ids,
+            "비자 티어: 스폰서 → unclear → no_sponsor (posted_at 역순이라도)");
+    }
+
+    @Test
+    void newestSortBypassesVisaTier() {
+        company("nw", "NW Co");
+        job("nw_spon", "Platform Engineer", "nw", "x", "backend", false, "now() - interval '2 days'");
+        job("nw_no",   "Platform Engineer", "nw", "x", "backend", false, "now()");
+        setVisa("nw_spon", "sponsors");
+        setVisa("nw_no", "no_sponsor");
+        JobListResponse res = service.search(null, null, null, null, "newest", null, null, 1, 20);
+        var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("nw_")).toList();
+        assertEquals(java.util.List.of("nw_no", "nw_spon"), ids,
+            "newest 는 티어 무시, 순수 최신순(no_sponsor 가 더 최신이라 먼저)");
     }
 }

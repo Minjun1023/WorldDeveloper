@@ -41,6 +41,7 @@ public interface JobRepository
     List<Object[]> findRecentCandidates(@Param("lim") int lim);
 
     // 풀텍스트 검색(키워드 q + 직무 disc + 지역 regionRegex 모두 optional). disc 는 서버 큐레이션 tsquery 문자열.
+    // visaPriority=true 면 비자 티어(sponsors→unclear→no_sponsor)를 1순위로 정렬한다.
     @Query(value = """
         SELECT id FROM jobs
         WHERE is_active = true
@@ -51,6 +52,9 @@ public interface JobRepository
           AND (CAST(:loc AS text) IS NULL OR lower(location) LIKE CAST(:loc AS text))
           AND (CAST(:remote AS boolean) IS NULL OR is_remote = CAST(:remote AS boolean))
         ORDER BY
+          CASE WHEN :visaPriority THEN
+            (CASE visa_status WHEN 'sponsors' THEN 0 WHEN 'no_sponsor' THEN 2 ELSE 1 END)
+          ELSE 0 END,
           CASE WHEN :byRelevance THEN ts_rank(search_tsv, websearch_to_tsquery('english', CAST(:q AS text))) END DESC NULLS LAST,
           posted_at DESC NULLS LAST,
           id DESC
@@ -59,7 +63,8 @@ public interface JobRepository
     List<String> searchIds(
         @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
         @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
-        @Param("byRelevance") boolean byRelevance, @Param("lim") int lim, @Param("off") int off);
+        @Param("visaPriority") boolean visaPriority, @Param("byRelevance") boolean byRelevance,
+        @Param("lim") int lim, @Param("off") int off);
 
     @Query(value = """
         SELECT count(*) FROM jobs
