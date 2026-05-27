@@ -122,12 +122,14 @@ class JobSearchTest {
     void newestSortBypassesVisaTier() {
         company("nw", "NW Co");
         job("nw_spon", "Platform Engineer", "nw", "x", "backend", false, "now() - interval '2 days'");
+        job("nw_unc",  "Platform Engineer", "nw", "x", "backend", false, "now() - interval '1 days'");
         job("nw_no",   "Platform Engineer", "nw", "x", "backend", false, "now()");
         setVisa("nw_spon", "sponsors");
         setVisa("nw_no", "no_sponsor");
+        // nw_unc 는 visa_status 미설정(NULL=unclear)
         JobListResponse res = service.search(null, null, null, null, "newest", null, null, 1, 20);
         var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("nw_")).toList();
-        assertEquals(java.util.List.of("nw_no", "nw_spon"), ids,
-            "newest 는 티어 무시, 순수 최신순(no_sponsor 가 더 최신이라 먼저)");
+        assertEquals(java.util.List.of("nw_no", "nw_unc", "nw_spon"), ids,
+            "newest 는 티어 무시, 순수 최신순(no_sponsor 최신 → unclear → sponsors 가장 오래됨)");
     }
 }

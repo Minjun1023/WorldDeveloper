@@ -3,12 +3,10 @@ package com.devjobs.scout;
 import com.devjobs.domain.JobEntity;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface JobRepository
-    extends JpaRepository<JobEntity, String>, JpaSpecificationExecutor<JobEntity> {
+public interface JobRepository extends JpaRepository<JobEntity, String> {
 
     List<JobEntity> findByCompanySlugAndIsActiveTrueOrderByPostedAtDesc(String companySlug);
 
@@ -54,7 +52,7 @@ public interface JobRepository
         ORDER BY
           CASE WHEN :visaPriority THEN
             (CASE visa_status WHEN 'sponsors' THEN 0 WHEN 'no_sponsor' THEN 2 ELSE 1 END)
-          ELSE 0 END,
+          ELSE 0 END ASC,
           CASE WHEN :byRelevance THEN ts_rank(search_tsv, websearch_to_tsquery('english', CAST(:q AS text))) END DESC NULLS LAST,
           posted_at DESC NULLS LAST,
           id DESC

@@ -77,7 +77,8 @@ public class JobService {
             remoteParam = Boolean.TRUE;                              // 원격 지역 → remote 필터
         }
 
-        // 비자 우선 티어가 기본. sort=newest 일 때만 끔(홈 "새로 올라온 공고" 순수 최신 쇼케이스).
+        // 비자 우선 티어가 기본. sort=recent 도 티어는 유지(티어 내부에서 최신순). sort=newest 일 때만
+        // 티어를 끔 — 홈 "새로 올라온 공고" 순수 최신 쇼케이스 전용.
         boolean visaPriority = !"newest".equals(sort);
         boolean byRelevance = hasQuery && !"recent".equals(sort) && !"newest".equals(sort);
         String qParam = hasQuery ? q.trim() : null;
