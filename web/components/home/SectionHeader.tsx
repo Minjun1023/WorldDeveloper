@@ -12,11 +12,13 @@ export function SectionHeader({
   accent,
   href,
   hrefLabel = "전체 보기",
+  count,
 }: {
   title: string;
   accent?: Accent;
   href?: string;
   hrefLabel?: string;
+  count?: number;
 }) {
   return (
     <div className="mb-4 flex items-baseline justify-between">
@@ -28,6 +30,9 @@ export function SectionHeader({
           />
         )}
         {title}
+        {count !== undefined && (
+          <span className="text-body-sm font-normal text-muted-foreground">{count}개</span>
+        )}
       </h2>
       {href && (
         <Link href={href} className="text-body-sm text-primary hover:underline">

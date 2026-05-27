@@ -11,12 +11,13 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const [visaRes, latestRes, companies, regions] = await Promise.all([
     fetchJobs({ visa: "sponsors", pageSize: 8 }),
-    fetchJobs({ pageSize: 6 }),
+    fetchJobs({ pageSize: 6, sort: "newest" }),
     fetchCompanies(),
     fetchRegions(),
   ]);
 
   const visaJobs = visaRes.ok ? visaRes.data.items : [];
+  const visaTotal = visaRes.ok ? visaRes.data.total : 0;
   const latestJobs = latestRes.ok ? latestRes.data.items : [];
   const spotlight = companies?.items.slice(0, 6) ?? [];
 
@@ -24,17 +25,17 @@ export default async function HomePage() {
     <div className="space-y-12">
       <Hero regions={regions} />
 
+      {visaJobs.length > 0 && (
+        <section>
+          <SectionHeader title="비자 스폰서십 공고" accent="visa" count={visaTotal} href="/search?visa=sponsors" />
+          <JobScrollRow jobs={visaJobs} />
+        </section>
+      )}
+
       <section>
         <SectionHeader title="나에게 맞는 공고" accent="recommend" href="/recommend" hrefLabel="정교한 추천 설정" />
         <NlRecommend />
       </section>
-
-      {visaJobs.length > 0 && (
-        <section>
-          <SectionHeader title="비자 스폰서십 공고" accent="visa" href="/search?visa=sponsors" />
-          <JobScrollRow jobs={visaJobs} />
-        </section>
-      )}
 
       <section>
         <SectionHeader title="국가별로 찾기" />
