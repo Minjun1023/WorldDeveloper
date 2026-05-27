@@ -4,13 +4,25 @@
 """
 from __future__ import annotations
 
-# title 에 포함되면 비개발로 보고 drop
+# title 에 포함되면 비개발로 보고 drop.
+# 부분일치(substring)이므로 진짜 개발 직함을 떨어뜨리지 않게 "구"단위로 둔다.
+# (bare "manager" 금지 → "engineering manager" 유지; "growth" 금지 → "growth engineer" 유지)
 _DENY = (
-    "sales", "account executive", "marketing", "recruiter", "recruiting",
-    "talent acquisition", "customer success", "customer support",
-    "account manager", "finance", "accountant", "human resources",
-    "designer", "product manager", "product owner", "content writer",
-    "copywriter", "social media", "business development", "office manager",
+    # 영업/마케팅/BD ("account exec" 은 Exec/Executive 약어 모두 포함)
+    "sales", "account exec", "account manager", "marketing", "social media",
+    "business development", "partnership", "community manager", "growth manager",
+    # 채용/HR/총무 ("recruit" 은 recruiter/recruiting/recruitment 모두 포함)
+    "recruit", "talent acquisition", "human resources",
+    "people operations", "office manager", "operations manager",
+    "executive assistant", "administrative",
+    # CS/온보딩/구현(비엔지니어)
+    "customer success", "customer support", "onboarding specialist",
+    "implementation specialist", "implementation consultant", "virtual assistant",
+    # 법무/재무
+    "counsel", "legal", "finance", "accountant", "bookkeeper",
+    # 기획/PM/디자인/콘텐츠
+    "product manager", "product owner", "program manager", "project manager",
+    "designer", "content writer", "copywriter",
 )
 
 
