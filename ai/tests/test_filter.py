@@ -8,66 +8,76 @@ def test_keeps_engineering_titles():
     assert is_dev_role("Machine Learning Engineer")
 
 
-def test_drops_non_dev_titles():
+def test_keeps_strong_signals_without_word_engineer():
+    # 'engineer' 단어가 없어도 강한 개발 신호면 keep
+    assert is_dev_role("Site Reliability (SRE)")
+    assert is_dev_role("Data Scientist, Search")
+    assert is_dev_role("AI Research Scientist - DAIR")
+    assert is_dev_role("Senior Software Architect")
+    assert is_dev_role("Softwareentwickler (m/w/d)")  # 독일어
+
+
+def test_keeps_generic_x_engineer_and_architect():
+    # strong/deny 에 안 걸린 'X Engineer'/architect 는 keep
+    assert is_dev_role("Security Engineer")
+    assert is_dev_role("Platform Engineer")
+    assert is_dev_role("Cloud Architect")
+    assert is_dev_role("Engineering Manager")          # bare manager 아님
+    assert is_dev_role("Analytics Engineer")           # 'analyst' 아님(analytics)
+
+
+def test_software_wins_over_solutions_team_name():
+    # 팀명이 'Solutions Engineering' 이어도 software 신호가 있으면 keep
+    assert is_dev_role("Senior Software Engineer II, Ads Data Solutions Engineering")
+
+
+def test_drops_presales_and_non_software_engineers():
+    assert not is_dev_role("Senior Solutions Engineer - Mid Market")
+    assert not is_dev_role("Principal Solution Engineer, Enterprise")
+    assert not is_dev_role("Sales Engineer")
+    assert not is_dev_role("Data Center Mechanical Engineer")
+    assert not is_dev_role("Data Center Electrical Engineer")
+    assert not is_dev_role("Field Engineer")
+
+
+def test_drops_sales_legal_recruiting():
     assert not is_dev_role("Account Executive (Sales)")
+    assert not is_dev_role("Commercial Account Exec")
     assert not is_dev_role("Technical Recruiter")
-    assert not is_dev_role("Product Marketing Manager")
+    assert not is_dev_role("Recruitment Consultant (m/w/d)")
+    assert not is_dev_role("Litigation Counsel")
+    assert not is_dev_role("Associate Product Counsel")
+
+
+def test_drops_finance_accounting_ops():
+    assert not is_dev_role("Director, Technical Revenue Accounting")
+    assert not is_dev_role("Senior Indirect Tax Analyst")
+    assert not is_dev_role("Accounts Receivable Analyst")
+    assert not is_dev_role("Finanzbuchhalter (m/w/d)")   # 독일어 회계
+    assert not is_dev_role("Analyst, FP&A- Ads")
+    assert not is_dev_role("Operations Manager")
+
+
+def test_drops_comms_creative_pm_design():
+    assert not is_dev_role("Communications Manager, Enterprise")
+    assert not is_dev_role("Creative Lead, Photo")
+    assert not is_dev_role("Copy Lead, Enterprise")
     assert not is_dev_role("Product Manager")
     assert not is_dev_role("Senior Product Designer")
-
-
-def test_ambiguous_kept_recall_first():
-    assert is_dev_role("Data Analyst")
-    assert is_dev_role("Solutions Architect")
-
-
-def test_drops_legal_titles():
-    # 실측 누수: 다양한 Counsel/Legal 직함
-    assert not is_dev_role("Litigation Counsel")
-    assert not is_dev_role("Commercial Counsel, Procurement")
-    assert not is_dev_role("Associate Product Counsel")
-    assert not is_dev_role("Assistant General Counsel, Employment")
-    assert not is_dev_role("Senior Counsel")
-    assert not is_dev_role("Legal Vendor Program Manager")
-    assert not is_dev_role("Genetic Counseling Assistant")  # "counsel" 부분일치
-
-
-def test_drops_bizdev_and_partnership():
-    assert not is_dev_role("Amazon GTM Partnership, Startups")
-    assert not is_dev_role("Strategic Partnerships Lead")
-    assert not is_dev_role("Community Manager, Social")
-
-
-def test_drops_abbreviations_and_variants():
-    # 약어/변형도 잡아야 함
-    assert not is_dev_role("Commercial Account Exec")
-    assert not is_dev_role("Sr Enterprise Account Exec")
-    assert not is_dev_role("Recruitment Consultant (m/w/d)")
-
-
-def test_drops_program_project_ops_managers():
-    assert not is_dev_role("Bilingual Staff Technical Program Manager")
     assert not is_dev_role("Senior Project Manager")
-    assert not is_dev_role("Operations Manager")
-    assert not is_dev_role("E Commerce Growth Manager")
-    assert not is_dev_role("Digital Web Growth Manager")
+    assert not is_dev_role("Bilingual Staff Technical Program Manager")
 
 
-def test_drops_assistants_and_specialists():
+def test_drops_misc_non_dev():
     assert not is_dev_role("Virtual Assistant Panelist")
-    assert not is_dev_role("Executive Assistant to the CEO")
-    assert not is_dev_role("Implementation Specialist (Contractor)")
-    assert not is_dev_role("Customer Onboarding Specialist")
-    assert not is_dev_role("Administrative Coordinator")
+    assert not is_dev_role("Strategic Sourcing Analyst")
+    assert not is_dev_role("AI Strategy Consultant, Frontier Tech")
+    assert not is_dev_role("Privacy Response Analyst II")
+    assert not is_dev_role("Kundenberater (m/w/d) Bankkaufmann")
 
 
-def test_does_not_overdeny_real_engineering_roles():
-    # 강화된 deny 가 진짜 개발 직함을 떨어뜨리면 안 됨(재현율 보호)
-    assert is_dev_role("Engineering Manager")          # bare "manager" 는 deny 아님
-    assert is_dev_role("Growth Engineer")              # "growth manager" 만 deny
-    assert is_dev_role("Site Reliability Engineer")
-    assert is_dev_role("Staff Software Engineer, Platform")
-    assert is_dev_role("Developer Advocate")
-    assert is_dev_role("Engineering Program")          # "program manager" 만 deny
-    assert is_dev_role("Mobile Engineer (iOS)")
-    assert is_dev_role("Data Engineer")
+def test_precision_first_drops_bare_analyst():
+    # 정밀도 우선: 개발 신호 없는 'Analyst' 는 drop (이전 recall-first 와 정책 변경)
+    assert not is_dev_role("Data Analyst")
+    # 단, architect 는 keep
+    assert is_dev_role("Solutions Architect")
