@@ -19,7 +19,9 @@ from dev_jobs_core.filter import is_dev_role
 
 from ..config import settings
 from ..db import (
+    active_id_titles,
     deactivate_expired,
+    deactivate_jobs,
     deactivate_stale,
     get_conn,
     upsert_company,
@@ -53,7 +55,7 @@ async def _fetch_ats_company(
 async def run_full_cycle(
     limit_per_source: int = 100,
     include_ats: bool = True,
-    ats_limit_per_company: int = 20,
+    ats_limit_per_company: int = 100,
     ats_concurrency: int = 8,
 ) -> dict:
     """ETL 한 사이클. 결과 통계 dict 반환."""
@@ -143,6 +145,10 @@ async def run_full_cycle(
                 log.warning("upsert 실패 %s: %s", p.job_id, e)
         deactivated_stale = deactivate_stale(conn, days=settings.stale_days)
         deactivated_expired = deactivate_expired(conn, max_age_days=settings.job_max_age_days)
+        # 4b. 저장 공고 재필터(self-heal): 강화된 deny-list 로 과거 적재 비개발 직무 비활성화.
+        #     필터는 ingest 때만 돌아 stored row 는 옛 규칙대로 남으므로 매 사이클 재평가.
+        nondev_ids = [jid for jid, title in active_id_titles(conn) if not is_dev_role(title)]
+        deactivated_nondev = deactivate_jobs(conn, nondev_ids)
         conn.commit()
     finally:
         conn.close()
@@ -155,6 +161,7 @@ async def run_full_cycle(
         "failed": failed,
         "deactivated_stale": deactivated_stale,
         "deactivated_expired": deactivated_expired,
+        "deactivated_nondev": deactivated_nondev,
         "duration_sec": round((datetime.now(timezone.utc) - started).total_seconds(), 1),
     }
 

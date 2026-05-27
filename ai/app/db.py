@@ -117,6 +117,20 @@ def deactivate_stale(conn: psycopg.Connection, days: int = 7) -> int:
     return cur.rowcount
 
 
+def active_id_titles(conn: psycopg.Connection) -> list[tuple[str, str]]:
+    """활성 공고의 (id, title) 전체 — ETL 의 저장분 재필터용."""
+    rows = conn.execute("SELECT id, title FROM jobs WHERE is_active = true").fetchall()
+    return [(r[0], r[1] or "") for r in rows]
+
+
+def deactivate_jobs(conn: psycopg.Connection, ids: list[str]) -> int:
+    """주어진 id 들을 soft delete (is_active=false). 빈 리스트면 0."""
+    if not ids:
+        return 0
+    cur = conn.execute("UPDATE jobs SET is_active = false WHERE id = ANY(%s)", (ids,))
+    return cur.rowcount
+
+
 def deactivate_expired(conn: psycopg.Connection, max_age_days: int = 45) -> int:
     """마감 지난 공고를 soft delete.
 
