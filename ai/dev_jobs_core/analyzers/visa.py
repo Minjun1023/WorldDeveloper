@@ -42,6 +42,10 @@ NO_SPONSOR_PATTERNS = [
     r"\bdo(?:es)?\s+not\s+(?:provide|offer)\s+(?:visa\s+)?sponsorship\b",
     r"\bwork\s+authorization\s+(?:is\s+)?required\b",
     r"\bexisting\s+work\s+authorization\b",
+    # 주어-우선 거부 어순: "sponsorship is not available/provided/offered"
+    # (기존 do/does not provide 패턴이 못 잡는 형태. 고정밀, 오탐 위험 0)
+    r"\bsponsorship\s+is\s+not\s+(?:available|provided|offered)\b",
+    r"\b(?:are|is)\s+not\s+able\s+to\s+(?:provide|offer)\s+(?:visa\s+)?sponsorship\b",
 ]
 
 # --- 명시적 스폰서십 제공 패턴 ---
