@@ -80,8 +80,10 @@ class JobSearchTest {
         company("acme3", "Acme Three");
         job("old", "Backend Dev", "acme3", "x", "backend", false, "now() - interval '5 days'");
         job("new", "Backend Dev", "acme3", "x", "backend", false, "now()");
+        setVisa("old", "sponsors");
+        setVisa("new", "sponsors");  // 같은 비자 티어로 고정 → 티어 내부 최신순을 명시적으로 검증
         JobListResponse res = service.search("backend", null, null, null, "recent", null, null, 1, 20);
-        assertEquals("new", res.items().get(0).id(), "최신순이면 새 공고 먼저");
+        assertEquals("new", res.items().get(0).id(), "같은 비자 티어 안에서 최신순이면 새 공고 먼저");
     }
 
     @Test
