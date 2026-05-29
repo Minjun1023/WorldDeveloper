@@ -4,6 +4,7 @@ from __future__ import annotations
 import asyncio
 import logging
 
+from dev_jobs_core.analyzers.uk_location import is_uk_location
 from dev_jobs_core.analyzers.visa import classify_visa
 
 from ..db import fetch_unclear_jobs, get_conn, sponsor_company_slugs, update_visa
@@ -12,6 +13,22 @@ from .visa_llm import classify_visa_llm
 log = logging.getLogger(__name__)
 
 _LLM_CONCURRENCY = 8
+
+UK_EVIDENCE = "회사가 UK 스폰서 라이선스 보유 (Home Office 등록 스폰서 명부)"
+
+
+def match_uk_register(jobs: list[dict], uk_slugs: set[str]) -> dict[str, tuple[str, list[str]]]:
+    """unclear 공고 중 (회사가 UK 스폰서 + UK 소재)인 것을 sponsors 로 매핑.
+
+    순수 함수(DB/네트워크 없음). 입력 jobs 는 fetch_unclear_jobs 형식 dict.
+    """
+    out: dict[str, tuple[str, list[str]]] = {}
+    for j in jobs:
+        if j.get("company_slug") in uk_slugs and is_uk_location(
+            j.get("location"), j.get("is_remote", False)
+        ):
+            out[j["id"]] = ("sponsors", [UK_EVIDENCE])
+    return out
 
 
 async def reclassify_unclear_visa(limit: int | None = None) -> dict:
