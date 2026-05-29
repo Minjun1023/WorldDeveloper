@@ -41,6 +41,16 @@ def list_all() -> list[dict]:
     return [{**info, "name": name} for name, info in registry.items()]
 
 
+def uk_sponsor_slugs() -> set[str]:
+    """UK 스폰서 라이선스 보유로 큐레이션된 회사(uk_sponsor=true)의 토큰 집합."""
+    registry = _load()
+    return {
+        info["token"]
+        for info in registry.values()
+        if info.get("uk_sponsor") is True
+    }
+
+
 def search_by_tag(tags: list[str]) -> list[dict]:
     """태그로 회사 검색 (OR 조건). 예: ["fintech", "europe"]."""
     registry = _load()

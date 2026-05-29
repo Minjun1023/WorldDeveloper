@@ -4,7 +4,9 @@ from __future__ import annotations
 import asyncio
 import logging
 
+from dev_jobs_core.analyzers.uk_location import is_uk_location
 from dev_jobs_core.analyzers.visa import classify_visa
+from dev_jobs_core.registry import uk_sponsor_slugs
 
 from ..db import fetch_unclear_jobs, get_conn, sponsor_company_slugs, update_visa
 from .visa_llm import classify_visa_llm
@@ -12,6 +14,22 @@ from .visa_llm import classify_visa_llm
 log = logging.getLogger(__name__)
 
 _LLM_CONCURRENCY = 8
+
+UK_EVIDENCE = "회사가 UK 스폰서 라이선스 보유 (Home Office 등록 스폰서 명부)"
+
+
+def match_uk_register(jobs: list[dict], uk_slugs: set[str]) -> dict[str, tuple[str, list[str]]]:
+    """unclear 공고 중 (회사가 UK 스폰서 + UK 소재)인 것을 sponsors 로 매핑.
+
+    순수 함수(DB/네트워크 없음). 입력 jobs 는 fetch_unclear_jobs 형식 dict.
+    """
+    out: dict[str, tuple[str, list[str]]] = {}
+    for j in jobs:
+        if j.get("company_slug") in uk_slugs and is_uk_location(
+            j.get("location"), j.get("is_remote", False)
+        ):
+            out[j["id"]] = ("sponsors", [UK_EVIDENCE])
+    return out
 
 
 async def reclassify_unclear_visa(limit: int | None = None) -> dict:
@@ -31,6 +49,13 @@ async def reclassify_unclear_visa(limit: int | None = None) -> dict:
                 by_keyword += 1
             else:
                 remaining.append(j)
+
+        # 1.5) UK 스폰서 레지스터 매칭 (무료·사실 기반, LLM 앞에서 비용 절감)
+        uk_slugs = uk_sponsor_slugs()
+        uk_hits = match_uk_register(remaining, uk_slugs)
+        by_uk_register = len(uk_hits)
+        results.update(uk_hits)
+        remaining = [j for j in remaining if j["id"] not in uk_hits]
 
         # 2) LLM (동시성 제한 + 설명 캐시)
         cache: dict[str, tuple[str, list[str]] | None] = {}
@@ -66,6 +91,7 @@ async def reclassify_unclear_visa(limit: int | None = None) -> dict:
             "unclear_in": len(jobs),
             "updated": len(results),
             "by_keyword": by_keyword,
+            "by_uk_register": by_uk_register,
             "by_llm": by_llm,
             "by_company": by_company,
             "still_unclear": len(jobs) - len(results),

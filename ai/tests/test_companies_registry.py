@@ -36,3 +36,12 @@ def test_no_duplicate_tokens_per_ats():
         key = (info["ats"], info["token"].lower())
         assert key not in seen, f"duplicate {key} ({name})"
         seen.add(key)
+
+
+def test_uk_sponsor_flag_is_bool_when_present():
+    data = _load()
+    for name, info in data.items():
+        if name.startswith("_"):
+            continue
+        if "uk_sponsor" in info:
+            assert isinstance(info["uk_sponsor"], bool), f"{name}: uk_sponsor not bool"
