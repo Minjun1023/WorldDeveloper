@@ -82,13 +82,14 @@ def upsert_job(conn: psycopg.Connection, job: dict[str, Any]) -> None:
 
 def fetch_unclear_jobs(conn: psycopg.Connection, limit: int | None = None) -> list[dict[str, Any]]:
     sql = (
-        "SELECT id, title, description_text, company_slug FROM jobs "
+        "SELECT id, title, description_text, company_slug, location, is_remote FROM jobs "
         "WHERE is_active = true AND visa_status = 'unclear' "
         "ORDER BY posted_at DESC NULLS LAST"
     )
     rows = conn.execute(sql + (" LIMIT %s" if limit else ""), (limit,) if limit else None).fetchall()
     return [
-        {"id": r[0], "title": r[1], "description_text": r[2], "company_slug": r[3]}
+        {"id": r[0], "title": r[1], "description_text": r[2], "company_slug": r[3],
+         "location": r[4], "is_remote": r[5]}
         for r in rows
     ]
 
