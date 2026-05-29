@@ -1,7 +1,7 @@
 {
   "_meta": {
-    "description": "회사명 → ATS 매핑. 추가 가능. ats: greenhouse / lever / ashby / smartrecruiters",
-    "last_updated": "2026-05-27"
+    "description": "회사명 → ATS 매핑. 추가 가능. ats: greenhouse / lever / ashby / smartrecruiters / personio",
+    "last_updated": "2026-05-29"
   },
   "stripe": {
     "ats": "greenhouse",
@@ -963,6 +963,182 @@
     "token": "zed",
     "tags": [
       "devtools"
+    ]
+  },
+  "personio": {
+    "ats": "personio",
+    "token": "personio",
+    "tags": [
+      "hr-tech",
+      "saas",
+      "europe"
+    ]
+  },
+  "adyen": {
+    "ats": "greenhouse",
+    "token": "adyen",
+    "tags": [
+      "fintech",
+      "payments",
+      "europe"
+    ]
+  },
+  "mollie": {
+    "ats": "ashby",
+    "token": "mollie",
+    "tags": [
+      "fintech",
+      "payments",
+      "europe"
+    ]
+  },
+  "deepl": {
+    "ats": "ashby",
+    "token": "deepl",
+    "tags": [
+      "ai",
+      "nlp",
+      "europe"
+    ]
+  },
+  "doctolib": {
+    "ats": "greenhouse",
+    "token": "doctolib",
+    "tags": [
+      "healthtech",
+      "saas",
+      "europe"
+    ]
+  },
+  "dataiku": {
+    "ats": "greenhouse",
+    "token": "dataiku",
+    "tags": [
+      "ai",
+      "data",
+      "europe"
+    ]
+  },
+  "algolia": {
+    "ats": "greenhouse",
+    "token": "algolia",
+    "tags": [
+      "devtools",
+      "search",
+      "europe"
+    ]
+  },
+  "sumup": {
+    "ats": "greenhouse",
+    "token": "sumup",
+    "tags": [
+      "fintech",
+      "payments",
+      "europe"
+    ]
+  },
+  "gocardless": {
+    "ats": "greenhouse",
+    "token": "gocardless",
+    "tags": [
+      "fintech",
+      "payments",
+      "europe"
+    ]
+  },
+  "scout24": {
+    "ats": "greenhouse",
+    "token": "scout24",
+    "tags": [
+      "marketplace",
+      "europe"
+    ]
+  },
+  "monzo": {
+    "ats": "greenhouse",
+    "token": "monzo",
+    "tags": [
+      "fintech",
+      "europe"
+    ]
+  },
+  "trustpilot": {
+    "ats": "greenhouse",
+    "token": "trustpilot",
+    "tags": [
+      "saas",
+      "consumer",
+      "europe"
+    ]
+  },
+  "celonis": {
+    "ats": "greenhouse",
+    "token": "celonis",
+    "tags": [
+      "data",
+      "process-mining",
+      "europe"
+    ]
+  },
+  "lifen": {
+    "ats": "ashby",
+    "token": "lifen",
+    "tags": [
+      "healthtech",
+      "europe"
+    ]
+  },
+  "runway": {
+    "ats": "ashby",
+    "token": "runway",
+    "tags": [
+      "ai",
+      "ml"
+    ]
+  },
+  "synthesia": {
+    "ats": "ashby",
+    "token": "synthesia",
+    "tags": [
+      "ai",
+      "video",
+      "europe"
+    ]
+  },
+  "poolside": {
+    "ats": "ashby",
+    "token": "poolside",
+    "tags": [
+      "ai",
+      "ml",
+      "europe"
+    ]
+  },
+  "n8n": {
+    "ats": "ashby",
+    "token": "n8n",
+    "tags": [
+      "devtools",
+      "automation",
+      "europe"
+    ]
+  },
+  "blablacar": {
+    "ats": "lever",
+    "token": "blablacar",
+    "tags": [
+      "mobility",
+      "marketplace",
+      "europe"
+    ]
+  },
+  "voodoo": {
+    "ats": "lever",
+    "token": "voodoo",
+    "tags": [
+      "gaming",
+      "consumer",
+      "europe"
     ]
   }
 }
