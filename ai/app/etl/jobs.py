@@ -13,7 +13,7 @@ import logging
 from datetime import datetime, timezone
 
 from dev_jobs_core import registry
-from dev_jobs_core.sources import adzuna, arbeitnow, ashby, greenhouse, lever, remoteok, smartrecruiters, weworkremotely
+from dev_jobs_core.sources import adzuna, arbeitnow, ashby, greenhouse, lever, personio, remoteok, smartrecruiters, weworkremotely
 from dev_jobs_core.dedup import dedup
 from dev_jobs_core.filter import is_dev_role
 
@@ -38,6 +38,7 @@ ATS_FETCHERS = {
     "lever": lever.fetch,
     "ashby": ashby.fetch,
     "smartrecruiters": smartrecruiters.fetch,
+    "personio": personio.fetch,
 }
 
 
