@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { InterviewPrepSection } from "@/components/job/InterviewPrepSection";
 import { JobDescription } from "@/components/job/JobDescription";
 import { JobSummary } from "@/components/job/JobSummary";
@@ -62,7 +63,10 @@ export default async function JobDetailPage({ params }: { params: { id: string }
 
       <header className="space-y-3">
         <div className="flex items-start justify-between gap-4">
-          <h1 className="text-h1">{job.title}</h1>
+          <div className="flex items-start gap-3">
+            <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={48} />
+            <h1 className="text-h1">{job.title}</h1>
+          </div>
           <VisaBadge status={job.visa?.status} />
         </div>
         <p className="text-muted-foreground">{metaParts.join(" · ")}</p>
