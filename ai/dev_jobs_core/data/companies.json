@@ -84,7 +84,8 @@
     "tags": [
       "delivery",
       "marketplace"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "doordash": {
     "ats": "greenhouse",
@@ -179,7 +180,8 @@
     "tags": [
       "devtools",
       "search"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "gitlab": {
     "ats": "greenhouse",
@@ -213,7 +215,8 @@
     "tags": [
       "ai",
       "data"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "mongodb": {
     "ats": "greenhouse",
@@ -575,7 +578,8 @@
     "tags": [
       "productivity",
       "saas"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "amplitude": {
     "ats": "greenhouse",
@@ -642,7 +646,8 @@
     "token": "carta",
     "tags": [
       "fintech"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "checkr": {
     "ats": "greenhouse",
@@ -701,7 +706,8 @@
       "ai",
       "ml"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "confluent": {
     "ats": "ashby",
@@ -991,7 +997,8 @@
     "token": "sofi",
     "tags": [
       "fintech"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "sysdig": {
     "ats": "lever",
