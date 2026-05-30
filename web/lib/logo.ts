@@ -1,15 +1,32 @@
 // 회사 로고 유틸 (웹 전용). slug → 도메인 추론 + favicon URL + 이니셜/색 폴백.
 
-// slug(ATS 토큰)가 실제 도메인 루트와 다른 경우만 보정. 대부분 {slug}.com 이 맞다.
+// slug(ATS 토큰/슬러그화된 회사명)가 실제 도메인 루트와 다른 경우 보정. 대부분 {slug}.com 이 맞다.
 const DOMAIN_OVERRIDES: Record<string, string> = {
   scaleai: "scale.com",
+  // 잡보드 자유텍스트 회사 중 Logo.dev 실제 로고 확인된 보정(TLD 규칙으로 못 잡는 케이스).
+  "neural-frames": "neuralframes.com",
+  "quantum-systems-gmbh": "quantum-systems.com",
+  "itestra-gmbh": "itestra.de",
+  "k-tronik-gmbh": "ktronik.de",
+  "evident-europe-gmbh": "evidenttechnology.com",
 };
+
+// 슬러그화가 도메인 점을 하이픈으로 바꾸므로("lemon.io" → "lemon-io") 끝의 TLD를 복원.
+// 명확한 도메인 TLD만(co/de 등 회사명 토큰과 혼동되는 것은 제외).
+const TLD_SUFFIXES = new Set(["io", "ai", "ch", "dev", "app", "xyz", "gg", "sh", "so", "tech"]);
 
 export function slugToDomain(slug: string | undefined | null): string {
   if (!slug) return "";
   const key = slug.trim().toLowerCase();
   if (!key) return "";
-  return DOMAIN_OVERRIDES[key] ?? `${key}.com`;
+  const override = DOMAIN_OVERRIDES[key];
+  if (override) return override;
+  // "lemon-io" → "lemon.io", "comparis-ch" → "comparis.ch"
+  const dash = key.lastIndexOf("-");
+  if (dash > 0 && TLD_SUFFIXES.has(key.slice(dash + 1))) {
+    return `${key.slice(0, dash)}.${key.slice(dash + 1)}`;
+  }
+  return `${key}.com`;
 }
 
 // Logo.dev publishable 토큰(pk_...). Stripe 공개키처럼 클라이언트 노출용이라 NEXT_PUBLIC_ 사용.
