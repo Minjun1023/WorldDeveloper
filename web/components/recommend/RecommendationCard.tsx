@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { VisaBadge } from "@/components/job/VisaBadge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -15,19 +16,22 @@ export function RecommendationCard({ item, rank }: { item: RecommendationItem; r
     <Card className="flex flex-col">
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="text-caption font-mono text-muted-foreground">#{rank}</span>
-              <span className="rounded-md bg-primary px-2 py-0.5 text-caption font-semibold text-primary-foreground">
-                {Math.round(score.final_score * 100)}점
-              </span>
+          <div className="flex min-w-0 items-start gap-3">
+            <CompanyLogo slug={job.company.slug} name={job.company.display_name} />
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-caption font-mono text-muted-foreground">#{rank}</span>
+                <span className="rounded-md bg-primary px-2 py-0.5 text-caption font-semibold text-primary-foreground">
+                  {Math.round(score.final_score * 100)}점
+                </span>
+              </div>
+              <Link href={`/jobs/${encodeURIComponent(job.id)}`}>
+                <CardTitle className="mt-1 truncate hover:text-primary transition-colors">
+                  {job.title}
+                </CardTitle>
+              </Link>
+              <p className="mt-1 text-body-sm text-muted-foreground">{meta.join(" · ")}</p>
             </div>
-            <Link href={`/jobs/${encodeURIComponent(job.id)}`}>
-              <CardTitle className="mt-1 truncate hover:text-primary transition-colors">
-                {job.title}
-              </CardTitle>
-            </Link>
-            <p className="mt-1 text-body-sm text-muted-foreground">{meta.join(" · ")}</p>
           </div>
           <VisaBadge status={job.visa?.status} />
         </div>

@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Job } from "@/lib/types";
 
+import { CompanyLogo } from "@/components/company/CompanyLogo";
+
 import { VisaBadge } from "./VisaBadge";
 
 function formatSalary(salary?: Job["salary"]): string | null {
@@ -30,16 +32,19 @@ export function JobCard({ job }: { job: Job }) {
     <Card className="flex flex-col transition-colors hover:border-primary/40">
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <Link href={`/jobs/${encodeURIComponent(job.id)}`}>
-              <CardTitle className="truncate hover:text-primary transition-colors">
-                {job.title}
-              </CardTitle>
-            </Link>
-            <p className="mt-1 text-body-sm text-muted-foreground">
-              {job.company.display_name}
-              {metaParts.length > 0 ? ` · ${metaParts.join(" · ")}` : ""}
-            </p>
+          <div className="flex min-w-0 items-start gap-3">
+            <CompanyLogo slug={job.company.slug} name={job.company.display_name} />
+            <div className="min-w-0">
+              <Link href={`/jobs/${encodeURIComponent(job.id)}`}>
+                <CardTitle className="truncate hover:text-primary transition-colors">
+                  {job.title}
+                </CardTitle>
+              </Link>
+              <p className="mt-1 text-body-sm text-muted-foreground">
+                {job.company.display_name}
+                {metaParts.length > 0 ? ` · ${metaParts.join(" · ")}` : ""}
+              </p>
+            </div>
           </div>
           <VisaBadge status={job.visa?.status} />
         </div>
