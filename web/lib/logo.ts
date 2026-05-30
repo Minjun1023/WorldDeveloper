@@ -12,9 +12,17 @@ export function slugToDomain(slug: string | undefined | null): string {
   return DOMAIN_OVERRIDES[key] ?? `${key}.com`;
 }
 
-// 로고 소스 교체 단일 지점: 추후 Logo.dev 등으로 바꾸려면 이 함수만 수정.
+// Logo.dev publishable 토큰(pk_...). Stripe 공개키처럼 클라이언트 노출용이라 NEXT_PUBLIC_ 사용.
+// NEXT_PUBLIC_ 변수는 빌드 시 인라인되므로 토큰 추가 후 dev 재시작/재빌드 필요.
+const LOGODEV_TOKEN = process.env.NEXT_PUBLIC_LOGODEV_TOKEN;
+
+// 로고 소스 교체 단일 지점.
+// 토큰 있으면 Logo.dev(실제 브랜드 로고 DB, 커버리지·품질↑), 없으면 무료 DuckDuckGo favicon 폴백.
 export function logoUrl(domain: string): string {
   if (!domain) return "";
+  if (LOGODEV_TOKEN) {
+    return `https://img.logo.dev/${domain}?token=${LOGODEV_TOKEN}&size=128&format=png&retina=true`;
+  }
   return `https://icons.duckduckgo.com/ip3/${domain}.ico`;
 }
 
