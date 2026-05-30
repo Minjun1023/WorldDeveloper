@@ -7,7 +7,7 @@ import logging
 from dev_jobs_core.analyzers.uk_location import is_uk_location
 from dev_jobs_core.analyzers.us_location import is_us_location
 from dev_jobs_core.analyzers.visa import classify_visa
-from dev_jobs_core.registry import uk_sponsor_slugs
+from dev_jobs_core.registry import h1b_sponsor_slugs, uk_sponsor_slugs
 
 from ..db import fetch_unclear_jobs, get_conn, sponsor_company_slugs, update_visa
 from .visa_llm import classify_visa_llm
@@ -75,6 +75,12 @@ async def reclassify_unclear_visa(limit: int | None = None) -> dict:
         results.update(uk_hits)
         remaining = [j for j in remaining if j["id"] not in uk_hits]
 
+        # 1.6) US H-1B 스폰서 매칭 (무료·사실 기반, UK 직후·LLM 앞)
+        h1b_hits = match_h1b_register(remaining, h1b_sponsor_slugs())
+        by_h1b_register = len(h1b_hits)
+        results.update(h1b_hits)
+        remaining = [j for j in remaining if j["id"] not in h1b_hits]
+
         # 2) LLM (동시성 제한 + 설명 캐시)
         cache: dict[str, tuple[str, list[str]] | None] = {}
         sem = asyncio.Semaphore(_LLM_CONCURRENCY)
@@ -110,6 +116,7 @@ async def reclassify_unclear_visa(limit: int | None = None) -> dict:
             "updated": len(results),
             "by_keyword": by_keyword,
             "by_uk_register": by_uk_register,
+            "by_h1b_register": by_h1b_register,
             "by_llm": by_llm,
             "by_company": by_company,
             "still_unclear": len(jobs) - len(results),
