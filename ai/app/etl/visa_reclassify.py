@@ -5,6 +5,7 @@ import asyncio
 import logging
 
 from dev_jobs_core.analyzers.uk_location import is_uk_location
+from dev_jobs_core.analyzers.us_location import is_us_location
 from dev_jobs_core.analyzers.visa import classify_visa
 from dev_jobs_core.registry import uk_sponsor_slugs
 
@@ -29,6 +30,23 @@ def match_uk_register(jobs: list[dict], uk_slugs: set[str]) -> dict[str, tuple[s
             j.get("location"), j.get("is_remote", False)
         ):
             out[j["id"]] = ("sponsors", [UK_EVIDENCE])
+    return out
+
+
+H1B_EVIDENCE = "회사가 미국 H-1B 스폰서 이력 보유 (USCIS Employer Data Hub)"
+
+
+def match_h1b_register(jobs: list[dict], h1b_slugs: set[str]) -> dict[str, tuple[str, list[str]]]:
+    """unclear 공고 중 (회사가 H-1B 스폰서 + 미국 소재)인 것을 sponsors 로 매핑.
+
+    순수 함수(DB/네트워크 없음). 입력 jobs 는 fetch_unclear_jobs 형식 dict.
+    """
+    out: dict[str, tuple[str, list[str]]] = {}
+    for j in jobs:
+        if j.get("company_slug") in h1b_slugs and is_us_location(
+            j.get("location"), j.get("is_remote", False)
+        ):
+            out[j["id"]] = ("sponsors", [H1B_EVIDENCE])
     return out
 
 
