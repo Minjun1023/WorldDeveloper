@@ -45,3 +45,12 @@ def test_uk_sponsor_flag_is_bool_when_present():
             continue
         if "uk_sponsor" in info:
             assert isinstance(info["uk_sponsor"], bool), f"{name}: uk_sponsor not bool"
+
+
+def test_h1b_sponsor_flag_is_bool_when_present():
+    data = _load()
+    for name, info in data.items():
+        if name.startswith("_"):
+            continue
+        if "h1b_sponsor" in info:
+            assert isinstance(info["h1b_sponsor"], bool), f"{name}: h1b_sponsor not bool"
