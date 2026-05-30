@@ -51,6 +51,16 @@ def uk_sponsor_slugs() -> set[str]:
     }
 
 
+def h1b_sponsor_slugs() -> set[str]:
+    """US H-1B 스폰서 이력 보유로 큐레이션된 회사(h1b_sponsor=true)의 토큰 집합."""
+    registry = _load()
+    return {
+        info["token"]
+        for info in registry.values()
+        if info.get("h1b_sponsor") is True
+    }
+
+
 def search_by_tag(tags: list[str]) -> list[dict]:
     """태그로 회사 검색 (OR 조건). 예: ["fintech", "europe"]."""
     registry = _load()
