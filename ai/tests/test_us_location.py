@@ -6,6 +6,8 @@ def test_strong_country_signals():
     assert is_us_location("Remote, USA")
     assert is_us_location("Remote (US)")
     assert is_us_location("Remote - United States")
+    assert is_us_location("Remote, U.S.")
+    assert is_us_location("U.S.A.")
 
 
 def test_full_state_names():

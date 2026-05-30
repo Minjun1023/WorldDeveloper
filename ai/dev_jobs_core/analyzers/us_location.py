@@ -13,7 +13,8 @@ import re
 # 강한 국가 신호. "United States"/"USA" 는 대소문자 무관,
 # 단독 US/U.S. 는 대문자만(소문자 "us" 오탐 방지).
 _COUNTRY_CI = re.compile(r"\b(united states|usa)\b", re.IGNORECASE)
-_COUNTRY_CS = re.compile(r"\b(US|U\.S\.|U\.S\.A\.)\b")  # 대소문자 구분(대문자만)
+# 단독 US 는 단어경계, 점표기 U.S./U.S.A. 는 trailing "." 때문에 \b가 안 걸리므로 별도 처리.
+_COUNTRY_CS = re.compile(r"\bUS\b|U\.S\.A\.|U\.S\.")  # 대소문자 구분(대문자만)
 
 # 전체 주 이름 + DC (단어경계)
 _STATES_FULL = re.compile(

@@ -42,6 +42,9 @@ def parse_approved_employers(fp) -> list[str]:
     cont_col = _find_col(fields, "continuing", "approval")
     if not name_col:
         raise SystemExit(f"고용주명 컬럼을 못 찾음. 헤더: {fields}")
+    if not init_col and not cont_col:
+        print("경고: 승인(approval) 컬럼을 못 찾음 → 모든 고용주 제외됨."
+              f" 헤더: {fields}", file=sys.stderr)
 
     def _num(row, col):
         if not col:
