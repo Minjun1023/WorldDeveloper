@@ -6,11 +6,11 @@ import { useEffect, useRef, useState } from "react";
 import { AccountMenu } from "@/components/auth/AccountMenu";
 import { ThemeToggle } from "@/components/theme-toggle";
 
+// 사용자 전용 "내 지원"은 nav가 아니라 계정 메뉴(로그인 시)에만 둔다.
 const NAV_LINKS = [
   { href: "/search", label: "검색" },
   { href: "/recommend", label: "추천" },
   { href: "/companies", label: "회사" },
-  { href: "/me/applications", label: "내 지원" },
   { href: "/about", label: "소개" },
 ];
 
@@ -81,14 +81,24 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
             ))}
             <div className="my-1 border-t border-border" />
             {loggedIn ? (
-              <form action="/api/auth/logout" method="post">
-                <button
-                  type="submit"
-                  className="block w-full rounded-md px-3 py-2 text-left text-body-sm text-destructive hover:bg-muted"
+              <>
+                <Link
+                  href="/me/applications"
+                  role="menuitem"
+                  onClick={() => setOpen(false)}
+                  className="block rounded-md px-3 py-2 text-body-sm text-muted-foreground hover:bg-muted hover:text-foreground"
                 >
-                  로그아웃
-                </button>
-              </form>
+                  내 지원
+                </Link>
+                <form action="/api/auth/logout" method="post">
+                  <button
+                    type="submit"
+                    className="block w-full rounded-md px-3 py-2 text-left text-body-sm text-destructive hover:bg-muted"
+                  >
+                    로그아웃
+                  </button>
+                </form>
+              </>
             ) : (
               <Link
                 href="/signin"
