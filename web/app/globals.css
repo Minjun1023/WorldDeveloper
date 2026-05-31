@@ -66,3 +66,51 @@
 .dark .hero-gradient {
   background: radial-gradient(60% 80% at 50% 0%, rgba(99, 102, 241, 0.12), transparent 70%), #09090b;
 }
+
+/* 공고 설명(살균된 HTML) 서식 — Tailwind preflight가 지운 기본 스타일 복원 */
+.job-desc {
+  line-height: 1.65;
+  word-break: break-word;
+}
+.job-desc > :first-child {
+  margin-top: 0;
+}
+.job-desc p {
+  margin: 0.75em 0;
+}
+.job-desc h1,
+.job-desc h2,
+.job-desc h3,
+.job-desc h4 {
+  margin: 1.25em 0 0.5em;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--foreground);
+}
+.job-desc h1 { font-size: 1.4em; }
+.job-desc h2 { font-size: 1.2em; }
+.job-desc h3 { font-size: 1.08em; }
+.job-desc ul,
+.job-desc ol {
+  margin: 0.75em 0;
+  padding-left: 1.5em;
+}
+.job-desc ul { list-style: disc; }
+.job-desc ol { list-style: decimal; }
+.job-desc li {
+  margin: 0.3em 0;
+}
+.job-desc a {
+  color: var(--primary);
+  text-decoration: underline;
+}
+.job-desc strong,
+.job-desc b {
+  font-weight: 600;
+  color: var(--foreground);
+}
+.job-desc hr {
+  margin: 1.25em 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
