@@ -3,12 +3,27 @@
 // slug(ATS 토큰/슬러그화된 회사명)가 실제 도메인 루트와 다른 경우 보정. 대부분 {slug}.com 이 맞다.
 const DOMAIN_OVERRIDES: Record<string, string> = {
   scaleai: "scale.com",
-  // 잡보드 자유텍스트 회사 중 Logo.dev 실제 로고 확인된 보정(TLD 규칙으로 못 잡는 케이스).
+  // 잡보드 자유텍스트 회사(주로 독일 GmbH) — 공식 도메인 웹검색 확인 + Logo.dev 실제 로고(fallback=404=200) 검증.
   "neural-frames": "neuralframes.com",
   "quantum-systems-gmbh": "quantum-systems.com",
   "itestra-gmbh": "itestra.de",
   "k-tronik-gmbh": "ktronik.de",
   "evident-europe-gmbh": "evidenttechnology.com",
+  "my-humancapital-gmbh": "my-humancapital.de",
+  "logistikbude-gmbh": "logistikbude.com",
+  "lexmind-gmbh": "lexmind.ai",
+  "techbiz-global-gmbh": "techbiz.global",
+  "batch-robotics-gmbh": "batch-robotics.com",
+  "angeheuert-gmbh": "angeheuert.com",
+  "myscribe-gmbh": "myscribe.de",
+  "optitool-gmbh": "optitool.de",
+  "spread-gmbh": "spread.ai",
+  "actana-consulting-services-gmbh": "actana-consulting.eu",
+  "cerpro-gmbh": "cerpro.io",
+  "w-rth-cloud-services-gmbh": "wuerth-cs.com",
+  "aphos-gesellschaft-f-r-it-sicherheit-mbh": "aphos.de",
+  "msa-fleet-consulting-msa-software-solutions-ug": "msa-fleet-consulting.de",
+  // irpd-gmbh: Logo.dev에 로고 없음(irpd.de 404) → 모노그램 유지.
 };
 
 // 슬러그화가 도메인 점을 하이픈으로 바꾸므로("lemon.io" → "lemon-io") 끝의 TLD를 복원.
