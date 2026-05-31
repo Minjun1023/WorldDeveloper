@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { postedLabel, deadlineLabel } from "@/lib/jobDates";
 import type { Job } from "@/lib/types";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
@@ -17,15 +18,10 @@ function formatSalary(salary?: Job["salary"]): string | null {
   return k((min_usd ?? max_usd)!);
 }
 
-function formatDate(iso?: string): string | null {
-  if (!iso) return null;
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? null : d.toLocaleDateString("ko-KR");
-}
-
 export function JobCard({ job }: { job: Job }) {
   const salary = formatSalary(job.salary);
-  const posted = formatDate(job.posted_at);
+  const posted = postedLabel(job.posted_at);
+  const deadline = deadlineLabel(job.closes_at);
   const metaParts = [job.location, job.is_remote ? "Remote" : null].filter(Boolean);
 
   return (
@@ -63,7 +59,9 @@ export function JobCard({ job }: { job: Job }) {
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-muted-foreground">
           {salary && <span className="font-mono text-foreground">{salary}</span>}
           {posted && <span>{posted}</span>}
-          <span className="font-mono">{job.id}</span>
+          <span className={deadline.urgent ? "text-foreground font-medium" : undefined}>
+            {deadline.text}
+          </span>
         </div>
       </CardContent>
 
