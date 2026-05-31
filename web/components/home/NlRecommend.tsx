@@ -10,7 +10,9 @@ import type { RecommendResponse } from "@/lib/types";
 const STORAGE_KEY = "nl-recommend-last";
 const EXAMPLE = "3년차 백엔드, Go·Python, 베를린 선호, 비자 스폰서 필요";
 
-export function NlRecommend() {
+export type RecommendPreset = { label: string; prompt: string };
+
+export function NlRecommend({ presets }: { presets?: RecommendPreset[] }) {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -22,9 +24,8 @@ export function NlRecommend() {
     if (saved) setText(saved);
   }, []);
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
-    const q = text.trim();
+  async function runRecommend(raw: string) {
+    const q = raw.trim();
     if (!q) return;
     if (abortRef.current) abortRef.current.abort();
     const controller = new AbortController();
@@ -57,6 +58,16 @@ export function NlRecommend() {
     }
   }
 
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    void runRecommend(text);
+  }
+
+  function handlePreset(p: RecommendPreset) {
+    setText(p.prompt);
+    void runRecommend(p.prompt);
+  }
+
   return (
     <div className="rounded-xl border border-border bg-surface p-5">
       <form onSubmit={submit} className="flex gap-2">
@@ -74,6 +85,22 @@ export function NlRecommend() {
       <p className="mt-2 text-caption text-muted-foreground">
         한 문장으로 적으면 AI가 프로필로 변환해 6차원 점수로 추천합니다.
       </p>
+
+      {presets && presets.length > 0 && (
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
+          {presets.map((p) => (
+            <button
+              key={p.label}
+              type="button"
+              onClick={() => handlePreset(p)}
+              disabled={loading}
+              className="rounded-full border border-border bg-background px-3 py-1 text-caption text-muted-foreground transition-colors hover:border-primary/50 hover:text-foreground disabled:opacity-50"
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {error && <p className="mt-4 text-body-sm text-destructive">{error}</p>}
 
