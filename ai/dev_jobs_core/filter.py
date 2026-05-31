@@ -37,7 +37,16 @@ _DENY = (
     "sales", "account exec", "account manager", "marketing", "social media",
     "business development", "partnership", "community manager", "growth manager",
     "solution engineer", "solutions engineer", "solution engineering",
-    "solutions engineering", "sales engineer",
+    "solutions engineering", "sales engineer", "presales", "pre-sales",
+    "technical account", "strategist",
+    # 프리세일즈/전문서비스 아키텍트 — #34: 라이브 누수 대부분(Partner/Delivery/
+    # Customer/Public Sector Solutions Architect). 'software/cloud/data architect'·
+    # generic 'architect' 는 STRONG/rule3 로 살아남음(solution(s) 한정 deny).
+    "solution architect", "solutions architect",
+    # 비SW 엔지니어 — #34: rule3(generic engineer)로 새던 지원/밸류/고객/네트워크 직
+    "support engineer", "support engineering", "value engineer", "value engineering",
+    "customer engineer", "customer engineering", "network engineer",
+    "network engineering", "implementation engineer",
     # 비SW 엔지니어(하드웨어/설비/제조)
     "mechanical engineer", "electrical engineer", "civil engineer",
     "chemical engineer", "industrial engineer", "biomedical", "hardware engineer",

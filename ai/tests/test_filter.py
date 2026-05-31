@@ -79,5 +79,51 @@ def test_drops_misc_non_dev():
 def test_precision_first_drops_bare_analyst():
     # 정밀도 우선: 개발 신호 없는 'Analyst' 는 drop (이전 recall-first 와 정책 변경)
     assert not is_dev_role("Data Analyst")
-    # 단, architect 는 keep
-    assert is_dev_role("Solutions Architect")
+
+
+def test_drops_solutions_architect_presales():
+    # #34: 라이브에서 'Solutions/Solution Architect' 통과분이 대부분 프리세일즈/
+    #      전문서비스(Partner/Delivery/Customer/Public Sector). 정밀도 우선 drop.
+    assert not is_dev_role("Solutions Architect")
+    assert not is_dev_role("Senior Solutions Architect")
+    assert not is_dev_role("Partner Solutions Architect")
+    assert not is_dev_role("Delivery Solutions Architect - Public Sector")
+    assert not is_dev_role("Customer Solutions Architect")
+    assert not is_dev_role("Solution Architect - Voice")
+    assert not is_dev_role("Technical Solution Architect")
+
+
+def test_keeps_real_architect_titles():
+    # 단, 진짜 개발/인프라 architect 는 keep (solution(s) 한정 deny 라야 함)
+    assert is_dev_role("Senior Software Architect")   # STRONG(software)
+    assert is_dev_role("Cloud Architect")             # rule3 generic architect
+    assert is_dev_role("Data Architect")
+    assert is_dev_role("Principal Architect, Platform")
+
+
+def test_drops_support_value_customer_network_engineers():
+    # #34: rule3(generic engineer) 로 새던 비SW 엔지니어 버킷
+    assert not is_dev_role("Technical Support Engineer")
+    assert not is_dev_role("Senior Support Engineer | Remote | US")
+    assert not is_dev_role("Production Support Engineer II")
+    assert not is_dev_role("Value Engineer")
+    assert not is_dev_role("Lead Applied Value Engineer | Healthcare")
+    assert not is_dev_role("Senior Customer Engineer, Web3")
+    assert not is_dev_role("Team Lead, Customer Engineering")
+    assert not is_dev_role("Network Engineer")
+    assert not is_dev_role("Senior Network Engineer")
+    assert not is_dev_role("Implementation Engineer")
+
+
+def test_drops_strategist_presales_account():
+    # #34
+    assert not is_dev_role("AI Deployment Strategist, AI4Engineering - EMEA")
+    assert not is_dev_role("Technical Account Manager")
+    assert not is_dev_role("Presales Engineer, EMEA")
+
+
+def test_strong_signal_still_wins_over_new_deny():
+    # STRONG(software/developer/ml 등) 은 새 deny 보다 우선 → 진짜 SWE 보호
+    assert is_dev_role("Developer Support Engineer")
+    assert is_dev_role("Machine Learning Engineer, Customer Support Engineering")
+    assert is_dev_role("Senior Manager, Solutions Architecture, AI & Developer Platform")
