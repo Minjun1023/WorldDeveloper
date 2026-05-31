@@ -1,16 +1,17 @@
 import { CompanySpotlight } from "@/components/home/CompanySpotlight";
 import { CountryTiles } from "@/components/home/CountryTiles";
 import { Hero } from "@/components/home/Hero";
+import type { HomeStats } from "@/components/home/HeroStats";
 import { JobScrollRow } from "@/components/home/JobScrollRow";
-import { NlRecommend } from "@/components/home/NlRecommend";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { fetchCompanies, fetchJobs, fetchRegions } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const [visaRes, latestRes, companies, regions] = await Promise.all([
+  const [visaRes, allRes, latestRes, companies, regions] = await Promise.all([
     fetchJobs({ visa: "sponsors", pageSize: 8 }),
+    fetchJobs({ pageSize: 1 }),
     fetchJobs({ pageSize: 6, sort: "newest" }),
     fetchCompanies(),
     fetchRegions(),
@@ -18,12 +19,20 @@ export default async function HomePage() {
 
   const visaJobs = visaRes.ok ? visaRes.data.items : [];
   const visaTotal = visaRes.ok ? visaRes.data.total : 0;
+  const allTotal = allRes.ok ? allRes.data.total : 0;
   const latestJobs = latestRes.ok ? latestRes.data.items : [];
   const spotlight = companies?.items.slice(0, 6) ?? [];
 
+  const stats: HomeStats = {
+    sponsors: visaTotal,
+    total: allTotal,
+    companies: companies?.total ?? 0,
+    countries: regions.length,
+  };
+
   return (
     <div className="space-y-12">
-      <Hero regions={regions} />
+      <Hero stats={stats} />
 
       {visaJobs.length > 0 && (
         <section>
@@ -31,11 +40,6 @@ export default async function HomePage() {
           <JobScrollRow jobs={visaJobs} />
         </section>
       )}
-
-      <section>
-        <SectionHeader title="나에게 맞는 공고" accent="recommend" href="/recommend" hrefLabel="정교한 추천 설정" />
-        <NlRecommend />
-      </section>
 
       <section>
         <SectionHeader title="국가별로 찾기" />
