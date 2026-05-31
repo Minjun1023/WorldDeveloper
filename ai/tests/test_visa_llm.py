@@ -121,3 +121,59 @@ async def test_grounded_but_not_visa_relevant_returns_unclear(monkeypatch):
         result = await classify_visa_llm("Software Engineer", description)
 
     assert result == ("unclear", [])
+
+
+@pytest.mark.asyncio
+async def test_retries_on_429_then_succeeds(monkeypatch):
+    """429(rate limit) 시 백오프 후 재시도 → 다음 200 응답으로 성공."""
+    monkeypatch.setattr(settings, "openai_api_key", "test-key")
+
+    resp_429 = MagicMock()
+    resp_429.status_code = 429
+    resp_429.text = "rate limited"
+    resp_429.headers = {}
+    resp_200 = _make_mock_response({"status": "sponsors", "reason": "we offer visa sponsorship"})
+
+    mock_post = AsyncMock(side_effect=[resp_429, resp_200])
+    mock_client = AsyncMock()
+    mock_client.post = mock_post
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+
+    with (
+        patch("app.etl.visa_llm.httpx.AsyncClient", return_value=mock_client),
+        patch("app.etl.visa_llm.asyncio.sleep", AsyncMock()),
+    ):
+        result = await classify_visa_llm(
+            "Senior Engineer",
+            "We offer visa sponsorship for qualified candidates.",
+        )
+
+    assert result == ("sponsors", ["AI: we offer visa sponsorship"])
+    assert mock_post.call_count == 2
+
+
+@pytest.mark.asyncio
+async def test_gives_up_after_repeated_429(monkeypatch):
+    """429 가 계속되면 재시도 한도 후 None 반환(무한 루프 방지)."""
+    monkeypatch.setattr(settings, "openai_api_key", "test-key")
+
+    resp_429 = MagicMock()
+    resp_429.status_code = 429
+    resp_429.text = "rate limited"
+    resp_429.headers = {}
+
+    mock_post = AsyncMock(return_value=resp_429)
+    mock_client = AsyncMock()
+    mock_client.post = mock_post
+    mock_client.__aenter__ = AsyncMock(return_value=mock_client)
+    mock_client.__aexit__ = AsyncMock(return_value=False)
+
+    with (
+        patch("app.etl.visa_llm.httpx.AsyncClient", return_value=mock_client),
+        patch("app.etl.visa_llm.asyncio.sleep", AsyncMock()),
+    ):
+        result = await classify_visa_llm("Engineer", "Some description text here.")
+
+    assert result is None
+    assert mock_post.call_count >= 2  # 초기 시도 + 재시도
