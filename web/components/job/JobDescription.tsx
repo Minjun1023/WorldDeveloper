@@ -1,5 +1,6 @@
 "use client";
 
+import DOMPurify from "isomorphic-dompurify";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -45,6 +46,8 @@ export function JobDescription({ jobId, original }: { jobId: string; original: s
   }
 
   const text = view === "ko" && ko ? ko : original;
+  // 외부 소스 HTML이라 XSS 방지를 위해 DOMPurify로 살균 후 렌더.
+  const safeHtml = DOMPurify.sanitize(text, { USE_PROFILES: { html: true } });
 
   return (
     <section className="space-y-2">
@@ -85,7 +88,10 @@ export function JobDescription({ jobId, original }: { jobId: string; original: s
         <p className="text-caption text-muted-foreground">기계 번역 — 오역이 있을 수 있습니다.</p>
       )}
 
-      <div className="whitespace-pre-line text-body text-foreground/90">{text}</div>
+      <div
+        className="job-desc text-body text-foreground/90"
+        dangerouslySetInnerHTML={{ __html: safeHtml }}
+      />
     </section>
   );
 }
