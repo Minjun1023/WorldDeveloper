@@ -86,17 +86,6 @@ export default async function JobDetailPage({ params }: { params: { id: string }
         </div>
       </header>
 
-      {job.visa?.evidence && job.visa.evidence.length > 0 && (
-        <section className="rounded-lg border border-border bg-surface-2 p-4">
-          <h2 className="text-body-sm font-medium">비자 근거</h2>
-          <ul className="mt-2 space-y-1 text-body-sm text-muted-foreground">
-            {job.visa.evidence.map((e, i) => (
-              <li key={i}>“{e}”</li>
-            ))}
-          </ul>
-        </section>
-      )}
-
       {job.description && <JobSummary jobId={job.id} />}
 
       {job.description && (
