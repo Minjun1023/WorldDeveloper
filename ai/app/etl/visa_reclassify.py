@@ -14,7 +14,8 @@ from .visa_llm import classify_visa_llm
 
 log = logging.getLogger(__name__)
 
-_LLM_CONCURRENCY = 8
+# OpenAI rate limit(429) 회피: 동시성 하향(8→3). visa_llm 내부에 429/5xx 백오프 재시도 있음.
+_LLM_CONCURRENCY = 3
 
 UK_EVIDENCE = "회사가 UK 스폰서 라이선스 보유 (Home Office 등록 스폰서 명부)"
 

@@ -1,6 +1,7 @@
 """LLM(gpt-4o-mini) 비자 분류 — unclear 공고 전문을 읽어 분류. 키 없거나 실패 시 None."""
 from __future__ import annotations
 
+import asyncio
 import json
 import logging
 import os
@@ -11,6 +12,23 @@ import httpx
 from ..config import settings
 
 log = logging.getLogger(__name__)
+
+# 429(rate limit)/5xx 재시도 설정.
+_MAX_RETRIES = 3
+_BACKOFF_BASE_SEC = 2  # 2, 4, 8...
+_BACKOFF_CAP_SEC = 20
+_RETRYABLE = {429, 500, 502, 503, 504}
+
+
+def _retry_after_seconds(resp: httpx.Response, attempt: int) -> float:
+    """Retry-After 헤더(초) 있으면 사용, 없으면 지수 백오프(상한)."""
+    ra = resp.headers.get("retry-after") if hasattr(resp, "headers") else None
+    if ra:
+        try:
+            return min(float(ra), _BACKOFF_CAP_SEC)
+        except (TypeError, ValueError):
+            pass
+    return min(_BACKOFF_BASE_SEC * (2 ** attempt), _BACKOFF_CAP_SEC)
 
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 
@@ -66,25 +84,31 @@ async def classify_visa_llm(title: str, description: str) -> tuple[str, list[str
     if not key or not (description or "").strip():
         return None
     user = json.dumps({"title": title or "", "description": description[:12000]}, ensure_ascii=False)
+    payload = {
+        "model": MODEL,
+        "max_tokens": 200,
+        "temperature": 0.0,
+        "response_format": {"type": "json_object"},
+        "messages": [
+            {"role": "system", "content": SYSTEM},
+            {"role": "user", "content": user},
+        ],
+    }
+    headers = {"Authorization": f"Bearer {key}", "content-type": "application/json"}
     try:
         async with httpx.AsyncClient(timeout=60) as client:
-            resp = await client.post(
-                OPENAI_URL,
-                headers={"Authorization": f"Bearer {key}", "content-type": "application/json"},
-                json={
-                    "model": MODEL,
-                    "max_tokens": 200,
-                    "temperature": 0.0,
-                    "response_format": {"type": "json_object"},
-                    "messages": [
-                        {"role": "system", "content": SYSTEM},
-                        {"role": "user", "content": user},
-                    ],
-                },
-            )
-        if resp.status_code != 200:
-            log.warning("visa LLM HTTP %s: %s", resp.status_code, resp.text[:200])
-            return None
+            resp = None
+            for attempt in range(_MAX_RETRIES + 1):
+                resp = await client.post(OPENAI_URL, headers=headers, json=payload)
+                if resp.status_code == 200:
+                    break
+                if resp.status_code in _RETRYABLE and attempt < _MAX_RETRIES:
+                    await asyncio.sleep(_retry_after_seconds(resp, attempt))
+                    continue
+                log.warning("visa LLM HTTP %s: %s", resp.status_code, resp.text[:200])
+                return None
+            if resp is None or resp.status_code != 200:
+                return None
         obj = json.loads(resp.json()["choices"][0]["message"]["content"] or "{}")
         status = obj.get("status")
         if status not in _VALID:
