@@ -6,14 +6,10 @@ function parseDate(iso?: string | null): Date | null {
   return Number.isNaN(d.getTime()) ? null : d;
 }
 
-// 게시일 상대 표기: 오늘/어제/N일 전(14일 미만), 그 외엔 날짜.
+// 게시일 표기: 실제 게시 날짜(절대). 예 "2026. 5. 26. 게시".
 export function postedLabel(posted_at?: string | null): string | null {
   const d = parseDate(posted_at);
   if (!d) return null;
-  const days = Math.floor((Date.now() - d.getTime()) / 86_400_000);
-  if (days <= 0) return "오늘 게시";
-  if (days === 1) return "어제 게시";
-  if (days < 14) return `${days}일 전 게시`;
   return `${d.toLocaleDateString("ko-KR")} 게시`;
 }
 
