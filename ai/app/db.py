@@ -43,18 +43,21 @@ def upsert_job(conn: psycopg.Connection, job: dict[str, Any]) -> None:
     """공고 upsert. 재관측 시 last_seen_at 갱신 + is_active=true 복구."""
     params = dict(job)
     params["visa_evidence"] = Json(job.get("visa_evidence") or [])
+    params["remote_evidence"] = Json(job.get("remote_evidence") or [])
     conn.execute(
         """
         INSERT INTO jobs (
             id, source, title, company_slug, location, is_remote, employment_type,
             description, description_text, apply_url, posted_at, closes_at, tags,
-            salary_min_usd, salary_max_usd, visa_status, visa_evidence, embedding,
+            salary_min_usd, salary_max_usd, visa_status, visa_evidence,
+            remote_eligibility, remote_evidence, embedding,
             first_seen_at, last_seen_at, is_active
         ) VALUES (
             %(id)s, %(source)s, %(title)s, %(company_slug)s, %(location)s, %(is_remote)s,
             %(employment_type)s, %(description)s, %(description_text)s, %(apply_url)s,
             %(posted_at)s, %(closes_at)s, %(tags)s, %(salary_min_usd)s, %(salary_max_usd)s,
-            %(visa_status)s, %(visa_evidence)s, %(embedding)s,
+            %(visa_status)s, %(visa_evidence)s,
+            %(remote_eligibility)s, %(remote_evidence)s, %(embedding)s,
             now(), now(), true
         )
         ON CONFLICT (id) DO UPDATE SET
@@ -72,6 +75,8 @@ def upsert_job(conn: psycopg.Connection, job: dict[str, Any]) -> None:
             salary_max_usd  = EXCLUDED.salary_max_usd,
             visa_status     = EXCLUDED.visa_status,
             visa_evidence   = EXCLUDED.visa_evidence,
+            remote_eligibility = EXCLUDED.remote_eligibility,
+            remote_evidence    = EXCLUDED.remote_evidence,
             embedding       = EXCLUDED.embedding,
             last_seen_at    = now(),
             is_active       = true

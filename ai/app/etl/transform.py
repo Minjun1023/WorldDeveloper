@@ -5,9 +5,10 @@
 from __future__ import annotations
 
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
+from dev_jobs_core.analyzers.remote_geo import classify_remote_eligibility
 from dev_jobs_core.analyzers.salary import _to_usd_year
 from dev_jobs_core.analyzers.stack import extract_tech
 from dev_jobs_core.analyzers.visa import classify_visa
@@ -33,7 +34,7 @@ def parse_dt(s: str) -> datetime | None:
     s = str(s).strip()
     if s.isdigit():  # unix epoch (Arbeitnow)
         try:
-            return datetime.fromtimestamp(int(s), tz=timezone.utc)
+            return datetime.fromtimestamp(int(s), tz=UTC)
         except (ValueError, OverflowError):
             return None
     try:
@@ -72,6 +73,9 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
     }
 
     status, evidence = classify_visa(j.description)
+    remote_status, remote_evidence = classify_remote_eligibility(
+        j.location or "", bool(j.is_remote), j.description or ""
+    )
     plain = html_strip(j.description)
     tags = j.tags or extract_tech(j.description)
     embedding = embed_text(f"{j.title}\n{plain}")
@@ -94,6 +98,8 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
         "salary_max_usd": _usd(j.salary_max, j.salary_currency, j.salary_period),
         "visa_status": status,
         "visa_evidence": evidence,
+        "remote_eligibility": remote_status,
+        "remote_evidence": remote_evidence,
         "embedding": embedding,
     }
     return company_row, job_row
