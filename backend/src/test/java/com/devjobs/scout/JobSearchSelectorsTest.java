@@ -127,4 +127,33 @@ class JobSearchSelectorsTest {
         assertTrue(res.items().stream().noneMatch(j -> j.id().equals("onsite")),
             "onsite 공고는 제외");
     }
+
+    @Test
+    void newCountriesAppearInRegionCounts() {
+        company("c8", "C8");
+        job("es", "Eng", "c8", "x", null, "Madrid, Spain", false);
+        job("pl", "Eng", "c8", "x", null, "Warsaw, Poland", false);
+        job("se", "Eng", "c8", "x", null, "Stockholm, Sweden", false);
+        job("it", "Eng", "c8", "x", null, "Milan, Italy", false);
+        List<RegionCount> rc = service.regionCounts();
+        // 확장된 9개국이 /regions 응답에 포함되어야 함
+        for (String key : List.of("spain", "poland", "portugal", "sweden",
+                "denmark", "italy", "austria", "czech", "switzerland")) {
+            assertTrue(rc.stream().anyMatch(r -> r.value().equals(key)),
+                "확장 국가 '" + key + "' 가 regionCounts 에 있어야 함");
+        }
+        long spainCount = rc.stream()
+            .filter(r -> r.value().equals("spain")).findFirst().orElseThrow().count();
+        assertEquals(1L, spainCount, "Madrid 가 spain 패턴에 매칭");
+    }
+
+    @Test
+    void regionSearchMatchesNewCountryCityOnly() {
+        company("c9", "C9");
+        // 도시-only(국가명 없음) 도 region 검색에 잡혀야 함
+        job("bcn", "Engineer", "c9", "x", null, "Barcelona", false);
+        JobListResponse res = service.search(null, null, null, null, null, null, "spain", 1, 20);
+        assertTrue(res.items().stream().anyMatch(j -> j.id().equals("bcn")),
+            "city-only 'Barcelona' 가 region=spain 검색에 매칭");
+    }
 }
