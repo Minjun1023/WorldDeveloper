@@ -23,11 +23,14 @@ export default async function HomePage() {
   const latestJobs = latestRes.ok ? latestRes.data.items : [];
   const spotlight = companies?.items.slice(0, 6) ?? [];
 
+  // 원격은 근무형태지 국가가 아니므로 "국가" 수치에서 제외. 공고가 있는 국가만 카운트.
+  const countryRegions = regions.filter((r) => r.value !== "remote" && r.count > 0);
+
   const stats: HomeStats = {
     sponsors: visaTotal,
     total: allTotal,
     companies: companies?.total ?? 0,
-    countries: regions.length,
+    countries: countryRegions.length,
   };
 
   return (
@@ -41,10 +44,12 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section>
-        <SectionHeader title="국가별로 찾기" />
-        <CountryTiles />
-      </section>
+      {countryRegions.length > 0 && (
+        <section>
+          <SectionHeader title="국가별로 찾기" />
+          <CountryTiles regions={countryRegions} />
+        </section>
+      )}
 
       {latestJobs.length > 0 && (
         <section>

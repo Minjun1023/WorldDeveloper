@@ -42,7 +42,16 @@ public class JobService {
         new Region("netherlands", "네덜란드", "netherlands|amsterdam|rotterdam|utrecht|hague|eindhoven"),
         new Region("ireland", "아일랜드", "ireland|dublin|cork"),
         new Region("canada", "캐나다", "canada|toronto|vancouver|montreal|ottawa|waterloo"),
-        new Region("france", "프랑스", "france|paris|lyon|toulouse"));
+        new Region("france", "프랑스", "france|paris|lyon|toulouse"),
+        new Region("spain", "스페인", "spain|madrid|barcelona|valencia"),
+        new Region("poland", "폴란드", "poland|warsaw|kraków|krakow|wrocław|wroclaw|gdansk|gdańsk"),
+        new Region("portugal", "포르투갈", "portugal|lisbon|lisboa|porto"),
+        new Region("sweden", "스웨덴", "sweden|stockholm|gothenburg|göteborg|malmö|malmo"),
+        new Region("denmark", "덴마크", "denmark|copenhagen|københavn|kobenhavn|aarhus"),
+        new Region("italy", "이탈리아", "italy|milan|milano|rome|roma|turin|torino"),
+        new Region("austria", "오스트리아", "austria|vienna|wien|graz"),
+        new Region("czech", "체코", "czech|prague|praha|brno"),
+        new Region("switzerland", "스위스", "switzerland|zurich|zürich|geneva|lausanne|basel"));
 
     private final JobRepository repository;
 
