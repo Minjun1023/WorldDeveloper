@@ -69,6 +69,13 @@ public class JobEntity {
     @Column(name = "visa_evidence", columnDefinition = "jsonb")
     private List<String> visaEvidence;
 
+    @Column(name = "remote_eligibility")
+    private String remoteEligibility;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "remote_evidence", columnDefinition = "jsonb")
+    private List<String> remoteEvidence;
+
     @Column(name = "is_active")
     private Boolean isActive;
 
@@ -94,5 +101,7 @@ public class JobEntity {
     public Integer getSalaryMaxUsd() { return salaryMaxUsd; }
     public String getVisaStatus() { return visaStatus; }
     public List<String> getVisaEvidence() { return visaEvidence; }
+    public String getRemoteEligibility() { return remoteEligibility; }
+    public List<String> getRemoteEvidence() { return remoteEvidence; }
     public Boolean getIsActive() { return isActive; }
 }
