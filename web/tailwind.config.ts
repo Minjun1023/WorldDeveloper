@@ -29,10 +29,7 @@ const config: Config = {
         success: "var(--success)",
         warning: "var(--warning)",
         destructive: "var(--destructive)",
-        verified: {
-          DEFAULT: "var(--verified)",
-          foreground: "var(--verified-foreground)",
-        },
+        verified: "var(--verified)",
         score: {
           stack: "var(--score-stack)",
           visa: "var(--score-visa)",
@@ -63,7 +60,6 @@ const config: Config = {
           "var(--font-serif)",
           "Source Serif 4",
           "Georgia",
-          "Pretendard Variable",
           "serif",
         ],
       },

@@ -7,7 +7,7 @@ color_schemes: [light, dark]
 fonts:
   sans: "Pretendard Variable, Pretendard, Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif"
   mono: "JetBrains Mono, SFMono-Regular, Menlo, Consolas, monospace"
-  serif: "Source Serif 4, Georgia, Pretendard Variable, serif"
+  serif: "Source Serif 4, Georgia, serif"
 colors:
   light:
     background: "#ffffff"
