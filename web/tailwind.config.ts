@@ -29,6 +29,10 @@ const config: Config = {
         success: "var(--success)",
         warning: "var(--warning)",
         destructive: "var(--destructive)",
+        verified: {
+          DEFAULT: "var(--verified)",
+          foreground: "var(--verified-foreground)",
+        },
         score: {
           stack: "var(--score-stack)",
           visa: "var(--score-visa)",
@@ -54,6 +58,13 @@ const config: Config = {
           "Menlo",
           "Consolas",
           "monospace",
+        ],
+        serif: [
+          "var(--font-serif)",
+          "Source Serif 4",
+          "Georgia",
+          "Pretendard Variable",
+          "serif",
         ],
       },
       fontSize: {

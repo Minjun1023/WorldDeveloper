@@ -4,6 +4,15 @@ import { Providers } from "@/components/providers";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteNav } from "@/components/SiteNav";
 import { getSession } from "@/lib/session-server";
+import { Source_Serif_4 } from "next/font/google";
+
+const sourceSerif = Source_Serif_4({
+  subsets: ["latin"],
+  weight: ["400", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-serif",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "WorldDeveloper",
@@ -18,7 +27,7 @@ export default async function RootLayout({
   const session = await getSession();
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className="min-h-screen antialiased">
+      <body className={`${sourceSerif.variable} min-h-screen antialiased`}>
        <Providers>
         <ThemeProvider
           attribute="class"
