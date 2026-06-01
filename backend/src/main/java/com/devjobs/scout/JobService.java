@@ -69,9 +69,16 @@ public class JobService {
         }).toList();
     }
 
+    // 기존 9-arg: 게이트 미적용(includeUnclear=true) 편의 오버로드 — 내부/테스트용.
     public JobListResponse search(
         String q, String visa, String location, Boolean remote, String sort, String discipline,
         String region, int page, int pageSize) {
+        return search(q, visa, location, remote, sort, discipline, region, null, true, page, pageSize);
+    }
+
+    public JobListResponse search(
+        String q, String visa, String location, Boolean remote, String sort, String discipline,
+        String region, String track, boolean includeUnclear, int page, int pageSize) {
 
         int safePage = Math.max(1, page);
         int safeSize = Math.min(Math.max(1, pageSize), MAX_PAGE_SIZE);
@@ -87,9 +94,19 @@ public class JobService {
             remoteParam = Boolean.TRUE;                              // 원격 지역 → remote 필터
         }
 
-        // 비자 우선 티어가 기본. sort=recent 도 티어는 유지(티어 내부에서 최신순). sort=newest 일 때만
-        // 티어를 끔 — 홈 "새로 올라온 공고" 순수 최신 쇼케이스 전용.
-        boolean visaPriority = !"newest".equals(sort);
+        // viability 게이트 모드: track + includeUnclear 조합.
+        String gateMode;
+        if (includeUnclear) {
+            gateMode = "remote".equals(track) ? "remote_unclear"
+                     : "relocation".equals(track) ? "relocation_unclear" : "all";
+        } else {
+            gateMode = "remote".equals(track) ? "remote"
+                     : "relocation".equals(track) ? "relocation" : "both";
+        }
+
+        // 정렬 1순위: remote 트랙이면 원격 티어, 아니면 비자 티어. sort=newest 면 둘 다 끔(순수 최신).
+        boolean remotePriority = "remote".equals(track) && !"newest".equals(sort);
+        boolean visaPriority = !"newest".equals(sort) && !"remote".equals(track);
         boolean byRelevance = hasQuery && !"recent".equals(sort) && !"newest".equals(sort);
         String qParam = hasQuery ? q.trim() : null;
         String visaParam = (visa != null && !visa.isBlank()) ? visa.trim() : null;
@@ -99,8 +116,9 @@ public class JobService {
 
         List<String> ids = repository.searchIds(
             qParam, discTerms, regionRegex, visaParam, locParam, remoteParam,
-            visaPriority, byRelevance, safeSize, offset);
-        long total = repository.countSearch(qParam, discTerms, regionRegex, visaParam, locParam, remoteParam);
+            gateMode, remotePriority, visaPriority, byRelevance, safeSize, offset);
+        long total = repository.countSearch(
+            qParam, discTerms, regionRegex, visaParam, locParam, remoteParam, gateMode);
 
         Map<String, JobEntity> byId = new HashMap<>();
         for (JobEntity j : repository.findAllById(ids)) byId.put(j.getId(), j);

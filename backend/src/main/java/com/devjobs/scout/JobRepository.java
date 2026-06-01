@@ -53,7 +53,18 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
           AND (CAST(:visa AS text) IS NULL OR visa_status = CAST(:visa AS text))
           AND (CAST(:loc AS text) IS NULL OR lower(location) LIKE CAST(:loc AS text))
           AND (CAST(:remote AS boolean) IS NULL OR is_remote = CAST(:remote AS boolean))
+          AND (
+            CAST(:gateMode AS text) = 'all'
+            OR (CAST(:gateMode AS text) = 'both' AND (visa_status = 'sponsors' OR remote_eligibility IN ('worldwide','apac_ok')))
+            OR (CAST(:gateMode AS text) = 'remote' AND remote_eligibility IN ('worldwide','apac_ok'))
+            OR (CAST(:gateMode AS text) = 'remote_unclear' AND remote_eligibility IN ('worldwide','apac_ok','unclear'))
+            OR (CAST(:gateMode AS text) = 'relocation' AND visa_status = 'sponsors')
+            OR (CAST(:gateMode AS text) = 'relocation_unclear' AND visa_status IN ('sponsors','unclear'))
+          )
         ORDER BY
+          CASE WHEN :remotePriority THEN
+            (CASE remote_eligibility WHEN 'worldwide' THEN 0 WHEN 'apac_ok' THEN 1 ELSE 2 END)
+          ELSE 0 END ASC,
           CASE WHEN :visaPriority THEN
             (CASE visa_status WHEN 'sponsors' THEN 0 WHEN 'no_sponsor' THEN 2 ELSE 1 END)
           ELSE 0 END ASC,
@@ -65,6 +76,7 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
     List<String> searchIds(
         @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
         @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
+        @Param("gateMode") String gateMode, @Param("remotePriority") boolean remotePriority,
         @Param("visaPriority") boolean visaPriority, @Param("byRelevance") boolean byRelevance,
         @Param("lim") int lim, @Param("off") int off);
 
@@ -77,10 +89,19 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
           AND (CAST(:visa AS text) IS NULL OR visa_status = CAST(:visa AS text))
           AND (CAST(:loc AS text) IS NULL OR lower(location) LIKE CAST(:loc AS text))
           AND (CAST(:remote AS boolean) IS NULL OR is_remote = CAST(:remote AS boolean))
+          AND (
+            CAST(:gateMode AS text) = 'all'
+            OR (CAST(:gateMode AS text) = 'both' AND (visa_status = 'sponsors' OR remote_eligibility IN ('worldwide','apac_ok')))
+            OR (CAST(:gateMode AS text) = 'remote' AND remote_eligibility IN ('worldwide','apac_ok'))
+            OR (CAST(:gateMode AS text) = 'remote_unclear' AND remote_eligibility IN ('worldwide','apac_ok','unclear'))
+            OR (CAST(:gateMode AS text) = 'relocation' AND visa_status = 'sponsors')
+            OR (CAST(:gateMode AS text) = 'relocation_unclear' AND visa_status IN ('sponsors','unclear'))
+          )
         """, nativeQuery = true)
     long countSearch(
         @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
-        @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote);
+        @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
+        @Param("gateMode") String gateMode);
 
     @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND is_remote = true",
         nativeQuery = true)
