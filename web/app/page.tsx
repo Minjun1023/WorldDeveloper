@@ -2,6 +2,7 @@ import { CompanySpotlight } from "@/components/home/CompanySpotlight";
 import { CountryTiles } from "@/components/home/CountryTiles";
 import { Hero } from "@/components/home/Hero";
 import type { HomeStats } from "@/components/home/HeroStats";
+import { TrackPicker } from "@/components/home/TrackPicker";
 import { JobScrollRow } from "@/components/home/JobScrollRow";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { fetchCompanies, fetchJobs, fetchRegions } from "@/lib/api";
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 export default async function HomePage() {
   const [visaRes, allRes, latestRes, companies, regions] = await Promise.all([
     fetchJobs({ visa: "sponsors", pageSize: 8 }),
-    fetchJobs({ pageSize: 1 }),
+    fetchJobs({ pageSize: 1, includeUnclear: true }),
     fetchJobs({ pageSize: 6, sort: "newest" }),
     fetchCompanies(),
     fetchRegions(),
@@ -36,6 +37,13 @@ export default async function HomePage() {
   return (
     <div className="space-y-12">
       <Hero stats={stats} />
+
+      <section>
+        <h2 className="mb-3 text-center text-body-sm font-medium text-muted-foreground">
+          어떤 길을 찾고 계세요?
+        </h2>
+        <TrackPicker />
+      </section>
 
       {visaJobs.length > 0 && (
         <section>
