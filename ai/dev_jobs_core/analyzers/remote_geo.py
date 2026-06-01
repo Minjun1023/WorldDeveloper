@@ -48,6 +48,23 @@ _DESC_WORLDWIDE = [
     r"\banywhere in the world\b", r"\bany time\s*zone\b",
 ]
 
+# description 본문의 '역할별 지리 요구' (회사 보일러플레이트와 구분되는 요구 프레이밍만).
+# "support our APAC clients" 같은 업무 문구는 잡지 않도록 요구 동사/within 프레이밍을 강제한다.
+_REQ_FRAME = (
+    r"(?:requires? a location within|must be (?:based|located) (?:in|within)|"
+    r"(?:location|located|role)(?: is)? within|eligible to work (?:in|within))"
+)
+_DESC_APAC_REQ = [
+    rf"\b{_REQ_FRAME}\b[^.\n]{{0,25}}\b(?:APAC|Asia[\s-]?Pacific|Asia|Korea|KST)\b",
+    r"\b(?:APAC|Asia[\s-]?Pacific) time\s*zones?\b",
+]
+_DESC_RESTRICT_REQ = [
+    rf"\b{_REQ_FRAME}\b[^.\n]{{0,25}}"
+    r"\b(?:US|U\.S\.|USA|United States|Americas?|North America|EMEA|EU|"
+    r"Europe(?:an)?|UK|United Kingdom|Canada|Australia)\b",
+    r"\b(?:US|U\.S\.|USA|Americas?|EMEA|Europe(?:an)?|EST|PST|CET) time\s*zones?\b",
+]
+
 # location 에서 filler 를 제거하고 남는 알파벳 = 특정 지명(권역 한정 신호).
 _FILLER = (
     r"\b(?:remote|hybrid|on[\s-]?site|onsite|work from home|wfh|fully|flexible|"
@@ -58,6 +75,8 @@ _STRONG_RE = [re.compile(p, re.I) for p in _STRONG_RESTRICT]
 _LOC_WW_RE = [re.compile(p, re.I) for p in _LOC_WORLDWIDE]
 _APAC_RE = [re.compile(p, re.I) for p in _APAC]
 _DESC_WW_RE = [re.compile(p, re.I) for p in _DESC_WORLDWIDE]
+_DESC_APAC_REQ_RE = [re.compile(p, re.I) for p in _DESC_APAC_REQ]
+_DESC_RESTRICT_REQ_RE = [re.compile(p, re.I) for p in _DESC_RESTRICT_REQ]
 _FILLER_RE = re.compile(_FILLER, re.I)
 
 
@@ -102,7 +121,16 @@ def classify_remote_eligibility(
             return "region_restricted", [loc.strip()[:70]]
         # 여기 도달 = location 이 'Remote' 등 filler 뿐 → 본문으로.
 
-    # 2. location 이 비었거나 bare-remote → description 은 약한 신호(구문만 신뢰).
+    # 2. location 이 비었거나 bare-remote → description 의 '역할별 지리 요구'를 먼저 본다.
+    #    회사 보일러플레이트("work from anywhere")보다 역할 요구(APAC 타임존 등)가 우선.
+    apac_req = _hit(desc, _DESC_APAC_REQ_RE)
+    if apac_req:
+        return "apac_ok", [apac_req]
+    restrict_req = _hit(desc, _DESC_RESTRICT_REQ_RE)
+    if restrict_req:
+        return "region_restricted", [restrict_req]
+
+    # 3. 역할 요구가 없으면 worldwide '구문'만 신뢰.
     ww = _hit(desc, _DESC_WW_RE)
     if ww:
         return "worldwide", [ww]

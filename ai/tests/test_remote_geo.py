@@ -84,3 +84,33 @@ def test_bare_worldwide_in_description_not_trusted():
 
 def test_global_location_worldwide():
     assert cls("Remote - Global", True, "")[0] == "worldwide"
+
+
+# --- Playwright ground-truth 검증으로 드러난 정밀도 보강 (역할별 지리 요구 > 회사 보일러플레이트) ---
+
+
+def test_apac_timezone_requirement_beats_boilerplate():
+    # 실제 Supabase 공고: 회사는 "work from anywhere"라지만 역할은 APAC 타임존 한정 → apac_ok (한국 포함)
+    desc = (
+        "We hire globally. We believe you can do your best work from anywhere. "
+        "This role requires a location within APAC time zones."
+    )
+    assert cls("Remote", True, desc)[0] == "apac_ok"
+
+
+def test_apac_timezone_phrase_apac_ok():
+    assert cls("Remote", True, "You will work within APAC time zones.")[0] == "apac_ok"
+
+
+def test_us_location_requirement_beats_boilerplate():
+    desc = "Work from anywhere! This role requires a location within the US."
+    assert cls("Remote", True, desc)[0] == "region_restricted"
+
+
+def test_us_timezone_plural_requirement_restricted():
+    assert cls("Remote", True, "You must be available during US time zones.")[0] == "region_restricted"
+
+
+def test_apac_duty_phrase_is_not_a_requirement():
+    # "support our APAC clients"는 업무 문구(요구 프레이밍 없음) → apac_ok 로 오인하지 않는다
+    assert cls("Remote", True, "You will support our APAC clients daily.")[0] == "unclear"
