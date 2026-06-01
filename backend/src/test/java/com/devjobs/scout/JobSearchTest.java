@@ -49,6 +49,10 @@ class JobSearchTest {
         jdbc.update("UPDATE jobs SET visa_status = ? WHERE id = ?", status, id);
     }
 
+    private void setRemote(String id, String eligibility) {
+        jdbc.update("UPDATE jobs SET remote_eligibility = ? WHERE id = ?", eligibility, id);
+    }
+
     @Test
     void relevanceRanksTitleAboveDescription() {
         company("acme", "Acme Inc");
@@ -133,5 +137,92 @@ class JobSearchTest {
         var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("nw_")).toList();
         assertEquals(java.util.List.of("nw_no", "nw_unc", "nw_spon"), ids,
             "newest 는 티어 무시, 순수 최신순(no_sponsor 최신 → unclear → sponsors 가장 오래됨)");
+    }
+
+    @Test
+    void defaultGateHidesNonViable() {
+        company("g1", "Gate Co");
+        job("g_spon", "Backend Engineer", "g1", "x", "backend", false, "now()");
+        job("g_unc",  "Backend Engineer", "g1", "x", "backend", false, "now()");  // unclear, 비원격 → 비viable
+        job("g_no",   "Backend Engineer", "g1", "x", "backend", false, "now()");
+        setVisa("g_spon", "sponsors");
+        setVisa("g_no", "no_sponsor");
+        // g_unc 는 visa 미설정(unclear), remote 미설정(none)
+        JobListResponse res = service.search(
+            "backend", null, null, null, null, null, null, null, false, 1, 20);
+        var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("g_")).toList();
+        assertEquals(java.util.List.of("g_spon"), ids, "기본 게이트는 viable(sponsors)만 노출");
+    }
+
+    @Test
+    void includeUnclearRevealsHidden() {
+        company("g2", "Gate Two");
+        job("u_spon", "Backend Engineer", "g2", "x", "backend", false, "now()");
+        job("u_unc",  "Backend Engineer", "g2", "x", "backend", false, "now()");
+        setVisa("u_spon", "sponsors");
+        // u_unc unclear/none → 기본 숨김, includeUnclear=true 면 노출
+        JobListResponse res = service.search(
+            "backend", null, null, null, null, null, null, null, true, 1, 20);
+        var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("u_")).toList();
+        assertTrue(ids.contains("u_spon") && ids.contains("u_unc"),
+            "includeUnclear=true 면 unclear 도 노출");
+    }
+
+    @Test
+    void remoteViableShownWhenVisaUnclear() {
+        company("g3", "Gate Three");
+        job("rv", "Backend Engineer", "g3", "x", "backend", true, "now()");
+        setRemote("rv", "worldwide");   // visa unclear 여도 worldwide 원격이면 viable
+        JobListResponse res = service.search(
+            "backend", null, null, null, null, null, null, null, false, 1, 20);
+        assertTrue(res.items().stream().anyMatch(j -> j.id().equals("rv")),
+            "worldwide 원격이면 visa unclear 여도 viable");
+    }
+
+    @Test
+    void remoteTrackFiltersToRemoteViable() {
+        company("g4", "Gate Four");
+        job("t_ww",  "Backend Engineer", "g4", "x", "backend", true, "now()");
+        job("t_apac","Backend Engineer", "g4", "x", "backend", true, "now()");
+        job("t_rr",  "Backend Engineer", "g4", "x", "backend", true, "now()");
+        job("t_spon","Backend Engineer", "g4", "x", "backend", false, "now()");  // sponsors 지만 원격 아님
+        setRemote("t_ww", "worldwide");
+        setRemote("t_apac", "apac_ok");
+        setRemote("t_rr", "region_restricted");
+        setVisa("t_spon", "sponsors");
+        JobListResponse res = service.search(
+            "backend", null, null, null, null, null, null, "remote", false, 1, 20);
+        var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("t_")).toList();
+        assertEquals(java.util.Set.of("t_ww", "t_apac"), new java.util.HashSet<>(ids),
+            "remote 트랙은 worldwide/apac_ok 만 (region_restricted·비원격 sponsors 제외)");
+    }
+
+    @Test
+    void remoteTrackOrdersWorldwideBeforeApac() {
+        company("g5", "Gate Five");
+        // posted_at: apac 가 더 최신 → 티어 없으면 apac 가 위로 올 것
+        job("o_ww",   "Backend Engineer", "g5", "x", "backend", true, "now() - interval '1 days'");
+        job("o_apac", "Backend Engineer", "g5", "x", "backend", true, "now()");
+        setRemote("o_ww", "worldwide");
+        setRemote("o_apac", "apac_ok");
+        JobListResponse res = service.search(
+            null, null, null, null, null, null, null, "remote", false, 1, 20);
+        var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("o_")).toList();
+        assertEquals(java.util.List.of("o_ww", "o_apac"), ids,
+            "remote 티어: worldwide → apac_ok (posted_at 역순이라도)");
+    }
+
+    @Test
+    void relocationTrackFiltersToSponsors() {
+        company("g6", "Gate Six");
+        job("l_spon", "Backend Engineer", "g6", "x", "backend", false, "now()");
+        job("l_ww",   "Backend Engineer", "g6", "x", "backend", true, "now()");   // 원격 viable 이지만 비자 스폰 아님
+        setVisa("l_spon", "sponsors");
+        setRemote("l_ww", "worldwide");
+        JobListResponse res = service.search(
+            "backend", null, null, null, null, null, null, "relocation", false, 1, 20);
+        var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("l_")).toList();
+        assertEquals(java.util.List.of("l_spon"), ids,
+            "relocation 트랙은 visa sponsors 만");
     }
 }
