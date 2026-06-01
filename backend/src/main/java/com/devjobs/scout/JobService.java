@@ -8,6 +8,7 @@ import com.devjobs.scout.dto.JobDtos.JobDetailDto;
 import com.devjobs.scout.dto.JobDtos.JobDto;
 import com.devjobs.scout.dto.JobDtos.JobListResponse;
 import com.devjobs.scout.dto.JobDtos.RegionCount;
+import com.devjobs.scout.dto.JobDtos.RemoteDto;
 import com.devjobs.scout.dto.JobDtos.SalaryDto;
 import com.devjobs.scout.dto.JobDtos.VisaDto;
 import java.util.HashMap;
@@ -128,6 +129,8 @@ public class JobService {
             j.getVisaStatus() == null ? "unclear" : j.getVisaStatus(),
             j.getVisaEvidence());
 
+        RemoteDto remote = new RemoteDto(j.getRemoteEligibility(), j.getRemoteEvidence());
+
         SalaryDto salary = (j.getSalaryMinUsd() != null || j.getSalaryMaxUsd() != null)
             ? new SalaryDto(j.getSalaryMinUsd(), j.getSalaryMaxUsd())
             : null;
@@ -148,6 +151,7 @@ public class JobService {
             j.getClosesAt(),
             j.getTags(),
             visa,
+            remote,
             salary);
     }
 
@@ -162,7 +166,11 @@ public class JobService {
             String key = Boolean.TRUE.equals(row[0]) ? "true" : "false";
             remote.put(key, ((Number) row[1]).longValue());
         }
-        return new FacetsDto(visa, remote);
+        Map<String, Long> remoteElig = new LinkedHashMap<>();
+        for (Object[] row : repository.countByRemoteEligibility()) {
+            remoteElig.put(row[0] == null ? "none" : row[0].toString(), ((Number) row[1]).longValue());
+        }
+        return new FacetsDto(visa, remote, remoteElig);
     }
 
     public JobDto toDto(JobEntity j) {
@@ -174,6 +182,8 @@ public class JobService {
         VisaDto visa = new VisaDto(
             j.getVisaStatus() == null ? "unclear" : j.getVisaStatus(),
             j.getVisaEvidence());
+
+        RemoteDto remote = new RemoteDto(j.getRemoteEligibility(), j.getRemoteEvidence());
 
         SalaryDto salary = (j.getSalaryMinUsd() != null || j.getSalaryMaxUsd() != null)
             ? new SalaryDto(j.getSalaryMinUsd(), j.getSalaryMaxUsd())
@@ -192,6 +202,7 @@ public class JobService {
             j.getClosesAt(),
             j.getTags(),
             visa,
+            remote,
             salary);
     }
 

@@ -16,6 +16,8 @@ public final class JobDtos {
 
     public record VisaDto(String status, List<String> evidence) {}
 
+    public record RemoteDto(String eligibility, List<String> evidence) {}
+
     public record SalaryDto(Integer minUsd, Integer maxUsd) {}
 
     public record JobDto(
@@ -31,6 +33,7 @@ public final class JobDtos {
         OffsetDateTime closesAt,
         List<String> tags,
         VisaDto visa,
+        RemoteDto remote,
         SalaryDto salary
     ) {}
 
@@ -48,12 +51,14 @@ public final class JobDtos {
         OffsetDateTime closesAt,
         List<String> tags,
         VisaDto visa,
+        RemoteDto remote,
         SalaryDto salary
     ) {}
 
     public record FacetsDto(
         Map<String, Long> visaStatus,
-        Map<String, Long> isRemote
+        Map<String, Long> isRemote,
+        Map<String, Long> remoteEligibility
     ) {}
 
     public record JobListResponse(

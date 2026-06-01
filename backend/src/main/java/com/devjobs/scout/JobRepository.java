@@ -18,6 +18,10 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         nativeQuery = true)
     List<Object[]> countByRemote();
 
+    @Query(value = "SELECT remote_eligibility, count(*) FROM jobs WHERE is_active = true GROUP BY remote_eligibility",
+        nativeQuery = true)
+    List<Object[]> countByRemoteEligibility();
+
     // 추천 후보: 사용자 임베딩과 cosine 유사도 상위 (pgvector). 반환: [id, semantic(0~1)]
     @Query(value = """
         SELECT id, 1 - (embedding <=> CAST(:vec AS vector)) AS semantic
