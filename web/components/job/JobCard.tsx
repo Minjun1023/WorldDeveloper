@@ -8,6 +8,7 @@ import type { Job } from "@/lib/types";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 
 import { VisaBadge } from "./VisaBadge";
+import { RemoteBadge } from "./RemoteBadge";
 
 function formatSalary(salary?: Job["salary"]): string | null {
   if (!salary) return null;
@@ -42,7 +43,10 @@ export function JobCard({ job }: { job: Job }) {
               </p>
             </div>
           </div>
-          <VisaBadge status={job.visa?.status} />
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <VisaBadge status={job.visa?.status} />
+            <RemoteBadge eligibility={job.remote?.eligibility} />
+          </div>
         </div>
       </CardHeader>
 
