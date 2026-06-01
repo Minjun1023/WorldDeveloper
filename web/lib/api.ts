@@ -41,6 +41,8 @@ export interface JobQuery {
   remote?: boolean;
   sort?: string;
   discipline?: string;
+  track?: string;
+  includeUnclear?: boolean;
   page?: number;
   pageSize?: number;
 }
@@ -58,6 +60,8 @@ export async function fetchJobs(query: JobQuery = {}): Promise<JobsResult> {
   if (query.remote !== undefined) url.searchParams.set("remote", String(query.remote));
   if (query.sort) url.searchParams.set("sort", query.sort);
   if (query.discipline) url.searchParams.set("discipline", query.discipline);
+  if (query.track) url.searchParams.set("track", query.track);
+  if (query.includeUnclear) url.searchParams.set("include_unclear", "true");
   if (query.page) url.searchParams.set("page", String(query.page));
   if (query.pageSize) url.searchParams.set("page_size", String(query.pageSize));
 
