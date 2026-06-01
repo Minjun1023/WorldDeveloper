@@ -56,3 +56,31 @@ def test_evidence_returned():
     status, ev = cls("Remote (US)", True, "")
     assert status == "region_restricted"
     assert len(ev) >= 1
+
+
+# --- 라이브 2368건 검증으로 드러난 회귀 케이스 (location 권위 / 본문 노이즈 차단) ---
+
+
+def test_restrictive_location_beats_description_worldwide():
+    # location 이 US 한정이면 본문의 "worldwide leader" 마케팅 문구에 속지 않는다
+    assert cls("Remote - US", True, "We are a worldwide leader in payments.")[0] == "region_restricted"
+
+
+def test_country_location_beats_description_apac():
+    # location 이 Canada 면 본문의 "support our APAC clients" 에 속지 않는다
+    assert cls("Remote (Canada)", True, "You will support our APAC clients.")[0] == "region_restricted"
+
+
+def test_specific_country_location_restricted():
+    # restrict 목록에 없는 나라여도 location 에 지명이 있으면 한정 (한국 미포함)
+    assert cls("Argentina Remote", True, "")[0] == "region_restricted"
+    assert cls("Remote - India", True, "")[0] == "region_restricted"
+
+
+def test_bare_worldwide_in_description_not_trusted():
+    # 본문의 맨 단어 "worldwide" 는 신호로 쓰지 않는다 → unclear
+    assert cls("", True, "A worldwide leader in fintech.")[0] == "unclear"
+
+
+def test_global_location_worldwide():
+    assert cls("Remote - Global", True, "")[0] == "worldwide"
