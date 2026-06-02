@@ -9,6 +9,7 @@ import { CompanyLogo } from "@/components/company/CompanyLogo";
 
 import { VisaBadge } from "./VisaBadge";
 import { RemoteBadge } from "./RemoteBadge";
+import { RegisterVerifiedBadge } from "./RegisterVerifiedBadge";
 
 function formatSalary(salary?: Job["salary"]): string | null {
   if (!salary) return null;
@@ -29,6 +30,9 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
   const showVisa =
     !hideVisaBadge && (job.visa?.status === "sponsors" || job.visa?.status === "no_sponsor");
   const showRemote = job.remote?.eligibility === "worldwide" || job.remote?.eligibility === "apac_ok";
+  // 명부 검증 골드 마커는 비자 배지를 숨기는 맥락(홈 스폰서 섹션)에서도 표시 — 스폰서 사이에서
+  // "정부 명부 확인"을 구분해주는 신호이므로 중복이 아니다.
+  const showVerified = job.visa?.register_verified === true;
 
   return (
     <Link href={`/jobs/${encodeURIComponent(job.id)}`} className="group block h-full">
@@ -46,9 +50,10 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
               </p>
             </div>
           </div>
-          {(showVisa || showRemote) && (
+          {(showVisa || showRemote || showVerified) && (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {showVisa && <VisaBadge status={job.visa?.status} />}
+              {showVerified && <RegisterVerifiedBadge />}
               <RemoteBadge eligibility={job.remote?.eligibility} />
             </div>
           )}
