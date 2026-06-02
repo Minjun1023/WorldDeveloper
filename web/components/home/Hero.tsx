@@ -1,8 +1,7 @@
-import Link from "next/link";
-
 import { CredibilityPill } from "@/components/home/CredibilityPill";
+import { HeroSearch } from "@/components/home/HeroSearch";
 import { HeroStats, type HomeStats } from "@/components/home/HeroStats";
-import { NlRecommend, type RecommendPreset } from "@/components/home/NlRecommend";
+import { type RecommendPreset } from "@/components/home/NlRecommend";
 import { SponsorChips } from "@/components/home/SponsorChips";
 import type { CompanySummary } from "@/lib/types";
 
@@ -25,24 +24,15 @@ export function Hero({
       <CredibilityPill />
 
       <h1 className="mt-4 text-display">
-        조건만 말하면, AI가{" "}
+        한국 개발자를 위한{" "}
         <span className="font-serif text-verified">실제로 채용 가능한</span>{" "}
-        <span className="text-primary">비자 스폰서</span> 공고를 찾아드려요
+        <span className="text-primary">비자 스폰서</span> 공고
       </h1>
       <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-        이력서·기술스택·원하는 조건을 자유롭게 적어보세요. 6차원 점수로 추천합니다.
+        기술스택·지역으로 검색하거나, 조건을 문장으로 적어 AI 추천을 받아보세요.
       </p>
 
-      <div className="mx-auto mt-6 max-w-2xl text-left">
-        <NlRecommend presets={HERO_PRESETS} />
-      </div>
-
-      <p className="mt-3 text-body-sm text-muted-foreground">
-        또는{" "}
-        <Link href="/search" className="underline hover:text-foreground">
-          조건으로 직접 검색 →
-        </Link>
-      </p>
+      <HeroSearch presets={HERO_PRESETS} />
 
       <SponsorChips companies={sponsorCompanies} />
 
