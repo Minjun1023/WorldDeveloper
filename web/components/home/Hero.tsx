@@ -26,7 +26,7 @@ export function Hero({
 
       <h1 className="mt-4 text-display">
         조건만 말하면, AI가{" "}
-        <span className="font-serif italic text-verified">실제로 채용 가능한</span>{" "}
+        <span className="font-serif text-verified">실제로 채용 가능한</span>{" "}
         <span className="text-primary">비자 스폰서</span> 공고를 찾아드려요
       </h1>
       <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">

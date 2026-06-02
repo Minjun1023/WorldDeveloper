@@ -7,7 +7,7 @@ color_schemes: [light, dark]
 fonts:
   sans: "Pretendard Variable, Pretendard, Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif"
   mono: "JetBrains Mono, SFMono-Regular, Menlo, Consolas, monospace"
-  serif: "Source Serif 4, Georgia, serif"
+  serif: "Noto Serif KR, Nanum Myeongjo, serif"
 colors:
   light:
     background: "#ffffff"
@@ -117,7 +117,7 @@ container:
 ## Typography
 
 - **Pretendard** (한글 UI) + **Inter** (영문/숫자) + **JetBrains Mono** (job_id, 코드, 연봉 숫자).
-- **Source Serif 4** (serif) — 신뢰 강조 헤드라인의 이탤릭 구절 전용(SponsorMap식 권위 톤). 본문/UI/숫자에는 쓰지 않는다.
+- **Noto Serif KR** (serif/명조) — 신뢰 강조 헤드라인 구절 전용(SponsorMap식 권위 톤). 본문/UI/숫자에는 쓰지 않는다.
 - scale 은 display → caption 7단계 + mono. 큰 제목일수록 음수 letter-spacing(tracking)으로 조인다.
 - 본문 line-height 1.6 (한글 가독성), 제목은 1.1~1.4.
 

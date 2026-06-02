@@ -58,8 +58,8 @@ const config: Config = {
         ],
         serif: [
           "var(--font-serif)",
-          "Source Serif 4",
-          "Georgia",
+          "Noto Serif KR",
+          "Nanum Myeongjo",
           "serif",
         ],
       },
