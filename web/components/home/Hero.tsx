@@ -40,7 +40,7 @@ export function Hero({
       <p className="mt-3 text-body-sm text-muted-foreground">
         또는{" "}
         <Link href="/search" className="underline hover:text-foreground">
-          조건으로 직접 검색
+          조건으로 직접 검색 →
         </Link>
       </p>
 
