@@ -55,7 +55,9 @@ async def fetch(company: str, query: str = "", limit: int = 100) -> list[JobPost
             description=description,
             apply_url=item.get("hostedUrl", ""),
             posted_at=str(item.get("createdAt", "")),
-            tags=[categories.get("team", "")] if categories.get("team") else [],
+            # 기술 스택은 transform 의 extract_tech 가 description 에서 추출.
+            # Lever 의 team(예: "Music")은 기술 스택이 아니므로 tags 에 넣지 않는다.
+            tags=[],
         ))
 
         if len(postings) >= limit:

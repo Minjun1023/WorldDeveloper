@@ -76,7 +76,8 @@ async def fetch(company: str, query: str = "", limit: int = 100) -> list[JobPost
             salary_max=salary_max,
             salary_currency=currency,
             salary_period="YEAR" if salary_min else "",
-            tags=[item.get("department", "")] if item.get("department") else [],
+            # 기술 스택은 transform 의 extract_tech 가 추출. department 는 스택이 아니므로 제외.
+            tags=[],
         ))
 
         if len(postings) >= limit:
