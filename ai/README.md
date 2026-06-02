@@ -37,6 +37,9 @@ curl http://localhost:8001/internal/health
 | `ETL_ENABLED` | `false` | APScheduler cron 활성 |
 | `ETL_INTERVAL_MINUTES` | `60` | cron 주기 |
 | `INTERNAL_AUTH_TOKEN` | `dev-local-token` | Spring → FastAPI Basic Auth (TODO) |
+| `OPENAI_API_KEY` | (빈값) | 요약·프로필 파싱(미설정 시 해당 기능 비활성) |
+| `PAPAGO_CLIENT_ID` | (빈값) | 번역(Naver Papago NMT) — NCP Papago Translation 앱 Client ID |
+| `PAPAGO_CLIENT_SECRET` | (빈값) | 번역 — NCP Papago Translation Client Secret. 둘 다 미설정 시 번역 503 |
 
 ## 구조
 
