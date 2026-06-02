@@ -38,7 +38,7 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-12">
-      <Hero stats={stats} sponsorCompanies={sponsorChips} />
+      <Hero stats={stats} sponsorCompanies={sponsorChips} regions={regions} />
 
       <section>
         <h2 className="mb-3 text-center text-body-sm font-medium text-muted-foreground">
