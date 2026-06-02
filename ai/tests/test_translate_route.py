@@ -2,41 +2,30 @@ from fastapi.testclient import TestClient
 
 from app.config import settings
 from app.main import app
-from app.routes.translate import MAX_CHARS, _chunks
+from app.routes.translate import _api_url
 
 client = TestClient(app)
 
 
-def test_chunks_short_text_single():
-    assert _chunks("hello") == ["hello"]
-    assert _chunks("") == []
+def test_api_url_free_vs_pro():
+    # Free 플랜 키(':fx')는 api-free, 그 외는 pro 엔드포인트
+    assert _api_url("abc-123:fx") == "https://api-free.deepl.com/v2/translate"
+    assert _api_url("abc-123") == "https://api.deepl.com/v2/translate"
 
 
-def test_chunks_respect_limit():
-    # 긴 본문이 limit 이하 조각들로 분할되고, 합치면 원문과 동일
-    text = ("line of some length\n" * 1000)
-    parts = _chunks(text)
-    assert len(parts) > 1
-    assert all(len(p) <= MAX_CHARS for p in parts)
-    assert "".join(parts) == text
-
-
-def test_chunks_oversized_single_line():
-    # 줄바꿈 없는 초장문도 강제 분할
-    text = "x" * (MAX_CHARS * 2 + 7)
-    parts = _chunks(text)
-    assert all(len(p) <= MAX_CHARS for p in parts)
-    assert "".join(parts) == text
-
-
-def test_missing_keys_returns_503(monkeypatch):
-    # Papago 키 미설정 시 503 (번역 미설정 안내)
-    monkeypatch.setattr(settings, "papago_client_id", "", raising=False)
-    monkeypatch.setattr(settings, "papago_client_secret", "", raising=False)
-    monkeypatch.delenv("PAPAGO_CLIENT_ID", raising=False)
-    monkeypatch.delenv("PAPAGO_CLIENT_SECRET", raising=False)
+def test_missing_key_returns_503(monkeypatch):
+    # DeepL 키 미설정 시 503 (번역 미설정 안내)
+    monkeypatch.setattr(settings, "deepl_api_key", "", raising=False)
+    monkeypatch.delenv("DEEPL_API_KEY", raising=False)
     r = client.post("/internal/translate", json={"title": "Engineer", "description": "About us"})
     assert r.status_code == 503
+
+
+def test_empty_input_returns_400(monkeypatch):
+    # 키는 있는데 입력이 모두 비면 400
+    monkeypatch.setattr(settings, "deepl_api_key", "test-key:fx", raising=False)
+    r = client.post("/internal/translate", json={"title": "", "description": ""})
+    assert r.status_code == 400
 
 
 def test_description_too_long_is_422():

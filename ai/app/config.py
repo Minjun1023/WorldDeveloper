@@ -15,10 +15,9 @@ class Settings(BaseSettings):
     # 요약/프로필 파싱 (OpenAI). .env 또는 OPENAI_API_KEY 환경변수. 미설정 시 해당 기능 비활성.
     openai_api_key: str = ""
 
-    # 번역 (Naver Papago NMT). NCP 콘솔에서 Papago Translation 앱 등록 후 발급.
-    # 미설정 시 번역 비활성(503). 둘 다 .env 또는 환경변수(PAPAGO_CLIENT_ID/PAPAGO_CLIENT_SECRET).
-    papago_client_id: str = ""
-    papago_client_secret: str = ""
+    # 번역 (DeepL). https://www.deepl.com/pro-api 에서 Free 플랜 Auth Key 발급.
+    # Free 키는 ':fx' 로 끝남 → api-free.deepl.com 자동 선택. 미설정 시 번역 비활성(503).
+    deepl_api_key: str = ""
 
     # 임베딩 모델
     embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"
