@@ -4,6 +4,14 @@ import { Providers } from "@/components/providers";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SiteNav } from "@/components/SiteNav";
 import { getSession } from "@/lib/session-server";
+import { Noto_Serif_KR } from "next/font/google";
+
+const notoSerifKr = Noto_Serif_KR({
+  weight: ["400", "600"],
+  variable: "--font-serif",
+  display: "swap",
+  preload: false,
+});
 
 export const metadata: Metadata = {
   title: "WorldDeveloper",
@@ -18,7 +26,7 @@ export default async function RootLayout({
   const session = await getSession();
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className="min-h-screen antialiased">
+      <body className={`${notoSerifKr.variable} min-h-screen antialiased`}>
        <Providers>
         <ThemeProvider
           attribute="class"

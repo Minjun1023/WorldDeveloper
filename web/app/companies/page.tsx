@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { fetchCompanies } from "@/lib/api";
@@ -45,9 +46,12 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
               <Link key={c.slug} href={`/companies/${c.slug}`}>
                 <Card className="h-full transition-colors hover:border-primary/40">
                   <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle>{c.display_name}</CardTitle>
-                      <span className="text-caption text-muted-foreground">{c.job_count}개 공고</span>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-2.5">
+                        <CompanyLogo slug={c.slug} name={c.display_name} size={32} />
+                        <CardTitle className="truncate">{c.display_name}</CardTitle>
+                      </div>
+                      <span className="shrink-0 text-caption text-muted-foreground">{c.job_count}개 공고</span>
                     </div>
                   </CardHeader>
                   {c.tags && c.tags.length > 0 && (

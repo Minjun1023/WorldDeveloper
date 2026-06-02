@@ -2,6 +2,12 @@
 
 export type VisaStatus = "sponsors" | "no_sponsor" | "unclear";
 
+export type RemoteEligibility =
+  | "worldwide"
+  | "apac_ok"
+  | "region_restricted"
+  | "unclear";
+
 export interface JobCompany {
   slug: string;
   display_name: string;
@@ -10,6 +16,11 @@ export interface JobCompany {
 
 export interface JobVisa {
   status: VisaStatus;
+  evidence?: string[];
+}
+
+export interface JobRemote {
+  eligibility?: RemoteEligibility | null;
   evidence?: string[];
 }
 
@@ -31,6 +42,7 @@ export interface Job {
   closes_at?: string | null;
   tags?: string[];
   visa?: JobVisa;
+  remote?: JobRemote;
   salary?: JobSalary;
 }
 
@@ -47,12 +59,14 @@ export interface JobDetail {
   closes_at?: string | null;
   tags?: string[];
   visa?: JobVisa;
+  remote?: JobRemote;
   salary?: JobSalary;
 }
 
 export interface Facets {
   visa_status?: Record<string, number>;
   is_remote?: Record<string, number>;
+  remote_eligibility?: Record<string, number>;
 }
 
 export interface JobListResponse {

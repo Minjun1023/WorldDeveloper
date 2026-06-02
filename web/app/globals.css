@@ -22,6 +22,8 @@
     --success: #16a34a;
     --warning: #d97706;
     --destructive: #dc2626;
+    --verified: #ca8a04;
+    --verified-foreground: #ffffff;
 
     /* score 6차원 (recharts) */
     --score-stack: #6366f1;
@@ -49,6 +51,8 @@
     --success: #22c55e;
     --warning: #f59e0b;
     --destructive: #ef4444;
+    --verified: #eab308;
+    --verified-foreground: #09090b;
   }
 }
 

@@ -1,13 +1,14 @@
 import Link from "next/link";
 
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { postedLabel, deadlineLabel } from "@/lib/jobDates";
 import type { Job } from "@/lib/types";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 
 import { VisaBadge } from "./VisaBadge";
+import { RemoteBadge } from "./RemoteBadge";
 
 function formatSalary(salary?: Job["salary"]): string | null {
   if (!salary) return null;
@@ -18,63 +19,66 @@ function formatSalary(salary?: Job["salary"]): string | null {
   return k((min_usd ?? max_usd)!);
 }
 
-export function JobCard({ job }: { job: Job }) {
+// 카드 전체가 상세 페이지(/jobs/[id]) 링크. 외부 "지원" 버튼은 상세 페이지에만 둔다.
+// hideVisaBadge: 이미 전부 스폰서인 맥락(홈 "비자 스폰서십" 섹션)에선 중복이라 비자 배지를 숨긴다.
+export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadge?: boolean }) {
   const salary = formatSalary(job.salary);
   const posted = postedLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
   const metaParts = [job.location, job.is_remote ? "Remote" : null].filter(Boolean);
+  const companyTags = job.company.tags?.slice(0, 3) ?? [];
+  const showVisa =
+    !hideVisaBadge && (job.visa?.status === "sponsors" || job.visa?.status === "no_sponsor");
+  const showRemote = job.remote?.eligibility === "worldwide" || job.remote?.eligibility === "apac_ok";
 
   return (
-    <Card className="flex flex-col transition-colors hover:border-primary/40">
-      <CardHeader>
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-start gap-3">
+    <Link href={`/jobs/${encodeURIComponent(job.id)}`} className="group block h-full">
+      <Card className="flex h-full flex-col transition-colors hover:border-primary/40">
+        <CardHeader>
+          <div className="flex items-start gap-3">
             <CompanyLogo slug={job.company.slug} name={job.company.display_name} />
-            <div className="min-w-0">
-              <Link href={`/jobs/${encodeURIComponent(job.id)}`}>
-                <CardTitle className="truncate hover:text-primary transition-colors">
-                  {job.title}
-                </CardTitle>
-              </Link>
-              <p className="mt-1 text-body-sm text-muted-foreground">
+            <div className="min-w-0 flex-1">
+              <CardTitle className="line-clamp-2 transition-colors group-hover:text-primary">
+                {job.title}
+              </CardTitle>
+              <p className="mt-1 line-clamp-2 text-body-sm text-muted-foreground">
                 {job.company.display_name}
                 {metaParts.length > 0 ? ` · ${metaParts.join(" · ")}` : ""}
               </p>
+              {companyTags.length > 0 && (
+                <p className="mt-1 truncate text-caption text-muted-foreground/80">
+                  {companyTags.join(" · ")}
+                </p>
+              )}
             </div>
           </div>
-          <VisaBadge status={job.visa?.status} />
-        </div>
-      </CardHeader>
+          {(showVisa || showRemote) && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {showVisa && <VisaBadge status={job.visa?.status} />}
+              <RemoteBadge eligibility={job.remote?.eligibility} />
+            </div>
+          )}
+        </CardHeader>
 
-      <CardContent className="flex-1 space-y-3">
-        {job.tags && job.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {job.tags.slice(0, 6).map((t) => (
-              <Badge key={t} variant="outline" className="font-mono lowercase">
-                {t}
-              </Badge>
-            ))}
+        <CardContent className="flex-1 space-y-3">
+          {job.tags && job.tags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {job.tags.slice(0, 6).map((t) => (
+                <Badge key={t} variant="outline" className="font-mono lowercase">
+                  {t}
+                </Badge>
+              ))}
+            </div>
+          )}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-muted-foreground">
+            {salary && <span className="font-mono text-foreground">{salary}</span>}
+            {posted && <span>{posted}</span>}
+            <span className={deadline.urgent ? "text-foreground font-medium" : undefined}>
+              {deadline.text}
+            </span>
           </div>
-        )}
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-muted-foreground">
-          {salary && <span className="font-mono text-foreground">{salary}</span>}
-          {posted && <span>{posted}</span>}
-          <span className={deadline.urgent ? "text-foreground font-medium" : undefined}>
-            {deadline.text}
-          </span>
-        </div>
-      </CardContent>
-
-      <CardFooter>
-        <a
-          href={job.apply_url ?? "#"}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-body-sm font-medium text-primary hover:underline"
-        >
-          지원 페이지 →
-        </a>
-      </CardFooter>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }

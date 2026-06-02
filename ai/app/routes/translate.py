@@ -1,12 +1,13 @@
-"""POST /internal/translate — 공고 제목/본문 기계 번역 (OpenAI gpt-4o-mini).
+"""POST /internal/translate — 공고 제목/본문 기계 번역 (LibreTranslate 셀프호스팅).
 
-OPENAI_API_KEY 미설정 시 503 (백엔드/프론트가 '번역 미설정'으로 안내).
-순수 번역만 담당 — 캐싱은 백엔드(job_translations)가 처리한다.
-엔진 교체 시 이 파일만 수정하면 backend/web 은 그대로.
+LIBRETRANSLATE_URL(기본 http://localhost:5050) 의 로컬 서버를 호출 — 외부 API/키 불필요.
+URL 을 빈 값으로 두면 번역 비활성(503). 서버 미기동/오류는 502.
+순수 번역만 담당 — 캐싱은 백엔드(job_translations)가 처리. 엔진 교체 시 이 파일만 수정.
+
+LibreTranslate: source 'auto' 자동 감지. title/description 각각 번역.
 """
 from __future__ import annotations
 
-import json
 import logging
 import os
 
@@ -19,10 +20,7 @@ from ..config import settings
 log = logging.getLogger(__name__)
 router = APIRouter()
 
-OPENAI_URL = "https://api.openai.com/v1/chat/completions"
-MODEL = "gpt-4o-mini"
-
-LANG_NAMES = {"ko": "Korean", "en": "English", "ja": "Japanese", "zh": "Chinese"}
+ENGINE = "libretranslate"
 
 
 class TranslateRequest(BaseModel):
@@ -37,72 +35,44 @@ class TranslateResponse(BaseModel):
     engine: str
 
 
-def _build_prompt(title: str, description: str, lang_name: str) -> tuple[str, str]:
-    system = (
-        f"You are a professional translator for software engineering job postings. "
-        f"Translate the given title and description into {lang_name}. "
-        "Keep technical terms, programming languages, frameworks, tool names, company "
-        "names, and code snippets in English. Keep the translation natural and concise. "
-        'Respond with ONLY a JSON object: {"title": "...", "description": "..."} '
-        "and nothing else."
-    )
-    user = json.dumps({"title": title, "description": description}, ensure_ascii=False)
-    return system, user
-
-
-def _parse(text: str, fallback_title: str) -> tuple[str, str]:
-    """모델 출력에서 {title, description} 추출. 실패 시 전체를 description 으로."""
-    t = text.strip()
-    if t.startswith("```"):
-        t = t.strip("`")
-        if t.startswith("json"):
-            t = t[4:]
-    try:
-        obj = json.loads(t)
-        return obj.get("title") or fallback_title, obj.get("description") or ""
-    except (json.JSONDecodeError, AttributeError):
-        return fallback_title, text.strip()
+async def _lt_translate(
+    client: httpx.AsyncClient, base_url: str, api_key: str, target: str, text: str
+) -> str:
+    """LibreTranslate /translate 호출. 빈 텍스트는 그대로 빈 문자열."""
+    if not text:
+        return ""
+    payload: dict[str, str] = {"q": text, "source": "auto", "target": target, "format": "text"}
+    if api_key:
+        payload["api_key"] = api_key
+    resp = await client.post(f"{base_url}/translate", json=payload)
+    if resp.status_code != 200:
+        log.warning("libretranslate HTTP %s: %s", resp.status_code, resp.text[:300])
+        raise HTTPException(502, f"translation upstream error ({resp.status_code})")
+    return resp.json()["translatedText"]
 
 
 @router.post("/translate", response_model=TranslateResponse)
 async def translate(req: TranslateRequest) -> TranslateResponse:
     # .env(settings) 우선, 없으면 실제 환경변수
-    key = settings.openai_api_key or os.getenv("OPENAI_API_KEY")
-    if not key:
-        raise HTTPException(503, "OPENAI_API_KEY not set — 번역 기능 미설정")
+    base_url = (settings.libretranslate_url or os.getenv("LIBRETRANSLATE_URL") or "").rstrip("/")
+    if not base_url:
+        raise HTTPException(503, "LIBRETRANSLATE_URL not set — 번역 기능 미설정")
     if not req.title and not req.description:
         raise HTTPException(400, "title/description 모두 비어있음")
 
-    lang_name = LANG_NAMES.get(req.target_lang, req.target_lang)
-    system, user = _build_prompt(req.title, req.description, lang_name)
+    api_key = settings.libretranslate_api_key or os.getenv("LIBRETRANSLATE_API_KEY") or ""
+    target = req.target_lang
 
     try:
         async with httpx.AsyncClient(timeout=60) as client:
-            resp = await client.post(
-                OPENAI_URL,
-                headers={
-                    "Authorization": f"Bearer {key}",
-                    "content-type": "application/json",
-                },
-                json={
-                    "model": MODEL,
-                    "max_tokens": 4096,
-                    "temperature": 0.2,
-                    # 구조화 출력 — content 가 항상 JSON 객체로 옴
-                    "response_format": {"type": "json_object"},
-                    "messages": [
-                        {"role": "system", "content": system},
-                        {"role": "user", "content": user},
-                    ],
-                },
-            )
-        if resp.status_code != 200:
-            log.warning("openai HTTP %s: %s", resp.status_code, resp.text[:300])
-            raise HTTPException(502, f"translation upstream error ({resp.status_code})")
-        data = resp.json()
-        text = data["choices"][0]["message"]["content"] or ""
-        title, description = _parse(text, req.title)
-        return TranslateResponse(title=title, description=description, engine=MODEL)
-    except (httpx.HTTPError, KeyError, IndexError) as e:
-        log.warning("openai 호출 실패: %s", e)
+            title = await _lt_translate(client, base_url, api_key, target, req.title)
+            description = await _lt_translate(client, base_url, api_key, target, req.description)
+    except (httpx.HTTPError, KeyError, ValueError) as e:
+        log.warning("libretranslate 호출 실패: %s", e)
         raise HTTPException(502, f"translation request failed: {e}") from e
+
+    return TranslateResponse(
+        title=title or req.title,
+        description=description,
+        engine=ENGINE,
+    )

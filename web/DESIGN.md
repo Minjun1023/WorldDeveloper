@@ -7,6 +7,7 @@ color_schemes: [light, dark]
 fonts:
   sans: "Pretendard Variable, Pretendard, Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif"
   mono: "JetBrains Mono, SFMono-Regular, Menlo, Consolas, monospace"
+  serif: "Noto Serif KR, Nanum Myeongjo, serif"
 colors:
   light:
     background: "#ffffff"
@@ -23,6 +24,7 @@ colors:
     success: "#16a34a"
     warning: "#d97706"
     destructive: "#dc2626"
+    verified: "#ca8a04"
   dark:
     background: "#09090b"
     surface: "#18181b"
@@ -38,6 +40,7 @@ colors:
     success: "#22c55e"
     warning: "#f59e0b"
     destructive: "#ef4444"
+    verified: "#eab308"
 domain_tokens:
   visa:
     sponsors: success
@@ -105,6 +108,7 @@ container:
   - `success` (green) — 비자 sponsors, 긍정 신호
   - `destructive` (red) — 비자 no_sponsor, 위험
   - `warning` (amber) — 주의, 낮은 disclosure
+  - `verified` (gold) — 명부 대조 검증 신호 전용(랜딩 신뢰 pill·권위 통계). `warning`(낮은 disclosure 주의)과 의미·색조 분리.
   - `muted-foreground` — 비자 unclear, 보조 텍스트
 - **Score 6색** — 추천 점수 분해 차트(recharts) 전용. stack/visa/location/seniority/salary/semantic 을 구분되는 hue 로.
 
@@ -113,6 +117,7 @@ container:
 ## Typography
 
 - **Pretendard** (한글 UI) + **Inter** (영문/숫자) + **JetBrains Mono** (job_id, 코드, 연봉 숫자).
+- **Noto Serif KR** (serif/명조) — 신뢰 강조 헤드라인 구절 전용(SponsorMap식 권위 톤). 본문/UI/숫자에는 쓰지 않는다.
 - scale 은 display → caption 7단계 + mono. 큰 제목일수록 음수 letter-spacing(tracking)으로 조인다.
 - 본문 line-height 1.6 (한글 가독성), 제목은 1.1~1.4.
 

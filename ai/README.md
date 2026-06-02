@@ -37,6 +37,9 @@ curl http://localhost:8001/internal/health
 | `ETL_ENABLED` | `false` | APScheduler cron 활성 |
 | `ETL_INTERVAL_MINUTES` | `60` | cron 주기 |
 | `INTERNAL_AUTH_TOKEN` | `dev-local-token` | Spring → FastAPI Basic Auth (TODO) |
+| `OPENAI_API_KEY` | (빈값) | 요약·프로필 파싱(미설정 시 해당 기능 비활성) |
+| `LIBRETRANSLATE_URL` | `http://localhost:5050` | 번역(LibreTranslate 셀프호스팅, docker compose). 빈 값이면 번역 503 |
+| `LIBRETRANSLATE_API_KEY` | (빈값) | LibreTranslate 에 api-keys 설정한 경우만(로컬 기본 불필요) |
 
 ## 구조
 

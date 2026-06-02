@@ -7,6 +7,7 @@ import { JobDescription } from "@/components/job/JobDescription";
 import { JobSummary } from "@/components/job/JobSummary";
 import { ResumeOptimizeSection } from "@/components/job/ResumeOptimizeSection";
 import { VisaBadge } from "@/components/job/VisaBadge";
+import { RemoteBadge } from "@/components/job/RemoteBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetchInterviewPrep, fetchJob } from "@/lib/api";
@@ -63,7 +64,10 @@ export default async function JobDetailPage({ params }: { params: { id: string }
             <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={48} />
             <h1 className="text-h1">{job.title}</h1>
           </div>
-          <VisaBadge status={job.visa?.status} />
+          <div className="flex shrink-0 flex-col items-end gap-1">
+            <VisaBadge status={job.visa?.status} />
+            <RemoteBadge eligibility={job.remote?.eligibility} />
+          </div>
         </div>
         <p className="text-muted-foreground">{metaParts.join(" · ")}</p>
 

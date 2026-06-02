@@ -12,8 +12,13 @@ class Settings(BaseSettings):
     port: int = 8001
     internal_auth_token: str = "dev-local-token"
 
-    # 번역 (OpenAI). .env 또는 OPENAI_API_KEY 환경변수로 주입. 미설정 시 번역 비활성.
+    # 요약/프로필 파싱 (OpenAI). .env 또는 OPENAI_API_KEY 환경변수. 미설정 시 해당 기능 비활성.
     openai_api_key: str = ""
+
+    # 번역 (LibreTranslate 셀프호스팅). 외부 API/키 불필요 — 로컬 컨테이너 호출.
+    # dev.sh(docker compose)가 5050 포트로 띄움. URL 을 빈 값으로 두면 번역 비활성(503).
+    libretranslate_url: str = "http://localhost:5050"
+    libretranslate_api_key: str = ""  # LibreTranslate 에 api-keys 설정한 경우만(로컬 기본 불필요)
 
     # 임베딩 모델
     embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"

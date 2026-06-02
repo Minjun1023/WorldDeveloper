@@ -11,12 +11,22 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from dev_jobs_core import registry
-from dev_jobs_core.sources import adzuna, arbeitnow, ashby, greenhouse, lever, personio, remoteok, smartrecruiters, weworkremotely
 from dev_jobs_core.dedup import dedup
 from dev_jobs_core.filter import is_dev_role
+from dev_jobs_core.sources import (
+    adzuna,
+    arbeitnow,
+    ashby,
+    greenhouse,
+    lever,
+    personio,
+    remoteok,
+    smartrecruiters,
+    weworkremotely,
+)
 
 from ..config import settings
 from ..db import (
@@ -29,6 +39,7 @@ from ..db import (
     upsert_job,
 )
 from .transform import transform
+from .viability import is_dead_end
 from .visa_reclassify import reclassify_unclear_visa
 
 log = logging.getLogger(__name__)
@@ -61,7 +72,7 @@ async def run_full_cycle(
     ats_concurrency: int = 8,
 ) -> dict:
     """ETL 한 사이클. 결과 통계 dict 반환."""
-    started = datetime.now(timezone.utc)
+    started = datetime.now(UTC)
     postings = []
     fetch_stats: dict[str, object] = {}
 
@@ -134,11 +145,17 @@ async def run_full_cycle(
     # 3. transform + 4. upsert
     upserted = 0
     failed = 0
+    dropped_dead_end = 0
     conn = get_conn()
     try:
         for p in unique_list:
             try:
                 company_row, job_row = transform(p)
+                if is_dead_end(
+                    job_row["visa_status"], job_row["is_remote"], job_row["remote_eligibility"]
+                ):
+                    dropped_dead_end += 1
+                    continue
                 upsert_company(conn, company_row)
                 upsert_job(conn, job_row)
                 upserted += 1
@@ -160,11 +177,12 @@ async def run_full_cycle(
         "fetched": fetch_stats,
         "unique": len(unique_list),
         "upserted": upserted,
+        "dropped_dead_end": dropped_dead_end,
         "failed": failed,
         "deactivated_stale": deactivated_stale,
         "deactivated_expired": deactivated_expired,
         "deactivated_nondev": deactivated_nondev,
-        "duration_sec": round((datetime.now(timezone.utc) - started).total_seconds(), 1),
+        "duration_sec": round((datetime.now(UTC) - started).total_seconds(), 1),
     }
 
     # 5. unclear 비자 재분류 (확장키워드 → LLM → 회사 추론)

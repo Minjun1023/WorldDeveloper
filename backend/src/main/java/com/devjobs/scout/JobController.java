@@ -30,9 +30,12 @@ public class JobController {
         @RequestParam(required = false) String sort,
         @RequestParam(required = false) String discipline,
         @RequestParam(required = false) String region,
+        @RequestParam(required = false) String track,
+        @RequestParam(name = "include_unclear", defaultValue = "false") boolean includeUnclear,
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(name = "page_size", defaultValue = "20") int pageSize) {
-        return service.search(q, visa, location, remote, sort, discipline, region, page, pageSize);
+        return service.search(q, visa, location, remote, sort, discipline, region,
+            track, includeUnclear, page, pageSize);
     }
 
     @GetMapping("/regions")

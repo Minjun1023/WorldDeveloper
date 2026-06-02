@@ -29,6 +29,7 @@ const config: Config = {
         success: "var(--success)",
         warning: "var(--warning)",
         destructive: "var(--destructive)",
+        verified: "var(--verified)",
         score: {
           stack: "var(--score-stack)",
           visa: "var(--score-visa)",
@@ -54,6 +55,12 @@ const config: Config = {
           "Menlo",
           "Consolas",
           "monospace",
+        ],
+        serif: [
+          "var(--font-serif)",
+          "Noto Serif KR",
+          "Nanum Myeongjo",
+          "serif",
         ],
       },
       fontSize: {
