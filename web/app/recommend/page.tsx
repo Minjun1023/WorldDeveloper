@@ -1,78 +1,34 @@
-"use client";
+import Link from "next/link";
 
-import { useState } from "react";
+import { MemberRecommend } from "@/components/recommend/MemberRecommend";
+import { getSession } from "@/lib/session-server";
 
-import { ProfileForm } from "@/components/recommend/ProfileForm";
-import { RecommendationCard } from "@/components/recommend/RecommendationCard";
-import { RecommendationSkeleton } from "@/components/recommend/RecommendationSkeleton";
-import type { RecommendProfile, RecommendResponse } from "@/lib/types";
+export const dynamic = "force-dynamic";
 
-export default function RecommendPage() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<RecommendResponse | null>(null);
-
-  async function handleSubmit(profile: RecommendProfile) {
-    setLoading(true);
-    setError(null);
-    setResult(null);
-    try {
-      const res = await fetch("/api/recommend", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify(profile),
-      });
-      if (!res.ok) {
-        const e = await res.json().catch(() => ({}));
-        throw new Error(e.error || `HTTP ${res.status}`);
-      }
-      setResult(await res.json());
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    } finally {
-      setLoading(false);
-    }
-  }
+export default async function RecommendPage() {
+  const session = await getSession();
 
   return (
     <div className="space-y-8">
       <section>
         <h1 className="text-display">맞춤 추천</h1>
         <p className="mt-2 text-muted-foreground">
-          프로필을 입력하면 6차원 점수(스택·비자·지역·레벨·연봉·의미 유사도)로 공고를 추천해요.
+          프로필(기술스택·경력·선호 조건)을 기반으로 6차원 점수(스택·비자·지역·레벨·연봉·의미)로 추천해요.
         </p>
       </section>
 
-      <ProfileForm onSubmit={handleSubmit} loading={loading} />
-
-      {loading && (
-        <RecommendationSkeleton count={9} message="6차원 점수를 계산하는 중…" />
-      )}
-
-      {error && (
-        <div className="rounded-lg border border-border bg-surface p-4 text-body-sm text-destructive">
-          추천 실패: {error}
+      {session ? (
+        <MemberRecommend />
+      ) : (
+        <div className="rounded-lg border border-border bg-surface p-8 text-center">
+          <h2 className="text-h3">로그인하고 맞춤 공고 추천 받기</h2>
+          <p className="mx-auto mt-2 max-w-md text-body-sm text-muted-foreground">
+            가입 시 입력한 프로필로 비자 스폰서 공고를 자동 추천해드려요. 공고 검색은 로그인 없이도 가능합니다.
+          </p>
+          <Link href="/signin" className="mt-4 inline-block rounded-md bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground">
+            로그인 / 회원가입
+          </Link>
         </div>
-      )}
-
-      {result && (
-        <section className="space-y-4">
-          <div className="flex items-baseline justify-between">
-            <h2 className="text-h2">추천 결과</h2>
-            <span className="text-caption text-muted-foreground">
-              후보 {result.total_candidates}개 중 {result.returned}개
-            </span>
-          </div>
-          {result.recommendations.length === 0 ? (
-            <p className="text-body-sm text-muted-foreground">조건에 맞는 추천이 없습니다.</p>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {result.recommendations.map((item, i) => (
-                <RecommendationCard key={item.job.id} item={item} rank={i + 1} />
-              ))}
-            </div>
-          )}
-        </section>
       )}
     </div>
   );
