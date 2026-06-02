@@ -24,30 +24,32 @@ export function JobCard({ job }: { job: Job }) {
   const posted = postedLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
   const metaParts = [job.location, job.is_remote ? "Remote" : null].filter(Boolean);
+  const showVisa = job.visa?.status === "sponsors" || job.visa?.status === "no_sponsor";
+  const showRemote = job.remote?.eligibility === "worldwide" || job.remote?.eligibility === "apac_ok";
 
   return (
     <Card className="flex flex-col transition-colors hover:border-primary/40">
       <CardHeader>
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex min-w-0 items-start gap-3">
-            <CompanyLogo slug={job.company.slug} name={job.company.display_name} />
-            <div className="min-w-0">
-              <Link href={`/jobs/${encodeURIComponent(job.id)}`}>
-                <CardTitle className="truncate hover:text-primary transition-colors">
-                  {job.title}
-                </CardTitle>
-              </Link>
-              <p className="mt-1 text-body-sm text-muted-foreground">
-                {job.company.display_name}
-                {metaParts.length > 0 ? ` · ${metaParts.join(" · ")}` : ""}
-              </p>
-            </div>
+        <div className="flex items-start gap-3">
+          <CompanyLogo slug={job.company.slug} name={job.company.display_name} />
+          <div className="min-w-0 flex-1">
+            <Link href={`/jobs/${encodeURIComponent(job.id)}`}>
+              <CardTitle className="line-clamp-2 hover:text-primary transition-colors">
+                {job.title}
+              </CardTitle>
+            </Link>
+            <p className="mt-1 line-clamp-2 text-body-sm text-muted-foreground">
+              {job.company.display_name}
+              {metaParts.length > 0 ? ` · ${metaParts.join(" · ")}` : ""}
+            </p>
           </div>
-          <div className="flex shrink-0 flex-col items-end gap-1">
+        </div>
+        {(showVisa || showRemote) && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
             <VisaBadge status={job.visa?.status} />
             <RemoteBadge eligibility={job.remote?.eligibility} />
           </div>
-        </div>
+        )}
       </CardHeader>
 
       <CardContent className="flex-1 space-y-3">
