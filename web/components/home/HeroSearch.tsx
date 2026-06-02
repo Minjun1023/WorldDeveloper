@@ -5,8 +5,12 @@ import { useRouter } from "next/navigation";
 
 import { NlRecommend, type RecommendPreset } from "@/components/home/NlRecommend";
 import { Button } from "@/components/ui/button";
+import { Dropdown } from "@/components/ui/dropdown";
 import { Input } from "@/components/ui/input";
+import type { RegionCount } from "@/lib/api";
+import { DISCIPLINES } from "@/lib/disciplines";
 import { cn } from "@/lib/utils";
+import { VISA_OPTIONS } from "@/lib/visa-options";
 
 type Tab = "search" | "ai";
 
@@ -16,16 +20,35 @@ const TABS: [Tab, string][] = [
 ];
 
 // 히어로 진입 인터랙션: 공고 검색이 기본(주), AI 추천은 보조 탭.
-// 검색은 0비용·즉시(/search 라우팅), AI는 opt-in(LLM 호출).
-export function HeroSearch({ presets }: { presets?: RecommendPreset[] }) {
+// 검색 탭은 키워드 + 지역/직무/비자 옵션을 모아 /search 로 라우팅(0비용·즉시). AI는 opt-in(LLM).
+export function HeroSearch({
+  presets,
+  regions = [],
+}: {
+  presets?: RecommendPreset[];
+  regions?: RegionCount[];
+}) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("search");
   const [q, setQ] = useState("");
+  const [region, setRegion] = useState<string | null>(null);
+  const [discipline, setDiscipline] = useState<string | null>(null);
+  const [visa, setVisa] = useState<string | null>(null);
+
+  const regionOptions = regions.map((r) => ({ value: r.value, label: r.label, count: r.count }));
 
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
+    const params = new URLSearchParams();
     const query = q.trim();
-    router.push(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
+    if (query) params.set("q", query);
+    if (region) params.set("region", region);
+    if (discipline) params.set("discipline", discipline);
+    // 비자 드롭다운의 "원격근무"는 remote 필터로 매핑(/search 와 동일 규칙)
+    if (visa === "remote") params.set("remote", "true");
+    else if (visa) params.set("visa", visa);
+    const qs = params.toString();
+    router.push(qs ? `/search?${qs}` : "/search");
   }
 
   return (
@@ -52,15 +75,22 @@ export function HeroSearch({ presets }: { presets?: RecommendPreset[] }) {
       </div>
 
       {tab === "search" ? (
-        <form onSubmit={submitSearch} className="flex gap-2">
-          <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="python backend, 베를린, 시니어 …"
-            aria-label="공고 검색"
-            className="flex-1"
-          />
-          <Button type="submit">검색</Button>
+        <form onSubmit={submitSearch} className="space-y-2 text-left">
+          <div className="flex gap-2">
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="python backend, react senior …"
+              aria-label="공고 검색"
+              className="flex-1"
+            />
+            <Button type="submit">검색</Button>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            <Dropdown placeholder="지역" options={regionOptions} value={region} onSelect={setRegion} />
+            <Dropdown placeholder="직무" options={DISCIPLINES} value={discipline} onSelect={setDiscipline} />
+            <Dropdown placeholder="비자" options={VISA_OPTIONS} value={visa} onSelect={setVisa} />
+          </div>
         </form>
       ) : (
         <div className="text-left">

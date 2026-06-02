@@ -3,6 +3,7 @@ import { HeroSearch } from "@/components/home/HeroSearch";
 import { HeroStats, type HomeStats } from "@/components/home/HeroStats";
 import { type RecommendPreset } from "@/components/home/NlRecommend";
 import { SponsorChips } from "@/components/home/SponsorChips";
+import type { RegionCount } from "@/lib/api";
 import type { CompanySummary } from "@/lib/types";
 
 const HERO_PRESETS: RecommendPreset[] = [
@@ -15,9 +16,11 @@ const HERO_PRESETS: RecommendPreset[] = [
 export function Hero({
   stats,
   sponsorCompanies,
+  regions,
 }: {
   stats: HomeStats;
   sponsorCompanies: CompanySummary[];
+  regions: RegionCount[];
 }) {
   return (
     <section className="hero-gradient -mx-4 px-4 py-14 text-center sm:-mx-6 sm:px-6">
@@ -32,7 +35,7 @@ export function Hero({
         기술스택·지역으로 검색하거나, 조건을 문장으로 적어 AI 추천을 받아보세요.
       </p>
 
-      <HeroSearch presets={HERO_PRESETS} />
+      <HeroSearch presets={HERO_PRESETS} regions={regions} />
 
       <SponsorChips companies={sponsorCompanies} />
 
