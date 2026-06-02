@@ -23,7 +23,7 @@ export default async function HomePage() {
   const visaTotal = visaRes.ok ? visaRes.data.total : 0;
   const allTotal = allRes.ok ? allRes.data.total : 0;
   const latestJobs = latestRes.ok ? latestRes.data.items : [];
-  const spotlight = companies?.items.slice(0, 6) ?? [];
+  const spotlight = companies?.items.slice(0, 8) ?? [];  // lg 4열 × 2줄 꽉 채우기
   const sponsorChips = companies?.items.slice(0, 5) ?? [];  // 히어로 신뢰 칩: 검증 회사 상위 5개
 
   // 원격은 근무형태지 국가가 아니므로 "국가" 수치에서 제외. 공고가 있는 국가만 카운트.
