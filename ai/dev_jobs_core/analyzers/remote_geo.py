@@ -71,6 +71,23 @@ _FILLER = (
     r"distributed|based|anywhere)\b"
 )
 
+# 제목의 거시 권역 태그 (예 "(AMER)", "- EMEA", "(APAC)"). 역할 자체의 권역을 가리키므로
+# bare-remote location 일 때 본문 보일러플레이트보다 신뢰한다. 도시/주 약어(SF, CA 등)는
+# 제외 — 글로벌 원격 회사의 선호지 표기를 region_restricted 로 오인하지 않기 위함.
+# 짧은 약어(US/EU/UK/AMER/EMEA…)는 대소문자 구분(대문자만) 매칭으로 소문자 'us'(대명사)
+# 같은 오탐을 차단한다. 권역 '단어'(Americas/Europe…)만 대소문자 무시.
+_TITLE_APAC_CS = [r"\bAPAC\b", r"\bASEAN\b"]
+_TITLE_APAC_CI = [
+    r"\basia[\s-]?pacific\b", r"\bsouth[\s-]?east asia\b", r"\basia\b",
+    r"\b(?:south )?korea\b", r"\bseoul\b",
+]
+_TITLE_RESTRICT_CS = [r"\b(?:AMER|AMERICAS|NORAM|LATAM|EMEA|ANZ|US|USA|EU|UK|UKI)\b"]
+_TITLE_RESTRICT_CI = [
+    r"\bAmericas?\b", r"\bNorth America\b", r"\bLatin America\b",
+    r"\bEurope(?:an)?\b", r"\bUnited States\b", r"\bUnited Kingdom\b",
+    r"\bCanada\b", r"\bAustralia\b",
+]
+
 _STRONG_RE = [re.compile(p, re.I) for p in _STRONG_RESTRICT]
 _LOC_WW_RE = [re.compile(p, re.I) for p in _LOC_WORLDWIDE]
 _APAC_RE = [re.compile(p, re.I) for p in _APAC]
@@ -78,6 +95,14 @@ _DESC_WW_RE = [re.compile(p, re.I) for p in _DESC_WORLDWIDE]
 _DESC_APAC_REQ_RE = [re.compile(p, re.I) for p in _DESC_APAC_REQ]
 _DESC_RESTRICT_REQ_RE = [re.compile(p, re.I) for p in _DESC_RESTRICT_REQ]
 _FILLER_RE = re.compile(_FILLER, re.I)
+_TITLE_APAC_RE = (
+    [re.compile(p) for p in _TITLE_APAC_CS]
+    + [re.compile(p, re.I) for p in _TITLE_APAC_CI]
+)
+_TITLE_RESTRICT_RE = (
+    [re.compile(p) for p in _TITLE_RESTRICT_CS]
+    + [re.compile(p, re.I) for p in _TITLE_RESTRICT_CI]
+)
 
 
 def _hit(text: str, patterns: list[re.Pattern]) -> str | None:
@@ -96,13 +121,14 @@ def _residual_place(loc: str) -> str:
 
 
 def classify_remote_eligibility(
-    location: str, is_remote: bool, description: str
+    location: str, is_remote: bool, description: str, title: str = ""
 ) -> tuple[str | None, list[str]]:
     """(status, evidence) 반환. 원격이 아니면 (None, [])."""
     if not is_remote:
         return None, []
     loc = location or ""
     desc = description or ""
+    ttl = title or ""
 
     # 0. 명시적 lock-out 은 어디에 있든 최우선.
     strong = _hit(f"{loc}\n{desc}", _STRONG_RE)
@@ -119,7 +145,17 @@ def classify_remote_eligibility(
             return "apac_ok", [apac]
         if _residual_place(loc):  # 특정 지명이 남음 → 한국 명시 권역 아님.
             return "region_restricted", [loc.strip()[:70]]
-        # 여기 도달 = location 이 'Remote' 등 filler 뿐 → 본문으로.
+        # 여기 도달 = location 이 'Remote' 등 filler 뿐 → 제목/본문으로.
+
+    # 1.5 제목의 거시 권역 태그 (예 "(AMER)"). location 이 bare-remote 라 판정 불가일 때,
+    #     역할 자체의 권역 태그를 본문 보일러플레이트("work from anywhere")보다 우선한다.
+    if ttl.strip():
+        t_apac = _hit(ttl, _TITLE_APAC_RE)
+        if t_apac:
+            return "apac_ok", [f"title:{t_apac}"]
+        t_restrict = _hit(ttl, _TITLE_RESTRICT_RE)
+        if t_restrict:
+            return "region_restricted", [f"title:{t_restrict}"]
 
     # 2. location 이 비었거나 bare-remote → description 의 '역할별 지리 요구'를 먼저 본다.
     #    회사 보일러플레이트("work from anywhere")보다 역할 요구(APAC 타임존 등)가 우선.

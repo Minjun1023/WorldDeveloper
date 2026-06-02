@@ -114,3 +114,59 @@ def test_us_timezone_plural_requirement_restricted():
 def test_apac_duty_phrase_is_not_a_requirement():
     # "support our APAC clients"는 업무 문구(요구 프레이밍 없음) → apac_ok 로 오인하지 않는다
     assert cls("Remote", True, "You will support our APAC clients daily.")[0] == "unclear"
+
+
+# --- 제목의 거시 권역 태그 (location 이 bare-remote 일 때 본문 보일러플레이트보다 우선) ---
+
+
+def test_title_amer_tag_beats_worldwide_boilerplate():
+    # 실제 케이스: 제목 "(AMER)" 인데 본문 "work from anywhere" 보일러플레이트로 worldwide 오분류되던 버그
+    assert (
+        cls(
+            "Remote",
+            True,
+            "We let you work from anywhere.",
+            title="Customer Solution Architect Team Lead (AMER)",
+        )[0]
+        == "region_restricted"
+    )
+
+
+def test_title_apac_tag_is_apac_ok():
+    assert cls("Remote", True, "", title="Account Executive (APAC)")[0] == "apac_ok"
+
+
+def test_title_emea_tag_restricted():
+    assert (
+        cls("Remote", True, "work from anywhere", title="Sales Engineer - EMEA")[0]
+        == "region_restricted"
+    )
+
+
+def test_title_us_paren_restricted():
+    assert cls("Remote", True, "", title="Support Engineer (US)")[0] == "region_restricted"
+
+
+def test_title_no_region_tag_keeps_worldwide():
+    # 권역 태그 없는 제목은 본문 worldwide 구문을 그대로 신뢰
+    assert (
+        cls("Remote", True, "work from anywhere", title="Software Engineer (Go) - Auth")[0]
+        == "worldwide"
+    )
+
+
+def test_title_lowercase_us_word_not_restricted():
+    # 소문자 'us' 대명사는 지역 태그가 아니다 → 오탐으로 region_restricted 되면 안 됨
+    assert (
+        cls("Remote", True, "work from anywhere", title="Come join us remotely")[0]
+        == "worldwide"
+    )
+
+
+def test_specific_location_overrides_title_tag():
+    # location 권위가 제목 태그보다 우선 (worldwide 명시면 제목 (AMER) 무시)
+    assert cls("Remote - Worldwide", True, "", title="Engineer (AMER)")[0] == "worldwide"
+
+
+def test_title_tag_ignored_when_not_remote():
+    assert cls("New York, US", False, "", title="Engineer (APAC)")[0] is None
