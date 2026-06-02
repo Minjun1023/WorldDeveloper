@@ -23,5 +23,16 @@ services:
       - "1025:1025"
       - "8025:8025"
 
+  # 번역 엔진 (셀프호스팅, 외부 API/키 불필요). 첫 기동 시 en/ko 모델 다운로드(수 분 소요 가능).
+  # 모델은 컨테이너 내부에 저장 — docker start 로 재사용되고, 컨테이너 재생성(down/recreate) 시에만
+  # 재다운로드. (named volume 은 root 소유 권한 충돌로 비루트 컨테이너가 쓰지 못해 제외.)
+  libretranslate:
+    image: libretranslate/libretranslate:latest
+    container_name: dev-jobs-libretranslate
+    environment:
+      LT_LOAD_ONLY: "en,ko"
+    ports:
+      - "5050:5000"
+
 volumes:
   postgres-data:
