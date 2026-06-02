@@ -35,6 +35,31 @@ TECH_KEYWORDS = [
     # 기타
     "linux", "git", "rest api", "grpc", "microservices", "serverless", "lambda",
     "ci/cd", "agile", "scrum",
+    # 개념/아키텍처 (구문 위주라 오탐 적음)
+    "machine learning", "deep learning", "reinforcement learning", "computer vision",
+    "natural language processing", "distributed systems", "data engineering",
+    "data pipeline", "data warehouse", "data lake", "event-driven", "message queue",
+    "observability", "mlops", "devops", "sre",
+    # AI/ML
+    "nlp", "llm", "rag", "hugging face", "langchain", "openai", "cuda",
+    # 데이터 (추가)
+    "sql", "nosql", "flink", "presto", "trino", "hive", "dagster", "prefect", "iceberg",
+    # 언어 (추가)
+    "bash", "shell", "solidity", "groovy", "matlab",
+    # 프론트엔드 (추가)
+    "html", "css", "sass", "scss", "jquery", "three.js", "webgl", "storybook",
+    "jest", "cypress", "playwright", "esbuild",
+    # 백엔드 프레임워크 (추가)
+    "ktor", "quarkus", "micronaut", "actix", "fastify", "symfony",
+    # 데이터베이스 (추가)
+    "mariadb", "cockroachdb", "influxdb", "memcached", "rabbitmq", "couchbase",
+    "supabase", "firebase",
+    # 인프라/클라우드 (추가)
+    "nginx", "envoy", "datadog", "splunk", "opentelemetry", "pulumi", "vault",
+    "consul", "s3", "ec2", "eks", "gke", "rds", "fargate", "cloudflare", "vercel",
+    "netlify", "heroku", "gitops", "kafka streams",
+    # 기타 (추가)
+    "websocket", "oauth", "jwt", "webassembly", "wasm", "opengl",
 ]
 
 
