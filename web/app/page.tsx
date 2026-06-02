@@ -1,5 +1,6 @@
 import { CompanySpotlight } from "@/components/home/CompanySpotlight";
 import { CountryTiles } from "@/components/home/CountryTiles";
+import { FaqSection } from "@/components/home/FaqSection";
 import { Hero } from "@/components/home/Hero";
 import type { HomeStats } from "@/components/home/HeroStats";
 import { TrackPicker } from "@/components/home/TrackPicker";
@@ -23,6 +24,7 @@ export default async function HomePage() {
   const allTotal = allRes.ok ? allRes.data.total : 0;
   const latestJobs = latestRes.ok ? latestRes.data.items : [];
   const spotlight = companies?.items.slice(0, 6) ?? [];
+  const sponsorChips = companies?.items.slice(0, 5) ?? [];  // 히어로 신뢰 칩: 검증 회사 상위 5개
 
   // 원격은 근무형태지 국가가 아니므로 "국가" 수치에서 제외. 공고가 있는 국가만 카운트.
   const countryRegions = regions.filter((r) => r.value !== "remote" && r.count > 0);
@@ -36,7 +38,7 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-12">
-      <Hero stats={stats} />
+      <Hero stats={stats} sponsorCompanies={sponsorChips} />
 
       <section>
         <h2 className="mb-3 text-center text-body-sm font-medium text-muted-foreground">
@@ -72,6 +74,11 @@ export default async function HomePage() {
           <CompanySpotlight companies={spotlight} />
         </section>
       )}
+
+      <section>
+        <h2 className="mb-4 text-center text-h2">자주 묻는 질문</h2>
+        <FaqSection />
+      </section>
     </div>
   );
 }
