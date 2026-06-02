@@ -2,16 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { AccountMenu } from "@/components/auth/AccountMenu";
-import { HeaderTrackSwitch, HeaderTrackSwitchFallback } from "@/components/HeaderTrackSwitch";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
-// 듀얼트랙(이주/원격/둘다)은 HeaderTrackSwitch 가 1차 내비 + 검색 진입을 겸한다(둘다=/search).
-// 여기 링크는 보조 메뉴. 사용자 전용 "내 지원"은 계정 메뉴(로그인 시)에만 둔다.
+// 전역 헤더는 페이지 이동용 보조 내비. 트랙(이주/원격/둘다) 선택은 랜딩 히어로와 /search 필터에
+// 있으므로 헤더에는 두지 않는다. 사용자 전용 "내 지원"은 계정 메뉴(로그인 시)에만.
 const NAV_LINKS = [
+  { href: "/search", label: "검색" },
   { href: "/recommend", label: "AI 추천" },
   { href: "/companies", label: "회사" },
   { href: "/about", label: "소개" },
@@ -46,10 +46,6 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
   return (
     <>
       <nav className="hidden items-center gap-3 text-body-sm md:flex">
-        <Suspense fallback={<HeaderTrackSwitchFallback />}>
-          <HeaderTrackSwitch />
-        </Suspense>
-        <span className="h-4 w-px bg-border" aria-hidden />
         {NAV_LINKS.map((l) => {
           const active = isActive(l.href);
           return (
@@ -92,12 +88,6 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
             role="menu"
             className="absolute right-0 mt-2 w-56 rounded-lg border border-border bg-surface p-2 shadow-lg"
           >
-            <p className="px-3 pb-1 pt-1 text-caption font-medium text-muted-foreground">트랙</p>
-            <Suspense fallback={<HeaderTrackSwitchFallback orientation="vertical" />}>
-              <HeaderTrackSwitch orientation="vertical" onNavigate={() => setOpen(false)} />
-            </Suspense>
-
-            <div className="my-1.5 border-t border-border" />
             {NAV_LINKS.map((l) => {
               const active = isActive(l.href);
               return (
