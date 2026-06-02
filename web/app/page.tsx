@@ -4,7 +4,7 @@ import { FaqSection } from "@/components/home/FaqSection";
 import { Hero } from "@/components/home/Hero";
 import type { HomeStats } from "@/components/home/HeroStats";
 import { TrackPicker } from "@/components/home/TrackPicker";
-import { JobScrollRow } from "@/components/home/JobScrollRow";
+import { JobGrid } from "@/components/home/JobGrid";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { fetchCompanies, fetchJobs, fetchRegions } from "@/lib/api";
 
@@ -12,9 +12,9 @@ export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
   const [visaRes, allRes, latestRes, companies, regions] = await Promise.all([
-    fetchJobs({ visa: "sponsors", pageSize: 8 }),
+    fetchJobs({ visa: "sponsors", pageSize: 4 }),
     fetchJobs({ pageSize: 1, includeUnclear: true }),
-    fetchJobs({ pageSize: 6, sort: "newest" }),
+    fetchJobs({ pageSize: 4, sort: "newest" }),
     fetchCompanies(),
     fetchRegions(),
   ]);
@@ -50,7 +50,7 @@ export default async function HomePage() {
       {visaJobs.length > 0 && (
         <section>
           <SectionHeader title="비자 스폰서십 공고" accent="visa" count={visaTotal} href="/search?visa=sponsors" />
-          <JobScrollRow jobs={visaJobs} />
+          <JobGrid jobs={visaJobs} />
         </section>
       )}
 
@@ -64,7 +64,7 @@ export default async function HomePage() {
       {latestJobs.length > 0 && (
         <section>
           <SectionHeader title="새로 올라온 공고" href="/search" hrefLabel="더 보기" />
-          <JobScrollRow jobs={latestJobs} />
+          <JobGrid jobs={latestJobs} />
         </section>
       )}
 
