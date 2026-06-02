@@ -46,9 +46,10 @@ public class JobScorer {
             penalty *= 0.1;
             dealBreakers.add("비자 스폰서십 불가 (사용자 비자 필요)");
         }
-        if ("remote_only".equals(req.remotePreference()) && !Boolean.TRUE.equals(job.getIsRemote())) {
+        if ("remote_only".equals(req.remotePreference())
+                && !isKoreaViableRemote(job.getIsRemote(), job.getRemoteEligibility())) {
             penalty *= 0.2;
-            dealBreakers.add("온사이트 공고 (사용자 원격 only)");
+            dealBreakers.add("원격 불가 공고 (온사이트·지역제한, 사용자 원격 only)");
         }
         if (req.excludedCompanies() != null && req.excludedCompanies().stream()
                 .anyMatch(c -> c != null && c.equalsIgnoreCase(job.getCompanySlug()))) {
@@ -95,17 +96,31 @@ public class JobScorer {
         };
     }
 
+    /**
+     * 한국 거주자가 실제로 원격 근무 가능한 공고인가.
+     * region_restricted(특정 비-한국 권역 한정) 원격은 한국에서 지원해도 길이 막혀 있으므로
+     * 점수상 원격으로 치지 않는다(온사이트와 동급). worldwide/apac_ok 는 한국 포함이라 원격 인정,
+     * unclear/null(권역 불명)은 보수적으로 원격 유지(확신 있을 때만 강등 — search 게이트와 동일 철학).
+     */
+    static boolean isKoreaViableRemote(Boolean isRemote, String remoteEligibility) {
+        return Boolean.TRUE.equals(isRemote) && !"region_restricted".equals(remoteEligibility);
+    }
+
     private double scoreLocation(RecommendRequest req, JobEntity job) {
-        boolean remote = Boolean.TRUE.equals(job.getIsRemote());
+        boolean remote = isKoreaViableRemote(job.getIsRemote(), job.getRemoteEligibility());
         if ("remote_only".equals(req.remotePreference())) {
             return remote ? 1.0 : 0.0;
         }
         List<String> prefs = req.preferredLocations();
         if (prefs == null || prefs.isEmpty()) return 0.7;
-        String loc = job.getLocation() == null ? "" : job.getLocation().toLowerCase();
         if (remote && prefs.stream().anyMatch(p -> p.toLowerCase().contains("remote"))) return 1.0;
+        String loc = job.getLocation() == null ? "" : job.getLocation().toLowerCase();
         for (String p : prefs) {
-            if (!p.isBlank() && loc.contains(p.toLowerCase())) return 1.0;
+            String pl = p.toLowerCase().trim();
+            // 'remote' 선호는 위 원격-적격 경로에서만 처리 — region_restricted 공고의 location 문자열
+            // ("Remote - US")에 'remote' 가 들어있어 매칭되는 것을 막는다.
+            if (pl.isBlank() || pl.contains("remote")) continue;
+            if (loc.contains(pl)) return 1.0;
         }
         if (remote) return 0.7;
         return 0.2;
