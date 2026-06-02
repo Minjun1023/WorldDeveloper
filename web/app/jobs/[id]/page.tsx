@@ -8,6 +8,7 @@ import { JobSummary } from "@/components/job/JobSummary";
 import { ResumeOptimizeSection } from "@/components/job/ResumeOptimizeSection";
 import { VisaBadge } from "@/components/job/VisaBadge";
 import { RemoteBadge } from "@/components/job/RemoteBadge";
+import { RegisterVerifiedBadge } from "@/components/job/RegisterVerifiedBadge";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { fetchInterviewPrep, fetchJob } from "@/lib/api";
@@ -66,6 +67,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
           </div>
           <div className="flex shrink-0 flex-col items-end gap-1">
             <VisaBadge status={job.visa?.status} />
+            {job.visa?.register_verified && <RegisterVerifiedBadge />}
             <RemoteBadge eligibility={job.remote?.eligibility} />
           </div>
         </div>

@@ -17,6 +17,8 @@ export interface JobCompany {
 export interface JobVisa {
   status: VisaStatus;
   evidence?: string[];
+  // 정부 공식 명부(UK Home Office / US USCIS) 대조로 확인된 스폰서인가 (최상위 신뢰 신호).
+  register_verified?: boolean;
 }
 
 export interface JobRemote {

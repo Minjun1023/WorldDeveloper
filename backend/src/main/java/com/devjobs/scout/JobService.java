@@ -137,6 +137,16 @@ public class JobService {
             .map(this::toDetailDto);
     }
 
+    // 비자 근거가 정부 공식 명부 대조면 true. ETL reclassify 가 남기는 근거 문자열의 안정적
+    // 앵커("Home Office"=UK 스폰서 명부, "USCIS"=US H-1B Data Hub)로 판별 — 언어 무관.
+    static boolean isRegisterVerified(List<String> evidence) {
+        if (evidence == null) {
+            return false;
+        }
+        return evidence.stream().anyMatch(e ->
+            e != null && (e.contains("Home Office") || e.contains("USCIS")));
+    }
+
     private JobDetailDto toDetailDto(JobEntity j) {
         CompanyEntity c = j.getCompany();
         CompanyDto company = c != null
@@ -145,7 +155,8 @@ public class JobService {
 
         VisaDto visa = new VisaDto(
             j.getVisaStatus() == null ? "unclear" : j.getVisaStatus(),
-            j.getVisaEvidence());
+            j.getVisaEvidence(),
+            isRegisterVerified(j.getVisaEvidence()));
 
         RemoteDto remote = new RemoteDto(j.getRemoteEligibility(), j.getRemoteEvidence());
 
@@ -199,7 +210,8 @@ public class JobService {
 
         VisaDto visa = new VisaDto(
             j.getVisaStatus() == null ? "unclear" : j.getVisaStatus(),
-            j.getVisaEvidence());
+            j.getVisaEvidence(),
+            isRegisterVerified(j.getVisaEvidence()));
 
         RemoteDto remote = new RemoteDto(j.getRemoteEligibility(), j.getRemoteEvidence());
 
