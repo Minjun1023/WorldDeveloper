@@ -3,7 +3,6 @@ import { CountryTiles } from "@/components/home/CountryTiles";
 import { FaqSection } from "@/components/home/FaqSection";
 import { Hero } from "@/components/home/Hero";
 import type { HomeStats } from "@/components/home/HeroStats";
-import { TrackPicker } from "@/components/home/TrackPicker";
 import { JobGrid } from "@/components/home/JobGrid";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { fetchCompanies, fetchJobs, fetchRegions } from "@/lib/api";
@@ -40,13 +39,6 @@ export default async function HomePage() {
     <div className="space-y-12">
       <Hero stats={stats} sponsorCompanies={sponsorChips} regions={regions} />
 
-      <section>
-        <h2 className="mb-3 text-center text-body-sm font-medium text-muted-foreground">
-          어떤 길을 찾고 계세요?
-        </h2>
-        <TrackPicker />
-      </section>
-
       {visaJobs.length > 0 && (
         <section>
           <SectionHeader title="비자 스폰서십 공고" accent="visa" count={visaTotal} href="/search?visa=sponsors" />
@@ -54,17 +46,17 @@ export default async function HomePage() {
         </section>
       )}
 
-      {countryRegions.length > 0 && (
-        <section>
-          <SectionHeader title="국가별로 찾기" />
-          <CountryTiles regions={countryRegions} />
-        </section>
-      )}
-
       {latestJobs.length > 0 && (
         <section>
           <SectionHeader title="새로 올라온 공고" href="/search" hrefLabel="더 보기" />
           <JobGrid jobs={latestJobs} />
+        </section>
+      )}
+
+      {countryRegions.length > 0 && (
+        <section>
+          <SectionHeader title="국가별로 찾기" />
+          <CountryTiles regions={countryRegions} />
         </section>
       )}
 
