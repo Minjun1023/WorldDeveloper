@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { RemoteBadge } from "@/components/job/RemoteBadge";
 import { VisaBadge } from "@/components/job/VisaBadge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,6 +25,7 @@ export function RecommendationCard({ item, rank }: { item: RecommendationItem; r
                 {Math.round(score.final_score * 100)}점
               </span>
               <VisaBadge status={job.visa?.status} />
+              <RemoteBadge eligibility={job.remote?.eligibility} />
             </div>
             <Link href={`/jobs/${encodeURIComponent(job.id)}`}>
               <CardTitle className="mt-1 line-clamp-2 hover:text-primary transition-colors">
