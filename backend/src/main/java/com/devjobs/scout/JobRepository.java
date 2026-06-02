@@ -52,7 +52,13 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
           AND (CAST(:regionRegex AS text) IS NULL OR location ~* CAST(:regionRegex AS text))
           AND (CAST(:visa AS text) IS NULL OR visa_status = CAST(:visa AS text))
           AND (CAST(:loc AS text) IS NULL OR lower(location) LIKE CAST(:loc AS text))
-          AND (CAST(:remote AS boolean) IS NULL OR is_remote = CAST(:remote AS boolean))
+          AND (
+            CAST(:remote AS boolean) IS NULL
+            OR (CAST(:remote AS boolean) = true
+                AND is_remote = true
+                AND remote_eligibility IS DISTINCT FROM 'region_restricted')
+            OR (CAST(:remote AS boolean) = false AND is_remote = false)
+          )
           AND (
             CAST(:gateMode AS text) = 'all'
             OR (CAST(:gateMode AS text) = 'both' AND (visa_status = 'sponsors' OR remote_eligibility IN ('worldwide','apac_ok')))
@@ -88,7 +94,13 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
           AND (CAST(:regionRegex AS text) IS NULL OR location ~* CAST(:regionRegex AS text))
           AND (CAST(:visa AS text) IS NULL OR visa_status = CAST(:visa AS text))
           AND (CAST(:loc AS text) IS NULL OR lower(location) LIKE CAST(:loc AS text))
-          AND (CAST(:remote AS boolean) IS NULL OR is_remote = CAST(:remote AS boolean))
+          AND (
+            CAST(:remote AS boolean) IS NULL
+            OR (CAST(:remote AS boolean) = true
+                AND is_remote = true
+                AND remote_eligibility IS DISTINCT FROM 'region_restricted')
+            OR (CAST(:remote AS boolean) = false AND is_remote = false)
+          )
           AND (
             CAST(:gateMode AS text) = 'all'
             OR (CAST(:gateMode AS text) = 'both' AND (visa_status = 'sponsors' OR remote_eligibility IN ('worldwide','apac_ok')))

@@ -101,6 +101,23 @@ class JobSearchTest {
     }
 
     @Test
+    void remoteFilterExcludesRegionRestricted() {
+        company("rf", "RF Co");
+        job("rf_ww",  "Backend Engineer", "rf", "x", "backend", true, "now()");
+        job("rf_rr",  "Backend Engineer", "rf", "x", "backend", true, "now()");
+        job("rf_unc", "Backend Engineer", "rf", "x", "backend", true, "now()");
+        setRemote("rf_ww", "worldwide");
+        setRemote("rf_rr", "region_restricted");
+        // rf_unc: 원격이지만 eligibility 미설정(null) — region_restricted 아니므로 '원격만'에 포함
+        JobListResponse res = service.search("backend", null, null, true, null, null, null, 1, 20);
+        var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("rf_")).toList();
+        assertTrue(ids.contains("rf_ww") && ids.contains("rf_unc"),
+            "'원격만' = worldwide·unclear 원격은 포함");
+        assertTrue(!ids.contains("rf_rr"),
+            "'원격만' = region_restricted 제외 (한국 거주자 원격 불가 — isKoreaViableRemote 와 동일 기준)");
+    }
+
+    @Test
     void noKeywordReturnsActiveJobs() {
         company("acme5", "Acme Five");
         job("n1", "Whatever", "acme5", "x", null, false, "now()");
