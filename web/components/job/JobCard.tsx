@@ -19,14 +19,16 @@ function formatSalary(salary?: Job["salary"]): string | null {
   return k((min_usd ?? max_usd)!);
 }
 
-// 카드 전체가 상세 페이지(/jobs/[id]) 링크. 외부 "지원" 버튼은 상세 페이지에만 둔다
-// (리스트에선 먼저 상세를 보게 하고, 지원은 상세에서).
-export function JobCard({ job }: { job: Job }) {
+// 카드 전체가 상세 페이지(/jobs/[id]) 링크. 외부 "지원" 버튼은 상세 페이지에만 둔다.
+// hideVisaBadge: 이미 전부 스폰서인 맥락(홈 "비자 스폰서십" 섹션)에선 중복이라 비자 배지를 숨긴다.
+export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadge?: boolean }) {
   const salary = formatSalary(job.salary);
   const posted = postedLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
   const metaParts = [job.location, job.is_remote ? "Remote" : null].filter(Boolean);
-  const showVisa = job.visa?.status === "sponsors" || job.visa?.status === "no_sponsor";
+  const companyTags = job.company.tags?.slice(0, 3) ?? [];
+  const showVisa =
+    !hideVisaBadge && (job.visa?.status === "sponsors" || job.visa?.status === "no_sponsor");
   const showRemote = job.remote?.eligibility === "worldwide" || job.remote?.eligibility === "apac_ok";
 
   return (
@@ -43,11 +45,16 @@ export function JobCard({ job }: { job: Job }) {
                 {job.company.display_name}
                 {metaParts.length > 0 ? ` · ${metaParts.join(" · ")}` : ""}
               </p>
+              {companyTags.length > 0 && (
+                <p className="mt-1 truncate text-caption text-muted-foreground/80">
+                  {companyTags.join(" · ")}
+                </p>
+              )}
             </div>
           </div>
           {(showVisa || showRemote) && (
             <div className="mt-3 flex flex-wrap gap-1.5">
-              <VisaBadge status={job.visa?.status} />
+              {showVisa && <VisaBadge status={job.visa?.status} />}
               <RemoteBadge eligibility={job.remote?.eligibility} />
             </div>
           )}

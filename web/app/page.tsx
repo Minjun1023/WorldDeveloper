@@ -50,7 +50,7 @@ export default async function HomePage() {
       {visaJobs.length > 0 && (
         <section>
           <SectionHeader title="비자 스폰서십 공고" accent="visa" count={visaTotal} href="/search?visa=sponsors" />
-          <JobGrid jobs={visaJobs} />
+          <JobGrid jobs={visaJobs} hideVisaBadge />
         </section>
       )}
 
