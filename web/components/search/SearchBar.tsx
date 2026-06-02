@@ -57,8 +57,12 @@ export function SearchBar({ regions }: { regions: RegionCount[] }) {
         <Dropdown
           placeholder="비자"
           options={VISA_OPTIONS}
-          value={searchParams.get("visa")}
-          onSelect={(v) => update({ visa: v })}
+          value={searchParams.get("remote") === "true" ? "remote" : searchParams.get("visa")}
+          onSelect={(v) =>
+            v === "remote"
+              ? update({ remote: "true", visa: null })
+              : update({ visa: v, remote: null })
+          }
         />
       </div>
       <Button type="submit">검색</Button>
