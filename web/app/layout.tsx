@@ -30,8 +30,8 @@ export default async function RootLayout({
        <Providers>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="dark"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <header className="border-b border-border">
