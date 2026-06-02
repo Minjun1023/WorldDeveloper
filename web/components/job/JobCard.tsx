@@ -26,7 +26,6 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
   const posted = postedLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
   const metaParts = [job.location, job.is_remote ? "Remote" : null].filter(Boolean);
-  const companyTags = job.company.tags?.slice(0, 3) ?? [];
   const showVisa =
     !hideVisaBadge && (job.visa?.status === "sponsors" || job.visa?.status === "no_sponsor");
   const showRemote = job.remote?.eligibility === "worldwide" || job.remote?.eligibility === "apac_ok";
@@ -45,11 +44,6 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
                 {job.company.display_name}
                 {metaParts.length > 0 ? ` · ${metaParts.join(" · ")}` : ""}
               </p>
-              {companyTags.length > 0 && (
-                <p className="mt-1 truncate text-caption text-muted-foreground/80">
-                  {companyTags.join(" · ")}
-                </p>
-              )}
             </div>
           </div>
           {(showVisa || showRemote) && (
@@ -62,12 +56,15 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
 
         <CardContent className="flex-1 space-y-3">
           {job.tags && job.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {job.tags.slice(0, 6).map((t) => (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {job.tags.slice(0, 4).map((t) => (
                 <Badge key={t} variant="outline" className="font-mono lowercase">
                   {t}
                 </Badge>
               ))}
+              {job.tags.length > 4 && (
+                <span className="text-caption text-muted-foreground">+{job.tags.length - 4}</span>
+              )}
             </div>
           )}
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-muted-foreground">
