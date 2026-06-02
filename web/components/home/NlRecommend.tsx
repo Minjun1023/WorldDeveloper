@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 import { RecommendationCard } from "@/components/recommend/RecommendationCard";
+import { RecommendationSkeleton } from "@/components/recommend/RecommendationSkeleton";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { RecommendResponse } from "@/lib/types";
@@ -99,6 +100,12 @@ export function NlRecommend({ presets }: { presets?: RecommendPreset[] }) {
               {p.label}
             </button>
           ))}
+        </div>
+      )}
+
+      {loading && (
+        <div className="mt-4">
+          <RecommendationSkeleton count={6} message="문장을 프로필로 바꾸고 6차원 점수를 계산하는 중…" />
         </div>
       )}
 
