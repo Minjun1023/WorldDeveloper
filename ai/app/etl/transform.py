@@ -74,7 +74,7 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
 
     status, evidence = classify_visa(j.description)
     remote_status, remote_evidence = classify_remote_eligibility(
-        j.location or "", bool(j.is_remote), j.description or ""
+        j.location or "", bool(j.is_remote), j.description or "", title=j.title or ""
     )
     plain = html_strip(j.description)
     tags = j.tags or extract_tech(j.description)
