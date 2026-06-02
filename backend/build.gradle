@@ -52,3 +52,8 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
 }
+
+// 로컬 개발(bootRun)에서만 NL 추천 레이트리밋을 높인다 — 운영(jar 실행)은 기본 10/시간 유지.
+tasks.named('bootRun') {
+    environment 'NL_RATELIMIT_CAPACITY', '100'
+}
