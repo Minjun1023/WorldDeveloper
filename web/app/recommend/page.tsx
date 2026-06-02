@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { ProfileForm } from "@/components/recommend/ProfileForm";
 import { RecommendationCard } from "@/components/recommend/RecommendationCard";
+import { RecommendationSkeleton } from "@/components/recommend/RecommendationSkeleton";
 import type { RecommendProfile, RecommendResponse } from "@/lib/types";
 
 export default function RecommendPage() {
@@ -14,6 +15,7 @@ export default function RecommendPage() {
   async function handleSubmit(profile: RecommendProfile) {
     setLoading(true);
     setError(null);
+    setResult(null);
     try {
       const res = await fetch("/api/recommend", {
         method: "POST",
@@ -42,6 +44,10 @@ export default function RecommendPage() {
       </section>
 
       <ProfileForm onSubmit={handleSubmit} loading={loading} />
+
+      {loading && (
+        <RecommendationSkeleton count={9} message="6차원 점수를 계산하는 중…" />
+      )}
 
       {error && (
         <div className="rounded-lg border border-border bg-surface p-4 text-body-sm text-destructive">
