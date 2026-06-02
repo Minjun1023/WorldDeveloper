@@ -4,7 +4,8 @@ public final class AuthDtos {
 
     private AuthDtos() {}
 
-    public record RegisterRequest(String email, String password, String displayName) {}
+    public record RegisterRequest(String email, String password, String displayName,
+                                  com.devjobs.profile.dto.ProfileDto.Profile profile) {}
     public record LoginRequest(String email, String password) {}
     public record VerifyRequest(String token) {}
     public record ResendRequest(String email) {}

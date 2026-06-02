@@ -3,6 +3,7 @@ package com.devjobs.auth;
 import java.time.OffsetDateTime;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,7 +44,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void register(String email, String rawPassword, String displayName) {
+    public UUID register(String email, String rawPassword, String displayName) {
         PasswordPolicy.validate(rawPassword);
         if (!EmailFormat.isValid(email)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_email");
@@ -54,11 +55,12 @@ public class AuthService {
         }
         String norm = normalize(email);
         if (userRepo.existsByEmail(norm)) {
-            return; // 계정 열거 방지: 조용히 반환
+            return userRepo.findByEmail(norm).map(UserEntity::getId).orElse(null); // 계정 열거 방지: 조용히 반환
         }
         UserEntity u = new UserEntity(norm, passwordEncoder.encode(rawPassword), name);
         userRepo.save(u);
         issueAndSendVerification(u);
+        return u.getId();
     }
 
     /** 표시이름 사용 가능 여부 (비어있지 않고 중복 아님). */

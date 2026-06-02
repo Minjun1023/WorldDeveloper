@@ -6,9 +6,11 @@ import com.devjobs.auth.dto.AuthDtos.LoginRequest;
 import com.devjobs.auth.dto.AuthDtos.RegisterRequest;
 import com.devjobs.auth.dto.AuthDtos.ResendRequest;
 import com.devjobs.auth.dto.AuthDtos.VerifyRequest;
+import com.devjobs.profile.ProfileService;
 import com.devjobs.strategist.RateLimiter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,15 +30,18 @@ public class AuthController {
     private final AuthService auth;
     private final OAuthHandoffService handoff;
     private final RateLimiter rateLimiter;
+    private final ProfileService profileService;
     private final String internalSecret;
 
     public AuthController(AuthService auth,
                           OAuthHandoffService handoff,
                           RateLimiter rateLimiter,
+                          ProfileService profileService,
                           @Value("${auth.internal-secret}") String internalSecret) {
         this.auth = auth;
         this.handoff = handoff;
         this.rateLimiter = rateLimiter;
+        this.profileService = profileService;
         this.internalSecret = internalSecret;
     }
 
@@ -49,7 +54,11 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody RegisterRequest r, HttpServletRequest req) {
         rateLimit("register", req);
-        auth.register(r.email(), r.password(), r.displayName());
+        UUID userId = auth.register(r.email(), r.password(), r.displayName());
+        if (userId != null && r.profile() != null
+                && r.profile().skills() != null && !r.profile().skills().isEmpty()) {
+            profileService.upsert(userId, r.profile());
+        }
         return ResponseEntity.ok().build();
     }
 
