@@ -1,5 +1,6 @@
 import { CompanySpotlight } from "@/components/home/CompanySpotlight";
 import { CountryTiles } from "@/components/home/CountryTiles";
+import { CtaSection } from "@/components/home/CtaSection";
 import { FaqSection } from "@/components/home/FaqSection";
 import { Hero } from "@/components/home/Hero";
 import type { HomeStats } from "@/components/home/HeroStats";
@@ -71,6 +72,8 @@ export default async function HomePage() {
         <h2 className="mb-4 text-center text-h2">자주 묻는 질문</h2>
         <FaqSection />
       </section>
+
+      <CtaSection />
     </div>
   );
 }
