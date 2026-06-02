@@ -1,22 +1,31 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { Suspense, useEffect, useRef, useState } from "react";
 
 import { AccountMenu } from "@/components/auth/AccountMenu";
+import { HeaderTrackSwitch, HeaderTrackSwitchFallback } from "@/components/HeaderTrackSwitch";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { cn } from "@/lib/utils";
 
-// 사용자 전용 "내 지원"은 nav가 아니라 계정 메뉴(로그인 시)에만 둔다.
+// 듀얼트랙(이주/원격/둘다)은 HeaderTrackSwitch 가 1차 내비 + 검색 진입을 겸한다(둘다=/search).
+// 여기 링크는 보조 메뉴. 사용자 전용 "내 지원"은 계정 메뉴(로그인 시)에만 둔다.
 const NAV_LINKS = [
-  { href: "/search", label: "검색" },
-  { href: "/recommend", label: "추천" },
+  { href: "/recommend", label: "AI 추천" },
   { href: "/companies", label: "회사" },
   { href: "/about", label: "소개" },
 ];
 
+function useIsActive() {
+  const pathname = usePathname();
+  return (href: string) => pathname === href || pathname.startsWith(href + "/");
+}
+
 export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const isActive = useIsActive();
 
   useEffect(() => {
     if (!open) return;
@@ -36,12 +45,27 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
 
   return (
     <>
-      <nav className="hidden items-center gap-3 text-body-sm text-muted-foreground md:flex">
-        {NAV_LINKS.map((l) => (
-          <Link key={l.href} href={l.href} className="hover:text-foreground transition-colors">
-            {l.label}
-          </Link>
-        ))}
+      <nav className="hidden items-center gap-3 text-body-sm md:flex">
+        <Suspense fallback={<HeaderTrackSwitchFallback />}>
+          <HeaderTrackSwitch />
+        </Suspense>
+        <span className="h-4 w-px bg-border" aria-hidden />
+        {NAV_LINKS.map((l) => {
+          const active = isActive(l.href);
+          return (
+            <Link
+              key={l.href}
+              href={l.href}
+              aria-current={active ? "page" : undefined}
+              className={cn(
+                "transition-colors",
+                active ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
+              )}
+            >
+              {l.label}
+            </Link>
+          );
+        })}
         <AccountMenu loggedIn={loggedIn} />
         <ThemeToggle />
       </nav>
@@ -66,20 +90,34 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
           <div
             id="mobile-nav"
             role="menu"
-            className="absolute right-0 mt-2 w-48 rounded-lg border border-border bg-surface p-2 shadow-lg"
+            className="absolute right-0 mt-2 w-56 rounded-lg border border-border bg-surface p-2 shadow-lg"
           >
-            {NAV_LINKS.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                role="menuitem"
-                onClick={() => setOpen(false)}
-                className="block rounded-md px-3 py-2 text-body-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-              >
-                {l.label}
-              </Link>
-            ))}
-            <div className="my-1 border-t border-border" />
+            <p className="px-3 pb-1 pt-1 text-caption font-medium text-muted-foreground">트랙</p>
+            <Suspense fallback={<HeaderTrackSwitchFallback orientation="vertical" />}>
+              <HeaderTrackSwitch orientation="vertical" onNavigate={() => setOpen(false)} />
+            </Suspense>
+
+            <div className="my-1.5 border-t border-border" />
+            {NAV_LINKS.map((l) => {
+              const active = isActive(l.href);
+              return (
+                <Link
+                  key={l.href}
+                  href={l.href}
+                  role="menuitem"
+                  aria-current={active ? "page" : undefined}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "block rounded-md px-3 py-2 text-body-sm hover:bg-muted",
+                    active ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {l.label}
+                </Link>
+              );
+            })}
+
+            <div className="my-1.5 border-t border-border" />
             {loggedIn ? (
               <>
                 <Link
