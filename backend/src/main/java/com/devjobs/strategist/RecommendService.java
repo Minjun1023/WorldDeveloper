@@ -19,6 +19,9 @@ import org.springframework.stereotype.Service;
 public class RecommendService {
 
     private static final int CANDIDATE_POOL = 50;
+    // 원격 viable(worldwide/apac_ok) 보강 후보 수. worldwide+apac 총량이 작아 전량을 유사도순
+    // 으로 끌어와 일반 풀에 병합 → 잘 매칭되면 추천에 노출(점수/정렬/다양성이 최종 선별).
+    private static final int REMOTE_VIABLE_POOL = 25;
 
     private final JobRepository jobRepository;
     private final JobService jobService;
@@ -43,18 +46,32 @@ public class RecommendService {
 
         // 2. 후보 + semantic (pgvector, 실패 시 최신순 fallback)
         List<Object[]> rows;
+        List<Object[]> remoteRows = List.of();
         if (vec != null && !vec.isEmpty() && !isZero(vec)) {
-            rows = jobRepository.findSemanticCandidates(toVectorLiteral(vec), CANDIDATE_POOL);
+            String vecLit = toVectorLiteral(vec);
+            rows = jobRepository.findSemanticCandidates(vecLit, CANDIDATE_POOL);
+            // 원격 viable 보강 — 일반 풀에서 밀려 안 뜨던 worldwide/apac_ok 원격에 노출 기회.
+            remoteRows = jobRepository.findSemanticRemoteViableCandidates(vecLit, REMOTE_VIABLE_POOL);
         } else {
+            // 임베딩 없음/ai 다운 → 최신순 fallback. 이 모드에서도 원격 viable 을 따로 주입해 recall 유지.
             rows = jobRepository.findRecentCandidates(CANDIDATE_POOL);
+            remoteRows = jobRepository.findRecentRemoteViableCandidates(REMOTE_VIABLE_POOL);
         }
 
+        // 두 풀을 id 기준 병합(dedupe). putIfAbsent 가 null 반환 = 신규 id → ids 에 1회만 추가.
         Map<String, Double> semanticById = new HashMap<>();
         List<String> ids = new ArrayList<>();
         for (Object[] row : rows) {
             String id = (String) row[0];
-            ids.add(id);
-            semanticById.put(id, ((Number) row[1]).doubleValue());
+            if (semanticById.putIfAbsent(id, ((Number) row[1]).doubleValue()) == null) {
+                ids.add(id);
+            }
+        }
+        for (Object[] row : remoteRows) {
+            String id = (String) row[0];
+            if (semanticById.putIfAbsent(id, ((Number) row[1]).doubleValue()) == null) {
+                ids.add(id);
+            }
         }
 
         // 3. Entity 조회 + 점수화

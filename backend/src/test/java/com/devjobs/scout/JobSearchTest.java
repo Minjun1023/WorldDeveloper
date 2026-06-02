@@ -26,6 +26,7 @@ class JobSearchTest {
         DockerImageName.parse("pgvector/pgvector:pg16").asCompatibleSubstituteFor("postgres"));
 
     @Autowired JobService service;
+    @Autowired JobRepository repository;
     @Autowired JdbcTemplate jdbc;
 
     private void company(String slug, String name) {
@@ -98,6 +99,24 @@ class JobSearchTest {
         JobListResponse res = service.search("backend", null, null, true, null, null, null, 1, 20);
         assertTrue(res.items().stream().allMatch(j -> j.id().equals("r1")) && res.total() == 1,
             "원격 필터 + 키워드 동시 적용");
+    }
+
+    @Test
+    void recentRemoteViableCandidatesReturnsOnlyViableRemote() {
+        company("rv2", "RV2 Co");
+        job("cv_ww",  "Backend Engineer", "rv2", "x", "backend", true, "now()");
+        job("cv_apac","Backend Engineer", "rv2", "x", "backend", true, "now()");
+        job("cv_rr",  "Backend Engineer", "rv2", "x", "backend", true, "now()");
+        job("cv_unc", "Backend Engineer", "rv2", "x", "backend", true, "now()");
+        job("cv_on",  "Backend Engineer", "rv2", "x", "backend", false, "now()");
+        setRemote("cv_ww", "worldwide");
+        setRemote("cv_apac", "apac_ok");
+        setRemote("cv_rr", "region_restricted");
+        setRemote("cv_unc", "unclear");
+        var ids = repository.findRecentRemoteViableCandidates(50).stream()
+            .map(r -> (String) r[0]).filter(id -> id.startsWith("cv_")).toList();
+        assertEquals(java.util.Set.of("cv_ww", "cv_apac"), new java.util.HashSet<>(ids),
+            "원격 viable 후보 = worldwide·apac_ok 만 (region_restricted·unclear·onsite 제외)");
     }
 
     @Test

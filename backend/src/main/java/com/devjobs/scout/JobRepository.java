@@ -32,6 +32,19 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         """, nativeQuery = true)
     List<Object[]> findSemanticCandidates(@Param("vec") String vec, @Param("lim") int lim);
 
+    // 추천 후보 보강: 한국 거주자 가능 원격(worldwide/apac_ok) 중 유사도 상위만 별도 조회.
+    // 원격 viable 공고가 일반 후보 풀에서 빅테크에 밀려 안 뜨는 문제(recall) 완화 — 호출부에서
+    // 일반 후보와 병합(dedupe)해 점수화한다. 반환: [id, semantic(0~1)]
+    @Query(value = """
+        SELECT id, 1 - (embedding <=> CAST(:vec AS vector)) AS semantic
+        FROM jobs
+        WHERE is_active = true AND embedding IS NOT NULL
+          AND is_remote = true AND remote_eligibility IN ('worldwide','apac_ok')
+        ORDER BY embedding <=> CAST(:vec AS vector)
+        LIMIT :lim
+        """, nativeQuery = true)
+    List<Object[]> findSemanticRemoteViableCandidates(@Param("vec") String vec, @Param("lim") int lim);
+
     // fallback (임베딩 없거나 ai 다운): 최신순. 반환: [id, 0.0]
     @Query(value = """
         SELECT id, CAST(0.0 AS double precision) AS semantic
@@ -41,6 +54,18 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         LIMIT :lim
         """, nativeQuery = true)
     List<Object[]> findRecentCandidates(@Param("lim") int lim);
+
+    // fallback 모드용 원격 viable 보강 — 임베딩이 없을 때도 worldwide/apac_ok 원격을 후보에
+    // 넣어 recall 을 유지(최신순). 반환: [id, 0.0]
+    @Query(value = """
+        SELECT id, CAST(0.0 AS double precision) AS semantic
+        FROM jobs
+        WHERE is_active = true
+          AND is_remote = true AND remote_eligibility IN ('worldwide','apac_ok')
+        ORDER BY posted_at DESC NULLS LAST
+        LIMIT :lim
+        """, nativeQuery = true)
+    List<Object[]> findRecentRemoteViableCandidates(@Param("lim") int lim);
 
     // 풀텍스트 검색(키워드 q + 직무 disc + 지역 regionRegex 모두 optional). disc 는 서버 큐레이션 tsquery 문자열.
     // visaPriority=true 면 비자 티어(sponsors→unclear→no_sponsor)를 1순위로 정렬한다.
