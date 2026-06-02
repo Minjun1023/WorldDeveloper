@@ -97,9 +97,11 @@ mkdir -p "$LOG_DIR"
 trap cleanup EXIT INT TERM
 
 # --- 1. AI (8001) ---
+# --extra embeddings: 임베딩 모델(sentence-transformers/torch) 로드 → 추천 의미검색 활성화.
+# 없으면 /internal/embed 가 zero 벡터(fallback) → 추천이 최신순으로 퇴화한다(첫 실행 시 torch 설치).
 log "AI 시작 (포트 $AI_PORT) → $LOG_DIR/ai.log"
 ( cd "$ROOT/ai" && \
-  exec uv run python -m uvicorn app.main:app --host 0.0.0.0 --port "$AI_PORT" --reload \
+  exec uv run --extra embeddings python -m uvicorn app.main:app --host 0.0.0.0 --port "$AI_PORT" --reload \
 ) >"$LOG_DIR/ai.log" 2>&1 &
 PIDS+=($!)
 
