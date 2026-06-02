@@ -3,6 +3,8 @@ package com.devjobs.strategist;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.LongSupplier;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /** 인메모리 고정창 레이트리밋 (단일 인스턴스). 키별 독립. */
@@ -21,8 +23,14 @@ public class RateLimiter {
         int count;
     }
 
-    public RateLimiter() {
-        this(10, 3_600_000L, System::currentTimeMillis); // 시간당 10회
+    // 운영 기본 = 시간당 10회(LLM 비용 가드). 로컬 개발은 build.gradle bootRun 이 환경변수로
+    // 한도를 올린다(application.yml 의 ${NL_RATELIMIT_CAPACITY:10} 참고). 운영은 jar 로 띄워
+    // 환경변수 미설정 → 기본 10 유지.
+    @Autowired
+    public RateLimiter(
+        @Value("${app.ratelimit.nl-capacity:10}") int capacity,
+        @Value("${app.ratelimit.nl-window-ms:3600000}") long windowMillis) {
+        this(capacity, windowMillis, System::currentTimeMillis);
     }
 
     RateLimiter(int capacity, long windowMillis, LongSupplier clock) {
