@@ -118,7 +118,7 @@ export function NlRecommend({ presets }: { presets?: RecommendPreset[] }) {
       )}
 
       {result && result.recommendations.length > 0 && (
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
           {result.recommendations.map((item, i) => (
             <RecommendationCard key={item.job.id} item={item} rank={i + 1} />
           ))}

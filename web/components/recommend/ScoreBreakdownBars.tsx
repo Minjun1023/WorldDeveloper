@@ -22,7 +22,7 @@ export function ScoreBreakdownBars({ score }: { score: ScoreBreakdown }) {
 
   return (
     <ResponsiveContainer width="100%" height={140}>
-      <BarChart data={data} layout="vertical" margin={{ left: 8, right: 24, top: 0, bottom: 0 }}>
+      <BarChart data={data} layout="vertical" margin={{ left: 8, right: 32, top: 0, bottom: 0 }}>
         <XAxis type="number" domain={[0, 100]} hide />
         <YAxis
           type="category"
