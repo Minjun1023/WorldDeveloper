@@ -53,8 +53,11 @@ public class OAuthSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
             }
         }
 
-        UserEntity user = auth.oauthUpsert(provider, sub, email, name);
-        String code = handoff.createCode(user.getId().toString());
-        getRedirectStrategy().sendRedirect(request, response, appBaseUrl + "/auth/callback?code=" + code);
+        AuthService.OAuthUpsertResult result = auth.oauthUpsert(provider, sub, email, name);
+        String code = handoff.createCode(result.user().getId().toString());
+        // 신규 가입자는 프로필 온보딩을 1회 보여주도록 web 콜백에 신호를 전달한다(기존 사용자는 홈으로).
+        String onboarding = result.newAccount() ? "&onboarding=1" : "";
+        getRedirectStrategy().sendRedirect(request, response,
+            appBaseUrl + "/auth/callback?code=" + code + onboarding);
     }
 }

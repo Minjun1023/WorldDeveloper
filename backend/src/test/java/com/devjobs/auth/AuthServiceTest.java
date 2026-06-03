@@ -1,6 +1,7 @@
 package com.devjobs.auth;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -135,7 +136,9 @@ class AuthServiceTest {
 
     @Test
     void oauthUpsertCreatesNewUserWhenNoMatch() {
-        UserEntity u = authService.oauthUpsert("google", "g-sub-1", "OAuth@Example.com", "OAuth User");
+        AuthService.OAuthUpsertResult r = authService.oauthUpsert("google", "g-sub-1", "OAuth@Example.com", "OAuth User");
+        UserEntity u = r.user();
+        assertTrue(r.newAccount(), "최초 OAuth 가입 → 신규 계정");
         assertNotNull(u.getId());
         assertEquals("oauth@example.com", u.getEmail());
         assertNotNull(u.getEmailVerifiedAt(), "OAuth 이메일은 공급자 검증분 → 즉시 인증");
@@ -144,9 +147,11 @@ class AuthServiceTest {
 
     @Test
     void oauthUpsertReturnsExistingByIdentity() {
-        UserEntity first = authService.oauthUpsert("github", "gh-1", "same@example.com", "X");
-        UserEntity again = authService.oauthUpsert("github", "gh-1", "same@example.com", "X");
-        assertEquals(first.getId(), again.getId());
+        AuthService.OAuthUpsertResult first = authService.oauthUpsert("github", "gh-1", "same@example.com", "X");
+        AuthService.OAuthUpsertResult again = authService.oauthUpsert("github", "gh-1", "same@example.com", "X");
+        assertEquals(first.user().getId(), again.user().getId());
+        assertTrue(first.newAccount(), "1회차는 신규");
+        assertFalse(again.newAccount(), "동일 provider 재로그인은 신규 아님 → 온보딩 미표시");
     }
 
     @Test
@@ -155,8 +160,9 @@ class AuthServiceTest {
         UserEntity u = userRepo.findByEmail("link@example.com").orElseThrow();
         u.markEmailVerified(java.time.OffsetDateTime.now());
         userRepo.save(u);
-        UserEntity linked = authService.oauthUpsert("google", "g-link", "link@example.com", "Link");
-        assertEquals(u.getId(), linked.getId());
+        AuthService.OAuthUpsertResult linked = authService.oauthUpsert("google", "g-link", "link@example.com", "Link");
+        assertEquals(u.getId(), linked.user().getId());
+        assertFalse(linked.newAccount(), "기존 이메일 계정에 provider 연결은 신규 아님 → 온보딩 미표시");
         assertTrue(identityRepo.findByProviderAndProviderSub("google", "g-link").isPresent());
     }
 

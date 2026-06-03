@@ -126,25 +126,33 @@ public class AuthService {
         return new AuthResult(token, u.getId().toString(), u.getEmail(), u.getDisplayName());
     }
 
+    /**
+     * OAuth 로그인 결과. {@code newAccount} 는 이 호출로 계정이 새로 만들어졌는지를 가리킨다
+     * (기존 provider 재로그인·기존 이메일에 provider 연결은 false). 신규 가입자에게만 프로필 온보딩을 보여주는 데 쓴다.
+     */
+    public record OAuthUpsertResult(UserEntity user, boolean newAccount) {}
+
     @Transactional
-    public UserEntity oauthUpsert(String provider, String providerSub, String email, String displayName) {
+    public OAuthUpsertResult oauthUpsert(String provider, String providerSub, String email, String displayName) {
         Optional<UserIdentityEntity> existingIdentity =
             identityRepo.findByProviderAndProviderSub(provider, providerSub);
         if (existingIdentity.isPresent()) {
-            return userRepo.findById(existingIdentity.get().getUserId())
+            UserEntity existing = userRepo.findById(existingIdentity.get().getUserId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "user_missing"));
+            return new OAuthUpsertResult(existing, false);
         }
         String norm = normalize(email);
         if (norm == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "oauth_email_required");
         }
         UserEntity user = userRepo.findByEmail(norm).orElse(null);
-        if (user == null) {
+        boolean newAccount = user == null;
+        if (newAccount) {
             user = new UserEntity(norm, null, displayName); // OAuth 전용: password_hash = null
             user.markEmailVerified(OffsetDateTime.now());    // 공급자 검증분
             userRepo.save(user);
         }
         identityRepo.save(new UserIdentityEntity(user.getId(), provider, providerSub));
-        return user;
+        return new OAuthUpsertResult(user, newAccount);
     }
 }
