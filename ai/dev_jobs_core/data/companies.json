@@ -1115,7 +1115,8 @@
       "europe"
     ],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "ind_sponsor": true
   },
   "mollie": {
     "ats": "ashby",
@@ -1155,7 +1156,8 @@
       "europe"
     ],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "ind_sponsor": true
   },
   "algolia": {
     "ats": "greenhouse",
@@ -1223,7 +1225,8 @@
       "europe"
     ],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "ind_sponsor": true
   },
   "lifen": {
     "ats": "ashby",
