@@ -1291,5 +1291,26 @@
       "europe"
     ],
     "uk_sponsor": true
+  },
+  "paypay": {
+    "ats": "greenhouse",
+    "token": "paypay",
+    "tags": [
+      "fintech",
+      "payments",
+      "japan",
+      "asia"
+    ]
+  },
+  "woven-by-toyota": {
+    "ats": "lever",
+    "token": "woven-by-toyota",
+    "tags": [
+      "automotive",
+      "ai",
+      "robotics",
+      "japan",
+      "asia"
+    ]
   }
 }
