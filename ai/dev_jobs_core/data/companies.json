@@ -1312,5 +1312,187 @@
       "japan",
       "asia"
     ]
+  },
+  "airwallex": {
+    "ats": "ashby",
+    "token": "airwallex",
+    "tags": [
+      "fintech",
+      "payments",
+      "asia"
+    ]
+  },
+  "agoda": {
+    "ats": "greenhouse",
+    "token": "agoda",
+    "tags": [
+      "travel",
+      "asia"
+    ]
+  },
+  "xai": {
+    "ats": "greenhouse",
+    "token": "xai",
+    "tags": [
+      "ai",
+      "research"
+    ]
+  },
+  "glean": {
+    "ats": "greenhouse",
+    "token": "gleanwork",
+    "tags": [
+      "ai",
+      "enterprise-search"
+    ]
+  },
+  "elevenlabs": {
+    "ats": "ashby",
+    "token": "elevenlabs",
+    "tags": [
+      "ai",
+      "audio"
+    ]
+  },
+  "sierra": {
+    "ats": "ashby",
+    "token": "sierra",
+    "tags": [
+      "ai",
+      "agents"
+    ]
+  },
+  "grafana": {
+    "ats": "greenhouse",
+    "token": "grafanalabs",
+    "tags": [
+      "devtools",
+      "observability"
+    ]
+  },
+  "toast": {
+    "ats": "greenhouse",
+    "token": "toast",
+    "tags": [
+      "fintech",
+      "restaurant"
+    ]
+  },
+  "harvey": {
+    "ats": "ashby",
+    "token": "harvey",
+    "tags": [
+      "ai",
+      "legal"
+    ]
+  },
+  "cresta": {
+    "ats": "greenhouse",
+    "token": "cresta",
+    "tags": [
+      "ai",
+      "cx"
+    ]
+  },
+  "decagon": {
+    "ats": "ashby",
+    "token": "decagon",
+    "tags": [
+      "ai",
+      "agents"
+    ]
+  },
+  "gong": {
+    "ats": "greenhouse",
+    "token": "gongio",
+    "tags": [
+      "saas",
+      "sales"
+    ]
+  },
+  "cursor": {
+    "ats": "ashby",
+    "token": "cursor",
+    "tags": [
+      "ai",
+      "devtools"
+    ]
+  },
+  "contentful": {
+    "ats": "greenhouse",
+    "token": "contentful",
+    "tags": [
+      "saas",
+      "cms"
+    ]
+  },
+  "1password": {
+    "ats": "ashby",
+    "token": "1password",
+    "tags": [
+      "security",
+      "saas"
+    ]
+  },
+  "togetherai": {
+    "ats": "greenhouse",
+    "token": "togetherai",
+    "tags": [
+      "ai",
+      "infra"
+    ]
+  },
+  "writer": {
+    "ats": "ashby",
+    "token": "writer",
+    "tags": [
+      "ai",
+      "enterprise"
+    ]
+  },
+  "temporal": {
+    "ats": "greenhouse",
+    "token": "temporaltechnologies",
+    "tags": [
+      "devtools",
+      "infra"
+    ]
+  },
+  "polymarket": {
+    "ats": "ashby",
+    "token": "polymarket",
+    "tags": [
+      "crypto",
+      "markets"
+    ]
+  },
+  "lucid": {
+    "ats": "greenhouse",
+    "token": "lucidsoftware",
+    "tags": [
+      "saas",
+      "productivity"
+    ]
+  },
+  "wealthsimple": {
+    "ats": "ashby",
+    "token": "wealthsimple",
+    "tags": [
+      "fintech"
+    ]
+  },
+  "typeform": {
+    "ats": "greenhouse",
+    "token": "typeform",
+    "tags": [
+      "saas"
+    ]
+  },
+  "characterai": {
+    "ats": "ashby",
+    "token": "character",
+    "tags": [
+      "ai"
+    ]
   }
 }
