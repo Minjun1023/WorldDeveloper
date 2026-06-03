@@ -17,14 +17,12 @@ import org.springframework.security.oauth2.core.user.DefaultOAuth2User;
 
 class OAuthSuccessHandlerTest {
 
-    @Test
-    void redirectsToWebCallbackWithCode() throws Exception {
+    private MockHttpServletResponse runGoogleLogin(AuthService.OAuthUpsertResult upsertResult) throws Exception {
         AuthService auth = mock(AuthService.class);
         OAuthHandoffService handoff = mock(OAuthHandoffService.class);
 
-        UserEntity user = new UserEntity("g@example.com", null, "G");
-        when(auth.oauthUpsert(eq("google"), eq("sub-1"), eq("g@example.com"), eq("G"))).thenReturn(user);
-        when(handoff.createCode(user.getId().toString())).thenReturn("CODE123");
+        when(auth.oauthUpsert(eq("google"), eq("sub-1"), eq("g@example.com"), eq("G"))).thenReturn(upsertResult);
+        when(handoff.createCode(upsertResult.user().getId().toString())).thenReturn("CODE123");
 
         OAuthSuccessHandler handler = new OAuthSuccessHandler(auth, handoff, "http://localhost:3000");
 
@@ -38,7 +36,20 @@ class OAuthSuccessHandlerTest {
         MockHttpServletRequest req = new MockHttpServletRequest();
         MockHttpServletResponse res = new MockHttpServletResponse();
         handler.onAuthenticationSuccess(req, res, token);
+        return res;
+    }
 
+    @Test
+    void existingUserRedirectsToCallbackWithoutOnboarding() throws Exception {
+        UserEntity user = new UserEntity("g@example.com", null, "G");
+        MockHttpServletResponse res = runGoogleLogin(new AuthService.OAuthUpsertResult(user, false));
         assertEquals("http://localhost:3000/auth/callback?code=CODE123", res.getRedirectedUrl());
+    }
+
+    @Test
+    void newUserRedirectsToCallbackWithOnboardingFlag() throws Exception {
+        UserEntity user = new UserEntity("g@example.com", null, "G");
+        MockHttpServletResponse res = runGoogleLogin(new AuthService.OAuthUpsertResult(user, true));
+        assertEquals("http://localhost:3000/auth/callback?code=CODE123&onboarding=1", res.getRedirectedUrl());
     }
 }
