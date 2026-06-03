@@ -4,10 +4,11 @@ from __future__ import annotations
 import asyncio
 import logging
 
+from dev_jobs_core.analyzers.nl_location import is_nl_location
 from dev_jobs_core.analyzers.uk_location import is_uk_location
 from dev_jobs_core.analyzers.us_location import is_us_location
 from dev_jobs_core.analyzers.visa import classify_visa
-from dev_jobs_core.registry import h1b_sponsor_slugs, uk_sponsor_slugs
+from dev_jobs_core.registry import h1b_sponsor_slugs, ind_sponsor_slugs, uk_sponsor_slugs
 
 from ..db import fetch_unclear_jobs, get_conn, sponsor_company_slugs, update_visa
 from .visa_llm import classify_visa_llm
@@ -51,6 +52,23 @@ def match_h1b_register(jobs: list[dict], h1b_slugs: set[str]) -> dict[str, tuple
     return out
 
 
+IND_EVIDENCE = "회사가 IND 인정 스폰서 (네덜란드 이민청 erkende referenten 명부)"
+
+
+def match_ind_register(jobs: list[dict], ind_slugs: set[str]) -> dict[str, tuple[str, list[str]]]:
+    """unclear 공고 중 (회사가 IND 인정 스폰서 + 네덜란드 소재)인 것을 sponsors 로 매핑.
+
+    순수 함수(DB/네트워크 없음). 입력 jobs 는 fetch_unclear_jobs 형식 dict.
+    """
+    out: dict[str, tuple[str, list[str]]] = {}
+    for j in jobs:
+        if j.get("company_slug") in ind_slugs and is_nl_location(
+            j.get("location"), j.get("is_remote", False)
+        ):
+            out[j["id"]] = ("sponsors", [IND_EVIDENCE])
+    return out
+
+
 async def reclassify_unclear_visa(limit: int | None = None) -> dict:
     conn = get_conn()
     try:
@@ -81,6 +99,12 @@ async def reclassify_unclear_visa(limit: int | None = None) -> dict:
         by_h1b_register = len(h1b_hits)
         results.update(h1b_hits)
         remaining = [j for j in remaining if j["id"] not in h1b_hits]
+
+        # 1.7) NL IND 인정 스폰서 매칭 (무료·사실 기반, LLM 앞)
+        ind_hits = match_ind_register(remaining, ind_sponsor_slugs())
+        by_ind_register = len(ind_hits)
+        results.update(ind_hits)
+        remaining = [j for j in remaining if j["id"] not in ind_hits]
 
         # 2) LLM (동시성 제한 + 설명 캐시)
         cache: dict[str, tuple[str, list[str]] | None] = {}
@@ -118,6 +142,7 @@ async def reclassify_unclear_visa(limit: int | None = None) -> dict:
             "by_keyword": by_keyword,
             "by_uk_register": by_uk_register,
             "by_h1b_register": by_h1b_register,
+            "by_ind_register": by_ind_register,
             "by_llm": by_llm,
             "by_company": by_company,
             "still_unclear": len(jobs) - len(results),

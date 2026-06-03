@@ -1,8 +1,9 @@
 """회사 레지스트리: 회사명 → ATS 매핑 + 태그 기반 검색."""
 from __future__ import annotations
+
 import json
-from pathlib import Path
 from functools import lru_cache
+from pathlib import Path
 
 REGISTRY_PATH = Path(__file__).parent / "data" / "companies.json"
 
@@ -58,6 +59,16 @@ def h1b_sponsor_slugs() -> set[str]:
         info["token"]
         for info in registry.values()
         if info.get("h1b_sponsor") is True
+    }
+
+
+def ind_sponsor_slugs() -> set[str]:
+    """네덜란드 IND 인정 스폰서로 큐레이션된 회사(ind_sponsor=true)의 토큰 집합."""
+    registry = _load()
+    return {
+        info["token"]
+        for info in registry.values()
+        if info.get("ind_sponsor") is True
     }
 
 
