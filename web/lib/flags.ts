@@ -1,6 +1,7 @@
 // 지역(region) value → ISO 3166-1 alpha-2 코드. /regions 의 value 기준.
 const REGION_ISO: Record<string, string> = {
   us: "us",
+  japan: "jp",
   canada: "ca",
   uk: "gb",
   germany: "de",
