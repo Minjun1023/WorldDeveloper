@@ -38,6 +38,7 @@ public class JobService {
     private static final List<Region> REGIONS = List.of(
         new Region("remote", "원격", null),
         new Region("us", "미국", "united states|usa|san francisco|new york|san mateo|seattle|austin|boston|los angeles|bay area|mountain view|palo alto|chicago|denver"),
+        new Region("japan", "일본", "japan|tokyo|osaka|kyoto|fukuoka|yokohama|nagoya|sapporo|kobe|shizuoka|saitama|kawasaki|日本|東京|大阪|京都|横浜|名古屋|静岡|福岡"),
         new Region("germany", "독일", "germany|berlin|munich|münchen|hamburg|frankfurt|cologne|köln|stuttgart|düsseldorf"),
         new Region("uk", "영국", "united kingdom|england|london|manchester|edinburgh|scotland"),
         new Region("netherlands", "네덜란드", "netherlands|amsterdam|rotterdam|utrecht|hague|eindhoven"),
