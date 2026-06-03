@@ -9,28 +9,32 @@ import type { RecommendProfile } from "@/lib/types";
 export function ProfileForm({
   onSubmit,
   loading,
+  defaultValue,
+  submitLabel = "추천 받기",
+  secondaryAction,
 }: {
   onSubmit: (profile: RecommendProfile) => void;
   loading: boolean;
+  defaultValue?: RecommendProfile;
+  submitLabel?: string;
+  secondaryAction?: React.ReactNode;
 }) {
-  const [skills, setSkills] = useState("python, django, postgresql, aws");
-  const [seniority, setSeniority] = useState("senior");
-  const [locations, setLocations] = useState("Berlin, Amsterdam, Remote");
-  const [needsVisa, setNeedsVisa] = useState(true);
-  const [salary, setSalary] = useState("80000");
-  const [bio, setBio] = useState("");
+  const [skills, setSkills] = useState((defaultValue?.skills ?? []).join(", "));
+  const [seniority, setSeniority] = useState(defaultValue?.seniority ?? "senior");
+  const [years, setYears] = useState(defaultValue?.years_experience?.toString() ?? "");
+  const [locations, setLocations] = useState((defaultValue?.preferred_locations ?? []).join(", "));
+  const [remote, setRemote] = useState(defaultValue?.remote_preference ?? "any");
+  const [salary, setSalary] = useState(defaultValue?.desired_salary_usd?.toString() ?? "");
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     onSubmit({
       skills: skills.split(",").map((s) => s.trim()).filter(Boolean),
       seniority,
-      bio: bio.trim() || undefined,
-      needs_visa_sponsorship: needsVisa,
+      years_experience: years ? Number(years) : undefined,
       preferred_locations: locations.split(",").map((s) => s.trim()).filter(Boolean),
-      remote_preference: "any",
+      remote_preference: remote,
       desired_salary_usd: salary ? Number(salary) : undefined,
-      top_k: 9,
     });
   }
 
@@ -54,8 +58,24 @@ export function ProfileForm({
           </select>
         </label>
         <label className="space-y-1">
+          <span className="text-body-sm font-medium">연차 (선택)</span>
+          <Input type="number" value={years} onChange={(e) => setYears(e.target.value)} className="font-mono" />
+        </label>
+        <label className="space-y-1">
           <span className="text-body-sm font-medium">선호 지역 (쉼표)</span>
           <Input value={locations} onChange={(e) => setLocations(e.target.value)} />
+        </label>
+        <label className="space-y-1">
+          <span className="text-body-sm font-medium">원격/이주 선호</span>
+          <select
+            value={remote}
+            onChange={(e) => setRemote(e.target.value)}
+            className="flex h-9 w-full rounded-md border border-input bg-background px-3 text-body-sm"
+          >
+            <option value="any">상관없음</option>
+            <option value="remote">원격 선호</option>
+            <option value="onsite">현지 근무(이주)</option>
+          </select>
         </label>
         <label className="space-y-1">
           <span className="text-body-sm font-medium">최소 희망 연봉 (USD)</span>
@@ -63,24 +83,10 @@ export function ProfileForm({
         </label>
       </div>
 
-      <label className="space-y-1 block">
-        <span className="text-body-sm font-medium">자기소개 / 이력서 요약 (의미 매칭용, 선택)</span>
-        <textarea
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          rows={2}
-          placeholder="예: 분산 시스템과 결제 인프라에 관심 많은 백엔드 개발자"
-          className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-body-sm placeholder:text-muted-foreground"
-        />
-      </label>
-
-      <div className="flex items-center justify-between">
-        <label className="flex items-center gap-2 text-body-sm">
-          <input type="checkbox" checked={needsVisa} onChange={(e) => setNeedsVisa(e.target.checked)} />
-          비자 스폰서십 필요
-        </label>
+      <div className="flex items-center justify-end gap-2">
+        {secondaryAction}
         <Button type="submit" disabled={loading}>
-          {loading ? "추천 계산 중…" : "추천 받기"}
+          {loading ? "추천 계산 중…" : submitLabel}
         </Button>
       </div>
     </form>

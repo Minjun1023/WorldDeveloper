@@ -7,10 +7,12 @@ import type { HomeStats } from "@/components/home/HeroStats";
 import { JobGrid } from "@/components/home/JobGrid";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { fetchCompanies, fetchJobs, fetchRegions } from "@/lib/api";
+import { getSession } from "@/lib/session-server";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
+  const session = await getSession();
   const [visaRes, allRes, latestRes, companies, regions] = await Promise.all([
     fetchJobs({ visa: "sponsors", pageSize: 4 }),
     fetchJobs({ pageSize: 1, includeUnclear: true }),
@@ -38,7 +40,7 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-12">
-      <Hero stats={stats} sponsorCompanies={sponsorChips} regions={regions} />
+      <Hero stats={stats} sponsorCompanies={sponsorChips} regions={regions} loggedIn={!!session} />
 
       {visaJobs.length > 0 && (
         <section>

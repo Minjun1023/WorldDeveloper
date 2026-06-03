@@ -6,9 +6,11 @@ import { useRouter } from "next/navigation";
 import { PasswordChecklist } from "@/components/auth/PasswordChecklist";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { TermsAgreement } from "@/components/auth/TermsAgreement";
+import { ProfileForm } from "@/components/recommend/ProfileForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { checkPassword, isPasswordValid } from "@/lib/password";
+import type { RecommendProfile } from "@/lib/types";
 
 type Mode = "login" | "register";
 type Avail = "idle" | "checking" | "ok" | "taken" | "invalid" | "error";
@@ -25,6 +27,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
   const [nameAvail, setNameAvail] = useState<Avail>("idle");
   const [emailAvail, setEmailAvail] = useState<Avail>("idle");
   const [termsOk, setTermsOk] = useState(false);
+  const [regStep, setRegStep] = useState<"account" | "profile">("account");
 
   // 이름 실시간 확인 (register, debounce 500ms)
   useEffect(() => {
@@ -98,30 +101,49 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
     !pending &&
     (mode === "login" || (namePass && emailPass && pwValid && pwMatch && termsOk));
 
-  async function submit(e: React.FormEvent) {
-    e.preventDefault();
+  async function doRegister(profile?: RecommendProfile) {
     setError(null);
     setPending(true);
     try {
-      if (mode === "register") {
-        const res = await fetch("/api/auth/register", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email, password, display_name: displayName.trim() }),
-        });
-        if (!res.ok) throw new Error("가입에 실패했어요. 입력을 확인해 주세요.");
-        setRegistered(true);
-      } else {
-        const res = await fetch("/api/auth/login", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-        if (res.status === 403) throw new Error("이메일 인증이 필요해요. 받은 인증 메일의 링크를 눌러주세요.");
-        if (!res.ok) throw new Error("이메일 또는 비밀번호가 올바르지 않아요.");
-        router.push(callbackUrl);
-        router.refresh();
-      }
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          email,
+          password,
+          display_name: displayName.trim(),
+          profile: profile ?? null,
+        }),
+      });
+      if (!res.ok) throw new Error("가입에 실패했어요. 입력을 확인해 주세요.");
+      setRegistered(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "오류가 발생했어요.");
+    } finally {
+      setPending(false);
+    }
+  }
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    if (mode === "register") {
+      // 계정 필드 검증은 canSubmit 게이트(이름/이메일/비번/확인/약관)를 통과해야 여기 도달.
+      // 네트워크 호출 대신 프로필 단계로 진행한다.
+      setRegStep("profile");
+      return;
+    }
+    setPending(true);
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      if (res.status === 403) throw new Error("이메일 인증이 필요해요. 받은 인증 메일의 링크를 눌러주세요.");
+      if (!res.ok) throw new Error("이메일 또는 비밀번호가 올바르지 않아요.");
+      router.push(callbackUrl);
+      router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "오류가 발생했어요.");
     } finally {
@@ -186,6 +208,29 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
     );
   }
 
+  if (mode === "register" && regStep === "profile") {
+    return (
+      <div className="space-y-3">
+        <p className="text-body-sm text-muted-foreground">맞춤 공고 추천을 위한 프로필 (선택 — 건너뛰어도 가입돼요)</p>
+        <ProfileForm
+          loading={pending}
+          submitLabel="가입 완료"
+          onSubmit={(profile) => doRegister(profile)}
+          secondaryAction={
+            <button
+              type="button"
+              onClick={() => doRegister(undefined)}
+              className="text-body-sm text-muted-foreground hover:text-foreground"
+            >
+              건너뛰기
+            </button>
+          }
+        />
+        {error && <p className="text-destructive text-body-sm">{error}</p>}
+      </div>
+    );
+  }
+
   return (
     <form onSubmit={submit} className="space-y-4">
       <div className="space-y-1">
@@ -247,7 +292,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
       {error && <p className="text-destructive text-body-sm">{error}</p>}
 
       <Button type="submit" disabled={!canSubmit} className="w-full">
-        {pending ? "처리 중…" : "계정 만들기"}
+        {pending ? "처리 중…" : "다음"}
       </Button>
     </form>
   );

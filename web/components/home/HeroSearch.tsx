@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import { NlRecommend, type RecommendPreset } from "@/components/home/NlRecommend";
 import { Button } from "@/components/ui/button";
 import { Dropdown } from "@/components/ui/dropdown";
 import { Input } from "@/components/ui/input";
@@ -22,11 +22,11 @@ const TABS: [Tab, string][] = [
 // 히어로 진입 인터랙션: 공고 검색이 기본(주), AI 추천은 보조 탭.
 // 검색 탭은 키워드 + 지역/직무/비자 옵션을 모아 /search 로 라우팅(0비용·즉시). AI는 opt-in(LLM).
 export function HeroSearch({
-  presets,
   regions = [],
+  loggedIn,
 }: {
-  presets?: RecommendPreset[];
   regions?: RegionCount[];
+  loggedIn?: boolean;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("search");
@@ -93,8 +93,22 @@ export function HeroSearch({
           </div>
         </form>
       ) : (
-        <div className="text-left">
-          <NlRecommend presets={presets} />
+        <div className="rounded-lg border border-border bg-surface p-6 text-center">
+          {loggedIn ? (
+            <>
+              <p className="text-body-sm text-muted-foreground">프로필 기반으로 맞춤 공고를 추천해드려요.</p>
+              <Link href="/recommend" className="mt-3 inline-block rounded-md bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground">
+                맞춤 추천 보기
+              </Link>
+            </>
+          ) : (
+            <>
+              <p className="text-body-sm text-muted-foreground">로그인하면 프로필 기반 맞춤 공고 추천을 받을 수 있어요.</p>
+              <Link href="/signin" className="mt-3 inline-block rounded-md bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground">
+                로그인 / 회원가입
+              </Link>
+            </>
+          )}
         </div>
       )}
     </div>

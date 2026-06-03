@@ -57,8 +57,9 @@ class AuthServiceTest {
     void registerDuplicateEmailIsEnumerationSafeNoop() {
         authService.register("dup@example.com", "Password123", "A");
         org.mockito.Mockito.reset(mailService);
-        // 같은 이메일 재가입 시도 → 예외 없이 조용히 반환, 메일 미발송
-        authService.register("dup@example.com", "Otherpass456", "B");
+        // 같은 이메일 재가입 시도 → 예외 없이 조용히 null 반환(프로필 미부착), 메일 미발송
+        java.util.UUID dup = authService.register("dup@example.com", "Otherpass456", "B");
+        assertNull(dup, "중복 이메일 재가입은 null 반환 → 기존 계정에 프로필이 덮어써지지 않음");
         verifyNoMoreInteractions(mailService);
         assertEquals(1, userRepo.findByEmail("dup@example.com").stream().count());
     }
