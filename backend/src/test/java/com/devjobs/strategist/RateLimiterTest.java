@@ -10,7 +10,7 @@ class RateLimiterTest {
     @Test
     void allowsUpToCapacityThenBlocks() {
         long[] now = {0L};
-        RateLimiter rl = new RateLimiter(3, 1000L, () -> now[0]);
+        RateLimiter rl = new InMemoryRateLimiter(3, 1000L, () -> now[0]);
         assertTrue(rl.tryAcquire("ip"));
         assertTrue(rl.tryAcquire("ip"));
         assertTrue(rl.tryAcquire("ip"));
@@ -20,7 +20,7 @@ class RateLimiterTest {
     @Test
     void resetsAfterWindow() {
         long[] now = {0L};
-        RateLimiter rl = new RateLimiter(1, 1000L, () -> now[0]);
+        RateLimiter rl = new InMemoryRateLimiter(1, 1000L, () -> now[0]);
         assertTrue(rl.tryAcquire("ip"));
         assertFalse(rl.tryAcquire("ip"));
         now[0] = 1000L;
@@ -30,7 +30,7 @@ class RateLimiterTest {
     @Test
     void keysAreIndependent() {
         long[] now = {0L};
-        RateLimiter rl = new RateLimiter(1, 1000L, () -> now[0]);
+        RateLimiter rl = new InMemoryRateLimiter(1, 1000L, () -> now[0]);
         assertTrue(rl.tryAcquire("a"));
         assertTrue(rl.tryAcquire("b"));
     }

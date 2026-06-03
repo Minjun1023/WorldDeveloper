@@ -36,6 +36,9 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     runtimeOnly 'org.postgresql:postgresql'
 
+    // Redis (레이트리밋 — app.ratelimit.redis=true 일 때 사용. 기본은 인메모리)
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
     // Migrations
     implementation 'org.flywaydb:flyway-core'
     implementation 'org.flywaydb:flyway-database-postgresql'

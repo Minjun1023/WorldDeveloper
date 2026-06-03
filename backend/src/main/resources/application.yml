@@ -28,6 +28,12 @@ spring:
     property-naming-strategy: SNAKE_CASE
     default-property-inclusion: non_null
 
+  # Redis (app.ratelimit.redis=true 일 때만 사용). 빈은 항상 생성되지만 lazy 라 미사용 시 연결 안 함.
+  data:
+    redis:
+      host: ${SPRING_DATA_REDIS_HOST:localhost}
+      port: ${SPRING_DATA_REDIS_PORT:6379}
+
   mail:
     host: ${MAIL_HOST:}
     port: ${MAIL_PORT:1025}
@@ -61,6 +67,9 @@ app:
     # NL_RATELIMIT_CAPACITY=100 으로 올린다(build.gradle). 운영은 jar 로 띄워 env 미설정 → 10 유지.
     nl-capacity: ${NL_RATELIMIT_CAPACITY:10}
     nl-window-ms: ${NL_RATELIMIT_WINDOW_MS:3600000}
+    # true 면 RedisRateLimiter(다중 인스턴스 공유 + 재시작 보존), 아니면 인메모리(단일 인스턴스).
+    # 운영 다중 인스턴스에서 true + spring.data.redis 설정. 로컬/CI 기본 false.
+    redis: ${APP_RATELIMIT_REDIS:false}
 
 auth:
   internal-secret: ${INTERNAL_AUTH_SECRET:dev-internal-secret-change-me}
