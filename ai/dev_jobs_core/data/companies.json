@@ -1494,5 +1494,135 @@
     "tags": [
       "ai"
     ]
+  },
+  "rubrik": {
+    "ats": "greenhouse",
+    "token": "rubrik",
+    "tags": [
+      "security",
+      "data"
+    ]
+  },
+  "abnormal": {
+    "ats": "greenhouse",
+    "token": "abnormalsecurity",
+    "tags": [
+      "security",
+      "ai"
+    ]
+  },
+  "replit": {
+    "ats": "ashby",
+    "token": "replit",
+    "tags": [
+      "devtools",
+      "ai"
+    ]
+  },
+  "newrelic": {
+    "ats": "greenhouse",
+    "token": "newrelic",
+    "tags": [
+      "devtools",
+      "observability",
+      "asia"
+    ]
+  },
+  "baseten": {
+    "ats": "ashby",
+    "token": "baseten",
+    "tags": [
+      "ai",
+      "infra"
+    ]
+  },
+  "nium": {
+    "ats": "lever",
+    "token": "nium",
+    "tags": [
+      "fintech",
+      "payments",
+      "asia"
+    ]
+  },
+  "mercor": {
+    "ats": "ashby",
+    "token": "mercor",
+    "tags": [
+      "ai",
+      "hiring"
+    ]
+  },
+  "sumologic": {
+    "ats": "greenhouse",
+    "token": "sumologic",
+    "tags": [
+      "devtools",
+      "observability"
+    ]
+  },
+  "fireblocks": {
+    "ats": "greenhouse",
+    "token": "fireblocks",
+    "tags": [
+      "crypto",
+      "infra"
+    ]
+  },
+  "suno": {
+    "ats": "ashby",
+    "token": "suno",
+    "tags": [
+      "ai",
+      "audio"
+    ]
+  },
+  "fal": {
+    "ats": "greenhouse",
+    "token": "fal",
+    "tags": [
+      "ai",
+      "infra"
+    ]
+  },
+  "gemini": {
+    "ats": "greenhouse",
+    "token": "gemini",
+    "tags": [
+      "crypto",
+      "fintech"
+    ]
+  },
+  "vannevar": {
+    "ats": "greenhouse",
+    "token": "vannevarlabs",
+    "tags": [
+      "ai",
+      "defense"
+    ]
+  },
+  "squarespace": {
+    "ats": "greenhouse",
+    "token": "squarespace",
+    "tags": [
+      "saas",
+      "web"
+    ]
+  },
+  "bill": {
+    "ats": "greenhouse",
+    "token": "billcom",
+    "tags": [
+      "fintech",
+      "saas"
+    ]
+  },
+  "honeycomb": {
+    "ats": "greenhouse",
+    "token": "honeycomb",
+    "tags": [
+      "devtools",
+      "observability"
+    ]
   }
 }
