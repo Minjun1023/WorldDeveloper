@@ -55,7 +55,7 @@ public class AuthService {
         }
         String norm = normalize(email);
         if (userRepo.existsByEmail(norm)) {
-            return userRepo.findByEmail(norm).map(UserEntity::getId).orElse(null); // 계정 열거 방지: 조용히 반환
+            return null; // 계정 열거 방지 + 기존 계정에 프로필이 덮어써지지 않도록 조용히 null 반환
         }
         UserEntity u = new UserEntity(norm, passwordEncoder.encode(rawPassword), name);
         userRepo.save(u);

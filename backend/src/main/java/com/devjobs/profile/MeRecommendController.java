@@ -37,14 +37,14 @@ public class MeRecommendController {
     public ResponseEntity<?> recommend(@AuthenticationPrincipal String userId,
                                        @RequestBody(required = false) MeRecommendRequest req) {
         UUID id = UUID.fromString(userId);
-        if (!rateLimiter.tryAcquire("recommend:" + userId)) {
-            return ResponseEntity.status(429).header("Retry-After", "3600")
-                .body(Map.of("error", "요청이 많아요. 잠시 후 다시 시도해 주세요."));
-        }
         var profileOpt = profileService.load(id);
         if (profileOpt.isEmpty()) {
             return ResponseEntity.status(409).body(Map.of("needs_profile", true,
                 "error", "프로필을 먼저 작성해 주세요."));
+        }
+        if (!rateLimiter.tryAcquire("recommend:" + userId)) {
+            return ResponseEntity.status(429).header("Retry-After", "3600")
+                .body(Map.of("error", "요청이 많아요. 잠시 후 다시 시도해 주세요."));
         }
         AiClient.ParseResult.Profile note = null;
         String noteText = req == null ? null : req.note();
