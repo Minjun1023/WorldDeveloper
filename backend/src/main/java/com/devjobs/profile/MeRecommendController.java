@@ -46,13 +46,16 @@ public class MeRecommendController {
             return ResponseEntity.status(409).body(Map.of("needs_profile", true,
                 "error", "프로필을 먼저 작성해 주세요."));
         }
-        if (!rateLimiter.tryAcquire("recommend:" + userId)) {
+        String noteText = req == null ? null : req.note();
+        boolean hasNote = noteText != null && !noteText.isBlank();
+        // 레이트리밋은 LLM 파싱(비용)이 있는 note 경로에만 적용한다. note 없는 프로필 추천은
+        // 랜딩 회원 섹션이 진입마다 자동 호출하므로 제한하지 않는다(임베딩+스코어링은 로컬·저비용).
+        if (hasNote && !rateLimiter.tryAcquire("recommend:" + userId)) {
             return ResponseEntity.status(429).header("Retry-After", "3600")
                 .body(Map.of("error", "요청이 많아요. 잠시 후 다시 시도해 주세요."));
         }
         AiClient.ParseResult.Profile note = null;
-        String noteText = req == null ? null : req.note();
-        if (noteText != null && !noteText.isBlank()) {
+        if (hasNote) {
             AiClient.ParseResult parsed = aiClient.parseProfile(noteText);
             if (parsed != null) note = parsed.profile();
         }
