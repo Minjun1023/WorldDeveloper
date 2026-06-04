@@ -15,6 +15,9 @@ CREATE TABLE job_reactions (
     PRIMARY KEY (user_id, job_id)
 );
 
+-- V1 의 recommendation_feedback(rating/breakdown/notes) 는 MVP 플레이스홀더로 미사용.
+-- 이벤트 로그(action/rank/score) 모델로 교체한다(운영 데이터 없음 → 파괴적 변경 안전).
+DROP TABLE IF EXISTS recommendation_feedback;
 CREATE TABLE recommendation_feedback (
     id         BIGSERIAL PRIMARY KEY,
     user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
