@@ -68,7 +68,7 @@ async def _fetch_ats_company(
 async def run_full_cycle(
     limit_per_source: int = 100,
     include_ats: bool = True,
-    ats_limit_per_company: int = 100,
+    ats_limit_per_company: int = 300,
     ats_concurrency: int = 8,
 ) -> dict:
     """ETL 한 사이클. 결과 통계 dict 반환."""
