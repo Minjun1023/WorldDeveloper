@@ -72,9 +72,9 @@ def main() -> None:
     def compute_metrics(p):
         preds = np.argmax(p.predictions, axis=2)
         true_lab, pred_lab = [], []
-        for pred, lab in zip(preds, p.label_ids):
+        for pred, lab in zip(preds, p.label_ids, strict=False):
             t, q = [], []
-            for pi, li in zip(pred, lab):
+            for pi, li in zip(pred, lab, strict=False):
                 if li == -100:
                     continue
                 t.append(LABELS[li])
@@ -109,9 +109,9 @@ def main() -> None:
     preds = trainer.predict(ds["test"])
     pred_ids = np.argmax(preds.predictions, axis=2)
     true_lab, pred_lab = [], []
-    for pred, lab in zip(pred_ids, preds.label_ids):
+    for pred, lab in zip(pred_ids, preds.label_ids, strict=False):
         t, q = [], []
-        for pi, li in zip(pred, lab):
+        for pi, li in zip(pred, lab, strict=False):
             if li == -100:
                 continue
             t.append(LABELS[li])

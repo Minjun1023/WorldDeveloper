@@ -16,7 +16,8 @@ def test_excludes_register_evidence_and_aligns_text_quotes():
         {"id": "1", "title": "t", "description_text": "We can sponsor visas for you.",
          "visa_status": "sponsors", "visa_evidence": ["we can sponsor visas"]},
         {"id": "2", "title": "t", "description_text": "Great team here.",
-         "visa_status": "sponsors", "visa_evidence": ["회사가 UK 스폰서 라이선스 보유 (Home Office 등록 스폰서 명부)"]},
+         "visa_status": "sponsors",
+         "visa_evidence": ["회사가 UK 스폰서 라이선스 보유 (Home Office 등록 스폰서 명부)"]},
         {"id": "3", "title": "t", "description_text": "Some normal posting text body.",
          "visa_status": "unclear", "visa_evidence": []},
     ]

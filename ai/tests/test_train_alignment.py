@@ -23,5 +23,5 @@ def test_alignment_tags_subwords_in_span():
     span_end = text.index("visas") + len("visas")
     spans = [{"start": span_start, "end": span_end, "label": "VISA_POS"}]
     enc = mod.char_spans_to_token_labels(text, spans, tok)
-    tagged = [l for l in enc["labels"] if l not in (-100, 0)]
+    tagged = [lab for lab in enc["labels"] if lab not in (-100, 0)]
     assert len(tagged) >= 1  # span 토큰이 B/I-VISA_POS 로 태깅됨

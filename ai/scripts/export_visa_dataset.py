@@ -79,7 +79,13 @@ def main() -> None:
             sql += f" LIMIT {int(args.limit)}"
         rows_db = conn.execute(sql).fetchall()
     jobs = [
-        {"id": r[0], "title": r[1], "description_text": r[2], "visa_status": r[3], "visa_evidence": r[4]}
+        {
+            "id": r[0],
+            "title": r[1],
+            "description_text": r[2],
+            "visa_status": r[3],
+            "visa_evidence": r[4],
+        }
         for r in rows_db
     ]
     rows = build_rows(jobs, args.neg_ratio)
@@ -91,7 +97,8 @@ def main() -> None:
         for row in rows:
             f.write(json.dumps(row, ensure_ascii=False) + "\n")
     n_pos = sum(1 for r in rows if r["spans"])
-    print(f"wrote {len(rows)} rows ({n_pos} with spans, {len(rows) - n_pos} negatives) -> {args.out}")
+    n_neg = len(rows) - n_pos
+    print(f"wrote {len(rows)} rows ({n_pos} with spans, {n_neg} negatives) -> {args.out}")
 
 
 if __name__ == "__main__":
