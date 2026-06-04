@@ -153,4 +153,32 @@ public class AiClient {
             return null;
         }
     }
+
+    public record CoachChatMessage(String role, String content) {}
+    public record CoachChatResult(String reply, String engine) {}
+
+    /** AI /internal/coach-chat 호출 — context/resume/messages 전달, {reply,engine} 수신. */
+    public CoachChatResult coachChat(String context, String resume, List<CoachChatMessage> messages) {
+        try {
+            String json = mapper.writeValueAsString(Map.of(
+                "context", context == null ? "" : context,
+                "resume", resume == null ? "" : resume,
+                "messages", messages == null ? List.of() : messages));
+            HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/internal/coach-chat"))
+                .header("content-type", "application/json")
+                .timeout(Duration.ofSeconds(70))
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+            HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() != 200) {
+                log.warn("ai coach-chat HTTP {}: {}", resp.statusCode(), resp.body());
+                return null;
+            }
+            return mapper.readValue(resp.body(), CoachChatResult.class);
+        } catch (Exception e) {
+            log.warn("ai coach-chat 실패: {}", e.getMessage());
+            return null;
+        }
+    }
 }
