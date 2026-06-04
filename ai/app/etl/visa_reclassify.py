@@ -11,7 +11,7 @@ from dev_jobs_core.analyzers.visa import classify_visa
 from dev_jobs_core.registry import h1b_sponsor_slugs, ind_sponsor_slugs, uk_sponsor_slugs
 
 from ..db import fetch_unclear_jobs, get_conn, sponsor_company_slugs, update_visa
-from .visa_llm import classify_visa_llm
+from .visa_local import resolve_visa
 
 log = logging.getLogger(__name__)
 
@@ -114,9 +114,10 @@ async def reclassify_unclear_visa(limit: int | None = None) -> dict:
             desc = j["description_text"] or ""
             if desc not in cache:
                 async with sem:
-                    cache[desc] = await classify_visa_llm(j["title"], desc)
+                    cache[desc] = await resolve_visa(j["title"], desc)
             return j["id"], cache[desc]
 
+        # by_llm: 로컬 태거 + (선택)LLM 폴백으로 해소된 건수
         by_llm = 0
         if remaining:
             for jid, out in await asyncio.gather(*[run(j) for j in remaining]):
