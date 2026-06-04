@@ -23,6 +23,10 @@ class Settings(BaseSettings):
     # 임베딩 모델
     embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"
     embedding_dim: int = 384
+    # 비자 토큰 태깅 모델 (HF Hub id, 예: "youruser/worlddev-visa-tagger").
+    # 미설정 시 로컬 비자 분류 비활성 → 키워드/명부/OpenAI폴백/회사추론으로 동작.
+    visa_tagger_model: str = ""
+    visa_tagger_min_confidence: float = 0.5
 
     # Postgres
     database_url: str = "postgresql://devjobs:devjobs_local@localhost:5433/devjobs"
