@@ -1,5 +1,6 @@
 package com.devjobs.profile;
 
+import com.devjobs.feedback.FeedbackService;
 import com.devjobs.strategist.AiClient;
 import com.devjobs.strategist.RateLimiter;
 import com.devjobs.strategist.RecommendService;
@@ -24,13 +25,16 @@ public class MeRecommendController {
     private final RecommendService recommendService;
     private final AiClient aiClient;
     private final RateLimiter rateLimiter;
+    private final FeedbackService feedbackService;
 
     public MeRecommendController(ProfileService profileService, RecommendService recommendService,
-                                 AiClient aiClient, RateLimiter rateLimiter) {
+                                 AiClient aiClient, RateLimiter rateLimiter,
+                                 FeedbackService feedbackService) {
         this.profileService = profileService;
         this.recommendService = recommendService;
         this.aiClient = aiClient;
         this.rateLimiter = rateLimiter;
+        this.feedbackService = feedbackService;
     }
 
     @PostMapping
@@ -42,18 +46,28 @@ public class MeRecommendController {
             return ResponseEntity.status(409).body(Map.of("needs_profile", true,
                 "error", "프로필을 먼저 작성해 주세요."));
         }
-        if (!rateLimiter.tryAcquire("recommend:" + userId)) {
+        String noteText = req == null ? null : req.note();
+        boolean hasNote = noteText != null && !noteText.isBlank();
+        // 레이트리밋은 LLM 파싱(비용)이 있는 note 경로에만 적용한다. note 없는 프로필 추천은
+        // 랜딩 회원 섹션이 진입마다 자동 호출하므로 제한하지 않는다(임베딩+스코어링은 로컬·저비용).
+        if (hasNote && !rateLimiter.tryAcquire("recommend:" + userId)) {
             return ResponseEntity.status(429).header("Retry-After", "3600")
                 .body(Map.of("error", "요청이 많아요. 잠시 후 다시 시도해 주세요."));
         }
         AiClient.ParseResult.Profile note = null;
-        String noteText = req == null ? null : req.note();
-        if (noteText != null && !noteText.isBlank()) {
+        if (hasNote) {
             AiClient.ParseResult parsed = aiClient.parseProfile(noteText);
             if (parsed != null) note = parsed.profile();
         }
         RecommendRequest rr = ProfileService.toRecommendRequest(profileOpt.get(), note);
         RecommendResponse rec = recommendService.recommend(rr);
+        java.util.Set<String> disliked = feedbackService.dislikedJobIds(id);
+        if (!disliked.isEmpty()) {
+            var kept = rec.recommendations().stream()
+                .filter(item -> !disliked.contains(item.job().id()))
+                .toList();
+            rec = new RecommendResponse(rec.totalCandidates(), kept.size(), kept);
+        }
         return ResponseEntity.ok(rec);
     }
 }

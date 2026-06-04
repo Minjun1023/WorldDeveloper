@@ -5,6 +5,7 @@ import { FaqSection } from "@/components/home/FaqSection";
 import { Hero } from "@/components/home/Hero";
 import type { HomeStats } from "@/components/home/HeroStats";
 import { JobGrid } from "@/components/home/JobGrid";
+import { MemberLandingRecommend } from "@/components/home/MemberLandingRecommend";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { fetchCompanies, fetchJobs, fetchRegions } from "@/lib/api";
 import { getSession } from "@/lib/session-server";
@@ -41,6 +42,8 @@ export default async function HomePage() {
   return (
     <div className="space-y-12">
       <Hero stats={stats} sponsorCompanies={sponsorChips} regions={regions} loggedIn={!!session} />
+
+      {session && <MemberLandingRecommend />}
 
       {visaJobs.length > 0 && (
         <section>
