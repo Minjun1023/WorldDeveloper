@@ -17,6 +17,13 @@ dependencies = [
 [project.optional-dependencies]
 embeddings = [
     "sentence-transformers>=2.7",
+    "transformers>=4.40",
+]
+train = [
+    "transformers>=4.40",
+    "datasets>=2.19",
+    "seqeval>=1.2",
+    "accelerate>=0.30",
 ]
 dev = [
     "ruff>=0.7",
