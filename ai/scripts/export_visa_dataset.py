@@ -1,7 +1,9 @@
 """DB 라벨 → 비자 토큰태깅 학습 데이터셋(JSONL). 약(silver) 라벨.
 
-각 줄: {"text": <description>, "spans": [{"start","end","label"}]}
-- sponsors/no_sponsor + visa_evidence 가 본문에 verbatim 으로 있으면 → 그 스팬을 양성으로.
+각 줄: {"text": "<title>\n\n<description>", "spans": [{"start","end","label"}]}
+- text 는 추론(visa_local)과 동일하게 "title\n\ndescription" 으로 구성(분포 일치).
+- sponsors/no_sponsor + visa_evidence 가 본문에 있으면 → 그 스팬을 양성으로.
+  근거 문구는 producer 가 래핑하므로 정규화한다(LLM "AI: " 접두사, 키워드 앞뒤 생략부호 제거).
 - 근거가 명부/회사추론 마커(본문에 없음)면 → 제외(환각 유발 방지).
 - unclear → 빈 스팬(음성). 다수이므로 --neg-ratio 로 다운샘플.
 사용: cd ai && uv run python scripts/export_visa_dataset.py --out data/visa_dataset.jsonl
@@ -10,6 +12,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import random
 
 import psycopg
@@ -18,7 +21,9 @@ from app.config import settings
 from dev_jobs_core.analyzers.visa_tags import find_evidence_span
 
 # 본문에 근거 문구가 없는(명부/회사추론) 양성 — 스팬 학습에서 제외할 마커.
-NON_TEXT_MARKERS = ("명부", "Home Office", "USCIS", "IND", "같은 회사", "Employer Data")
+# "명부"=UK/NL 레지스터, "USCIS"/"Employer Data"=US H-1B, "같은 회사"=회사추론.
+# ("IND" 같은 짧은 토큰은 영문 본문 단어와 오매칭하므로 쓰지 않는다.)
+NON_TEXT_MARKERS = ("명부", "Home Office", "USCIS", "Employer Data", "같은 회사")
 
 
 def _label_for(status: str) -> str | None:
@@ -29,13 +34,25 @@ def _label_for(status: str) -> str | None:
     return None
 
 
+def _clean_quote(quote: str) -> str:
+    """producer 가 붙인 래핑 제거 → 본문 정렬용 순수 인용문.
+
+    LLM(visa_llm)은 "AI: <reason>" 으로, 키워드(analyzers.visa)는 앞뒤 생략부호로 감싼다.
+    """
+    q = (quote or "").strip()
+    if q.startswith("AI: "):
+        q = q[len("AI: "):]
+    return q.strip(".… \t\n")
+
+
 def build_rows(jobs: list[dict], neg_ratio: float, seed: int = 0) -> list[dict]:
     rng = random.Random(seed)
     pos_rows: list[dict] = []
     neg_pool: list[dict] = []
     for j in jobs:
-        text = j["description_text"] or ""
-        if len(text) < 20:
+        # 추론(visa_local)과 동일하게 title+description 결합 — 스팬 오프셋도 이 결합 텍스트 기준.
+        text = f"{j.get('title') or ''}\n\n{j['description_text'] or ''}"
+        if len(j["description_text"] or "") < 20:
             continue
         status = j["visa_status"]
         evidence = j["visa_evidence"] or []
@@ -49,7 +66,7 @@ def build_rows(jobs: list[dict], neg_ratio: float, seed: int = 0) -> list[dict]:
         for quote in evidence:
             if any(m in quote for m in NON_TEXT_MARKERS):
                 continue  # 명부/회사추론 — 본문 근거 아님
-            found = find_evidence_span(text, quote)
+            found = find_evidence_span(text, _clean_quote(quote))
             if found:
                 spans.append({"start": found[0], "end": found[1], "label": label})
         if spans:
@@ -89,8 +106,6 @@ def main() -> None:
         for r in rows_db
     ]
     rows = build_rows(jobs, args.neg_ratio)
-
-    import os
 
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
     with open(args.out, "w", encoding="utf-8") as f:

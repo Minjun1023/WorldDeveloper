@@ -30,6 +30,26 @@ def test_excludes_register_evidence_and_aligns_text_quotes():
     assert span["label"] == "VISA_POS"
 
 
+def test_normalizes_ai_prefix_and_keyword_ellipsis_and_includes_title():
+    # 실제 producer 포맷: LLM 은 "AI: ..." 접두사, 키워드는 앞뒤 생략부호.
+    jobs = [
+        {"id": "a", "title": "Backend Engineer",
+         "description_text": "Relocation help: we offer visa sponsorship to all.",
+         "visa_status": "sponsors", "visa_evidence": ["AI: we offer visa sponsorship"]},
+        {"id": "b", "title": "SRE",
+         "description_text": "Note: visa sponsorship available for this role here.",
+         "visa_status": "sponsors",
+         "visa_evidence": ["...visa sponsorship available for this role...."]},
+    ]
+    rows = build_rows(jobs, neg_ratio=0.0, seed=1)
+    pos = [r for r in rows if r["spans"]]
+    assert len(pos) == 2  # 정규화 후 둘 다 정렬됨
+    for r in pos:
+        sp = r["spans"][0]
+        assert "visa sponsorship" in r["text"][sp["start"] : sp["end"]].lower()
+        assert r["text"].split("\n\n", 1)[0] in ("Backend Engineer", "SRE")  # title 포함
+
+
 def test_downsamples_negatives_by_ratio():
     jobs = [
         {"id": "p", "title": "t", "description_text": "We sponsor visas here.",
