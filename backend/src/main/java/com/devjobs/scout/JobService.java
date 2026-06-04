@@ -11,6 +11,7 @@ import com.devjobs.scout.dto.JobDtos.RegionCount;
 import com.devjobs.scout.dto.JobDtos.RemoteDto;
 import com.devjobs.scout.dto.JobDtos.SalaryDto;
 import com.devjobs.scout.dto.JobDtos.VisaDto;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -125,6 +126,21 @@ public class JobService {
         for (JobEntity j : repository.findAllById(ids)) byId.put(j.getId(), j);
         List<JobDto> items = ids.stream().map(byId::get).filter(Objects::nonNull).map(this::toDto).toList();
         return new JobListResponse(items, safePage, safeSize, total, computeFacets());
+    }
+
+    /** 주어진 id 목록을 JobDto 로 변환(입력 순서 보존, 활성 공고만, 없는 건 제외). 저장 공고 목록용. */
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<JobDto> byIds(List<String> ids) {
+        Map<String, JobEntity> byId = new HashMap<>();
+        for (JobEntity j : repository.findAllById(ids)) {
+            if (Boolean.TRUE.equals(j.getIsActive())) byId.put(j.getId(), j);
+        }
+        List<JobDto> out = new ArrayList<>();
+        for (String id : ids) {
+            JobEntity j = byId.get(id);
+            if (j != null) out.add(toDto(j));
+        }
+        return out;
     }
 
     public List<JobDto> listByCompany(String slug) {
