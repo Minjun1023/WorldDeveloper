@@ -51,4 +51,12 @@ public final class CoachDtos {
         List<String> suggestions,
         String note
     ) {}
+
+    // --- 이력서 코치 챗봇 ---
+
+    public record ChatMessage(String role, String content) {}
+
+    public record CoachRequest(String job_id, String resume, List<ChatMessage> messages) {}
+
+    public record CoachReply(String reply) {}
 }
