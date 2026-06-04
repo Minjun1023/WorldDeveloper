@@ -21,7 +21,7 @@ async def reclassify_visa_endpoint(limit: int | None = None) -> dict:
 async def trigger_etl(
     limit_per_source: int = 100,
     include_ats: bool = True,
-    ats_limit_per_company: int = 100,
+    ats_limit_per_company: int = 300,
 ) -> dict:
     """수동으로 ETL 한 사이클 실행."""
     try:
