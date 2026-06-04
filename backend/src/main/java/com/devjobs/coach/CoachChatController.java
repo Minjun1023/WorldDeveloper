@@ -32,6 +32,9 @@ public class CoachChatController {
 
     private static final int MAX_RESUME = 20_000;
     private static final int MAX_JD = 3_500;
+    // ai(coach.py)의 가드와 정합: 메시지당 8k(초과 거절), 대화는 최근 30턴(초과 잘라냄).
+    private static final int MAX_MESSAGE_CONTENT = 8_000;
+    private static final int MAX_MESSAGES = 30;
 
     private final JobService jobService;
     private final CompanyService companyService;
@@ -56,6 +59,16 @@ public class CoachChatController {
                 || !"user".equals(req.messages().get(req.messages().size() - 1).role())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "messages 비어있음/마지막 user 아님");
         }
+        var lastMsg = req.messages().get(req.messages().size() - 1);
+        if (lastMsg.content() == null || lastMsg.content().isBlank()) {
+            // ai 는 빈 메시지를 필터해 마지막 user 가 사라지면 400 → 503 으로 전파되므로 여기서 명확히 거절.
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "메시지 내용이 비어있어요");
+        }
+        for (var m : req.messages()) {
+            if (m.content() != null && m.content().length() > MAX_MESSAGE_CONTENT) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "메시지가 너무 길어요");
+            }
+        }
         if (req.resume() != null && req.resume().length() > MAX_RESUME) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "resume 너무 김");
         }
@@ -68,7 +81,12 @@ public class CoachChatController {
         }
 
         String context = buildContext(jobOpt.get(), req.job_id(), req.resume(), UUID.fromString(userId));
-        var aiMsgs = req.messages().stream()
+        var msgs = req.messages();
+        if (msgs.size() > MAX_MESSAGES) {
+            // 오래된 턴을 잘라 전달 페이로드를 묶음(ai 도 동일하게 최근 30턴만 사용). 마지막 user 메시지는 보존됨.
+            msgs = msgs.subList(msgs.size() - MAX_MESSAGES, msgs.size());
+        }
+        var aiMsgs = msgs.stream()
             .map(m -> new AiClient.CoachChatMessage(m.role(), m.content())).toList();
         var result = aiClient.coachChat(context, req.resume() == null ? "" : req.resume(), aiMsgs);
         if (result == null) {

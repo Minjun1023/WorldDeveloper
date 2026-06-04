@@ -77,6 +77,35 @@ class CoachChatControllerTest {
     }
 
     @Test
+    void blankLastMessageReturns400() throws Exception {
+        when(rateLimiter.tryAcquire(anyString())).thenReturn(true);
+        var body = Map.of(
+            "job_id", "job-1",
+            "resume", "",
+            "messages", List.of(Map.of("role", "user", "content", "   ")));
+        mvc.perform(post("/api/v1/me/coach")
+                .header("Authorization", bearer())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(body)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void oversizedMessageContentReturns400() throws Exception {
+        when(rateLimiter.tryAcquire(anyString())).thenReturn(true);
+        var huge = "x".repeat(8_001);
+        var body = Map.of(
+            "job_id", "job-1",
+            "resume", "",
+            "messages", List.of(Map.of("role", "user", "content", huge)));
+        mvc.perform(post("/api/v1/me/coach")
+                .header("Authorization", bearer())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(body)))
+            .andExpect(status().isBadRequest());
+    }
+
+    @Test
     void jobNotFoundReturns404() throws Exception {
         when(rateLimiter.tryAcquire(anyString())).thenReturn(true);
         when(jobService.findById(anyString())).thenReturn(Optional.empty());
