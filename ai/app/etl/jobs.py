@@ -26,6 +26,7 @@ from dev_jobs_core.sources import (
     remoteok,
     smartrecruiters,
     weworkremotely,
+    workable,
 )
 
 from ..config import settings
@@ -51,6 +52,7 @@ ATS_FETCHERS = {
     "ashby": ashby.fetch,
     "smartrecruiters": smartrecruiters.fetch,
     "personio": personio.fetch,
+    "workable": workable.fetch,
 }
 
 
