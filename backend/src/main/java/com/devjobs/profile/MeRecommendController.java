@@ -1,5 +1,6 @@
 package com.devjobs.profile;
 
+import com.devjobs.feedback.FeedbackService;
 import com.devjobs.strategist.AiClient;
 import com.devjobs.strategist.RateLimiter;
 import com.devjobs.strategist.RecommendService;
@@ -24,13 +25,16 @@ public class MeRecommendController {
     private final RecommendService recommendService;
     private final AiClient aiClient;
     private final RateLimiter rateLimiter;
+    private final FeedbackService feedbackService;
 
     public MeRecommendController(ProfileService profileService, RecommendService recommendService,
-                                 AiClient aiClient, RateLimiter rateLimiter) {
+                                 AiClient aiClient, RateLimiter rateLimiter,
+                                 FeedbackService feedbackService) {
         this.profileService = profileService;
         this.recommendService = recommendService;
         this.aiClient = aiClient;
         this.rateLimiter = rateLimiter;
+        this.feedbackService = feedbackService;
     }
 
     @PostMapping
@@ -54,6 +58,13 @@ public class MeRecommendController {
         }
         RecommendRequest rr = ProfileService.toRecommendRequest(profileOpt.get(), note);
         RecommendResponse rec = recommendService.recommend(rr);
+        java.util.Set<String> disliked = feedbackService.dislikedJobIds(id);
+        if (!disliked.isEmpty()) {
+            var kept = rec.recommendations().stream()
+                .filter(item -> !disliked.contains(item.job().id()))
+                .toList();
+            rec = new RecommendResponse(rec.totalCandidates(), kept.size(), kept);
+        }
         return ResponseEntity.ok(rec);
     }
 }
