@@ -1637,5 +1637,47 @@
       "devtools",
       "observability"
     ]
+  },
+  "zego": {
+    "ats": "workable",
+    "token": "zego",
+    "tags": [
+      "insurtech",
+      "fintech"
+    ]
+  },
+  "workmotion": {
+    "ats": "workable",
+    "token": "workmotion",
+    "tags": [
+      "hr",
+      "eor",
+      "remote"
+    ]
+  },
+  "yapily": {
+    "ats": "workable",
+    "token": "yapily",
+    "tags": [
+      "fintech",
+      "api"
+    ]
+  },
+  "kroo": {
+    "ats": "workable",
+    "token": "kroo",
+    "tags": [
+      "fintech",
+      "banking"
+    ]
+  },
+  "doist": {
+    "ats": "workable",
+    "token": "doist",
+    "tags": [
+      "saas",
+      "productivity",
+      "remote"
+    ]
   }
 }
