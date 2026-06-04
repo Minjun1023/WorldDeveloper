@@ -64,6 +64,14 @@ export function AccountMenu({ loggedIn }: { loggedIn: boolean }) {
           >
             내 지원
           </Link>
+          <Link
+            href="/me/saved"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block rounded-md px-3 py-2 text-body-sm hover:bg-muted"
+          >
+            저장한 공고
+          </Link>
           <form action="/api/auth/logout" method="post">
             <button
               type="submit"
