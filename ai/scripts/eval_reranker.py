@@ -11,7 +11,10 @@ from __future__ import annotations
 
 
 def rank_movement_avg(before_ids: list, after_ids: list) -> float:
-    """after 상위 항목들이 before 대비 평균 몇 칸 이동했는지 (|Δ| 평균)."""
+    """after 상위 항목들이 before 대비 평균 몇 칸 이동했는지 (|Δ| 평균).
+
+    before_ids 에 없는(새로 진입한) 항목은 분모에서 제외된다.
+    """
     pos = {x: i for i, x in enumerate(before_ids)}
     moves = [abs(pos[x] - i) for i, x in enumerate(after_ids) if x in pos]
     return sum(moves) / len(moves) if moves else 0.0
