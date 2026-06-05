@@ -67,3 +67,31 @@ def test_single_doc_scalar_score(monkeypatch):
 
     monkeypatch.setattr(rr, "_load_model", lambda: Fake())
     assert rr.rerank("Q", ["only one"]) == [0.7]
+
+
+# --- 측정 통계 순수 함수 ---
+from scripts.eval_reranker import rank_movement_avg, kendall_tau, topk_churn  # noqa: E402,I001
+
+
+def test_rank_movement_avg_reversed():
+    assert rank_movement_avg(["a", "b", "c"], ["c", "b", "a"]) == (2 + 0 + 2) / 3
+
+
+def test_rank_movement_avg_identical():
+    assert rank_movement_avg(["a", "b", "c"], ["a", "b", "c"]) == 0.0
+
+
+def test_kendall_tau_identical():
+    assert kendall_tau(["a", "b", "c"], ["a", "b", "c"]) == 1.0
+
+
+def test_kendall_tau_reversed():
+    assert kendall_tau(["a", "b", "c"], ["c", "b", "a"]) == -1.0
+
+
+def test_topk_churn_swap():
+    assert topk_churn(["a", "b", "c", "d"], ["c", "d", "a", "b"], 2) == 2
+
+
+def test_topk_churn_no_change():
+    assert topk_churn(["a", "b", "c"], ["a", "b", "c"], 2) == 0
