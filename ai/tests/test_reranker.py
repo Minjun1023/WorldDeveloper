@@ -40,3 +40,30 @@ def test_rerank_builds_pairs_and_returns_scores(monkeypatch):
     out = rr.rerank("Q", ["A", "B"])
     assert out == [0.1, 0.9]
     assert seen["pairs"] == [("Q", "A"), ("Q", "B")]
+
+
+def test_truncates_inputs_to_max_chars(monkeypatch):
+    _reset()
+    seen = {}
+
+    class Fake:
+        def predict(self, pairs):
+            seen["pairs"] = pairs
+            return [0.5]
+
+    monkeypatch.setattr(rr, "_load_model", lambda: Fake())
+    rr.rerank("Q" * 3000, ["D" * 3000])
+    q, d = seen["pairs"][0]
+    assert len(q) == rr._MAX_CHARS
+    assert len(d) == rr._MAX_CHARS
+
+
+def test_single_doc_scalar_score(monkeypatch):
+    _reset()
+
+    class Fake:
+        def predict(self, pairs):
+            return 0.7  # CrossEncoder returns a bare scalar for a single pair
+
+    monkeypatch.setattr(rr, "_load_model", lambda: Fake())
+    assert rr.rerank("Q", ["only one"]) == [0.7]

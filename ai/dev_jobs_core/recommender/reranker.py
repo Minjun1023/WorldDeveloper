@@ -58,6 +58,8 @@ def rerank(query: str, docs: list[str]) -> list[float]:
     q = (query or "")[:_MAX_CHARS]
     pairs = [(q, (d or "")[:_MAX_CHARS]) for d in docs]
     scores = model.predict(pairs)
+    if not hasattr(scores, "__iter__"):
+        scores = [scores]
     return [float(s) for s in scores]
 
 
