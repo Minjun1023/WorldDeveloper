@@ -44,7 +44,10 @@ def topk_churn(before_ids: list, after_ids: list, k: int) -> int:
     return len(set(after_ids[:k]) - set(before_ids[:k]))
 
 
-# --- 측정 실행부 (import 시 부수효과 없음: 모두 main() 안) ---
+# --- 측정 실행부 ---
+# 아래 import와 PERSONAS는 모듈 로드 시 실행되지만 부수효과 없음:
+# settings는 .env 읽기만, emb/rr는 lazy-load wrapper, PERSONAS는 순수 dataclass 생성.
+# DB 연결·모델 로드는 main() 안에서만 발생.
 import argparse  # noqa: E402
 
 from app.config import settings  # noqa: E402
@@ -207,9 +210,9 @@ def main() -> None:
     if not emb.is_available():
         raise SystemExit("임베딩 모델 미가용 — 'uv sync --extra embeddings' 필요.")
 
-    keys = list(PERSONAS) if args.profile == "all" else [args.profile]
     if args.profile != "all" and args.profile not in PERSONAS:
         raise SystemExit(f"알 수 없는 프로필: {args.profile} (가능: {', '.join(PERSONAS)})")
+    keys = list(PERSONAS) if args.profile == "all" else [args.profile]
 
     conn = psycopg.connect(settings.database_url)
     register_vector(conn)
@@ -222,6 +225,8 @@ def main() -> None:
         results.append(r)
         if not args.json:
             _print_report(r)
+
+    conn.close()
 
     if args.json:
         slim = [
