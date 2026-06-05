@@ -107,7 +107,7 @@ def _fetch_bi_topn(conn, vec: list[float], n: int) -> list[dict]:
     rows = conn.execute(
         """
         SELECT id, company_slug, title, description_text,
-               (embedding <=> %(vec)s) AS dist
+               (embedding <=> %(vec)s::vector) AS dist
         FROM jobs
         WHERE is_active AND embedding IS NOT NULL
         ORDER BY dist
@@ -216,6 +216,11 @@ def main() -> None:
 
     conn = psycopg.connect(settings.database_url)
     register_vector(conn)
+    # 측정은 정확한(exact) bi-encoder top-N 이 필요하다. jobs.embedding 의
+    # IVFFlat 근사 인덱스(probes=1)는 is_active 필터와 만나면 후보를 다 걸러
+    # 0건을 반환할 수 있으므로, 인덱스 스캔을 꺼 전수 정렬(exact KNN)을 강제한다.
+    conn.execute("SET enable_indexscan = off")
+    conn.execute("SET enable_bitmapscan = off")
 
     results = []
     for key in keys:
