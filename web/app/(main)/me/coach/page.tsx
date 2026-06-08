@@ -36,13 +36,7 @@ export default async function CoachPage() {
   const token = await getSessionToken();
   const jobs = token ? await fetchPickJobs(token) : [];
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
-      <section>
-        <h1 className="text-display">이력서 코치</h1>
-        <p className="mt-2 text-muted-foreground">
-          저장하거나 추천받은 공고에 맞춰 이력서를 어떻게 고칠지 상담해드려요. (이력서는 저장되지 않아요)
-        </p>
-      </section>
+    <div className="mx-auto max-w-3xl">
       <CoachChat initialJobs={jobs} />
     </div>
   );
