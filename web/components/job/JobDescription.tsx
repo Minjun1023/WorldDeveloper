@@ -1,18 +1,28 @@
 "use client";
 
-import DOMPurify from "isomorphic-dompurify";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 import type { Translation } from "@/lib/types";
 
 type View = "original" | "ko";
 
+// HTML 태그 제거 — DOMPurify 로드 전(SSR/하이드레이션 직전)의 안전한 평문 폴백.
+// 텍스트 노드로만 렌더되므로 스크립트 실행/XSS 위험 없음.
+function stripTags(html: string): string {
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&[a-z]+;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 export function JobDescription({ jobId, original }: { jobId: string; original: string }) {
   const [view, setView] = useState<View>("original");
   const [ko, setKo] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [safeHtml, setSafeHtml] = useState<string | null>(null);
 
   async function showKorean() {
     if (ko) {
@@ -46,8 +56,21 @@ export function JobDescription({ jobId, original }: { jobId: string; original: s
   }
 
   const text = view === "ko" && ko ? ko : original;
-  // 외부 소스 HTML이라 XSS 방지를 위해 DOMPurify로 살균 후 렌더.
-  const safeHtml = DOMPurify.sanitize(text, { USE_PROFILES: { html: true } });
+
+  // 외부 소스 HTML이라 XSS 방지를 위해 DOMPurify로 살균. DOMPurify(dompurify)는 브라우저 전용이라
+  // 클라이언트에서만 동적 로드한다 — isomorphic-dompurify를 정적 import 하면 jsdom이 서버 번들에
+  // 끌려와 App Router SSR(공고 상세)이 깨진다. 살균 전에는 평문 폴백을 렌더(SSR 콘텐츠 + 무XSS).
+  useEffect(() => {
+    let alive = true;
+    setSafeHtml(null);
+    import("dompurify").then((mod) => {
+      const purified = mod.default.sanitize(text, { USE_PROFILES: { html: true } });
+      if (alive) setSafeHtml(purified);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [text]);
 
   return (
     <section className="space-y-2">
@@ -88,10 +111,16 @@ export function JobDescription({ jobId, original }: { jobId: string; original: s
         <p className="text-caption text-muted-foreground">기계 번역 — 오역이 있을 수 있습니다.</p>
       )}
 
-      <div
-        className="job-desc text-body text-foreground/90"
-        dangerouslySetInnerHTML={{ __html: safeHtml }}
-      />
+      {safeHtml === null ? (
+        <div className="job-desc whitespace-pre-line text-body text-foreground/90">
+          {stripTags(text)}
+        </div>
+      ) : (
+        <div
+          className="job-desc text-body text-foreground/90"
+          dangerouslySetInnerHTML={{ __html: safeHtml }}
+        />
+      )}
     </section>
   );
 }
