@@ -1,44 +1,53 @@
+import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-
-type Accent = "visa" | "recommend";
-
-const DOT: Record<Accent, string> = {
-  visa: "bg-success",
-  recommend: "bg-primary",
-};
 
 export function SectionHeader({
   title,
-  accent,
   href,
   hrefLabel = "전체 보기",
   count,
+  overline,
+  subtitle,
 }: {
   title: string;
-  accent?: Accent;
   href?: string;
   hrefLabel?: string;
   count?: number;
+  overline?: string;
+  subtitle?: string;
 }) {
   return (
-    <div className="mb-4 flex items-baseline justify-between">
-      <h2 className="flex items-center gap-2 text-h2">
-        {accent && (
-          <span
-            className={`inline-block h-2.5 w-2.5 rounded-full ${DOT[accent]}`}
-            aria-hidden
-          />
+    <div className="mb-6">
+      <div className="flex items-end justify-between gap-4">
+        <div className="min-w-0">
+          {overline && (
+            <div className="mb-1.5 text-caption font-semibold uppercase tracking-wide text-primary">
+              {overline}
+            </div>
+          )}
+          <h2 className="flex items-baseline gap-2 text-h1">
+            {title}
+            {count !== undefined && count > 0 && (
+              <span className="text-h3 font-normal text-muted-foreground">
+                {count.toLocaleString()}
+              </span>
+            )}
+          </h2>
+        </div>
+        {href && (
+          <Link
+            href={href}
+            className="group flex shrink-0 items-center gap-1 text-body-sm font-medium text-foreground transition-colors hover:text-primary"
+          >
+            {hrefLabel}
+            <ArrowRight
+              className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </Link>
         )}
-        {title}
-        {count !== undefined && (
-          <span className="text-body-sm font-normal text-muted-foreground">{count}개</span>
-        )}
-      </h2>
-      {href && (
-        <Link href={href} className="text-body-sm text-primary hover:underline">
-          {hrefLabel} →
-        </Link>
-      )}
+      </div>
+      {subtitle && <p className="mt-2 text-body-sm text-muted-foreground">{subtitle}</p>}
     </div>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import { Lock, Mail, User } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
@@ -27,6 +29,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
   const [nameAvail, setNameAvail] = useState<Avail>("idle");
   const [emailAvail, setEmailAvail] = useState<Avail>("idle");
   const [termsOk, setTermsOk] = useState(false);
+  const [remember, setRemember] = useState(true);
   const [regStep, setRegStep] = useState<"account" | "profile">("account");
 
   // 이름 실시간 확인 (register, debounce 500ms)
@@ -138,7 +141,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
       const res = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, remember }),
       });
       if (res.status === 403) throw new Error("이메일 인증이 필요해요. 받은 인증 메일의 링크를 눌러주세요.");
       if (!res.ok) throw new Error("이메일 또는 비밀번호가 올바르지 않아요.");
@@ -184,24 +187,65 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
 
   if (mode === "login") {
     return (
-      <form onSubmit={submit} className="space-y-3">
-        <div className="space-y-1">
-          <Input
-            type="email"
-            placeholder="이메일"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+      <form onSubmit={submit} className="space-y-4">
+        <div className="space-y-1.5">
+          <label htmlFor="login-email" className="text-body-sm font-medium">
+            이메일
+          </label>
+          <div className="relative">
+            <Mail
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <Input
+              id="login-email"
+              type="email"
+              placeholder="hello@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="h-11 pl-10"
+            />
+          </div>
         </div>
-        <PasswordInput
-          placeholder="비밀번호"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <label htmlFor="login-password" className="text-body-sm font-medium">
+              비밀번호
+            </label>
+            <Link href="/forgot-password" className="text-caption text-primary hover:underline">
+              비밀번호 찾기
+            </Link>
+          </div>
+          <div className="relative">
+            <Lock
+              className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+              aria-hidden="true"
+            />
+            <PasswordInput
+              id="login-password"
+              placeholder="8자 이상 입력"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="h-11 pl-10"
+            />
+          </div>
+        </div>
+
+        <label className="flex items-center gap-2 text-body-sm text-muted-foreground">
+          <input
+            type="checkbox"
+            checked={remember}
+            onChange={(e) => setRemember(e.target.checked)}
+            className="h-4 w-4 rounded border-border accent-[var(--primary)]"
+          />
+          로그인 상태 유지
+        </label>
+
         {error && <p className="text-destructive text-body-sm">{error}</p>}
-        <Button type="submit" disabled={!canSubmit} className="w-full">
+        <Button type="submit" disabled={!canSubmit} className="h-11 w-full">
           {pending ? "처리 중…" : "로그인"}
         </Button>
       </form>
@@ -233,55 +277,83 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <label htmlFor="reg-name" className="text-body-sm font-medium">이름</label>
-        <Input
-          id="reg-name"
-          type="text"
-          placeholder="이름을 입력해 주세요"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          required
-        />
+        <div className="relative">
+          <User
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <Input
+            id="reg-name"
+            type="text"
+            placeholder="홍길동"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            required
+            className="h-11 pl-10"
+          />
+        </div>
         {availMsg(nameAvail, "사용 가능한 이름이에요", "이미 사용 중인 이름이에요")}
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <label htmlFor="reg-email" className="text-body-sm font-medium">이메일</label>
-        <Input
-          id="reg-email"
-          type="email"
-          placeholder="이메일을 입력해 주세요"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+        <div className="relative">
+          <Mail
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <Input
+            id="reg-email"
+            type="email"
+            placeholder="hello@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            className="h-11 pl-10"
+          />
+        </div>
         {availMsg(emailAvail, "사용 가능한 이메일이에요", "이미 사용 중인 이메일이에요", "이메일 형식이 올바르지 않아요")}
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <label htmlFor="reg-password" className="text-body-sm font-medium">비밀번호</label>
-        <PasswordInput
-          id="reg-password"
-          placeholder="비밀번호를 입력해 주세요"
-          minLength={10}
-          maxLength={72}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <div className="relative">
+          <Lock
+            className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <PasswordInput
+            id="reg-password"
+            placeholder="영문, 숫자, 특수문자 조합 8자 이상"
+            minLength={10}
+            maxLength={72}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            className="h-11 pl-10"
+          />
+        </div>
         <PasswordChecklist checks={checkPassword(password)} />
       </div>
 
-      <div className="space-y-1">
+      <div className="space-y-1.5">
         <label htmlFor="reg-confirm" className="text-body-sm font-medium">비밀번호 확인</label>
-        <PasswordInput
-          id="reg-confirm"
-          placeholder="비밀번호를 한 번 더 입력해 주세요"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          required
-        />
+        <div className="relative">
+          <Lock
+            className="pointer-events-none absolute left-3 top-1/2 z-10 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+            aria-hidden="true"
+          />
+          <PasswordInput
+            id="reg-confirm"
+            placeholder="비밀번호를 다시 입력해주세요"
+            value={confirm}
+            onChange={(e) => setConfirm(e.target.value)}
+            required
+            className="h-11 pl-10"
+          />
+        </div>
         {confirm.length > 0 && !pwMatch && (
           <p className="text-caption text-destructive">비밀번호가 일치하지 않아요</p>
         )}
@@ -291,7 +363,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
 
       {error && <p className="text-destructive text-body-sm">{error}</p>}
 
-      <Button type="submit" disabled={!canSubmit} className="w-full">
+      <Button type="submit" disabled={!canSubmit} className="h-11 w-full">
         {pending ? "처리 중…" : "다음"}
       </Button>
     </form>

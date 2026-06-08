@@ -15,7 +15,7 @@ describe("CoachChat", () => {
     expect(send).toBeDisabled();
     await user.selectOptions(screen.getByRole("combobox"), "greenhouse:acme:1");
     await user.type(screen.getByPlaceholderText(/이력서/), "Go dev 5y");
-    await user.type(screen.getByPlaceholderText(/질문/), "어떻게 고칠까요?");
+    await user.type(screen.getByPlaceholderText(/메시지/), "어떻게 고칠까요?");
     expect(send).toBeEnabled();
   });
 
@@ -27,7 +27,7 @@ describe("CoachChat", () => {
     const user = userEvent.setup();
     await user.selectOptions(screen.getByRole("combobox"), "greenhouse:acme:1");
     await user.type(screen.getByPlaceholderText(/이력서/), "Go dev 5y");
-    await user.type(screen.getByPlaceholderText(/질문/), "어떻게?");
+    await user.type(screen.getByPlaceholderText(/메시지/), "어떻게?");
     await user.click(screen.getByRole("button", { name: /보내기/ }));
     expect(await screen.findByText("Go 경험을 위로 올리세요.")).toBeInTheDocument();
     const body = JSON.parse(fetchMock.mock.calls.at(-1)![1].body);

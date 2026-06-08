@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { SectionHeader } from "@/components/home/SectionHeader";
 import { InteractiveJobCard, type Reaction } from "@/components/recommend/InteractiveJobCard";
 import { recordEvents } from "@/lib/feedback";
 import type { RecommendResponse } from "@/lib/types";
@@ -56,11 +57,14 @@ export function MemberLandingRecommend() {
 
   const visible = result.recommendations.slice(0, TOP_N).filter((it) => !hidden.has(it.job.id));
   return (
-    <section className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-h3">회원님 맞춤 공고</h2>
-        <Link href="/recommend" className="text-body-sm text-primary">더 보기 →</Link>
-      </div>
+    <section>
+      <SectionHeader
+        overline="맞춤 추천 미리보기"
+        title="당신을 위한 6차원 매칭 공고"
+        subtitle="프로필 기반으로 스택·비자·지역·레벨·연봉·의미 6축 점수를 계산했어요."
+        href="/recommend"
+        hrefLabel="전체 보기"
+      />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {visible.map((item, i) => (
           <InteractiveJobCard

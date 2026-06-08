@@ -33,6 +33,9 @@
     --score-salary: #f59e0b;
     --score-semantic: #f43f5e;
 
+    /* 랜딩 전폭 섹션 교차 배경(흰색/연회색). 라이트 = Readdy #f4f4f8. */
+    --section-muted: #f4f4f8;
+
     --radius: 0.5rem;
   }
 
@@ -53,6 +56,9 @@
     --destructive: #ef4444;
     --verified: #eab308;
     --verified-foreground: #09090b;
+
+    /* 다크 모드 교차 섹션은 표면색으로 살짝 띄운다. */
+    --section-muted: #131316;
   }
 }
 
@@ -69,6 +75,24 @@
 }
 .dark .hero-gradient {
   background: radial-gradient(60% 80% at 50% 0%, rgba(99, 102, 241, 0.12), transparent 70%), #09090b;
+}
+
+/* 브랜드 그라데이션 텍스트 — 히어로 헤드라인 강조 (인디고 → 바이올렛). 라이트/다크 공통. */
+.text-gradient-brand {
+  background-image: linear-gradient(92deg, var(--primary) 0%, #a855f7 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* 랜딩 전폭 섹션의 교차 배경. <section> 단위로 깔고, 안쪽에 max-w 컨테이너를 둔다. */
+.section-muted {
+  background-color: var(--section-muted);
+}
+
+/* 브랜드 그라데이션 버튼/배너 — Readdy 검색 버튼·CTA 와 동일(인디고 #4f46e5 → 바이올렛 #7c3aed). */
+.bg-brand-gradient {
+  background-image: linear-gradient(to right, #4f46e5 0%, #7c3aed 100%);
 }
 
 /* 공고 설명(살균된 HTML) 서식 — Tailwind preflight가 지운 기본 스타일 복원 */

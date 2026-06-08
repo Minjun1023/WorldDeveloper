@@ -123,6 +123,8 @@ export interface CompanySummary {
   display_name: string;
   tags?: string[];
   job_count: number;
+  verified?: boolean;
+  website_url?: string;
 }
 
 export interface CompanyDetail {
