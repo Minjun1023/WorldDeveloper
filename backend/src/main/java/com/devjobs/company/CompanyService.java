@@ -28,12 +28,15 @@ public class CompanyService {
         List<CompanySummary> items = rows.stream().map(r -> {
             String slug = (String) r[0];
             long count = ((Number) r[1]).longValue();
+            boolean verified = r[2] != null && (Boolean) r[2];
             CompanyEntity c = bySlug.get(slug);
             return new CompanySummary(
                 slug,
                 c != null ? c.getDisplayName() : slug,
                 c != null ? c.getTags() : List.of(),
-                count);
+                count,
+                c != null ? c.getWebsiteUrl() : null,
+                verified);
         }).toList();
 
         return new CompanyListResponse(items.size(), items);
