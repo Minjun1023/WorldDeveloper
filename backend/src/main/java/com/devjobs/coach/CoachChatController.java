@@ -1,5 +1,6 @@
 package com.devjobs.coach;
 
+import com.devjobs.coach.dto.CoachDtos.ChatMessage;
 import com.devjobs.coach.dto.CoachDtos.CoachReply;
 import com.devjobs.coach.dto.CoachDtos.CoachRequest;
 import com.devjobs.company.CompanyService;
@@ -10,8 +11,11 @@ import com.devjobs.scout.JobService;
 import com.devjobs.scout.dto.JobDtos.JobDetailDto;
 import com.devjobs.strategist.AiClient;
 import com.devjobs.strategist.RateLimiter;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,6 +34,7 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/v1/me/coach")
 public class CoachChatController {
 
+    private static final Logger log = LoggerFactory.getLogger(CoachChatController.class);
     private static final int MAX_RESUME = 20_000;
     private static final int MAX_JD = 3_500;
     // ai(coach.py)의 가드와 정합: 메시지당 8k(초과 거절), 대화는 최근 30턴(초과 잘라냄).
@@ -42,15 +47,18 @@ public class CoachChatController {
     private final CoachService coachService;
     private final AiClient aiClient;
     private final RateLimiter rateLimiter;
+    private final CoachConversationService conversationService;
 
     public CoachChatController(JobService jobService, CompanyService companyService, ProfileService profileService,
-                              CoachService coachService, AiClient aiClient, RateLimiter rateLimiter) {
+                              CoachService coachService, AiClient aiClient, RateLimiter rateLimiter,
+                              CoachConversationService conversationService) {
         this.jobService = jobService;
         this.companyService = companyService;
         this.profileService = profileService;
         this.coachService = coachService;
         this.aiClient = aiClient;
         this.rateLimiter = rateLimiter;
+        this.conversationService = conversationService;
     }
 
     @PostMapping
@@ -91,6 +99,14 @@ public class CoachChatController {
         var result = aiClient.coachChat(context, req.resume() == null ? "" : req.resume(), aiMsgs);
         if (result == null) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "상담 기능을 사용할 수 없어요.");
+        }
+        // 대화 저장(best-effort) — 실패해도 채팅 응답엔 영향 주지 않는다. 이력서는 저장하지 않는다.
+        try {
+            var thread = new ArrayList<>(req.messages());
+            thread.add(new ChatMessage("assistant", result.reply()));
+            conversationService.save(UUID.fromString(userId), req.job_id(), thread);
+        } catch (Exception e) {
+            log.warn("coach 대화 저장 실패(무시): {}", e.toString());
         }
         return ResponseEntity.ok(new CoachReply(result.reply()));
     }
