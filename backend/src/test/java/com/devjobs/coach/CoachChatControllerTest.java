@@ -5,8 +5,13 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.devjobs.coach.dto.CoachDtos.ChatMessage;
 
 import com.devjobs.auth.JwtService;
 import com.devjobs.auth.MailService;
@@ -168,5 +173,34 @@ class CoachChatControllerTest {
         assertThat(saved.getMessages()).hasSize(2); // 요청 user 메시지 + assistant 응답
         assertThat(saved.getMessages().get(1).role()).isEqualTo("assistant");
         assertThat(saved.getMessages().get(1).content()).isEqualTo("이력서 조언입니다.");
+    }
+
+    @Test
+    void getConversationReturnsOwnerThreadAndDeleteClears() throws Exception {
+        UUID userId = insertUser();
+        String token = "Bearer " + jwtService.issue(userId.toString());
+        var e = new CoachConversationEntity(userId, "job-get");
+        e.setMessages(List.of(new ChatMessage("user", "q"), new ChatMessage("assistant", "a")));
+        e.setLastActiveAt(java.time.OffsetDateTime.now());
+        conversationRepo.save(e);
+
+        mvc.perform(get("/api/v1/me/coach/conversation").param("jobId", "job-get")
+                .header("Authorization", token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.messages.length()").value(2));
+
+        // 다른 사용자는 못 본다(IDOR) — 읽기라 FK 불필요, 임의 UUID JWT 로 충분
+        String otherToken = "Bearer " + jwtService.issue(UUID.randomUUID().toString());
+        mvc.perform(get("/api/v1/me/coach/conversation").param("jobId", "job-get")
+                .header("Authorization", otherToken))
+            .andExpect(status().isNoContent());
+
+        // 삭제 후엔 없음
+        mvc.perform(delete("/api/v1/me/coach/conversation").param("jobId", "job-get")
+                .header("Authorization", token))
+            .andExpect(status().isOk());
+        mvc.perform(get("/api/v1/me/coach/conversation").param("jobId", "job-get")
+                .header("Authorization", token))
+            .andExpect(status().isNoContent());
     }
 }

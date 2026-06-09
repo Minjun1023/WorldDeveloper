@@ -1,5 +1,6 @@
 package com.devjobs.coach.dto;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 /**
@@ -59,4 +60,6 @@ public final class CoachDtos {
     public record CoachRequest(String job_id, String resume, List<ChatMessage> messages) {}
 
     public record CoachReply(String reply) {}
+
+    public record ConversationResponse(String jobId, List<ChatMessage> messages, OffsetDateTime lastActiveAt) {}
 }

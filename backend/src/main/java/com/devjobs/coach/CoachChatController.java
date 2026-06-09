@@ -3,6 +3,7 @@ package com.devjobs.coach;
 import com.devjobs.coach.dto.CoachDtos.ChatMessage;
 import com.devjobs.coach.dto.CoachDtos.CoachReply;
 import com.devjobs.coach.dto.CoachDtos.CoachRequest;
+import com.devjobs.coach.dto.CoachDtos.ConversationResponse;
 import com.devjobs.company.CompanyService;
 import com.devjobs.company.dto.CompanyDtos.CompanyDetail;
 import com.devjobs.profile.ProfileService;
@@ -19,9 +20,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -109,6 +113,22 @@ public class CoachChatController {
             log.warn("coach 대화 저장 실패(무시): {}", e.toString());
         }
         return ResponseEntity.ok(new CoachReply(result.reply()));
+    }
+
+    @GetMapping("/conversation")
+    public ResponseEntity<ConversationResponse> getConversation(
+            @AuthenticationPrincipal String userId, @RequestParam String jobId) {
+        return conversationService.get(UUID.fromString(userId), jobId)
+            .map(c -> ResponseEntity.ok(
+                new ConversationResponse(c.getJobId(), c.getMessages(), c.getLastActiveAt())))
+            .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
+    @DeleteMapping("/conversation")
+    public ResponseEntity<Void> deleteConversation(
+            @AuthenticationPrincipal String userId, @RequestParam String jobId) {
+        conversationService.delete(UUID.fromString(userId), jobId);
+        return ResponseEntity.ok().build();
     }
 
     private String buildContext(JobDetailDto job, String jobId, String resume, UUID userId) {
