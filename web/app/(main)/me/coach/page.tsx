@@ -35,9 +35,5 @@ async function fetchPickJobs(token: string): Promise<PickJob[]> {
 export default async function CoachPage() {
   const token = await getSessionToken();
   const jobs = token ? await fetchPickJobs(token) : [];
-  return (
-    <div className="mx-auto max-w-3xl">
-      <CoachChat initialJobs={jobs} />
-    </div>
-  );
+  return <CoachChat initialJobs={jobs} />;
 }

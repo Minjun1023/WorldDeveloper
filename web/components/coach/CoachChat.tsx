@@ -1,7 +1,8 @@
 "use client";
 
-import { Briefcase, RefreshCw, Send } from "lucide-react";
-import { useState } from "react";
+import { Briefcase, FileText, Info, MessageSquareText, RefreshCw, Send, Sparkles } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
 
 type PickJob = { id: string; title: string; company: { display_name: string } };
 type Msg = { role: "user" | "assistant"; content: string };
@@ -22,9 +23,19 @@ export function CoachChat({ initialJobs }: { initialJobs: PickJob[] }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const threadRef = useRef<HTMLDivElement>(null);
 
   const canSend = !!jobId && resume.trim().length > 0 && input.trim().length > 0 && !pending;
+  const ready = !!jobId && resume.trim().length > 0;
   const selectedJob = initialJobs.find((j) => j.id === jobId);
+
+  // 새 메시지/타이핑마다 스레드 맨 아래로 스크롤 (jsdom 엔 scrollTo 없음 → scrollTop 폴백)
+  useEffect(() => {
+    const el = threadRef.current;
+    if (!el) return;
+    if (typeof el.scrollTo === "function") el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    else el.scrollTop = el.scrollHeight;
+  }, [messages, pending]);
 
   function reset() {
     setMessages([]);
@@ -57,12 +68,16 @@ export function CoachChat({ initialJobs }: { initialJobs: PickJob[] }) {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* 헤더 */}
+    <div className="space-y-7">
+      {/* 페이지 헤더 */}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <h1 className="text-display">이력서 코치</h1>
-          <p className="mt-2 text-muted-foreground">
+          <div className="mb-2 inline-flex items-center gap-1.5 text-caption font-semibold uppercase tracking-wide text-primary">
+            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+            AI 이력서 코치
+          </div>
+          <h1 className="text-h1">이력서 코치</h1>
+          <p className="mt-2 max-w-2xl text-body-sm text-muted-foreground">
             저장하거나 추천받은 공고에 맞춰 이력서를 어떻게 고칠지 상담해드려요.
           </p>
         </div>
@@ -79,130 +94,218 @@ export function CoachChat({ initialJobs }: { initialJobs: PickJob[] }) {
       </div>
 
       {initialJobs.length === 0 ? (
-        <div className="rounded-xl border border-border bg-surface p-6 text-center text-body-sm text-muted-foreground">
-          상담할 공고가 없어요. 먼저 공고를 저장하거나 맞춤 추천을 받아보세요.
-        </div>
+        <NoJobs />
       ) : (
-        <>
-          {/* 설정: 공고 선택 + 이력서 */}
-          <div className="space-y-3 rounded-xl border border-border bg-surface p-4">
-            <label className="block space-y-1.5">
-              <span className="text-body-sm font-medium">상담할 공고</span>
-              <select
-                value={jobId}
-                onChange={(e) => setJobId(e.target.value)}
-                className="flex h-10 w-full rounded-lg border border-input bg-background px-3 text-body-sm"
-              >
-                <option value="">공고 선택…</option>
-                {initialJobs.map((j) => (
-                  <option key={j.id} value={j.id}>
-                    {j.company.display_name} · {j.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {selectedJob && (
-              <div className="flex flex-wrap items-center gap-2 text-caption">
-                <span className="inline-flex max-w-full items-center gap-1.5 truncate rounded-full bg-primary/10 px-2.5 py-1 font-medium text-primary">
-                  <Briefcase className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                  <span className="truncate">
-                    {selectedJob.company.display_name} · {selectedJob.title}
-                  </span>
-                </span>
-                <span className="text-muted-foreground">이 공고에 맞춰 조언 중</span>
+        <div className="grid gap-6 lg:grid-cols-[minmax(300px,360px)_1fr] lg:items-start">
+          {/* 좌측: 상담 설정 (데스크톱 sticky) */}
+          <aside className="lg:sticky lg:top-24">
+            <div className="space-y-4 rounded-2xl border border-border bg-surface p-5 shadow-sm">
+              <div className="flex items-center gap-2 text-body-sm font-semibold text-foreground">
+                <Briefcase className="h-4 w-4 text-primary" aria-hidden="true" />
+                상담 설정
               </div>
-            )}
 
-            <label className="block space-y-1.5">
-              <span className="text-body-sm font-medium">이력서 (저장되지 않아요)</span>
-              <textarea
-                value={resume}
-                onChange={(e) => setResume(e.target.value)}
-                rows={3}
-                placeholder="이력서 전문을 붙여넣으세요"
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-body-sm"
-              />
-            </label>
-          </div>
-
-          {/* 채팅 스레드 */}
-          <div className="max-h-[420px] min-h-[200px] space-y-3 overflow-y-auto rounded-xl border border-border bg-surface p-4">
-            {messages.length === 0 && (
-              <p className="text-body-sm text-muted-foreground">
-                공고와 이력서를 입력하고, 이 공고에 맞춰 이력서를 어떻게 고칠지 물어보세요.
-              </p>
-            )}
-            {messages.map((m, i) => (
-              <div key={i} className={m.role === "user" ? "flex justify-end" : "flex justify-start"}>
-                <span
-                  className={
-                    "inline-block max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2 text-body-sm " +
-                    (m.role === "user"
-                      ? "rounded-br-sm bg-primary text-primary-foreground"
-                      : "rounded-bl-sm bg-surface-2 text-foreground")
-                  }
+              {/* 공고 선택 */}
+              <label className="block space-y-1.5">
+                <span className="text-body-sm font-medium">상담할 공고</span>
+                <select
+                  value={jobId}
+                  onChange={(e) => setJobId(e.target.value)}
+                  className="h-10 w-full rounded-lg border border-input bg-background px-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
-                  {m.content}
-                </span>
-              </div>
-            ))}
-            {pending && (
-              <div className="flex justify-start">
-                <span className="inline-flex items-center gap-1 rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-2.5">
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" />
-                </span>
-              </div>
-            )}
-            {error && <p className="text-body-sm text-destructive">{error}</p>}
-          </div>
+                  <option value="">공고 선택…</option>
+                  {initialJobs.map((j) => (
+                    <option key={j.id} value={j.id}>
+                      {j.company.display_name} · {j.title}
+                    </option>
+                  ))}
+                </select>
+              </label>
 
-          {/* 빠른 프롬프트 */}
-          <div className="flex flex-wrap gap-2">
-            {QUICK_PROMPTS.map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setInput(p)}
-                className="rounded-full border border-border px-3 py-1 text-body-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-              >
-                {p}
-              </button>
-            ))}
-          </div>
+              {selectedJob && (
+                <div className="space-y-1.5">
+                  <span
+                    className="inline-flex max-w-full items-center gap-1.5 truncate rounded-full px-2.5 py-1 text-caption font-medium text-primary"
+                    style={{ backgroundColor: "color-mix(in srgb, var(--primary) 12%, transparent)" }}
+                  >
+                    <Briefcase className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                    <span className="truncate">
+                      {selectedJob.company.display_name} · {selectedJob.title}
+                    </span>
+                  </span>
+                  <p className="text-caption text-muted-foreground">이 공고에 맞춰 조언 중</p>
+                </div>
+              )}
 
-          {/* 입력 */}
-          <form onSubmit={(e) => { e.preventDefault(); send(); }} className="flex items-end gap-2">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
+              {/* 이력서 */}
+              <label className="block space-y-1.5">
+                <span className="flex items-center gap-1.5 text-body-sm font-medium">
+                  <FileText className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  이력서
+                  <span className="font-normal text-muted-foreground">(저장되지 않아요)</span>
+                </span>
+                <textarea
+                  value={resume}
+                  onChange={(e) => setResume(e.target.value)}
+                  rows={9}
+                  placeholder="이력서 전문을 붙여넣으세요"
+                  className="w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-body-sm leading-relaxed placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </label>
+
+              <p className="flex items-start gap-1.5 text-caption text-muted-foreground">
+                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                이력서·대화는 서버에 저장되지 않아요. 새로고침하면 사라집니다.
+              </p>
+            </div>
+          </aside>
+
+          {/* 우측: 대화 */}
+          <section className="flex h-[calc(100vh-15rem)] max-h-[760px] min-h-[480px] flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
+            {/* 스레드 */}
+            <div ref={threadRef} className="flex-1 space-y-4 overflow-y-auto p-5">
+              {messages.length === 0 && !pending && !error && <EmptyThread ready={ready} />}
+
+              {messages.map((m, i) =>
+                m.role === "user" ? (
+                  <div key={i} className="flex justify-end">
+                    <span className="inline-block max-w-[82%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-primary px-3.5 py-2.5 text-body-sm text-primary-foreground">
+                      {m.content}
+                    </span>
+                  </div>
+                ) : (
+                  <div key={i} className="flex justify-start gap-2.5">
+                    <CoachAvatar />
+                    <span className="inline-block max-w-[82%] whitespace-pre-wrap rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-2.5 text-body-sm text-foreground">
+                      {m.content}
+                    </span>
+                  </div>
+                ),
+              )}
+
+              {pending && (
+                <div className="flex justify-start gap-2.5">
+                  <CoachAvatar />
+                  <span className="inline-flex items-center gap-1 rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-3">
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" />
+                  </span>
+                </div>
+              )}
+
+              {error && (
+                <div className="rounded-lg border border-destructive/30 px-3.5 py-2.5 text-body-sm text-destructive"
+                  style={{ backgroundColor: "color-mix(in srgb, var(--destructive) 7%, transparent)" }}
+                >
+                  {error}
+                </div>
+              )}
+            </div>
+
+            {/* 푸터: 빠른 프롬프트 + 입력 */}
+            <div className="space-y-3 border-t border-border bg-surface p-4">
+              <div className="flex flex-wrap gap-2">
+                {QUICK_PROMPTS.map((p) => (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => setInput(p)}
+                    className="rounded-full border border-border px-3 py-1 text-caption text-muted-foreground transition-colors hover:border-primary/40 hover:bg-accent hover:text-foreground"
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+
+              <form
+                onSubmit={(e) => {
                   e.preventDefault();
                   send();
-                }
-              }}
-              rows={1}
-              placeholder="메시지를 입력하세요... (Enter로 전송, Shift+Enter로 줄바꿈)"
-              className="max-h-32 min-h-[2.75rem] flex-1 resize-none rounded-xl border border-input bg-background px-3.5 py-3 text-body-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-            <button
-              type="submit"
-              disabled={!canSend}
-              aria-label="보내기"
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
-            >
-              <Send className="h-5 w-5" aria-hidden="true" />
-            </button>
-          </form>
-
-          <p className="text-caption text-muted-foreground">
-            이력서 내용은 서버에 저장되지 않아요. 새로고침하면 대화가 사라집니다.
-          </p>
-        </>
+                }}
+                className="flex items-end gap-2"
+              >
+                <textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      send();
+                    }
+                  }}
+                  rows={1}
+                  placeholder="메시지를 입력하세요... (Enter로 전송, Shift+Enter로 줄바꿈)"
+                  className="max-h-32 min-h-[2.75rem] flex-1 resize-none rounded-xl border border-input bg-background px-3.5 py-3 text-body-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+                <button
+                  type="submit"
+                  disabled={!canSend}
+                  aria-label="보내기"
+                  className="bg-brand-gradient flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+                >
+                  <Send className="h-5 w-5" aria-hidden="true" />
+                </button>
+              </form>
+            </div>
+          </section>
+        </div>
       )}
+    </div>
+  );
+}
+
+// 코치(AI) 말풍선 앞 그라데이션 아바타
+function CoachAvatar() {
+  return (
+    <span className="bg-brand-gradient flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white shadow-sm">
+      <Sparkles className="h-4 w-4" aria-hidden="true" />
+    </span>
+  );
+}
+
+function EmptyThread({ ready }: { ready: boolean }) {
+  return (
+    <div className="flex h-full flex-col items-center justify-center px-6 text-center">
+      <span className="bg-brand-gradient mb-4 flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-sm">
+        <MessageSquareText className="h-6 w-6" aria-hidden="true" />
+      </span>
+      <p className="text-body font-medium text-foreground">
+        {ready ? "이제 무엇이든 물어보세요" : "왼쪽에서 공고와 이력서를 먼저 채워주세요"}
+      </p>
+      <p className="mt-1.5 max-w-sm text-body-sm text-muted-foreground">
+        {ready
+          ? "이 공고에 맞춰 이력서를 어떻게 고칠지 물어보세요. 아래 빠른 질문을 눌러도 돼요."
+          : "공고를 고르고 이력서를 붙여넣으면 그 공고 기준으로 상담을 시작할 수 있어요."}
+      </p>
+    </div>
+  );
+}
+
+function NoJobs() {
+  return (
+    <div className="rounded-2xl border border-border bg-surface p-10 text-center shadow-sm">
+      <span className="bg-brand-gradient mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-sm">
+        <Briefcase className="h-6 w-6" aria-hidden="true" />
+      </span>
+      <p className="text-body font-medium text-foreground">상담할 공고가 없어요</p>
+      <p className="mx-auto mt-1.5 max-w-md text-body-sm text-muted-foreground">
+        먼저 공고를 저장하거나 맞춤 추천을 받아보세요. 코치는 고른 공고 하나에 맞춰 이력서를 봐드려요.
+      </p>
+      <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
+        <Link
+          href="/recommend"
+          className="bg-brand-gradient rounded-xl px-5 py-2.5 text-body-sm font-semibold text-white transition-opacity hover:opacity-90"
+        >
+          맞춤 추천 받기
+        </Link>
+        <Link
+          href="/search"
+          className="rounded-xl border border-border px-5 py-2.5 text-body-sm font-medium text-foreground transition-colors hover:bg-accent"
+        >
+          공고 검색하기
+        </Link>
+      </div>
     </div>
   );
 }
