@@ -29,7 +29,7 @@ class CoachConversationServiceTest {
     @Autowired CoachConversationService service;
     @Autowired JdbcTemplate jdbc;
 
-    /** FK: coach_conversations.user_id → users(id) なので実ユーザーを先行挿入する */
+    /** FK: coach_conversations.user_id → users(id) 이므로 실제 사용자 행을 먼저 만든다. */
     private UUID insertUser() {
         UUID id = UUID.randomUUID();
         jdbc.update(
