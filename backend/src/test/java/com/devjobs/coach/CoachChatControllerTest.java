@@ -1,22 +1,33 @@
 package com.devjobs.coach;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.devjobs.coach.dto.CoachDtos.ChatMessage;
 
 import com.devjobs.auth.JwtService;
 import com.devjobs.auth.MailService;
 import com.devjobs.company.CompanyService;
 import com.devjobs.profile.ProfileService;
 import com.devjobs.scout.JobService;
+import com.devjobs.scout.dto.JobDtos.JobDetailDto;
 import com.devjobs.strategist.AiClient;
+import com.devjobs.strategist.AiClient.CoachChatResult;
 import com.devjobs.strategist.RateLimiter;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -56,6 +67,24 @@ class CoachChatControllerTest {
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper om;
     @Autowired JwtService jwtService;
+    @Autowired CoachConversationRepository conversationRepo;
+    @Autowired JdbcTemplate jdbc;
+
+    // FK: coach_conversations.user_id → users(id) 이므로 실제 사용자 행을 먼저 만든다.
+    private UUID insertUser() {
+        UUID id = UUID.randomUUID();
+        jdbc.update(
+            "INSERT INTO users (id, email, password_hash, display_name, created_at, email_verified_at) "
+            + "VALUES (?, ?, 'x', ?, now(), now())",
+            id, "coach_ctrl_" + id + "@example.com", "coachctrl-" + id.toString().substring(0, 8));
+        return id;
+    }
+
+    private static JobDetailDto minimalJob(String id) {
+        // company/visa/remote/salary 등은 buildContext가 null 허용 → 전부 null.
+        return new JobDetailDto(id, "Backend Engineer", null, null, null, null,
+            null, null, null, null, null, null, null, null);
+    }
 
     private String bearer() {
         return "Bearer " + jwtService.issue(UUID.randomUUID().toString());
@@ -118,5 +147,60 @@ class CoachChatControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json(body)))
             .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void successfulCoachPersistsConversation() throws Exception {
+        when(rateLimiter.tryAcquire(anyString())).thenReturn(true);
+        when(jobService.findById(anyString())).thenReturn(Optional.of(minimalJob("job-persist")));
+        when(coachService.resumeOptimize(anyString(), anyString())).thenReturn(Optional.empty());
+        when(profileService.load(any())).thenReturn(Optional.empty());
+        when(aiClient.coachChat(anyString(), anyString(), anyList()))
+            .thenReturn(new CoachChatResult("이력서 조언입니다.", "gpt-4o-mini"));
+
+        UUID userId = insertUser();
+        String token = "Bearer " + jwtService.issue(userId.toString());
+        var body = Map.of("job_id", "job-persist", "resume", "Go dev 5y",
+            "messages", List.of(Map.of("role", "user", "content", "키워드 봐줘")));
+
+        mvc.perform(post("/api/v1/me/coach")
+                .header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(body)))
+            .andExpect(status().isOk());
+
+        var saved = conversationRepo.findByUserIdAndJobId(userId, "job-persist").orElseThrow();
+        assertThat(saved.getMessages()).hasSize(2); // 요청 user 메시지 + assistant 응답
+        assertThat(saved.getMessages().get(1).role()).isEqualTo("assistant");
+        assertThat(saved.getMessages().get(1).content()).isEqualTo("이력서 조언입니다.");
+    }
+
+    @Test
+    void getConversationReturnsOwnerThreadAndDeleteClears() throws Exception {
+        UUID userId = insertUser();
+        String token = "Bearer " + jwtService.issue(userId.toString());
+        var e = new CoachConversationEntity(userId, "job-get");
+        e.setMessages(List.of(new ChatMessage("user", "q"), new ChatMessage("assistant", "a")));
+        e.setLastActiveAt(java.time.OffsetDateTime.now());
+        conversationRepo.save(e);
+
+        mvc.perform(get("/api/v1/me/coach/conversation").param("jobId", "job-get")
+                .header("Authorization", token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.messages.length()").value(2));
+
+        // 다른 사용자는 못 본다(IDOR) — 읽기라 FK 불필요, 임의 UUID JWT 로 충분
+        String otherToken = "Bearer " + jwtService.issue(UUID.randomUUID().toString());
+        mvc.perform(get("/api/v1/me/coach/conversation").param("jobId", "job-get")
+                .header("Authorization", otherToken))
+            .andExpect(status().isNoContent());
+
+        // 삭제 후엔 없음
+        mvc.perform(delete("/api/v1/me/coach/conversation").param("jobId", "job-get")
+                .header("Authorization", token))
+            .andExpect(status().isOk());
+        mvc.perform(get("/api/v1/me/coach/conversation").param("jobId", "job-get")
+                .header("Authorization", token))
+            .andExpect(status().isNoContent());
     }
 }

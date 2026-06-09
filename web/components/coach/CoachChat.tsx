@@ -1,6 +1,6 @@
 "use client";
 
-import { Briefcase, FileText, Info, MessageSquareText, RefreshCw, Send, Sparkles } from "lucide-react";
+import { Briefcase, FileText, History, Info, MessageSquareText, RefreshCw, Send, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
@@ -23,6 +23,7 @@ export function CoachChat({ initialJobs }: { initialJobs: PickJob[] }) {
   const [messages, setMessages] = useState<Msg[]>([]);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hydratedAt, setHydratedAt] = useState<string | null>(null);
   const threadRef = useRef<HTMLDivElement>(null);
 
   const canSend = !!jobId && resume.trim().length > 0 && input.trim().length > 0 && !pending;
@@ -37,10 +38,52 @@ export function CoachChat({ initialJobs }: { initialJobs: PickJob[] }) {
     else el.scrollTop = el.scrollHeight;
   }, [messages, pending]);
 
-  function reset() {
+  // 공고 선택 시 저장된 대화 복원(없으면 빈 상태). 이력서는 저장 안 되므로 재입력 필요.
+  useEffect(() => {
+    if (!jobId) {
+      setMessages([]);
+      setHydratedAt(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/me/coach/conversation?jobId=${encodeURIComponent(jobId)}`);
+        if (cancelled) return;
+        if (res.status === 200) {
+          const data = await res.json();
+          if (Array.isArray(data?.messages) && data.messages.length > 0) {
+            setMessages(data.messages as Msg[]);
+            setHydratedAt(typeof data.lastActiveAt === "string" ? data.lastActiveAt : null);
+            return;
+          }
+        }
+        setMessages([]);
+        setHydratedAt(null);
+      } catch {
+        if (!cancelled) {
+          setMessages([]);
+          setHydratedAt(null);
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [jobId]);
+
+  async function reset() {
+    if (jobId) {
+      try {
+        await fetch(`/api/me/coach/conversation?jobId=${encodeURIComponent(jobId)}`, { method: "DELETE" });
+      } catch {
+        /* 무시 */
+      }
+    }
     setMessages([]);
     setInput("");
     setError(null);
+    setHydratedAt(null);
   }
 
   async function send() {
@@ -155,7 +198,7 @@ export function CoachChat({ initialJobs }: { initialJobs: PickJob[] }) {
 
               <p className="flex items-start gap-1.5 text-caption text-muted-foreground">
                 <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                이력서·대화는 서버에 저장되지 않아요. 새로고침하면 사라집니다.
+                대화는 90일간 저장돼 이어볼 수 있어요. 이력서는 저장되지 않아요. "새 상담"으로 언제든 삭제할 수 있어요.
               </p>
             </div>
           </aside>
@@ -164,6 +207,16 @@ export function CoachChat({ initialJobs }: { initialJobs: PickJob[] }) {
           <section className="flex h-[calc(100vh-15rem)] max-h-[760px] min-h-[480px] flex-col overflow-hidden rounded-2xl border border-border bg-surface shadow-sm">
             {/* 스레드 */}
             <div ref={threadRef} className="flex-1 space-y-4 overflow-y-auto p-5">
+              {hydratedAt && resume.trim().length === 0 && (
+                <div className="flex items-start gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-caption text-muted-foreground">
+                  <History className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
+                  <span>
+                    이전 상담을 이어갑니다
+                    {hydratedAt ? ` · ${new Date(hydratedAt).toLocaleDateString("ko-KR")}` : ""}.
+                    이어가려면 왼쪽에 이력서를 다시 붙여넣어 주세요.
+                  </span>
+                </div>
+              )}
               {messages.length === 0 && !pending && !error && <EmptyThread ready={ready} />}
 
               {messages.map((m, i) =>
