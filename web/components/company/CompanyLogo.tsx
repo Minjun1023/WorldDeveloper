@@ -15,7 +15,10 @@ export function CompanyLogo({
 }) {
   const [failed, setFailed] = useState(false);
   const domain = slugToDomain(slug);
-  const src = domain ? logoUrl(domain) : "";
+  // 토큰(logo.dev) 있을 때만 외부 로고 시도. 없으면 DuckDuckGo 가 무명 도메인에 빈 아이콘을
+  // "성공"으로 반환해 onError 폴백이 안 떠서 깨져 보이므로, 토큰 없으면 바로 이니셜 아바타로 간다.
+  const hasLogoToken = !!process.env.NEXT_PUBLIC_LOGODEV_TOKEN;
+  const src = domain && hasLogoToken ? logoUrl(domain) : "";
   const dim = { width: size, height: size };
 
   if (!src || failed) {
