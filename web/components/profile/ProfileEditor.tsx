@@ -36,6 +36,7 @@ export function ProfileEditor() {
     setProfile(next);
     setDirty(true);
     setSaved(false);
+    setError(null);
   }
 
   async function save() {
