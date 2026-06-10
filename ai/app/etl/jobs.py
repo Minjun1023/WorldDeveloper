@@ -210,16 +210,14 @@ async def run_full_cycle(
         "duration_sec": round((datetime.now(UTC) - started).total_seconds(), 1),
     }
 
-    # 5. unclear 비자 재분류 (확장키워드 → LLM → 회사 추론) — OpenAI 호출. 옵트인일 때만 실행.
-    do_reclassify = settings.etl_reclassify if reclassify is None else reclassify
-    if do_reclassify:
-        try:
-            result["visa_reclassified"] = await reclassify_unclear_visa()
-        except Exception as e:  # noqa: BLE001
-            log.warning("visa 재분류 실패: %s", e)
-            result["visa_reclassified"] = {"error": str(e)}
-    else:
-        result["visa_reclassified"] = "skipped (etl_reclassify=false)"
+    # 5. unclear 비자 재분류. 무료 단계(키워드+정부명부+회사추론)는 항상 실행해 재import 로
+    #    키워드만으로 리셋된 분류를 복구한다. OpenAI LLM 단계만 옵트인(etl_reclassify/reclassify).
+    use_llm = settings.etl_reclassify if reclassify is None else reclassify
+    try:
+        result["visa_reclassified"] = await reclassify_unclear_visa(use_llm=use_llm)
+    except Exception as e:  # noqa: BLE001
+        log.warning("visa 재분류 실패: %s", e)
+        result["visa_reclassified"] = {"error": str(e)}
 
     log.info("ETL cycle 완료: %s", result)
     return result

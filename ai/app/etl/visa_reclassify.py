@@ -69,7 +69,10 @@ def match_ind_register(jobs: list[dict], ind_slugs: set[str]) -> dict[str, tuple
     return out
 
 
-async def reclassify_unclear_visa(limit: int | None = None) -> dict:
+async def reclassify_unclear_visa(limit: int | None = None, use_llm: bool = True) -> dict:
+    # 무료 단계(키워드+정부명부+회사추론)는 항상 수행한다. use_llm=False 면 OpenAI LLM 단계만
+    # 건너뛴다(매 ETL 사이클 비용 0). 재import 가 transform 에서 키워드만으로 분류를 리셋해도
+    # 명부/회사추론으로 sponsors 를 복구하기 위함 — 이게 빠지면 sponsors 가 매 사이클 무너진다.
     conn = get_conn()
     try:
         jobs = fetch_unclear_jobs(conn, limit)
@@ -117,9 +120,9 @@ async def reclassify_unclear_visa(limit: int | None = None) -> dict:
                     cache[desc] = await resolve_visa(j["title"], desc)
             return j["id"], cache[desc]
 
-        # by_llm: 로컬 태거 + (선택)LLM 폴백으로 해소된 건수
+        # by_llm: 로컬 태거 + (선택)LLM 폴백으로 해소된 건수. use_llm=False 면 이 단계만 건너뜀.
         by_llm = 0
-        if remaining:
+        if use_llm and remaining:
             for jid, out in await asyncio.gather(*[run(j) for j in remaining]):
                 if out and out[0] != "unclear":
                     results[jid] = out
