@@ -25,15 +25,31 @@ public class CompanyService {
         Map<String, CompanyEntity> bySlug = repository.findAllById(slugs).stream()
             .collect(Collectors.toMap(CompanyEntity::getSlug, c -> c));
 
+        // 큐레이션 태그가 빈 회사는 공고 기술태그 상위 4개로 파생(빈 슬러그만 1쿼리로 일괄 조회).
+        List<String> needDerived = slugs.stream().filter(s -> {
+            CompanyEntity c = bySlug.get(s);
+            return c == null || c.getTags() == null || c.getTags().isEmpty();
+        }).toList();
+        Map<String, List<String>> derivedTags = needDerived.isEmpty()
+            ? Map.of()
+            : repository.findTopJobTagsForSlugs(needDerived, 4).stream()
+                .collect(Collectors.groupingBy(
+                    r -> (String) r[0],
+                    Collectors.mapping(r -> (String) r[1], Collectors.toList())));
+
         List<CompanySummary> items = rows.stream().map(r -> {
             String slug = (String) r[0];
             long count = ((Number) r[1]).longValue();
             boolean verified = r[2] != null && (Boolean) r[2];
             CompanyEntity c = bySlug.get(slug);
+            List<String> curated = c != null ? c.getTags() : null;
+            List<String> tags = (curated != null && !curated.isEmpty())
+                ? curated
+                : derivedTags.getOrDefault(slug, List.of());
             return new CompanySummary(
                 slug,
                 c != null ? c.getDisplayName() : slug,
-                c != null ? c.getTags() : List.of(),
+                tags,
                 count,
                 c != null ? c.getWebsiteUrl() : null,
                 verified);

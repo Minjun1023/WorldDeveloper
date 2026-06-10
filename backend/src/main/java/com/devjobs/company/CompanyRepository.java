@@ -22,7 +22,7 @@ public interface CompanyRepository extends JpaRepository<CompanyEntity, String> 
           ) AS verified
         FROM companies c
         JOIN jobs j ON j.company_slug = c.slug AND j.is_active = true AND (j.closes_at IS NULL OR j.closes_at > now())
-        WHERE (:tag IS NULL OR :tag = ANY(c.tags))
+        WHERE (:tag IS NULL OR :tag = ANY(c.tags)) AND NOT is_agency(c.slug)
         GROUP BY c.slug
         ORDER BY job_count DESC
         """, nativeQuery = true)
@@ -38,11 +38,28 @@ public interface CompanyRepository extends JpaRepository<CompanyEntity, String> 
         SELECT c.slug, c.display_name, count(j.id) AS job_count
         FROM companies c
         JOIN jobs j ON j.company_slug = c.slug AND j.is_active = true AND (j.closes_at IS NULL OR j.closes_at > now())
-        WHERE c.tags && CAST(:tags AS text[]) AND c.slug <> :excludeSlug
+        WHERE c.tags && CAST(:tags AS text[]) AND c.slug <> :excludeSlug AND NOT is_agency(c.slug)
         GROUP BY c.slug, c.display_name
         ORDER BY job_count DESC
         LIMIT 8
         """, nativeQuery = true)
     List<Object[]> findSimilarByTags(@Param("tags") String tags,
                                      @Param("excludeSlug") String excludeSlug);
+
+    // 큐레이션 태그가 빈 회사용 대체: 회사별 active 공고 기술태그 상위 N개(빈도순). 반환: [company_slug, tag]
+    // 에이전시 공고는 제외(NOT is_agency). 호출부에서 빈-태그 회사 slug 목록만 넘긴다.
+    @Query(value = """
+        SELECT company_slug, tag FROM (
+          SELECT j.company_slug, t.tag,
+                 row_number() OVER (PARTITION BY j.company_slug ORDER BY count(*) DESC, t.tag) AS rn
+          FROM jobs j, unnest(j.tags) AS t(tag)
+          WHERE j.is_active = true AND (j.closes_at IS NULL OR j.closes_at > now())
+            AND NOT is_agency(j.company_slug)
+            AND j.company_slug IN (:slugs)
+          GROUP BY j.company_slug, t.tag
+        ) s
+        WHERE rn <= :lim
+        ORDER BY company_slug, rn
+        """, nativeQuery = true)
+    List<Object[]> findTopJobTagsForSlugs(@Param("slugs") List<String> slugs, @Param("lim") int lim);
 }
