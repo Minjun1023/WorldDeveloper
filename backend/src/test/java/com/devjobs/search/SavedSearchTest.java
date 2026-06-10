@@ -25,6 +25,7 @@ class SavedSearchTest {
     @Autowired SavedSearchRepository repo;
     @Autowired JdbcTemplate jdbc;
     @Autowired com.devjobs.scout.JobService jobService;
+    @Autowired SavedSearchService service;
 
     private void company(String slug) { jdbc.update("INSERT INTO companies(slug, display_name) VALUES (?, ?)", slug, slug); }
     // firstSeenSql: first_seen_at SQL 식 (예 "now()" 또는 "now() - interval '10 days'")
@@ -51,6 +52,32 @@ class SavedSearchTest {
         assertThat(recent).isEqualTo(1);  // new1 only
         long all = jobService.countMatchesSince(params, java.time.OffsetDateTime.now().minusDays(365));
         assertThat(all).isEqualTo(2);     // both
+    }
+
+    @Test
+    void listIncludesNewCountAndSeenResets() {
+        UUID u = insertUser();
+        company("svc");
+        job("j-new", "svc", "Backend Engineer", "go", "now()");  // helper sets visa_status='sponsors'
+        var p = new SavedSearchParams("backend", null, null, null, null, null, null, null, false);
+        var saved = service.create(u, "backend", p);
+        // 저장 직후 last_seen_at=now 라 신규로 안 잡히므로 과거로 되돌려 신규 노출 확인
+        jdbc.update("UPDATE saved_searches SET last_seen_at = now() - interval '1 day' WHERE id = ?", saved.getId());
+        assertThat(service.list(u).get(0).newCount()).isGreaterThanOrEqualTo(1);
+        service.markSeen(u, saved.getId());
+        assertThat(service.list(u).get(0).newCount()).isEqualTo(0);
+    }
+
+    @Test
+    void deleteAndOwnerScope() {
+        UUID u = insertUser(); UUID other = insertUser();
+        var p = new SavedSearchParams(null, null, null, null, null, null, null, null, false);
+        var s = service.create(u, "all", p);
+        assertThat(service.list(other)).isEmpty();   // 타인은 못 봄
+        service.delete(other, s.getId());            // 타인 삭제 무효
+        assertThat(service.list(u)).hasSize(1);
+        service.delete(u, s.getId());
+        assertThat(service.list(u)).isEmpty();
     }
 
     @Test
