@@ -198,7 +198,7 @@ export function CoachChat({ initialJobs }: { initialJobs: PickJob[] }) {
 
               <p className="flex items-start gap-1.5 text-caption text-muted-foreground">
                 <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                대화는 90일간 저장돼 이어볼 수 있어요. 이력서는 저장되지 않아요. "새 상담"으로 언제든 삭제할 수 있어요.
+                대화는 90일간 저장돼 이어볼 수 있어요. 이력서는 저장되지 않아요. &quot;새 상담&quot;으로 언제든 삭제할 수 있어요.
               </p>
             </div>
           </aside>
