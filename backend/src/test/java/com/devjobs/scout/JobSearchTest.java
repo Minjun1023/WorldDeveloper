@@ -190,7 +190,7 @@ class JobSearchTest {
         setVisa("g_no", "no_sponsor");
         // g_unc 는 visa 미설정(unclear), remote 미설정(none)
         JobListResponse res = service.search(
-            "backend", null, null, null, null, null, null, null, false, 1, 20);
+            "backend", null, null, null, null, null, null, null, false, false, 1, 20);
         var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("g_")).toList();
         assertEquals(java.util.List.of("g_spon"), ids, "기본 게이트는 viable(sponsors)만 노출");
     }
@@ -203,7 +203,7 @@ class JobSearchTest {
         setVisa("u_spon", "sponsors");
         // u_unc unclear/none → 기본 숨김, includeUnclear=true 면 노출
         JobListResponse res = service.search(
-            "backend", null, null, null, null, null, null, null, true, 1, 20);
+            "backend", null, null, null, null, null, null, null, true, false, 1, 20);
         var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("u_")).toList();
         assertTrue(ids.contains("u_spon") && ids.contains("u_unc"),
             "includeUnclear=true 면 unclear 도 노출");
@@ -215,7 +215,7 @@ class JobSearchTest {
         job("rv", "Backend Engineer", "g3", "x", "backend", true, "now()");
         setRemote("rv", "worldwide");   // visa unclear 여도 worldwide 원격이면 viable
         JobListResponse res = service.search(
-            "backend", null, null, null, null, null, null, null, false, 1, 20);
+            "backend", null, null, null, null, null, null, null, false, false, 1, 20);
         assertTrue(res.items().stream().anyMatch(j -> j.id().equals("rv")),
             "worldwide 원격이면 visa unclear 여도 viable");
     }
@@ -232,7 +232,7 @@ class JobSearchTest {
         setRemote("t_rr", "region_restricted");
         setVisa("t_spon", "sponsors");
         JobListResponse res = service.search(
-            "backend", null, null, null, null, null, null, "remote", false, 1, 20);
+            "backend", null, null, null, null, null, null, "remote", false, false, 1, 20);
         var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("t_")).toList();
         assertEquals(java.util.Set.of("t_ww", "t_apac"), new java.util.HashSet<>(ids),
             "remote 트랙은 worldwide/apac_ok 만 (region_restricted·비원격 sponsors 제외)");
@@ -247,7 +247,7 @@ class JobSearchTest {
         setRemote("o_ww", "worldwide");
         setRemote("o_apac", "apac_ok");
         JobListResponse res = service.search(
-            null, null, null, null, null, null, null, "remote", false, 1, 20);
+            null, null, null, null, null, null, null, "remote", false, false, 1, 20);
         var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("o_")).toList();
         assertEquals(java.util.List.of("o_ww", "o_apac"), ids,
             "remote 티어: worldwide → apac_ok (posted_at 역순이라도)");
@@ -287,7 +287,7 @@ class JobSearchTest {
         setVisa("l_spon", "sponsors");
         setRemote("l_ww", "worldwide");
         JobListResponse res = service.search(
-            "backend", null, null, null, null, null, null, "relocation", false, 1, 20);
+            "backend", null, null, null, null, null, null, "relocation", false, false, 1, 20);
         var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("l_")).toList();
         assertEquals(java.util.List.of("l_spon"), ids,
             "relocation 트랙은 visa sponsors 만");
