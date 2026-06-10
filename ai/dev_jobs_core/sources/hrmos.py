@@ -9,10 +9,14 @@
 """
 from __future__ import annotations
 
+import asyncio
 import html as html_lib
 import re
 from html.parser import HTMLParser
 
+import httpx
+
+from ..filter import is_dev_role
 from ..models import JobPosting
 
 BASE = "https://hrmos.co/pages"
@@ -130,3 +134,47 @@ def _to_posting(company: str, native_id: str, list_title: str,
         posted_at="",
         closes_at="",
     )
+
+
+_DETAIL_CONCURRENCY = 4
+
+
+async def _fetch_text(client: httpx.AsyncClient, url: str) -> str | None:
+    try:
+        resp = await client.get(url)
+        if resp.status_code != 200:
+            return None
+        return resp.text
+    except httpx.HTTPError:
+        return None
+
+
+async def fetch(company: str, query: str = "", limit: int = 100) -> list[JobPosting]:
+    list_url = f"{BASE}/{company}/jobs"
+    async with httpx.AsyncClient(
+        timeout=30, headers={"User-Agent": "dev-jobs-mcp/0.1"},
+        follow_redirects=True,
+    ) as client:
+        list_html = await _fetch_text(client, list_url)
+        if not list_html:
+            return []
+
+        # 제목 선필터: 개발직만 상세 fetch (is_dev_role 는 ETL 권위 필터와 동일 → recall 손실 없음)
+        candidates = [(jid, t) for jid, t in _parse_list(list_html) if is_dev_role(t)]
+
+        sem = asyncio.Semaphore(_DETAIL_CONCURRENCY)
+
+        async def _one(jid: str, list_title: str) -> JobPosting | None:
+            async with sem:
+                detail_html = await _fetch_text(client, f"{BASE}/{company}/jobs/{jid}")
+            if not detail_html:
+                return None
+            return _to_posting(company, jid, list_title, _parse_detail(detail_html))
+
+        results = await asyncio.gather(*[_one(jid, t) for jid, t in candidates])
+
+    postings = [p for p in results if p is not None]
+    if query:
+        ql = query.lower()
+        postings = [p for p in postings if ql in f"{p.title} {p.description}".lower()]
+    return postings[:limit]
