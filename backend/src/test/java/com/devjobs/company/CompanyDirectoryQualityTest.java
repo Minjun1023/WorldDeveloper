@@ -51,6 +51,10 @@ class CompanyDirectoryQualityTest {
             id, slug, tagsCsv);
     }
 
+    private void setLoc(String id, String loc) {
+        jdbc.update("UPDATE jobs SET location = ? WHERE id = ?", loc, id);
+    }
+
     @Test
     void agencyCompaniesExcludedFromDirectory() {
         company("acme", "Acme", null);
@@ -102,6 +106,18 @@ class CompanyDirectoryQualityTest {
             .filter(x -> x.slug().equals("nichetech")).findFirst().orElseThrow();
         assertThat(c.tags()).contains("python");
         assertThat(c.tags()).doesNotContain("Software Development", "Master's Degree", "Remote", "communication");
+    }
+
+    @Test
+    void representativeLocationDerivedFromJobs() {
+        company("locco", "LocCo", null);
+        job("l1", "locco", "go"); setLoc("l1", "Berlin, Germany");
+        job("l2", "locco", "go"); setLoc("l2", "Berlin, Germany");
+        job("l3", "locco", "go"); setLoc("l3", "Munich, Germany");
+
+        CompanySummary c = companyService.list(null).items().stream()
+            .filter(x -> x.slug().equals("locco")).findFirst().orElseThrow();
+        assertThat(c.location()).isEqualTo("Berlin, Germany"); // 최빈값
     }
 
     @Test

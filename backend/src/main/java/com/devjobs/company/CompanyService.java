@@ -37,6 +37,12 @@ public class CompanyService {
                     r -> (String) r[0],
                     Collectors.mapping(r -> (String) r[1], Collectors.toList())));
 
+        // 카드 위치 폴백: 회사별 대표 공고 위치(최빈값). 웹은 프로필 ?? 정적맵 ?? 이 값 순으로 쓴다.
+        Map<String, String> derivedLocations = slugs.isEmpty()
+            ? Map.of()
+            : repository.findTopJobLocationForSlugs(slugs).stream()
+                .collect(Collectors.toMap(r -> (String) r[0], r -> (String) r[1]));
+
         List<CompanySummary> items = rows.stream().map(r -> {
             String slug = (String) r[0];
             long count = ((Number) r[1]).longValue();
@@ -52,7 +58,8 @@ public class CompanyService {
                 tags,
                 count,
                 c != null ? c.getWebsiteUrl() : null,
-                verified);
+                verified,
+                derivedLocations.get(slug));
         }).toList();
 
         return new CompanyListResponse(items.size(), items);

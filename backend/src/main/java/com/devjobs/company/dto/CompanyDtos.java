@@ -12,7 +12,8 @@ public final class CompanyDtos {
         List<String> tags,
         long jobCount,
         String websiteUrl,
-        boolean verified
+        boolean verified,
+        String location
     ) {}
 
     public record CompanyDetail(

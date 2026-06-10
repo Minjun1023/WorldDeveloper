@@ -125,6 +125,8 @@ export interface CompanySummary {
   job_count: number;
   verified?: boolean;
   website_url?: string;
+  /** 백엔드가 공고에서 파생한 대표 위치(큐레이션/스냅샷 없는 회사 카드 폴백). */
+  location?: string;
 }
 
 export interface CompanyDetail {
