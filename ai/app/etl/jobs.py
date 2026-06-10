@@ -21,6 +21,7 @@ from dev_jobs_core.sources import (
     arbeitnow,
     ashby,
     greenhouse,
+    hrmos,
     lever,
     personio,
     remoteok,
@@ -54,6 +55,7 @@ ATS_FETCHERS = {
     "smartrecruiters": smartrecruiters.fetch,
     "personio": personio.fetch,
     "workable": workable.fetch,
+    "hrmos": hrmos.fetch,
 }
 
 
