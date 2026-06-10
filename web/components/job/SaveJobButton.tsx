@@ -36,7 +36,8 @@ export function SaveJobButton({ jobId, loggedIn, className }: { jobId: string; l
     const next = !saved;
     setSaved(next); // 낙관적
     try {
-      await fetch(`/api/me/saved/${encodeURIComponent(jobId)}`, { method: next ? "PUT" : "DELETE" });
+      const res = await fetch(`/api/me/saved/${encodeURIComponent(jobId)}`, { method: next ? "PUT" : "DELETE" });
+      if (!res.ok) setSaved(!next); // 서버 거절(비2xx)도 롤백
     } catch {
       setSaved(!next); // 롤백
     }
