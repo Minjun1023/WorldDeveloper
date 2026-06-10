@@ -11,6 +11,7 @@ import com.devjobs.scout.dto.JobDtos.RegionCount;
 import com.devjobs.scout.dto.JobDtos.RemoteDto;
 import com.devjobs.scout.dto.JobDtos.SalaryDto;
 import com.devjobs.scout.dto.JobDtos.VisaDto;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -128,12 +129,12 @@ public class JobService {
         return new JobListResponse(items, safePage, safeSize, total, computeFacets());
     }
 
-    /** 주어진 id 목록을 JobDto 로 변환(입력 순서 보존, 활성 공고만, 없는 건 제외). 저장 공고 목록용. */
+    /** 주어진 id 목록을 JobDto 로 변환(입력 순서 보존, 노출 대상 공고만, 없는 건 제외). 저장 공고 목록용. */
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<JobDto> byIds(List<String> ids) {
         Map<String, JobEntity> byId = new HashMap<>();
         for (JobEntity j : repository.findAllById(ids)) {
-            if (Boolean.TRUE.equals(j.getIsActive())) byId.put(j.getId(), j);
+            if (isLive(j)) byId.put(j.getId(), j);
         }
         List<JobDto> out = new ArrayList<>();
         for (String id : ids) {
@@ -144,14 +145,22 @@ public class JobService {
     }
 
     public List<JobDto> listByCompany(String slug) {
-        return repository.findByCompanySlugAndIsActiveTrueOrderByPostedAtDesc(slug)
+        return repository.findLiveByCompanySlug(slug)
             .stream().map(this::toDto).toList();
     }
 
     public Optional<JobDetailDto> findById(String id) {
         return repository.findById(id)
-            .filter(j -> Boolean.TRUE.equals(j.getIsActive()))
+            .filter(JobService::isLive)
             .map(this::toDetailDto);
+    }
+
+    // 노출 대상(live) 판정 — 네이티브 쿼리의 closes_at 술어와 동일 기준을 단건/저장목록 경로에도 적용.
+    // is_active 이면서 마감일이 없거나(상시채용) 아직 지나지 않은 공고만 true.
+    private static boolean isLive(JobEntity j) {
+        if (!Boolean.TRUE.equals(j.getIsActive())) return false;
+        OffsetDateTime closes = j.getClosesAt();
+        return closes == null || closes.isAfter(OffsetDateTime.now());
     }
 
     // 비자 근거가 정부 공식 명부 대조면 true. ETL reclassify 가 남기는 근거 문자열의 안정적
