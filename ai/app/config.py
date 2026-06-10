@@ -34,9 +34,15 @@ class Settings(BaseSettings):
     # ETL
     etl_enabled: bool = False  # MVP skeleton 에서는 비활성
     etl_interval_minutes: int = 60
+    # 정기/수동 ETL 사이클에서 비자 LLM 재분류(OpenAI 호출)를 할지. 기본 off = 무비용.
+    # 수집·정리(전부 로컬)와 유료 LLM 단계를 분리 — 재분류는 /etl/reclassify-visa 로 옵트인.
+    etl_reclassify: bool = False
     # 공고 비활성화 정책
-    stale_days: int = 7          # 소스 피드에서 N일 미관측 시 비활성화
+    stale_days: int = 7          # 소스 피드에서 N일 미관측 시 비활성화(잘림/실패 범위용 fallback)
     job_max_age_days: int = 180  # 마감일 없는 공고: 게시 N일 후 자동 만료(보수적 안전망)
+    # 성공+완전(미캡) 수집된 범위는 다음 사이클에 즉시 정리(7일 유예 생략). 일시 실패/잘린
+    # 범위는 제외돼 깜빡임 없음. off 면 기존 stale_days 시간기반만 동작.
+    etl_prune_unseen: bool = True
 
     # Adzuna (무료 집계 소스). ADZUNA_APP_ID/KEY 없으면 비활성(다른 소스는 정상).
     adzuna_app_id: str = ""

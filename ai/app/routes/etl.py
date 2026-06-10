@@ -19,16 +19,22 @@ async def reclassify_visa_endpoint(limit: int | None = None) -> dict:
 
 @router.post("/etl/trigger")
 async def trigger_etl(
-    limit_per_source: int = 100,
+    limit_per_source: int = 500,
     include_ats: bool = True,
-    ats_limit_per_company: int = 300,
+    ats_limit_per_company: int = 1000,
+    reclassify: bool = False,
 ) -> dict:
-    """수동으로 ETL 한 사이클 실행."""
+    """수동으로 ETL 한 사이클 실행.
+
+    reclassify=false(기본)면 OpenAI 호출 없이 수집·정리(전부 로컬)만 수행한다.
+    비자 LLM 재분류가 필요하면 reclassify=true 또는 /etl/reclassify-visa 를 별도 호출.
+    """
     try:
         result = await run_full_cycle(
             limit_per_source=limit_per_source,
             include_ats=include_ats,
             ats_limit_per_company=ats_limit_per_company,
+            reclassify=reclassify,
         )
         return {"status": "ok", "result": result}
     except Exception as e:
