@@ -151,6 +151,36 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
         @Param("gateMode") String gateMode);
 
+    @Query(value = """
+        SELECT count(*) FROM jobs
+        WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug)
+          AND first_seen_at > :since
+          AND (CAST(:q AS text) IS NULL OR search_tsv @@ websearch_to_tsquery('english', CAST(:q AS text)))
+          AND (CAST(:disc AS text) IS NULL OR search_tsv @@ to_tsquery('english', CAST(:disc AS text)))
+          AND (CAST(:regionRegex AS text) IS NULL OR location ~* CAST(:regionRegex AS text))
+          AND (CAST(:visa AS text) IS NULL OR visa_status = CAST(:visa AS text))
+          AND (CAST(:loc AS text) IS NULL OR lower(location) LIKE CAST(:loc AS text))
+          AND (
+            CAST(:remote AS boolean) IS NULL
+            OR (CAST(:remote AS boolean) = true
+                AND is_remote = true
+                AND remote_eligibility IS DISTINCT FROM 'region_restricted')
+            OR (CAST(:remote AS boolean) = false AND is_remote = false)
+          )
+          AND (
+            CAST(:gateMode AS text) = 'all'
+            OR (CAST(:gateMode AS text) = 'both' AND (visa_status = 'sponsors' OR remote_eligibility IN ('worldwide','apac_ok')))
+            OR (CAST(:gateMode AS text) = 'remote' AND remote_eligibility IN ('worldwide','apac_ok'))
+            OR (CAST(:gateMode AS text) = 'remote_unclear' AND remote_eligibility IN ('worldwide','apac_ok','unclear'))
+            OR (CAST(:gateMode AS text) = 'relocation' AND visa_status = 'sponsors')
+            OR (CAST(:gateMode AS text) = 'relocation_unclear' AND visa_status IN ('sponsors','unclear'))
+          )
+        """, nativeQuery = true)
+    long countSearchSince(
+        @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
+        @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
+        @Param("gateMode") String gateMode, @Param("since") java.time.OffsetDateTime since);
+
     @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug) AND is_remote = true",
         nativeQuery = true)
     long countActiveRemote();
