@@ -7,14 +7,16 @@ export function Segmented({
   options,
   value,
   onChange,
+  className,
 }: {
   label: string;
   options: { value: string; label: string }[];
   value: string;
-  onChange: (v: string) => void;
+  onChange: (next: string) => void;
+  className?: string;
 }) {
   return (
-    <div className="space-y-1.5">
+    <div className={cn("space-y-1.5", className)}>
       <span className="block text-body-sm font-medium">{label}</span>
       <div
         role="group"
@@ -30,7 +32,7 @@ export function Segmented({
               aria-pressed={active}
               onClick={() => onChange(o.value)}
               className={cn(
-                "rounded px-3 py-1 text-body-sm transition-colors",
+                "rounded px-3 py-1 text-body-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                 active
                   ? "bg-primary text-primary-foreground"
                   : "text-muted-foreground hover:text-foreground",

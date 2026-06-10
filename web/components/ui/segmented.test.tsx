@@ -12,14 +12,14 @@ const OPTS = [
 
 describe("Segmented", () => {
   it("marks the selected option with aria-pressed", () => {
-    render(<Segmented label="원격" options={OPTS} value="remote" onChange={() => {}} />);
+    render(<Segmented label="근무 형태" options={OPTS} value="remote" onChange={() => {}} />);
     expect(screen.getByRole("button", { name: "원격" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByRole("button", { name: "이주" })).toHaveAttribute("aria-pressed", "false");
   });
 
   it("calls onChange with the clicked value", async () => {
     const onChange = vi.fn();
-    render(<Segmented label="원격" options={OPTS} value="any" onChange={onChange} />);
+    render(<Segmented label="근무 형태" options={OPTS} value="any" onChange={onChange} />);
     await userEvent.click(screen.getByRole("button", { name: "이주" }));
     expect(onChange).toHaveBeenCalledWith("onsite");
   });
