@@ -2188,5 +2188,35 @@
     "tags": [
       "tech"
     ]
+  },
+  "cyberagent": {
+    "ats": "hrmos",
+    "token": "cyberagent-group",
+    "tags": ["tech", "media", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "members": {
+    "ats": "hrmos",
+    "token": "members-group",
+    "tags": ["dx", "consulting", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "bizreach": {
+    "ats": "hrmos",
+    "token": "hrmos",
+    "tags": ["hr-tech", "saas", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "highreso": {
+    "ats": "hrmos",
+    "token": "highreso",
+    "tags": ["cloud", "infrastructure", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "pivot": {
+    "ats": "hrmos",
+    "token": "pivot",
+    "tags": ["media", "japan", "asia"],
+    "hq": "Tokyo, Japan"
   }
 }
