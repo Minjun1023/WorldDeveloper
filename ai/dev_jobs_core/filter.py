@@ -26,6 +26,10 @@ _STRONG = (
     "database administrator", "cloud engineer", "android",
     "tech lead", "technical lead", "engineering lead",
     "technical staff", "applied scientist", "applied ml", "research engineer",
+    # 일본어 강한 개발 신호 (명확한 dev — '開発'/'エンジニア' 단독은 제외: 事業開発/営業エンジニア 오탐 방지)
+    "ソフトウェア", "ソフトウエア", "バックエンド", "フロントエンド", "フルスタック",
+    "機械学習", "データサイエン", "データエンジニア", "プログラマ",
+    "ソフトウェア開発", "システム開発", "アプリケーション開発",
 )
 
 # 2) hard-deny: 비SW 엔지니어/명백 비개발 — generic 'engineer' 통과보다 먼저 drop.
@@ -66,6 +70,13 @@ _DENY = (
     "product manager", "product owner", "program manager", "project manager",
     "designer", "content writer", "copywriter", "copy lead", "communications",
     "creative", "editor", "brand ",
+    # 일본어 비개발 (generic 'エンジニア' rule 3 통과 전에 drop)
+    "営業", "セールス", "プリセールス", "マーケティング", "人事", "採用", "総務",
+    "経理", "財務", "事業開発", "組織開発", "コンサルタント",
+    "カスタマーサポート", "カスタマーサクセス", "カスタマーエンジニア",
+    "サポートエンジニア", "ネットワークエンジニア", "フィールドエンジニア",
+    # 일본어 비SW 엔지니어(하드웨어/기계/회로)
+    "機械設計", "電気設計", "回路設計",
 )
 
 
@@ -78,7 +89,7 @@ def is_dev_role(title: str, tags: list[str] | None = None, description: str = ""
     if any(d in t for d in _DENY):
         return False
     # 3) generic engineer/architect → keep
-    if "engineer" in t or "engineering" in t or "architect" in t:
+    if "engineer" in t or "engineering" in t or "architect" in t or "エンジニア" in t:
         return True
     # 4) 개발 신호 없음 → drop (precision-first)
     return False

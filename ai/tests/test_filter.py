@@ -127,3 +127,32 @@ def test_strong_signal_still_wins_over_new_deny():
     assert is_dev_role("Developer Support Engineer")
     assert is_dev_role("Machine Learning Engineer, Customer Support Engineering")
     assert is_dev_role("Senior Manager, Solutions Architecture, AI & Developer Platform")
+
+
+def test_keeps_japanese_dev_titles():
+    assert is_dev_role("ソフトウェアエンジニア（バックエンド）")
+    assert is_dev_role("機械学習エンジニア")
+    assert is_dev_role("バックエンドエンジニア")
+    assert is_dev_role("フロントエンドエンジニア")
+    assert is_dev_role("インフラエンジニア")   # generic 'エンジニア' via rule 3
+    assert is_dev_role("QAエンジニア")
+    assert is_dev_role("プログラマー")
+
+
+def test_drops_japanese_non_dev_titles():
+    assert not is_dev_role("営業マネージャー")
+    assert not is_dev_role("セールスエンジニア")      # 영업/프리세일즈
+    assert not is_dev_role("採用コンサルタント")
+    assert not is_dev_role("人事スペシャリスト")
+    assert not is_dev_role("事業開発マネージャー")     # business dev != software dev
+    assert not is_dev_role("マーケティング担当")
+    assert not is_dev_role("カスタマーサポート")
+    assert not is_dev_role("機械設計エンジニア")
+
+
+def test_english_filter_unchanged_after_japanese():
+    # 회귀: 영어 판정 불변
+    assert is_dev_role("Senior Backend Engineer")
+    assert is_dev_role("Security Engineer")
+    assert not is_dev_role("Sales Engineer")
+    assert not is_dev_role("Customer Success Manager")
