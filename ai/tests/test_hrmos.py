@@ -25,3 +25,31 @@ def test_parse_detail_extracts_title_body_location():
     assert "応募資格" in d["description"]
     assert "会社情報の説明文" not in d["description"]
     assert d["location"] == "東京都渋谷区"
+
+
+def test_to_posting_maps_fields():
+    detail = {
+        "title": "ソフトウェアエンジニア（バックエンド）",
+        "description": "Go と Kubernetes で決済基盤を開発します。",
+        "location": "東京都渋谷区",
+    }
+    p = hrmos._to_posting("cyberagent-group", "1001", "list title", detail)
+    assert p.job_id == "hrmos:cyberagent-group:1001"
+    assert p.source == "hrmos"
+    assert p.title == "ソフトウェアエンジニア（バックエンド）"
+    assert p.company == "Cyberagent Group"
+    assert p.location == "東京都渋谷区"
+    assert p.is_remote is False
+    assert p.employment_type == "FULLTIME"
+    assert "決済基盤を開発" in p.description
+    assert p.apply_url == "https://hrmos.co/pages/cyberagent-group/jobs/1001"
+
+
+def test_to_posting_falls_back_to_list_title():
+    p = hrmos._to_posting("acme", "9", "目録タイトル", {"title": "", "description": "x", "location": ""})
+    assert p.title == "目録タイトル"
+
+
+def test_to_posting_marks_remote_from_location():
+    p = hrmos._to_posting("acme", "9", "t", {"title": "t", "description": "", "location": "フルリモート"})
+    assert p.is_remote is True

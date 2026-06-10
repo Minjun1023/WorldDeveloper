@@ -13,6 +13,8 @@ import html as html_lib
 import re
 from html.parser import HTMLParser
 
+from ..models import JobPosting
+
 BASE = "https://hrmos.co/pages"
 
 # 목록의 각 공고 카드 (<li class="pg-list-cassette ...">...</li>)
@@ -109,3 +111,22 @@ def _parse_detail(html: str) -> dict[str, str]:
         "description": _section_text(html, "pg-descriptions"),
         "location": _section_text(html, "pg-location-address"),
     }
+
+
+def _to_posting(company: str, native_id: str, list_title: str,
+                detail: dict[str, str]) -> JobPosting:
+    """파싱 결과 → JobPosting (순수 함수, 네트워크 없음)."""
+    location = detail.get("location", "") or ""
+    return JobPosting(
+        job_id=f"hrmos:{company}:{native_id}",
+        source="hrmos",
+        title=detail.get("title") or list_title,
+        company=company.replace("-", " ").title(),
+        location=location,
+        is_remote=("リモート" in location) or ("remote" in location.lower()),
+        employment_type="FULLTIME",
+        description=detail.get("description", ""),
+        apply_url=f"{BASE}/{company}/jobs/{native_id}",
+        posted_at="",
+        closes_at="",
+    )
