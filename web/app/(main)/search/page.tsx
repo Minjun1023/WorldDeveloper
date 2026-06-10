@@ -30,9 +30,10 @@ export default async function SearchPage({
   const discipline = str(searchParams.discipline);
   const track = str(searchParams.track);
   const includeUnclear = searchParams.include_unclear === "true";
+  const verifiedOnly = searchParams.verified_only === "true";
 
   const [result, regions] = await Promise.all([
-    fetchJobs({ q, visa, location, region, remote, sort, discipline, track, includeUnclear, page, pageSize: PAGE_SIZE }),
+    fetchJobs({ q, visa, location, region, remote, sort, discipline, track, includeUnclear, verifiedOnly, page, pageSize: PAGE_SIZE }),
     fetchRegions(),
   ]);
 

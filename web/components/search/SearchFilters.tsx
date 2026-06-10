@@ -30,6 +30,7 @@ export function SearchFilters({ regions }: { regions: RegionCount[] }) {
   const region = searchParams.get("region");
   const remote = searchParams.get("remote") === "true";
   const includeUnclear = searchParams.get("include_unclear") === "true";
+  const verifiedOnly = searchParams.get("verified_only") === "true";
 
   const regionChips = regions.filter((r) => r.value !== "remote").slice(0, TOP_REGIONS);
 
@@ -119,6 +120,44 @@ export function SearchFilters({ regions }: { regions: RegionCount[] }) {
               className={cn(
                 "inline-block h-5 w-5 rounded-full bg-white shadow ring-1 ring-black/5 transition-transform",
                 includeUnclear ? "translate-x-[1.125rem]" : "translate-x-0.5",
+              )}
+            />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 text-body-sm text-foreground">
+          <span>명부 검증만</span>
+          <span className="group relative inline-flex">
+            <button
+              type="button"
+              aria-label="'명부 검증만' 설명 보기"
+              className="inline-flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <HelpCircle className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <span
+              role="tooltip"
+              className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 hidden w-64 -translate-x-1/2 rounded-md border border-border bg-surface px-3 py-2 text-left text-caption font-normal leading-relaxed text-muted-foreground shadow-lg group-hover:block group-focus-within:block"
+            >
+              정부 공식 스폰서 명부(UK Home Office / US USCIS / NL IND)로 확인된 공고만 봐요.
+              가장 확실하지만 명부가 있는 미국·영국·네덜란드 위주로 좁아져요.
+            </span>
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={verifiedOnly}
+            aria-label="명부 검증된 공고만"
+            onClick={() => update({ verified_only: verifiedOnly ? null : "true" })}
+            className={cn(
+              "relative inline-flex h-6 w-10 items-center rounded-full transition-colors",
+              verifiedOnly ? "bg-primary" : "bg-surface-2 border border-border",
+            )}
+          >
+            <span
+              className={cn(
+                "inline-block h-5 w-5 rounded-full bg-white shadow ring-1 ring-black/5 transition-transform",
+                verifiedOnly ? "translate-x-[1.125rem]" : "translate-x-0.5",
               )}
             />
           </button>

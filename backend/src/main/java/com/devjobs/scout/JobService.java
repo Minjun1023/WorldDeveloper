@@ -76,12 +76,12 @@ public class JobService {
     public JobListResponse search(
         String q, String visa, String location, Boolean remote, String sort, String discipline,
         String region, int page, int pageSize) {
-        return search(q, visa, location, remote, sort, discipline, region, null, true, page, pageSize);
+        return search(q, visa, location, remote, sort, discipline, region, null, true, false, page, pageSize);
     }
 
     public JobListResponse search(
         String q, String visa, String location, Boolean remote, String sort, String discipline,
-        String region, String track, boolean includeUnclear, int page, int pageSize) {
+        String region, String track, boolean includeUnclear, boolean verifiedOnly, int page, int pageSize) {
 
         int safePage = Math.max(1, page);
         int safeSize = Math.min(Math.max(1, pageSize), MAX_PAGE_SIZE);
@@ -119,9 +119,9 @@ public class JobService {
 
         List<String> ids = repository.searchIds(
             qParam, discTerms, regionRegex, visaParam, locParam, remoteParam,
-            gateMode, remotePriority, visaPriority, byRelevance, safeSize, offset);
+            gateMode, verifiedOnly, remotePriority, visaPriority, byRelevance, safeSize, offset);
         long total = repository.countSearch(
-            qParam, discTerms, regionRegex, visaParam, locParam, remoteParam, gateMode);
+            qParam, discTerms, regionRegex, visaParam, locParam, remoteParam, gateMode, verifiedOnly);
 
         Map<String, JobEntity> byId = new HashMap<>();
         for (JobEntity j : repository.findAllById(ids)) byId.put(j.getId(), j);
@@ -169,8 +169,11 @@ public class JobService {
         if (evidence == null) {
             return false;
         }
+        // 정부 명부(UK/US/NL) register 단계가 남기는 고유 문구로 판정 — 키워드 evidence 스니펫과
+        // 충돌하지 않는 앵커. JobRepository 의 정렬/필터 SQL 과 동일 기준이어야 한다.
         return evidence.stream().anyMatch(e ->
-            e != null && (e.contains("Home Office") || e.contains("USCIS")));
+            e != null && (e.contains("스폰서 라이선스")
+                || e.contains("Employer Data Hub") || e.contains("erkende referenten")));
     }
 
     private JobDetailDto toDetailDto(JobEntity j) {

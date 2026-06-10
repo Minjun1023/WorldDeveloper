@@ -78,7 +78,9 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
     List<Object[]> findRecentRemoteViableCandidates(@Param("lim") int lim);
 
     // 풀텍스트 검색(키워드 q + 직무 disc + 지역 regionRegex 모두 optional). disc 는 서버 큐레이션 tsquery 문자열.
-    // visaPriority=true 면 비자 티어(sponsors→unclear→no_sponsor)를 1순위로 정렬한다.
+    // visaPriority=true 면 비자 티어(명부검증 sponsors → 일반 sponsors → unclear → no_sponsor)를 1순위로 정렬.
+    // verifiedOnly=true 면 정부 명부(UK/US/NL)로 검증된 sponsors 만 남긴다.
+    // 명부검증 판정: visa_evidence 에 register 단계가 남기는 고유 문구가 있는가(키워드 스니펫과 충돌 없는 앵커).
     @Query(value = """
         SELECT id FROM jobs
         WHERE is_active = true AND (closes_at IS NULL OR closes_at > now())
@@ -102,12 +104,20 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
             OR (CAST(:gateMode AS text) = 'relocation' AND visa_status = 'sponsors')
             OR (CAST(:gateMode AS text) = 'relocation_unclear' AND visa_status IN ('sponsors','unclear'))
           )
+          AND (:verifiedOnly = false
+               OR (visa_status = 'sponsors'
+                   AND visa_evidence::text ~ '스폰서 라이선스|Employer Data Hub|erkende referenten'))
         ORDER BY
           CASE WHEN :remotePriority THEN
             (CASE remote_eligibility WHEN 'worldwide' THEN 0 WHEN 'apac_ok' THEN 1 ELSE 2 END)
           ELSE 0 END ASC,
           CASE WHEN :visaPriority THEN
-            (CASE visa_status WHEN 'sponsors' THEN 0 WHEN 'no_sponsor' THEN 2 ELSE 1 END)
+            (CASE
+               WHEN visa_status = 'sponsors'
+                    AND visa_evidence::text ~ '스폰서 라이선스|Employer Data Hub|erkende referenten' THEN 0
+               WHEN visa_status = 'sponsors' THEN 1
+               WHEN visa_status = 'no_sponsor' THEN 3
+               ELSE 2 END)
           ELSE 0 END ASC,
           CASE WHEN :byRelevance THEN ts_rank(search_tsv, websearch_to_tsquery('english', CAST(:q AS text))) END DESC NULLS LAST,
           posted_at DESC NULLS LAST,
@@ -117,7 +127,8 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
     List<String> searchIds(
         @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
         @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
-        @Param("gateMode") String gateMode, @Param("remotePriority") boolean remotePriority,
+        @Param("gateMode") String gateMode, @Param("verifiedOnly") boolean verifiedOnly,
+        @Param("remotePriority") boolean remotePriority,
         @Param("visaPriority") boolean visaPriority, @Param("byRelevance") boolean byRelevance,
         @Param("lim") int lim, @Param("off") int off);
 
@@ -144,11 +155,14 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
             OR (CAST(:gateMode AS text) = 'relocation' AND visa_status = 'sponsors')
             OR (CAST(:gateMode AS text) = 'relocation_unclear' AND visa_status IN ('sponsors','unclear'))
           )
+          AND (:verifiedOnly = false
+               OR (visa_status = 'sponsors'
+                   AND visa_evidence::text ~ '스폰서 라이선스|Employer Data Hub|erkende referenten'))
         """, nativeQuery = true)
     long countSearch(
         @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
         @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
-        @Param("gateMode") String gateMode);
+        @Param("gateMode") String gateMode, @Param("verifiedOnly") boolean verifiedOnly);
 
     @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND is_remote = true",
         nativeQuery = true)
