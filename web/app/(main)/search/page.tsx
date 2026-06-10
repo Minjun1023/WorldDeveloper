@@ -1,4 +1,4 @@
-import { JobCard } from "@/components/job/JobCard";
+import { JobRow } from "@/components/job/JobRow";
 import { Pagination } from "@/components/search/Pagination";
 import { SaveSearchButton } from "@/components/search/SaveSearchButton";
 import { SearchBar } from "@/components/search/SearchBar";
@@ -86,9 +86,9 @@ export default async function SearchPage({
           </div>
         ) : (
           <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
               {result.data.items.map((job) => (
-                <JobCard key={job.id} job={job} />
+                <JobRow key={job.id} job={job} />
               ))}
             </div>
             <Pagination
