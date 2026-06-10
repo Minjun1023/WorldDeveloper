@@ -29,7 +29,7 @@ def _strip_html(s: str) -> str:
 # 목록의 각 공고: <a href=".../jobs/{id}"> ... <h2>제목</h2> (앵커가 카드 제목을 감쌈).
 # <li> 블록 분리는 추가 속성/중첩 <li> 에 취약하므로 앵커-제목 페어로 직접 매칭한다.
 _CARD = re.compile(
-    r'<a [^>]*?href="[^"]*?/jobs/(\d+)"[^>]*>.*?<h2[^>]*>(.*?)</h2>', re.DOTALL)
+    r'<a [^>]*?href="[^"]*?/jobs/(\d+)[^"]*"[^>]*>.*?<h2[^>]*>(.*?)</h2>', re.DOTALL)
 
 
 def _parse_list(html: str) -> list[tuple[str, str]]:
@@ -44,38 +44,36 @@ def _parse_list(html: str) -> list[tuple[str, str]]:
     return out
 
 
-# 자가닫힘/void 태그 — 깊이 추적에서 제외
-_VOID = {"br", "img", "hr", "input", "meta", "link", "source", "wbr",
-         "area", "base", "col", "embed", "param", "track"}
-
-
 class _SectionText(HTMLParser):
-    """주어진 class 를 가진 '첫' 컨테이너 안의 텍스트만 수집(중첩 깊이 추적)."""
+    """주어진 class 를 가진 '첫' 컨테이너 안의 텍스트만 수집.
+
+    깊이는 '컨테이너와 같은 태그'의 중첩만 센다 — SSR 에서 흔한 닫히지 않은
+    <p>/<li> 가 깊이를 망가뜨려 다음 섹션까지 과수집하는 것을 막는다.
+    """
 
     def __init__(self, target_class: str) -> None:
         super().__init__(convert_charrefs=True)
         self._target = target_class
+        self._tag: str | None = None
         self._depth = 0
         self._active = False
         self._done = False
         self.parts: list[str] = []
 
     def handle_starttag(self, tag, attrs):
-        if self._done or tag in _VOID:
+        if self._done:
             return
         if not self._active:
             classes = (dict(attrs).get("class") or "").split()
             if self._target in classes:
                 self._active = True
+                self._tag = tag
                 self._depth = 1
-        else:
+        elif tag == self._tag:
             self._depth += 1
 
-    def handle_startendtag(self, tag, attrs):
-        return  # 자가닫힘 태그는 깊이 변화 없음
-
     def handle_endtag(self, tag):
-        if self._active and tag not in _VOID:
+        if self._active and tag == self._tag:
             self._depth -= 1
             if self._depth <= 0:
                 self._active = False

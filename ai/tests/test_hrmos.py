@@ -60,6 +60,29 @@ def test_to_posting_marks_remote_from_english_location():
     assert p.is_remote is True
 
 
+def test_section_text_handles_unclosed_p_and_section_container():
+    # 실제 HRMOS 는 <section class="pg-descriptions"> 를 쓰고, SSR 은 <p> 를 안 닫기도 한다.
+    # 닫히지 않은 <p> 가 있어도 첫 섹션 텍스트만 잡고 다음 섹션/footer 는 제외해야 한다.
+    html = (
+        '<section class="pg-descriptions"><p>本文A<p>本文B</section>'
+        '<section class="pg-descriptions"><p>会社情報の説明文</section>'
+        '<footer>FOOTER</footer>'
+    )
+    assert hrmos._section_text(html, "pg-descriptions") == "本文A本文B"
+
+
+def test_parse_detail_works_with_section_container():
+    html = (
+        '<h1 class="sg-corporate-name">バックエンドエンジニア</h1>'
+        '<section class="pg-descriptions"><div class="pg-body"><p>Go で開発</p></div></section>'
+        '<p class="pg-location-address">東京都渋谷区</p>'
+    )
+    d = hrmos._parse_detail(html)
+    assert d["title"] == "バックエンドエンジニア"
+    assert "Go で開発" in d["description"]
+    assert d["location"] == "東京都渋谷区"
+
+
 def test_parse_list_robust_to_attrs_and_nesting():
     # <li> 에 추가 속성, <a> 에 추가 속성, h2 뒤 중첩 <ul><li> 가 있어도 정확히 추출
     html = (

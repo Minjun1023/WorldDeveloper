@@ -147,6 +147,7 @@ def test_drops_japanese_non_dev_titles():
     assert not is_dev_role("事業開発マネージャー")     # business dev != software dev
     assert not is_dev_role("マーケティング担当")
     assert not is_dev_role("カスタマーサポート")
+    assert not is_dev_role("機械設計エンジニア")
 
 
 def test_english_filter_unchanged_after_japanese():
