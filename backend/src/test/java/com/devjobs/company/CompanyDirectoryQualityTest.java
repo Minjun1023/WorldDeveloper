@@ -92,6 +92,19 @@ class CompanyDirectoryQualityTest {
     }
 
     @Test
+    void derivedTagsFilterNonTechAndTitleCase() {
+        company("nichetech", "NicheTech", null);
+        // Title-Case 일반문구·학위·소프트스킬은 빼고 소문자 기술태그만 남아야 한다.
+        job("n1", "nichetech", "python,Software Development,Master's Degree,communication");
+        job("n2", "nichetech", "python,Remote");
+
+        CompanySummary c = companyService.list(null).items().stream()
+            .filter(x -> x.slug().equals("nichetech")).findFirst().orElseThrow();
+        assertThat(c.tags()).contains("python");
+        assertThat(c.tags()).doesNotContain("Software Development", "Master's Degree", "Remote", "communication");
+    }
+
+    @Test
     void curatedTagsKeptOverDerived() {
         company("bigco", "BigCo", "fintech,payments"); // 큐레이션 있음
         job("b1", "bigco", "go,java,scala,rust"); // 공고 태그 많아도 큐레이션 유지

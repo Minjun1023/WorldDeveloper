@@ -55,6 +55,10 @@ public interface CompanyRepository extends JpaRepository<CompanyEntity, String> 
           FROM jobs j, unnest(j.tags) AS t(tag)
           WHERE j.is_active = true AND (j.closes_at IS NULL OR j.closes_at > now())
             AND NOT is_agency(j.company_slug)
+            -- 기술태그만 남긴다: 소문자(기술태그 컨벤션, Title-Case 일반문구 배제) + 길이상한
+            -- + 학위/언어/소프트스킬 stoplist 제외(예 "master's degree", communication).
+            AND t.tag = lower(t.tag) AND length(t.tag) <= 30
+            AND t.tag !~ '(degree|diploma|fluent|english|german|deutsch|communication|leadership)'
             AND j.company_slug IN (:slugs)
           GROUP BY j.company_slug, t.tag
         ) s
