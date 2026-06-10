@@ -12,7 +12,8 @@ public final class ProfileDto {
         @JsonProperty("years_experience") Integer yearsExperience,
         @JsonProperty("preferred_locations") List<String> preferredLocations,
         @JsonProperty("remote_preference") String remotePreference,
-        @JsonProperty("desired_salary_usd") Integer desiredSalaryUsd
+        @JsonProperty("desired_salary_usd") Integer desiredSalaryUsd,
+        String bio
     ) {}
 
     public record ProfileResponse(boolean exists, Profile profile) {}

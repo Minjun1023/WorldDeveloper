@@ -3,11 +3,12 @@ import { z } from "zod";
 /**
  * 회원 프로필 계약 (웹 ↔ Spring 백엔드, snake_case).
  * 백엔드 ProfileDto.Profile 및 web RecommendProfile 의 프로필 항목과 동일해야 한다.
- * skills/seniority 는 항상 존재, 나머지는 미설정 시 생략(Jackson non_null)되므로 nullish.
+ * skills/seniority 는 항상 존재, 나머지(bio 포함)는 미설정 시 생략(Jackson non_null)되므로 nullish.
  */
 export const recommendProfileSchema = z.object({
   skills: z.array(z.string()),
   seniority: z.string(),
+  bio: z.string().nullish(),
   years_experience: z.number().int().min(0).max(80).nullish(),
   preferred_locations: z.array(z.string()).nullish(),
   remote_preference: z.string().nullish(),

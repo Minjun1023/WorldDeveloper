@@ -39,6 +39,9 @@ public class UserProfileEntity {
     @Column(name = "desired_salary_usd")
     private Integer desiredSalaryUsd;
 
+    @Column
+    private String bio;
+
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
@@ -61,6 +64,8 @@ public class UserProfileEntity {
     public void setRemotePreference(String v) { this.remotePreference = v; }
     public Integer getDesiredSalaryUsd() { return desiredSalaryUsd; }
     public void setDesiredSalaryUsd(Integer v) { this.desiredSalaryUsd = v; }
+    public String getBio() { return bio; }
+    public void setBio(String v) { this.bio = v; }
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(OffsetDateTime v) { this.updatedAt = v; }
 }

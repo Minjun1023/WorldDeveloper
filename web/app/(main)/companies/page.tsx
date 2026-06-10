@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { fetchCompanies } from "@/lib/api";
 import { COMPANY_LOCATIONS } from "@/lib/company-locations";
 import { companyProfile, flagEmoji } from "@/lib/company-profiles";
+import { flagFromLocation } from "@/lib/flags";
 
 export const dynamic = "force-dynamic";
 
@@ -15,6 +16,27 @@ type SearchParams = { [key: string]: string | string[] | undefined };
 export default async function CompaniesPage({ searchParams }: { searchParams: SearchParams }) {
   const tag = typeof searchParams.tag === "string" ? searchParams.tag : undefined;
   const data = await fetchCompanies(tag);
+
+  // 카드 신호를 미리 계산하고, '내용 없는' 희소 카드는 디렉터리에서만 숨긴다(공고는 검색/추천에 남음).
+  // 위치: 큐레이션 ?? 정적 스냅샷 ?? 백엔드 파생(c.location). 국기: ISO 우선, 없으면 위치 문자열로 추론.
+  const enriched = (data?.items ?? []).map((c) => {
+    const profile = companyProfile(c.slug);
+    const derived = COMPANY_LOCATIONS[c.slug];
+    const location = profile?.location ?? derived?.location ?? c.location ?? null;
+    const countryIso = profile?.country ?? derived?.country;
+    const hasTags = !!(c.tags && c.tags.length > 0);
+    const description =
+      profile?.description ??
+      (hasTags ? `${c.tags!.slice(0, 3).join(" · ")} 분야의 회사예요.` : null);
+    const flag = (countryIso ? flagEmoji(countryIso) : "") || (location ? flagFromLocation(location) : "");
+    const countryCode = profile?.countryLabel ?? countryIso?.toUpperCase();
+    const website = c.website_url
+      ? c.website_url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")
+      : null;
+    const bare = !location && !hasTags && !description && c.job_count <= 1;
+    return { c, location, description, flag, countryCode, website, bare };
+  });
+  const visible = enriched.filter((e) => !e.bare);
 
   return (
     <div className="space-y-6">
@@ -39,32 +61,16 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
         <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
           회사 목록을 불러오지 못했습니다.
         </div>
-      ) : data.items.length === 0 ? (
+      ) : visible.length === 0 ? (
         <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
           해당 조건의 회사가 없습니다.
         </div>
       ) : (
         <>
-          <p className="text-caption text-muted-foreground">{data.total}개 회사</p>
+          <p className="text-caption text-muted-foreground">{visible.length}개 회사</p>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {data.items.map((c) => {
-              const profile = companyProfile(c.slug);
-              // 위치/국가: 큐레이션(HQ) 우선, 없으면 공고에서 집계한 대표 위치로 폴백.
-              const derived = COMPANY_LOCATIONS[c.slug];
-              const location = profile?.location ?? derived?.location ?? null;
-              const countryIso = profile?.country ?? derived?.country;
-              // 설명란: 큐레이션 소개 우선, 없으면 기존 태그 기반 문구로 폴백.
-              const description =
-                profile?.description ??
-                (c.tags && c.tags.length > 0
-                  ? `${c.tags.slice(0, 3).join(" · ")} 분야의 회사예요.`
-                  : null);
-              const flag = flagEmoji(countryIso);
-              const countryCode = profile?.countryLabel ?? countryIso?.toUpperCase();
-              const website = c.website_url
-                ? c.website_url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")
-                : null;
-
+            {visible.map((e) => {
+              const { c, location, description, flag, countryCode, website } = e;
               return (
                 <Link
                   key={c.slug}
