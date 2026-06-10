@@ -1,9 +1,11 @@
 import { JobCard } from "@/components/job/JobCard";
 import { Pagination } from "@/components/search/Pagination";
+import { SaveSearchButton } from "@/components/search/SaveSearchButton";
 import { SearchBar } from "@/components/search/SearchBar";
 import { SearchFilters } from "@/components/search/SearchFilters";
 import { SortToggle } from "@/components/search/SortToggle";
 import { fetchJobs, fetchRegions } from "@/lib/api";
+import { getSession } from "@/lib/session-server";
 
 export const dynamic = "force-dynamic";
 
@@ -31,9 +33,10 @@ export default async function SearchPage({
   const track = str(searchParams.track);
   const includeUnclear = searchParams.include_unclear === "true";
 
-  const [result, regions] = await Promise.all([
+  const [result, regions, session] = await Promise.all([
     fetchJobs({ q, visa, location, region, remote, sort, discipline, track, includeUnclear, page, pageSize: PAGE_SIZE }),
     fetchRegions(),
+    getSession(),
   ]);
 
   return (
@@ -59,7 +62,15 @@ export default async function SearchPage({
           ) : (
             <span />
           )}
-          <SortToggle />
+          <div className="flex flex-wrap items-center gap-2">
+            <SaveSearchButton
+              loggedIn={!!session}
+              label={[q, region, visa === "sponsors" ? "스폰서" : null].filter(Boolean).join(" · ") || "전체 공고"}
+              params={{ q, visa, location, region, remote: remote || undefined, sort, discipline, track,
+                        includeUnclear: includeUnclear || undefined }}
+            />
+            <SortToggle />
+          </div>
         </div>
 
         {!result.ok ? (
