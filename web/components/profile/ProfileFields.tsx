@@ -140,34 +140,6 @@ export function ProfileFields({
           <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden /> 비자 스폰서십은 기본 포함돼요.
         </p>
       </fieldset>
-
-      <details className="rounded-lg border border-border bg-surface px-5 py-3">
-        <summary className="cursor-pointer text-body-sm text-muted-foreground">고급</summary>
-        <div className="mt-3 grid gap-4 sm:grid-cols-2">
-          <label className="block space-y-1.5">
-            <span className="text-body-sm font-medium">추천 개수 (top_k)</span>
-            <Input
-              type="number"
-              min={1}
-              value={value.top_k ?? ""}
-              onChange={(e) => set({ top_k: e.target.value ? Number(e.target.value) : undefined })}
-              className="font-mono"
-            />
-          </label>
-          <label className="block space-y-1.5">
-            <span className="text-body-sm font-medium">회사당 최대 (max_per_company)</span>
-            <Input
-              type="number"
-              min={1}
-              value={value.max_per_company ?? ""}
-              onChange={(e) =>
-                set({ max_per_company: e.target.value ? Number(e.target.value) : undefined })
-              }
-              className="font-mono"
-            />
-          </label>
-        </div>
-      </details>
     </div>
   );
 }
