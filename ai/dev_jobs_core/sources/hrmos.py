@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import html as html_lib
 import re
+from html.parser import HTMLParser
 
 BASE = "https://hrmos.co/pages"
 
@@ -41,3 +42,70 @@ def _parse_list(html: str) -> list[tuple[str, str]]:
         title = _strip_html(h2.group(1)) if h2 else ""
         out.append((jid, title))
     return out
+
+
+# 자가닫힘/void 태그 — 깊이 추적에서 제외
+_VOID = {"br", "img", "hr", "input", "meta", "link", "source", "wbr",
+         "area", "base", "col", "embed", "param", "track"}
+
+
+class _SectionText(HTMLParser):
+    """주어진 class 를 가진 '첫' 컨테이너 안의 텍스트만 수집(중첩 깊이 추적)."""
+
+    def __init__(self, target_class: str) -> None:
+        super().__init__(convert_charrefs=True)
+        self._target = target_class
+        self._depth = 0
+        self._active = False
+        self._done = False
+        self.parts: list[str] = []
+
+    def handle_starttag(self, tag, attrs):
+        if self._done or tag in _VOID:
+            return
+        if not self._active:
+            classes = (dict(attrs).get("class") or "").split()
+            if self._target in classes:
+                self._active = True
+                self._depth = 1
+        else:
+            self._depth += 1
+
+    def handle_startendtag(self, tag, attrs):
+        return  # 자가닫힘 태그는 깊이 변화 없음
+
+    def handle_endtag(self, tag):
+        if self._active and tag not in _VOID:
+            self._depth -= 1
+            if self._depth <= 0:
+                self._active = False
+                self._done = True
+
+    def handle_data(self, data):
+        if self._active:
+            self.parts.append(data)
+
+    @property
+    def text(self) -> str:
+        return re.sub(r"\s+", " ", "".join(self.parts)).strip()
+
+
+def _section_text(html: str, target_class: str) -> str:
+    p = _SectionText(target_class)
+    p.feed(html)
+    return p.text
+
+
+_TITLE = re.compile(
+    r'<h1[^>]*class="[^"]*sg-corporate-name[^"]*"[^>]*>(.*?)</h1>', re.DOTALL)
+
+
+def _parse_detail(html: str) -> dict[str, str]:
+    """상세 HTML → {title, description, location}."""
+    tm = _TITLE.search(html)
+    title = _strip_html(tm.group(1)) if tm else ""
+    return {
+        "title": title,
+        "description": _section_text(html, "pg-descriptions"),
+        "location": _section_text(html, "pg-location-address"),
+    }
