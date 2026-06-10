@@ -2056,5 +2056,137 @@
     "tags": [
       "health-tech"
     ]
+  },
+  "appier": {
+    "ats": "greenhouse",
+    "token": "appier",
+    "tags": [
+      "ai",
+      "adtech",
+      "asia"
+    ]
+  },
+  "alpaca": {
+    "ats": "greenhouse",
+    "token": "alpaca",
+    "tags": [
+      "fintech",
+      "brokerage",
+      "japan",
+      "asia"
+    ]
+  },
+  "aiand": {
+    "ats": "ashby",
+    "token": "aiand",
+    "tags": [
+      "ai",
+      "japan",
+      "asia"
+    ]
+  },
+  "ai-robot-association": {
+    "ats": "workable",
+    "token": "ai-robot-association",
+    "tags": [
+      "robotics",
+      "ai",
+      "japan",
+      "asia"
+    ],
+    "hq": "Tokyo, Japan"
+  },
+  "caddi": {
+    "ats": "workable",
+    "token": "caddi",
+    "tags": [
+      "manufacturing",
+      "ai",
+      "japan",
+      "asia"
+    ],
+    "hq": "Tokyo, Japan"
+  },
+  "speak": {
+    "ats": "ashby",
+    "token": "speak",
+    "tags": [
+      "ai",
+      "edtech"
+    ]
+  },
+  "drivemode": {
+    "ats": "lever",
+    "token": "drivemode",
+    "tags": [
+      "mobility",
+      "japan",
+      "asia"
+    ],
+    "hq": "Tokyo, Japan"
+  },
+  "mantra": {
+    "ats": "lever",
+    "token": "mantra",
+    "tags": [
+      "ai",
+      "translation",
+      "japan",
+      "asia"
+    ],
+    "hq": "Tokyo, Japan"
+  },
+  "build": {
+    "ats": "ashby",
+    "token": "build",
+    "tags": [
+      "ai",
+      "devtools"
+    ]
+  },
+  "orb": {
+    "ats": "ashby",
+    "token": "orb",
+    "tags": [
+      "fintech",
+      "devtools"
+    ]
+  },
+  "toku": {
+    "ats": "ashby",
+    "token": "toku",
+    "tags": [
+      "fintech",
+      "crypto"
+    ]
+  },
+  "tektome": {
+    "ats": "lever",
+    "token": "tektome",
+    "tags": [
+      "ai",
+      "construction",
+      "japan",
+      "asia"
+    ],
+    "hq": "Tokyo, Japan"
+  },
+  "micoworks": {
+    "ats": "greenhouse",
+    "token": "micoworks",
+    "tags": [
+      "marketing",
+      "saas",
+      "japan",
+      "asia"
+    ],
+    "hq": "Tokyo, Japan"
+  },
+  "socious": {
+    "ats": "smartrecruiters",
+    "token": "socious",
+    "tags": [
+      "tech"
+    ]
   }
 }
