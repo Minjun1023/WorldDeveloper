@@ -30,6 +30,7 @@ function dimState(p: RecommendProfile, key: string): { active: boolean; note: st
       const n = p.preferred_locations?.length ?? 0;
       return { active: n > 0, note: n ? `${n}곳` : "미입력" };
     }
+    // 비자 스폰서십은 항상 필요로 가정한다(폼에 토글 없음, 백엔드가 항상 true 강제) — 의도된 동작.
     case "visa":
       return { active: true, note: "필요(기본)" };
     case "salary":
@@ -46,7 +47,7 @@ function dimState(p: RecommendProfile, key: string): { active: boolean; note: st
 
 export function ProfilePreview({ profile }: { profile: RecommendProfile }) {
   const [count, setCount] = useState<number | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const profileRef = useRef(profile);
   profileRef.current = profile;
