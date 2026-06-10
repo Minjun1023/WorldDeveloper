@@ -2,7 +2,7 @@
 
 소스:
   - 잡보드: RemoteOK(원격) + Arbeitnow(유럽)
-  - 회사 ATS: Greenhouse / Lever / Ashby / SmartRecruiters / Personio —
+  - 회사 ATS: Greenhouse / Lever / Ashby / SmartRecruiters / Personio / Workable / HRMOS —
     registry(companies.json)에 등록된 회사들의 공개 채용 보드를 직접 수집.
     EU 회사(wise/klarna/revolut/n26/qonto/pleo/adyen/mollie/celonis 등) 포함
     → 공고 수 + 비자 스폰서 명시 비율 향상.

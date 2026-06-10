@@ -21,32 +21,26 @@ from ..models import JobPosting
 
 BASE = "https://hrmos.co/pages"
 
-# 목록의 각 공고 카드 (<li class="pg-list-cassette ...">...</li>)
-_CASSETTE = re.compile(r'<li class="pg-list-cassette[^"]*">(.*?)</li>', re.DOTALL)
-_JOB_HREF = re.compile(r'href="[^"]*?/jobs/(\d+)"')
-_H2 = re.compile(r"<h2[^>]*>(.*?)</h2>", re.DOTALL)
-
-
 def _strip_html(s: str) -> str:
     text = re.sub(r"<[^>]+>", " ", s or "")
     return re.sub(r"\s+", " ", html_lib.unescape(text)).strip()
 
 
+# 목록의 각 공고: <a href=".../jobs/{id}"> ... <h2>제목</h2> (앵커가 카드 제목을 감쌈).
+# <li> 블록 분리는 추가 속성/중첩 <li> 에 취약하므로 앵커-제목 페어로 직접 매칭한다.
+_CARD = re.compile(
+    r'<a [^>]*?href="[^"]*?/jobs/(\d+)"[^>]*>.*?<h2[^>]*>(.*?)</h2>', re.DOTALL)
+
+
 def _parse_list(html: str) -> list[tuple[str, str]]:
-    """목록 HTML → [(native_id, title)]. 카드별 첫 job id + 첫 <h2> 제목."""
+    """목록 HTML → [(native_id, title)]. 공고 앵커별 첫 <h2> 제목을 페어로 추출."""
     out: list[tuple[str, str]] = []
     seen: set[str] = set()
-    for block in _CASSETTE.findall(html):
-        m = _JOB_HREF.search(block)
-        if not m:
-            continue
-        jid = m.group(1)
+    for jid, raw_title in _CARD.findall(html):
         if jid in seen:
             continue
         seen.add(jid)
-        h2 = _H2.search(block)
-        title = _strip_html(h2.group(1)) if h2 else ""
-        out.append((jid, title))
+        out.append((jid, _strip_html(raw_title)))
     return out
 
 
@@ -128,6 +122,7 @@ def _to_posting(company: str, native_id: str, list_title: str,
         company=company.replace("-", " ").title(),
         location=location,
         is_remote=("リモート" in location) or ("remote" in location.lower()),
+        # HRMOS 는 고용형태 필드를 제공하지 않아 정규직으로 가정
         employment_type="FULLTIME",
         description=detail.get("description", ""),
         apply_url=f"{BASE}/{company}/jobs/{native_id}",
@@ -171,9 +166,10 @@ async def fetch(company: str, query: str = "", limit: int = 100) -> list[JobPost
                 return None
             return _to_posting(company, jid, list_title, _parse_detail(detail_html))
 
-        results = await asyncio.gather(*[_one(jid, t) for jid, t in candidates])
+        results = await asyncio.gather(
+            *[_one(jid, t) for jid, t in candidates], return_exceptions=True)
 
-    postings = [p for p in results if p is not None]
+    postings = [p for p in results if isinstance(p, JobPosting)]
     if query:
         ql = query.lower()
         postings = [p for p in postings if ql in f"{p.title} {p.description}".lower()]

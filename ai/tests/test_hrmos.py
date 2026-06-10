@@ -53,3 +53,22 @@ def test_to_posting_falls_back_to_list_title():
 def test_to_posting_marks_remote_from_location():
     p = hrmos._to_posting("acme", "9", "t", {"title": "t", "description": "", "location": "フルリモート"})
     assert p.is_remote is True
+
+
+def test_to_posting_marks_remote_from_english_location():
+    p = hrmos._to_posting("acme", "1", "t", {"title": "t", "description": "", "location": "Remote (Tokyo)"})
+    assert p.is_remote is True
+
+
+def test_parse_list_robust_to_attrs_and_nesting():
+    # <li> 에 추가 속성, <a> 에 추가 속성, h2 뒤 중첩 <ul><li> 가 있어도 정확히 추출
+    html = (
+        '<ul>'
+        '<li id="x" data-k="v" class="pg-list-cassette jsc-joblist-cassette foo">'
+        '<a class="c" href="https://hrmos.co/pages/acme/jobs/2001" data-id="2001">'
+        '<div class="pg-list-cassette-detail"><h2>バックエンドエンジニア</h2>'
+        '<ul><li>Go</li><li>Kubernetes</li></ul>'
+        '</div></a></li>'
+        '</ul>'
+    )
+    assert hrmos._parse_list(html) == [("2001", "バックエンドエンジニア")]
