@@ -3,30 +3,23 @@ import { notFound } from "next/navigation";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { InterviewPrepSection } from "@/components/job/InterviewPrepSection";
+import { JobActionCard } from "@/components/job/JobActionCard";
+import { JobCard } from "@/components/job/JobCard";
 import { JobDescription } from "@/components/job/JobDescription";
 import { JobSummary } from "@/components/job/JobSummary";
+import { MobileApplyBar } from "@/components/job/MobileApplyBar";
 import { ResumeOptimizeSection } from "@/components/job/ResumeOptimizeSection";
-import { VisaBadge } from "@/components/job/VisaBadge";
-import { RemoteBadge } from "@/components/job/RemoteBadge";
-import { RegisterVerifiedBadge } from "@/components/job/RegisterVerifiedBadge";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { fetchInterviewPrep, fetchJob } from "@/lib/api";
-import { postedLabel, deadlineLabel } from "@/lib/jobDates";
+import { fetchCompany, fetchInterviewPrep, fetchJob } from "@/lib/api";
+import { getSession } from "@/lib/session-server";
 
 export const dynamic = "force-dynamic";
 
-function formatSalary(min?: number | null, max?: number | null): string | null {
-  if (!min && !max) return null;
-  const k = (n: number) => `$${Math.round(n / 1000)}k`;
-  if (min && max) return `${k(min)}–${k(max)}`;
-  return k((min ?? max)!);
-}
-
 export default async function JobDetailPage({ params }: { params: { id: string } }) {
-  const [result, prep] = await Promise.all([
+  const [result, prep, session] = await Promise.all([
     fetchJob(params.id),
     fetchInterviewPrep(params.id),
+    getSession(),
   ]);
 
   if (!result.ok && result.status === 404) {
@@ -46,67 +39,70 @@ export default async function JobDetailPage({ params }: { params: { id: string }
   }
 
   const job = result.data;
-  const salary = formatSalary(job.salary?.min_usd, job.salary?.max_usd);
-  const posted = postedLabel(job.posted_at);
-  const deadline = deadlineLabel(job.closes_at);
-  const metaParts = [job.company.display_name, job.location, job.is_remote ? "Remote" : null].filter(
-    Boolean,
-  );
+  const companyData = await fetchCompany(job.company.slug);
+  const otherJobs = (companyData?.jobs ?? []).filter((j) => j.id !== job.id).slice(0, 3);
 
   return (
-    <article className="mx-auto max-w-3xl space-y-6">
-      <Link href="/search" className="inline-block text-body-sm text-muted-foreground hover:text-foreground">
-        ← 목록으로
-      </Link>
+    <>
+      <article className="mx-auto max-w-5xl">
+        <Link href="/search" className="inline-block text-body-sm text-muted-foreground hover:text-foreground">
+          ← 목록으로
+        </Link>
 
-      <header className="space-y-3">
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={48} />
-            <h1 className="text-h1">{job.title}</h1>
+        <div className="mt-4 grid gap-8 lg:grid-cols-[1fr_320px] lg:items-start">
+          {/* 좌: 본문 */}
+          <div className="min-w-0 space-y-6 pb-24 lg:pb-0">
+            <header className="space-y-3">
+              <div className="flex items-start gap-3">
+                <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={48} />
+                <div className="min-w-0">
+                  <h1 className="text-h1">{job.title}</h1>
+                  <p className="mt-1 text-muted-foreground">
+                    {[job.company.display_name, job.location, job.is_remote ? "원격" : null].filter(Boolean).join(" · ")}
+                  </p>
+                </div>
+              </div>
+              {job.tags && job.tags.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  {job.tags.map((t) => (
+                    <Badge key={t} variant="outline" className="font-mono lowercase">
+                      {t}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </header>
+
+            {/* 모바일: 본문 위 액션/메타 카드 (데스크톱은 우측 sticky 가 담당) */}
+            <div className="lg:hidden">
+              <JobActionCard job={job} loggedIn={!!session} companyJobCount={companyData?.company.job_count} />
+            </div>
+
+            {job.description && <JobSummary jobId={job.id} />}
+            {job.description && <JobDescription jobId={job.id} original={job.description} />}
+            {prep && <InterviewPrepSection prep={prep} />}
+            <ResumeOptimizeSection jobId={job.id} />
+
+            {otherJobs.length > 0 && (
+              <section className="space-y-3 border-t border-border pt-6">
+                <h2 className="text-h3">{job.company.display_name}의 다른 공고</h2>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {otherJobs.map((j) => (
+                    <JobCard key={j.id} job={j} />
+                  ))}
+                </div>
+              </section>
+            )}
           </div>
-          <div className="flex shrink-0 flex-col items-end gap-1">
-            <VisaBadge status={job.visa?.status} />
-            {job.visa?.register_verified && <RegisterVerifiedBadge />}
-            <RemoteBadge eligibility={job.remote?.eligibility} />
-          </div>
+
+          {/* 우: sticky 액션 카드 (lg 이상) */}
+          <aside className="hidden lg:block lg:sticky lg:top-24">
+            <JobActionCard job={job} loggedIn={!!session} companyJobCount={companyData?.company.job_count} />
+          </aside>
         </div>
-        <p className="text-muted-foreground">{metaParts.join(" · ")}</p>
+      </article>
 
-        {job.tags && job.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1.5">
-            {job.tags.map((t) => (
-              <Badge key={t} variant="outline" className="font-mono lowercase">
-                {t}
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-muted-foreground">
-          {salary && <span className="font-mono text-foreground">{salary}</span>}
-          {posted && <span>{posted}</span>}
-          <span className={deadline.urgent ? "text-foreground font-medium" : undefined}>
-            {deadline.text}
-          </span>
-        </div>
-      </header>
-
-      {job.description && <JobSummary jobId={job.id} />}
-
-      {job.description && (
-        <JobDescription jobId={job.id} original={job.description} />
-      )}
-
-      {prep && <InterviewPrepSection prep={prep} />}
-
-      <ResumeOptimizeSection jobId={job.id} />
-
-      <div className="pt-2">
-        <a href={job.apply_url ?? "#"} target="_blank" rel="noopener noreferrer">
-          <Button>지원 페이지로 이동 →</Button>
-        </a>
-      </div>
-    </article>
+      <MobileApplyBar jobId={job.id} applyUrl={job.apply_url} loggedIn={!!session} />
+    </>
   );
 }

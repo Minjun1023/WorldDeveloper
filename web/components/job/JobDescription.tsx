@@ -76,15 +76,13 @@ export function JobDescription({ jobId, original }: { jobId: string; original: s
     <section className="space-y-2">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-h3">상세 설명</h2>
-        <div className="flex items-center gap-1.5 text-body-sm">
+        <div className="flex items-center rounded-[10px] border border-border p-0.5 text-body-sm">
           <button
             type="button"
             onClick={() => setView("original")}
             className={cn(
-              "rounded-md px-2.5 py-1 transition-colors",
-              view === "original"
-                ? "bg-surface-2 text-foreground"
-                : "text-muted-foreground hover:text-foreground",
+              "rounded-lg px-3 py-1 font-semibold transition-colors",
+              view === "original" ? "bg-surface-2 text-foreground" : "text-muted-foreground hover:text-foreground",
             )}
           >
             원문
@@ -94,10 +92,8 @@ export function JobDescription({ jobId, original }: { jobId: string; original: s
             onClick={showKorean}
             disabled={loading}
             className={cn(
-              "rounded-md px-2.5 py-1 transition-colors",
-              view === "ko"
-                ? "bg-surface-2 text-foreground"
-                : "text-muted-foreground hover:text-foreground",
+              "rounded-lg px-3 py-1 font-semibold transition-colors",
+              view === "ko" ? "bg-primary/10 text-primary" : "text-primary hover:bg-primary/5",
             )}
           >
             {loading ? "번역 중…" : "한국어로 보기"}
