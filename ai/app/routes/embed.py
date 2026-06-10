@@ -27,8 +27,11 @@ class EmbedResponse(BaseModel):
     model: str
 
 
+# NOTE: 동기 `def` 핸들러 — Starlette 가 스레드풀에서 실행한다.
+# 임베딩은 sentence-transformers 모델 로드(첫 1회 ~470MB) + CPU inference 라
+# `async def` 로 두면 이벤트 루프를 통째로 막아(health/다른 요청까지 멈춤) 서비스가 wedge 된다.
 @router.post("/embed", response_model=EmbedResponse)
-async def embed(req: EmbedRequest) -> EmbedResponse:
+def embed(req: EmbedRequest) -> EmbedResponse:
     model_name = req.model or settings.embedding_model
     try:
         from dev_jobs_core.recommender import embeddings as core_emb

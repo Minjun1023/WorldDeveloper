@@ -6,6 +6,7 @@
 """
 from __future__ import annotations
 import logging
+import threading
 from functools import lru_cache
 
 log = logging.getLogger(__name__)
@@ -14,6 +15,9 @@ MODEL_NAME = "paraphrase-multilingual-MiniLM-L12-v2"
 
 _model = None
 _load_failed = False
+# embed 라우트가 동기 `def` 라 스레드풀에서 동시 실행된다. cold start 에 여러 요청이
+# 동시에 _load_model 에 진입하면 470MB 모델을 중복 로드할 수 있어 락으로 1회만 로드.
+_load_lock = threading.Lock()
 
 
 def _load_model():
@@ -23,20 +27,26 @@ def _load_model():
         return _model
     if _load_failed:
         return None
-    try:
-        from sentence_transformers import SentenceTransformer  # type: ignore
-        log.info(f"임베딩 모델 로딩 중: {MODEL_NAME} (최초 1회만, 약 470MB)")
-        _model = SentenceTransformer(MODEL_NAME)
-        return _model
-    except ImportError:
-        log.warning("sentence-transformers 미설치. 의미 유사도 점수는 0 으로 처리됩니다.")
-        log.warning("설치: pip install sentence-transformers")
-        _load_failed = True
-        return None
-    except Exception as e:
-        log.warning(f"임베딩 모델 로딩 실패: {e}. 의미 유사도 비활성화.")
-        _load_failed = True
-        return None
+    with _load_lock:
+        # 락 획득 후 재확인 — 대기 중 다른 스레드가 이미 로드했을 수 있다.
+        if _model is not None:
+            return _model
+        if _load_failed:
+            return None
+        try:
+            from sentence_transformers import SentenceTransformer  # type: ignore
+            log.info(f"임베딩 모델 로딩 중: {MODEL_NAME} (최초 1회만, 약 470MB)")
+            _model = SentenceTransformer(MODEL_NAME)
+            return _model
+        except ImportError:
+            log.warning("sentence-transformers 미설치. 의미 유사도 점수는 0 으로 처리됩니다.")
+            log.warning("설치: pip install sentence-transformers")
+            _load_failed = True
+            return None
+        except Exception as e:
+            log.warning(f"임베딩 모델 로딩 실패: {e}. 의미 유사도 비활성화.")
+            _load_failed = True
+            return None
 
 
 def is_available() -> bool:
