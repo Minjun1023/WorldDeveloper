@@ -137,6 +137,37 @@ def deactivate_jobs(conn: psycopg.Connection, ids: list[str]) -> int:
     return cur.rowcount
 
 
+def deactivate_unseen_in_scopes(
+    conn: psycopg.Connection,
+    ats_prefixes: list[str],
+    board_sources: list[str],
+    threshold,
+) -> int:
+    """성공+완전(미캡) 수집된 범위에서 이번 사이클에 재관측되지 않은 공고를 즉시 soft delete.
+
+    소스/회사가 이번에 정상 수집됐고(실패 아님) 결과가 limit 미만(전량 수집, 잘림 없음)일 때만
+    그 범위를 넘긴다 → "안 보임 = 정말 내려감"이 보장돼 7일 유예 없이 다음 사이클에 제거.
+    일시 실패하거나 limit 에 잘린 범위는 호출부에서 제외하므로 깜빡임/오삭제가 없다.
+
+    - ats_prefixes: "{source}:{company_slug}" 목록 (예: "greenhouse:stripe"). job id 접두와 동일.
+    - board_sources: 잡보드 source 목록 (예: ["wwr"]). 회사 구분 없이 source 전체.
+    - threshold: 이 시각 이전 last_seen_at = 이번 사이클 미관측. (업서트 직전 DB now() 권장)
+    """
+    if not ats_prefixes and not board_sources:
+        return 0
+    cur = conn.execute(
+        """
+        UPDATE jobs SET is_active = false
+        WHERE is_active = true AND last_seen_at < %(threshold)s AND (
+            (source || ':' || company_slug) = ANY(%(ats)s)
+            OR source = ANY(%(boards)s)
+        )
+        """,
+        {"threshold": threshold, "ats": ats_prefixes, "boards": board_sources},
+    )
+    return cur.rowcount
+
+
 def deactivate_expired(conn: psycopg.Connection, max_age_days: int = 45) -> int:
     """마감 지난 공고를 soft delete.
 

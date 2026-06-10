@@ -35,6 +35,7 @@ from ..db import (
     deactivate_expired,
     deactivate_jobs,
     deactivate_stale,
+    deactivate_unseen_in_scopes,
     get_conn,
     upsert_company,
     upsert_job,
@@ -68,15 +69,23 @@ async def _fetch_ats_company(
 
 
 async def run_full_cycle(
-    limit_per_source: int = 100,
+    limit_per_source: int = 500,
     include_ats: bool = True,
-    ats_limit_per_company: int = 300,
+    ats_limit_per_company: int = 1000,
     ats_concurrency: int = 8,
+    reclassify: bool | None = None,
 ) -> dict:
-    """ETL 한 사이클. 결과 통계 dict 반환."""
+    """ETL 한 사이클. 결과 통계 dict 반환.
+
+    reclassify: 비자 LLM 재분류(OpenAI 호출) 수행 여부. None 이면 settings.etl_reclassify 를 따른다.
+    수집·정리(전부 로컬)와 유료 LLM 단계를 분리하기 위한 스위치 — 기본은 off(무비용).
+    """
     started = datetime.now(UTC)
     postings = []
     fetch_stats: dict[str, object] = {}
+    # 성공+완전(limit 미만=잘림 없음) 수집된 범위만 즉시 정리 대상. 실패/잘린 범위는 제외(깜빡임 방지).
+    complete_boards: list[str] = []   # 잡보드 source
+    complete_ats: list[str] = []      # "{ats}:{token}" (= job id 접두 = source:company_slug)
 
     # 1a. 잡보드 (병렬, 소스 실패 격리)
     boards = {"remoteok": remoteok.fetch, "arbeitnow": arbeitnow.fetch, "wwr": weworkremotely.fetch}
@@ -91,6 +100,8 @@ async def run_full_cycle(
         else:
             postings.extend(res)
             fetch_stats[name] = len(res)
+            if len(res) < limit_per_source:  # limit 에 안 걸림 = 전량 수집
+                complete_boards.append(name)
 
     # 1b. 회사 ATS (registry 등록 회사, 회사별 실패 격리 + 동시성 제한)
     if include_ats:
@@ -114,6 +125,8 @@ async def run_full_cycle(
                 postings.extend(res)
                 ats_ok += 1
                 ats_jobs += len(res)
+                if len(res) < ats_limit_per_company:  # limit 에 안 걸림 = 전량 수집
+                    complete_ats.append(f'{c["ats"]}:{c["token"]}')
         fetch_stats["ats_companies_ok"] = ats_ok
         fetch_stats["ats_companies_failed"] = ats_failed
         fetch_stats["ats_jobs"] = ats_jobs
@@ -150,6 +163,9 @@ async def run_full_cycle(
     dropped_dead_end = 0
     conn = get_conn()
     try:
+        # 업서트 직전 DB 시각 = "이번 사이클" 경계. 이후 재관측 공고는 last_seen_at > threshold,
+        # 미관측 공고는 last_seen_at < threshold (앱/DB 시계차 영향 없도록 DB now() 사용).
+        threshold = conn.execute("SELECT now()").fetchone()[0]
         for p in unique_list:
             try:
                 company_row, job_row = transform(p)
@@ -170,6 +186,11 @@ async def run_full_cycle(
         #     필터는 ingest 때만 돌아 stored row 는 옛 규칙대로 남으므로 매 사이클 재평가.
         nondev_ids = [jid for jid, title in active_id_titles(conn) if not is_dev_role(title)]
         deactivated_nondev = deactivate_jobs(conn, nondev_ids)
+        # 4c. 성공+완전 수집 범위에서 이번에 사라진 공고 즉시 정리(7일 유예 생략, 깜빡임 없음).
+        deactivated_unseen = (
+            deactivate_unseen_in_scopes(conn, complete_ats, complete_boards, threshold)
+            if settings.etl_prune_unseen else 0
+        )
         conn.commit()
     finally:
         conn.close()
@@ -184,15 +205,21 @@ async def run_full_cycle(
         "deactivated_stale": deactivated_stale,
         "deactivated_expired": deactivated_expired,
         "deactivated_nondev": deactivated_nondev,
+        "deactivated_unseen": deactivated_unseen,
+        "scopes_complete": {"ats": len(complete_ats), "boards": len(complete_boards)},
         "duration_sec": round((datetime.now(UTC) - started).total_seconds(), 1),
     }
 
-    # 5. unclear 비자 재분류 (확장키워드 → LLM → 회사 추론)
-    try:
-        result["visa_reclassified"] = await reclassify_unclear_visa()
-    except Exception as e:  # noqa: BLE001
-        log.warning("visa 재분류 실패: %s", e)
-        result["visa_reclassified"] = {"error": str(e)}
+    # 5. unclear 비자 재분류 (확장키워드 → LLM → 회사 추론) — OpenAI 호출. 옵트인일 때만 실행.
+    do_reclassify = settings.etl_reclassify if reclassify is None else reclassify
+    if do_reclassify:
+        try:
+            result["visa_reclassified"] = await reclassify_unclear_visa()
+        except Exception as e:  # noqa: BLE001
+            log.warning("visa 재분류 실패: %s", e)
+            result["visa_reclassified"] = {"error": str(e)}
+    else:
+        result["visa_reclassified"] = "skipped (etl_reclassify=false)"
 
     log.info("ETL cycle 완료: %s", result)
     return result

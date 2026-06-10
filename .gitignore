@@ -76,3 +76,8 @@ huggingface/
 
 # 브레인스토밍 비주얼 컴패니언 산출물
 .superpowers/
+
+# docs 폴더는 커밋하지 않음 (개인 메모·설계 노트·스크린샷)
+# 현재 HEAD에 추적되는 docs 파일 없음(upstream에서 제거됨) — 로컬 전용 폴더로 유지.
+docs/
+.gstack/

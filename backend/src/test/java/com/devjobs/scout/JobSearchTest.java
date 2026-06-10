@@ -54,6 +54,11 @@ class JobSearchTest {
         jdbc.update("UPDATE jobs SET remote_eligibility = ? WHERE id = ?", eligibility, id);
     }
 
+    /** closesSql: closes_at SQL 식 (예 "now() - interval '1 day'"). */
+    private void setCloses(String id, String closesSql) {
+        jdbc.update("UPDATE jobs SET closes_at = " + closesSql + " WHERE id = ?", id);
+    }
+
     @Test
     void relevanceRanksTitleAboveDescription() {
         company("acme", "Acme Inc");
@@ -246,6 +251,32 @@ class JobSearchTest {
         var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("o_")).toList();
         assertEquals(java.util.List.of("o_ww", "o_apac"), ids,
             "remote 티어: worldwide → apac_ok (posted_at 역순이라도)");
+    }
+
+    @Test
+    void expiredJobsExcludedRealtime() {
+        company("exp", "Exp Co");
+        job("e_live",    "Backend Engineer", "exp", "x", "backend", false, "now()");
+        job("e_rolling", "Backend Engineer", "exp", "x", "backend", false, "now()"); // closes_at NULL = 상시채용
+        job("e_dead",    "Backend Engineer", "exp", "x", "backend", false, "now()");
+        setVisa("e_live", "sponsors");
+        setVisa("e_rolling", "sponsors");
+        setVisa("e_dead", "sponsors");
+        setCloses("e_live", "now() + interval '7 days'"); // 마감 미래
+        setCloses("e_dead", "now() - interval '1 day'");  // 마감 지남 → 실시간 제외
+
+        JobListResponse res = service.search("backend", null, null, null, null, null, null, 1, 20);
+        var ids = res.items().stream().map(j -> j.id()).filter(id -> id.startsWith("e_")).toList();
+        assertTrue(ids.contains("e_live") && ids.contains("e_rolling"),
+            "마감일 미래/없음 공고는 검색 노출");
+        assertTrue(!ids.contains("e_dead"), "마감 지난 공고는 ETL 없이도 검색에서 즉시 제외");
+
+        var byCompany = service.listByCompany("exp").stream().map(j -> j.id()).toList();
+        assertEquals(java.util.Set.of("e_live", "e_rolling"), new java.util.HashSet<>(byCompany),
+            "회사 공고 목록도 마감 지난 공고 제외");
+
+        assertTrue(service.findById("e_live").isPresent(), "라이브 공고 단건 조회 가능");
+        assertTrue(service.findById("e_dead").isEmpty(), "마감 지난 공고는 단건 조회도 제외");
     }
 
     @Test

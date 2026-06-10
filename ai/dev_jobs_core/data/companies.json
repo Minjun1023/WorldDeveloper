@@ -189,7 +189,8 @@
     "tags": [
       "devtools",
       "remote-first"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "huggingface": {
     "ats": "greenhouse",
@@ -207,7 +208,8 @@
       "ai",
       "research"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "scaleai": {
     "ats": "greenhouse",
@@ -311,7 +313,8 @@
     "tags": [
       "fintech",
       "europe"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "delivery_hero": {
     "ats": "greenhouse",
@@ -414,7 +417,8 @@
       "devtools",
       "database",
       "remote-first"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "modal": {
     "ats": "ashby",
@@ -423,7 +427,8 @@
       "devtools",
       "ai",
       "infra"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "replicate": {
     "ats": "ashby",
@@ -432,7 +437,8 @@
       "ai",
       "ml",
       "remote-first"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "warp": {
     "ats": "ashby",
@@ -597,7 +603,8 @@
     "tags": [
       "fintech",
       "startups"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "astronomer": {
     "ats": "ashby",
@@ -623,7 +630,8 @@
     "token": "betterment",
     "tags": [
       "fintech"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "brex": {
     "ats": "greenhouse",
@@ -733,7 +741,8 @@
     "token": "dashlane",
     "tags": [
       "security"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "drata": {
     "ats": "ashby",
@@ -741,7 +750,8 @@
     "tags": [
       "security",
       "compliance"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "faire": {
     "ats": "greenhouse",
@@ -921,7 +931,8 @@
       "ai",
       "search"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "pinecone": {
     "ats": "ashby",
@@ -947,7 +958,8 @@
     "tags": [
       "database",
       "devtools"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "postman": {
     "ats": "greenhouse",
@@ -990,7 +1002,8 @@
     "tags": [
       "devtools",
       "open-source"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "sofi": {
     "ats": "greenhouse",
@@ -1104,7 +1117,8 @@
       "saas",
       "europe"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "adyen": {
     "ats": "greenhouse",
@@ -1167,7 +1181,8 @@
       "search",
       "europe"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "sumup": {
     "ats": "greenhouse",
@@ -1187,7 +1202,8 @@
       "payments",
       "europe"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "scout24": {
     "ats": "greenhouse",
@@ -1242,7 +1258,8 @@
     "tags": [
       "ai",
       "ml"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "synthesia": {
     "ats": "ashby",
@@ -1346,7 +1363,8 @@
     "tags": [
       "ai",
       "enterprise-search"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "elevenlabs": {
     "ats": "ashby",
@@ -1371,7 +1389,8 @@
       "devtools",
       "observability"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "toast": {
     "ats": "greenhouse",
@@ -1379,7 +1398,8 @@
     "tags": [
       "fintech",
       "restaurant"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "harvey": {
     "ats": "ashby",
@@ -1395,7 +1415,8 @@
     "tags": [
       "ai",
       "cx"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "decagon": {
     "ats": "ashby",
@@ -1412,7 +1433,8 @@
     "tags": [
       "saas",
       "sales"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "cursor": {
     "ats": "ashby",
@@ -1429,7 +1451,8 @@
       "saas",
       "cms"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "1password": {
     "ats": "ashby",
@@ -1437,7 +1460,8 @@
     "tags": [
       "security",
       "saas"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "togetherai": {
     "ats": "greenhouse",
@@ -1454,7 +1478,8 @@
       "ai",
       "enterprise"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "temporal": {
     "ats": "greenhouse",
@@ -1462,7 +1487,8 @@
     "tags": [
       "devtools",
       "infra"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "polymarket": {
     "ats": "ashby",
@@ -1485,7 +1511,8 @@
     "token": "wealthsimple",
     "tags": [
       "fintech"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "typeform": {
     "ats": "greenhouse",
@@ -1493,7 +1520,8 @@
     "tags": [
       "saas"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "characterai": {
     "ats": "ashby",
@@ -1509,7 +1537,8 @@
       "security",
       "data"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "abnormal": {
     "ats": "greenhouse",
@@ -1518,7 +1547,8 @@
       "security",
       "ai"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "replit": {
     "ats": "ashby",
@@ -1526,7 +1556,8 @@
     "tags": [
       "devtools",
       "ai"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "newrelic": {
     "ats": "greenhouse",
@@ -1543,7 +1574,8 @@
     "tags": [
       "ai",
       "infra"
-    ]
+    ],
+    "h1b_sponsor": true
   },
   "nium": {
     "ats": "lever",
@@ -1553,7 +1585,8 @@
       "payments",
       "asia"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "mercor": {
     "ats": "ashby",
@@ -1579,7 +1612,8 @@
       "crypto",
       "infra"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "suno": {
     "ats": "ashby",
@@ -1620,7 +1654,8 @@
       "saas",
       "web"
     ],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true
   },
   "bill": {
     "ats": "greenhouse",

@@ -5,35 +5,47 @@ import { SponsorChips } from "@/components/home/SponsorChips";
 import type { RegionCount } from "@/lib/api";
 import type { CompanySummary } from "@/lib/types";
 
+// 전폭 흰색 히어로 섹션(안쪽 max-w 컨테이너). Readdy 목업 대응.
 export function Hero({
   stats,
   sponsorCompanies,
   regions,
-  loggedIn,
 }: {
   stats: HomeStats;
   sponsorCompanies: CompanySummary[];
   regions: RegionCount[];
-  loggedIn: boolean;
 }) {
   return (
-    <section className="hero-gradient -mx-4 px-4 py-14 text-center sm:-mx-6 sm:px-6">
-      <CredibilityPill />
+    <section className="relative overflow-hidden">
+      {/* 상단 은은한 브랜드 글로우 */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[420px] opacity-70"
+        style={{
+          background:
+            "radial-gradient(60% 70% at 50% -10%, color-mix(in srgb, var(--primary) 12%, transparent), transparent 70%)",
+        }}
+      />
+      <div className="relative mx-auto max-w-container px-4 py-16 text-center sm:py-24">
+        <CredibilityPill sponsorCount={stats.sponsors} />
 
-      <h1 className="mt-4 text-display">
-        한국 개발자를 위한{" "}
-        <span className="font-serif text-verified">실제로 채용 가능한</span>{" "}
-        <span className="text-primary">비자 스폰서</span> 공고
-      </h1>
-      <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-        기술스택·지역으로 검색하거나, 조건을 문장으로 적어 AI 추천을 받아보세요.
-      </p>
+        <h1 className="mx-auto mt-6 max-w-3xl text-[2rem] font-bold leading-[1.15] tracking-tight sm:text-[2.875rem]">
+          한국 개발자의 해외 취업,
+          <br />
+          <span className="text-gradient-brand">비자부터 확인하세요.</span>
+        </h1>
+        <p className="mx-auto mt-4 max-w-2xl text-body text-muted-foreground">
+          비자 스폰서십이 명시된 공고만,{" "}
+          <strong className="font-semibold text-foreground">6차원 점수</strong>로 추천. 매칭 근거
+          문장까지 함께 보여드려요.
+        </p>
 
-      <HeroSearch regions={regions} loggedIn={loggedIn} />
+        <HeroSearch regions={regions} />
 
-      <SponsorChips companies={sponsorCompanies} />
+        <SponsorChips companies={sponsorCompanies} />
 
-      <HeroStats stats={stats} />
+        <HeroStats stats={stats} />
+      </div>
     </section>
   );
 }

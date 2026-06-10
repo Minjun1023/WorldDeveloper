@@ -10,7 +10,9 @@ public final class CompanyDtos {
         String slug,
         String displayName,
         List<String> tags,
-        long jobCount
+        long jobCount,
+        String websiteUrl,
+        boolean verified
     ) {}
 
     public record CompanyDetail(

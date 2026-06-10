@@ -47,18 +47,19 @@ export default async function SearchPage({
 
       <section className="space-y-3">
         <SearchBar regions={regions} />
-        <SearchFilters />
+        <SearchFilters regions={regions} />
       </section>
 
       <section className="space-y-4">
-        <div className="flex items-baseline justify-between gap-3">
-          <h2 className="text-h2">공고</h2>
-          <div className="flex items-center gap-3">
-            {q && <SortToggle />}
-            {result.ok && (
-              <span className="text-caption text-muted-foreground">{result.data.total}건</span>
-            )}
-          </div>
+        <div className="flex flex-wrap items-baseline justify-between gap-3">
+          {result.ok ? (
+            <p className="text-body-sm text-muted-foreground">
+              총 <span className="font-semibold text-foreground">{result.data.total}</span>개 공고
+            </p>
+          ) : (
+            <span />
+          )}
+          <SortToggle />
         </div>
 
         {!result.ok ? (

@@ -1,5 +1,6 @@
 "use client";
 
+import { Globe, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -8,13 +9,13 @@ import { AccountMenu } from "@/components/auth/AccountMenu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
-// 전역 헤더는 페이지 이동용 보조 내비. 트랙(이주/원격/둘다) 선택은 랜딩 히어로와 /search 필터에
-// 있으므로 헤더에는 두지 않는다. 사용자 전용 "내 지원"은 계정 메뉴(로그인 시)에만.
+// 전역 헤더. 직무(discipline) 스위처는 헤더에 두되, 비자 트랙(이주/원격/둘다)은 랜딩 히어로와
+// /search 필터에 있으므로 헤더에는 두지 않는다. "이력서 코치"는 로그인 시 동작(게스트는 로그인 유도).
 const NAV_LINKS = [
   { href: "/search", label: "검색" },
-  { href: "/recommend", label: "AI 추천" },
+  { href: "/recommend", label: "추천" },
   { href: "/companies", label: "회사" },
-  { href: "/about", label: "소개" },
+  { href: "/me/coach", label: "이력서 코치" },
 ];
 
 function useIsActive() {
@@ -44,61 +45,28 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
   }, [open]);
 
   return (
-    <>
-      <nav className="hidden items-center gap-3 text-body-sm md:flex">
-        {NAV_LINKS.map((l) => {
-          const active = isActive(l.href);
-          return (
-            <Link
-              key={l.href}
-              href={l.href}
-              aria-current={active ? "page" : undefined}
-              className={cn(
-                "transition-colors",
-                active ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {l.label}
-            </Link>
-          );
-        })}
-        <AccountMenu loggedIn={loggedIn} />
-        <ThemeToggle />
-      </nav>
-
-      <div ref={ref} className="relative md:hidden">
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-haspopup="menu"
-          aria-expanded={open}
-          aria-controls="mobile-nav"
-          aria-label="메뉴"
-          className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
-        >
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-            <line x1="3" y1="6" x2="21" y2="6" />
-            <line x1="3" y1="12" x2="21" y2="12" />
-            <line x1="3" y1="18" x2="21" y2="18" />
-          </svg>
-        </button>
-        {open && (
-          <div
-            id="mobile-nav"
-            role="menu"
-            className="absolute right-0 mt-2 w-56 rounded-lg border border-border bg-surface p-2 shadow-lg"
-          >
+    <header className="sticky top-0 z-40 border-b border-border bg-background">
+      <div className="mx-auto flex max-w-container items-center justify-between gap-4 px-4 py-3">
+        {/* 좌측: 로고 + 데스크톱 링크 */}
+        <div className="flex items-center gap-7">
+          <Link href="/" className="flex items-center gap-2">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-violet-500 text-white shadow-sm">
+              <Globe className="h-[18px] w-[18px]" aria-hidden="true" />
+            </span>
+            <span className="text-lg font-bold tracking-tight text-foreground">
+              World<span className="text-primary">Dev</span>
+            </span>
+          </Link>
+          <nav className="hidden items-center gap-5 text-body-sm md:flex">
             {NAV_LINKS.map((l) => {
               const active = isActive(l.href);
               return (
                 <Link
                   key={l.href}
                   href={l.href}
-                  role="menuitem"
                   aria-current={active ? "page" : undefined}
-                  onClick={() => setOpen(false)}
                   className={cn(
-                    "block rounded-md px-3 py-2 text-body-sm hover:bg-muted",
+                    "transition-colors",
                     active ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
                   )}
                 >
@@ -106,44 +74,107 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
                 </Link>
               );
             })}
+          </nav>
+        </div>
 
-            <div className="my-1.5 border-t border-border" />
-            {loggedIn ? (
-              <>
-                <Link
-                  href="/me/applications"
-                  role="menuitem"
-                  onClick={() => setOpen(false)}
-                  className="block rounded-md px-3 py-2 text-body-sm text-muted-foreground hover:bg-muted hover:text-foreground"
-                >
-                  내 지원
-                </Link>
-                <form action="/api/auth/logout" method="post">
-                  <button
-                    type="submit"
-                    className="block w-full rounded-md px-3 py-2 text-left text-body-sm text-destructive hover:bg-muted"
-                  >
-                    로그아웃
-                  </button>
-                </form>
-              </>
-            ) : (
+        {/* 우측: 테마 + 계정/CTA */}
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <div className="hidden items-center gap-2 md:flex">
+            <AccountMenu loggedIn={loggedIn} />
+            {!loggedIn && (
               <Link
-                href="/signin"
-                role="menuitem"
-                onClick={() => setOpen(false)}
-                className="block rounded-md px-3 py-2 text-body-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                href="/signup"
+                className="rounded-lg bg-foreground px-4 py-2 text-body-sm font-medium text-background transition-opacity hover:opacity-90"
               >
-                로그인
+                시작하기
               </Link>
             )}
-            <div className="flex items-center justify-between px-3 py-2 text-body-sm text-muted-foreground">
-              <span>테마</span>
-              <ThemeToggle />
-            </div>
           </div>
-        )}
+
+          {/* 모바일 메뉴 */}
+          <div ref={ref} className="relative md:hidden">
+            <button
+              type="button"
+              onClick={() => setOpen((v) => !v)}
+              aria-haspopup="menu"
+              aria-expanded={open}
+              aria-controls="mobile-nav"
+              aria-label="메뉴"
+              className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
+            >
+              <Menu className="h-5 w-5" aria-hidden="true" />
+            </button>
+            {open && (
+              <div
+                id="mobile-nav"
+                role="menu"
+                className="absolute right-0 mt-2 w-56 rounded-lg border border-border bg-surface p-2 shadow-lg"
+              >
+                {NAV_LINKS.map((l) => {
+                  const active = isActive(l.href);
+                  return (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      role="menuitem"
+                      aria-current={active ? "page" : undefined}
+                      onClick={() => setOpen(false)}
+                      className={cn(
+                        "block rounded-md px-3 py-2 text-body-sm hover:bg-muted",
+                        active ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {l.label}
+                    </Link>
+                  );
+                })}
+
+                <div className="my-1.5 border-t border-border" />
+                {loggedIn ? (
+                  <>
+                    <Link
+                      href="/me/applications"
+                      role="menuitem"
+                      onClick={() => setOpen(false)}
+                      className="block rounded-md px-3 py-2 text-body-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      내 지원
+                    </Link>
+                    <form action="/api/auth/logout" method="post">
+                      <button
+                        type="submit"
+                        className="block w-full rounded-md px-3 py-2 text-left text-body-sm text-destructive hover:bg-muted"
+                      >
+                        로그아웃
+                      </button>
+                    </form>
+                  </>
+                ) : (
+                  <>
+                    <Link
+                      href="/signin"
+                      role="menuitem"
+                      onClick={() => setOpen(false)}
+                      className="block rounded-md px-3 py-2 text-body-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      로그인
+                    </Link>
+                    <Link
+                      href="/signup"
+                      role="menuitem"
+                      onClick={() => setOpen(false)}
+                      className="mt-1 block rounded-md bg-foreground px-3 py-2 text-center text-body-sm font-medium text-background"
+                    >
+                      시작하기
+                    </Link>
+                  </>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-    </>
+    </header>
   );
 }

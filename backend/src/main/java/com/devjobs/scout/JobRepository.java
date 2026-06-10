@@ -8,17 +8,27 @@ import org.springframework.data.repository.query.Param;
 
 public interface JobRepository extends JpaRepository<JobEntity, String> {
 
-    List<JobEntity> findByCompanySlugAndIsActiveTrueOrderByPostedAtDesc(String companySlug);
+    // "노출 대상(live)" 공고 = is_active = true 이면서 마감일이 지나지 않은 것.
+    // 마감일(closes_at)이 없으면 상시채용으로 보고 포함, 있으면 now() 이전이면 실시간 제외한다.
+    // (ETL deactivate_expired 를 기다리지 않고 요청 시점에 즉시 만료 반영.)
+    // 아래 모든 네이티브 쿼리에 동일 술어를 인라인했다 — 한 곳이라도 빠지면 카운트/목록이 어긋난다.
+    @Query(value = """
+        SELECT * FROM jobs
+        WHERE company_slug = :slug AND is_active = true
+          AND (closes_at IS NULL OR closes_at > now())
+        ORDER BY posted_at DESC NULLS LAST
+        """, nativeQuery = true)
+    List<JobEntity> findLiveByCompanySlug(@Param("slug") String slug);
 
-    @Query(value = "SELECT visa_status, count(*) FROM jobs WHERE is_active = true GROUP BY visa_status",
+    @Query(value = "SELECT visa_status, count(*) FROM jobs WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) GROUP BY visa_status",
         nativeQuery = true)
     List<Object[]> countByVisaStatus();
 
-    @Query(value = "SELECT is_remote, count(*) FROM jobs WHERE is_active = true GROUP BY is_remote",
+    @Query(value = "SELECT is_remote, count(*) FROM jobs WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) GROUP BY is_remote",
         nativeQuery = true)
     List<Object[]> countByRemote();
 
-    @Query(value = "SELECT remote_eligibility, count(*) FROM jobs WHERE is_active = true GROUP BY remote_eligibility",
+    @Query(value = "SELECT remote_eligibility, count(*) FROM jobs WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) GROUP BY remote_eligibility",
         nativeQuery = true)
     List<Object[]> countByRemoteEligibility();
 
@@ -26,7 +36,7 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
     @Query(value = """
         SELECT id, 1 - (embedding <=> CAST(:vec AS vector)) AS semantic
         FROM jobs
-        WHERE is_active = true AND embedding IS NOT NULL
+        WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND embedding IS NOT NULL
         ORDER BY embedding <=> CAST(:vec AS vector)
         LIMIT :lim
         """, nativeQuery = true)
@@ -38,7 +48,7 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
     @Query(value = """
         SELECT id, 1 - (embedding <=> CAST(:vec AS vector)) AS semantic
         FROM jobs
-        WHERE is_active = true AND embedding IS NOT NULL
+        WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND embedding IS NOT NULL
           AND is_remote = true AND remote_eligibility IN ('worldwide','apac_ok')
         ORDER BY embedding <=> CAST(:vec AS vector)
         LIMIT :lim
@@ -49,7 +59,7 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
     @Query(value = """
         SELECT id, CAST(0.0 AS double precision) AS semantic
         FROM jobs
-        WHERE is_active = true
+        WHERE is_active = true AND (closes_at IS NULL OR closes_at > now())
         ORDER BY posted_at DESC NULLS LAST
         LIMIT :lim
         """, nativeQuery = true)
@@ -60,7 +70,7 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
     @Query(value = """
         SELECT id, CAST(0.0 AS double precision) AS semantic
         FROM jobs
-        WHERE is_active = true
+        WHERE is_active = true AND (closes_at IS NULL OR closes_at > now())
           AND is_remote = true AND remote_eligibility IN ('worldwide','apac_ok')
         ORDER BY posted_at DESC NULLS LAST
         LIMIT :lim
@@ -71,7 +81,7 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
     // visaPriority=true 면 비자 티어(sponsors→unclear→no_sponsor)를 1순위로 정렬한다.
     @Query(value = """
         SELECT id FROM jobs
-        WHERE is_active = true
+        WHERE is_active = true AND (closes_at IS NULL OR closes_at > now())
           AND (CAST(:q AS text) IS NULL OR search_tsv @@ websearch_to_tsquery('english', CAST(:q AS text)))
           AND (CAST(:disc AS text) IS NULL OR search_tsv @@ to_tsquery('english', CAST(:disc AS text)))
           AND (CAST(:regionRegex AS text) IS NULL OR location ~* CAST(:regionRegex AS text))
@@ -113,7 +123,7 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
 
     @Query(value = """
         SELECT count(*) FROM jobs
-        WHERE is_active = true
+        WHERE is_active = true AND (closes_at IS NULL OR closes_at > now())
           AND (CAST(:q AS text) IS NULL OR search_tsv @@ websearch_to_tsquery('english', CAST(:q AS text)))
           AND (CAST(:disc AS text) IS NULL OR search_tsv @@ to_tsquery('english', CAST(:disc AS text)))
           AND (CAST(:regionRegex AS text) IS NULL OR location ~* CAST(:regionRegex AS text))
@@ -140,11 +150,11 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
         @Param("gateMode") String gateMode);
 
-    @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND is_remote = true",
+    @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND is_remote = true",
         nativeQuery = true)
     long countActiveRemote();
 
-    @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND location ~* CAST(:regex AS text)",
+    @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND location ~* CAST(:regex AS text)",
         nativeQuery = true)
     long countActiveByLocationRegex(@Param("regex") String regex);
 }

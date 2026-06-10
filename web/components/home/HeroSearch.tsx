@@ -1,116 +1,63 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { Search } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Dropdown } from "@/components/ui/dropdown";
-import { Input } from "@/components/ui/input";
 import type { RegionCount } from "@/lib/api";
-import { DISCIPLINES } from "@/lib/disciplines";
-import { cn } from "@/lib/utils";
-import { VISA_OPTIONS } from "@/lib/visa-options";
 
-type Tab = "search" | "ai";
-
-const TABS: [Tab, string][] = [
-  ["search", "공고 검색"],
-  ["ai", "AI 추천"],
-];
-
-// 히어로 진입 인터랙션: 공고 검색이 기본(주), AI 추천은 보조 탭.
-// 검색 탭은 키워드 + 지역/직무/비자 옵션을 모아 /search 로 라우팅(0비용·즉시). AI는 opt-in(LLM).
-export function HeroSearch({
-  regions = [],
-  loggedIn,
-}: {
-  regions?: RegionCount[];
-  loggedIn?: boolean;
-}) {
+// 히어로 단일 검색 바: 키워드 + 지역 + 공고 검색. 선택 시 /search 로 라우팅(0비용·즉시).
+export function HeroSearch({ regions = [] }: { regions?: RegionCount[] }) {
   const router = useRouter();
-  const [tab, setTab] = useState<Tab>("search");
   const [q, setQ] = useState("");
   const [region, setRegion] = useState<string | null>(null);
-  const [discipline, setDiscipline] = useState<string | null>(null);
-  const [visa, setVisa] = useState<string | null>(null);
 
   const regionOptions = regions.map((r) => ({ value: r.value, label: r.label, count: r.count }));
 
-  function submitSearch(e: React.FormEvent) {
+  function submit(e: React.FormEvent) {
     e.preventDefault();
     const params = new URLSearchParams();
     const query = q.trim();
     if (query) params.set("q", query);
     if (region) params.set("region", region);
-    if (discipline) params.set("discipline", discipline);
-    // 비자 드롭다운의 "원격근무"는 remote 필터로 매핑(/search 와 동일 규칙)
-    if (visa === "remote") params.set("remote", "true");
-    else if (visa) params.set("visa", visa);
     const qs = params.toString();
     router.push(qs ? `/search?${qs}` : "/search");
   }
 
   return (
-    <div className="mx-auto mt-6 max-w-2xl">
-      <div className="mb-3 flex justify-center">
-        <div className="inline-flex rounded-full border border-border bg-surface p-1 text-body-sm">
-          {TABS.map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setTab(key)}
-              aria-pressed={tab === key}
-              className={cn(
-                "rounded-full px-4 py-1.5 transition-colors",
-                tab === key
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+    <form
+      onSubmit={submit}
+      className="mx-auto mt-9 flex max-w-3xl flex-col items-stretch gap-2 rounded-2xl border border-border bg-surface p-2.5 text-left shadow-lg sm:flex-row sm:items-center"
+    >
+      <div className="flex flex-1 items-center gap-2 px-1.5">
+        <Search className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <input
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="React, Go, ML 등 기술이나 직무를 입력하세요"
+          aria-label="공고 검색"
+          className="h-11 w-full bg-transparent text-body placeholder:text-muted-foreground focus:outline-none"
+        />
       </div>
-
-      {tab === "search" ? (
-        <form onSubmit={submitSearch} className="space-y-2 text-left">
-          <div className="flex gap-2">
-            <Input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="python backend, react senior …"
-              aria-label="공고 검색"
-              className="flex-1"
-            />
-            <Button type="submit">검색</Button>
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            <Dropdown placeholder="지역" options={regionOptions} value={region} onSelect={setRegion} />
-            <Dropdown placeholder="직무" options={DISCIPLINES} value={discipline} onSelect={setDiscipline} />
-            <Dropdown placeholder="비자" options={VISA_OPTIONS} value={visa} onSelect={setVisa} />
-          </div>
-        </form>
-      ) : (
-        <div className="rounded-lg border border-border bg-surface p-6 text-center">
-          {loggedIn ? (
-            <>
-              <p className="text-body-sm text-muted-foreground">프로필 기반으로 맞춤 공고를 추천해드려요.</p>
-              <Link href="/recommend" className="mt-3 inline-block rounded-md bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground">
-                맞춤 추천 보기
-              </Link>
-            </>
-          ) : (
-            <>
-              <p className="text-body-sm text-muted-foreground">로그인하면 프로필 기반 맞춤 공고 추천을 받을 수 있어요.</p>
-              <Link href="/signin" className="mt-3 inline-block rounded-md bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground">
-                로그인 / 회원가입
-              </Link>
-            </>
-          )}
+      <div className="flex items-center gap-2">
+        <div className="flex-1 sm:w-44">
+          <Dropdown
+            placeholder="전체 지역"
+            options={regionOptions}
+            value={region}
+            onSelect={setRegion}
+          />
         </div>
-      )}
-    </div>
+        <Button
+          type="submit"
+          className="bg-brand-gradient h-11 shrink-0 gap-2 rounded-xl px-5 text-white hover:opacity-95"
+        >
+          <Search className="h-4 w-4" aria-hidden="true" />
+          공고 검색
+        </Button>
+      </div>
+    </form>
   );
 }

@@ -9,24 +9,25 @@ export interface HomeStats {
 
 export function HeroStats({ stats }: { stats: HomeStats }) {
   const items = [
-    { value: stats.sponsors, label: "명부 검증 스폰서", verified: true },
-    { value: stats.total, label: "라이브 공고", verified: false },
-    { value: stats.companies, label: "회사", verified: false },
-    { value: stats.countries, label: "국가", verified: false },
+    { value: stats.sponsors, label: "스폰서십 명시 공고" },
+    { value: stats.total, label: "전체 공고" },
+    { value: stats.companies, label: "검증된 회사" },
+    { value: stats.countries, label: "진출 국가" },
   ].filter((i) => i.value > 0);
 
   if (items.length === 0) return null;
 
   return (
-    <div className="mx-auto mt-8 grid max-w-2xl grid-cols-2 gap-x-8 gap-y-4 sm:flex sm:flex-wrap sm:justify-center">
+    <div className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
       {items.map((i) => (
-        <div key={i.label} className="text-center">
-          <div
-            className={`text-h3 font-bold ${i.verified ? "text-verified" : "text-foreground"}`}
-          >
+        <div
+          key={i.label}
+          className="rounded-xl border border-border bg-surface px-6 py-5 text-left shadow-sm"
+        >
+          <div className="text-[1.75rem] font-bold leading-none tabular-nums text-foreground">
             <CountUp value={i.value} />
           </div>
-          <div className="text-caption text-muted-foreground">{i.label}</div>
+          <div className="mt-2 text-body-sm text-muted-foreground">{i.label}</div>
         </div>
       ))}
     </div>

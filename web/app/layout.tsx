@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { ThemeProvider } from "@/components/theme-provider";
-import { SiteNav } from "@/components/SiteNav";
-import { getSession } from "@/lib/session-server";
 import { Noto_Serif_KR } from "next/font/google";
 
 const notoSerifKr = Noto_Serif_KR({
@@ -14,38 +12,29 @@ const notoSerifKr = Noto_Serif_KR({
 });
 
 export const metadata: Metadata = {
-  title: "WorldDeveloper",
-  description: "해외(EU) 진출용 채용 공고 — 한국 개발자 대상",
+  title: "WorldDeveloper — 한국 개발자의 해외 취업, 비자 스폰서십 공고 모음",
+  description:
+    "비자 스폰서십이 명시된 공고만 모아, 6차원 점수로 한국 개발자의 해외 취업을 돕습니다.",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className={`${notoSerifKr.variable} min-h-screen antialiased`}>
-       <Providers>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="dark"
-          enableSystem={false}
-          disableTransitionOnChange
-        >
-          <header className="border-b border-border">
-            <div className="mx-auto max-w-container px-4 py-4 flex items-center justify-between">
-              <a href="/" className="font-semibold text-lg">WorldDeveloper</a>
-              <SiteNav loggedIn={!!session} />
-            </div>
-          </header>
-          <main className="mx-auto max-w-container px-4 py-8">{children}</main>
-          <footer className="mx-auto max-w-container px-4 py-8 text-caption text-muted-foreground border-t border-border mt-12">
-            Beta — for personal use only. © WorldDeveloper.
-          </footer>
-        </ThemeProvider>
-       </Providers>
+        <Providers>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="light"
+            enableSystem={false}
+            disableTransitionOnChange
+          >
+            {children}
+          </ThemeProvider>
+        </Providers>
       </body>
     </html>
   );

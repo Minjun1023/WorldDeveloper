@@ -1,7 +1,3 @@
-"use client";
-
-import { Bar, BarChart, Cell, ResponsiveContainer, XAxis, YAxis } from "recharts";
-
 import type { ScoreBreakdown } from "@/lib/types";
 
 const DIMS: { key: keyof ScoreBreakdown; label: string; color: string }[] = [
@@ -13,31 +9,28 @@ const DIMS: { key: keyof ScoreBreakdown; label: string; color: string }[] = [
   { key: "semantic", label: "의미", color: "var(--score-semantic)" },
 ];
 
+// 6차원 점수 시각화 — 순수 CSS 가로 막대(라벨 + 트랙 + 6색 채움 + 점수).
+// 시그니처 색 팔레트(globals.css --score-*)를 그대로 사용. 차트 라이브러리 불필요.
 export function ScoreBreakdownBars({ score }: { score: ScoreBreakdown }) {
-  const data = DIMS.map((d) => ({
-    label: d.label,
-    value: Math.round((score[d.key] as number) * 100),
-    color: d.color,
-  }));
-
   return (
-    <ResponsiveContainer width="100%" height={140}>
-      <BarChart data={data} layout="vertical" margin={{ left: 8, right: 32, top: 0, bottom: 0 }}>
-        <XAxis type="number" domain={[0, 100]} hide />
-        <YAxis
-          type="category"
-          dataKey="label"
-          width={32}
-          tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-          axisLine={false}
-          tickLine={false}
-        />
-        <Bar dataKey="value" radius={[0, 3, 3, 0]} label={{ position: "right", fontSize: 11, fill: "var(--muted-foreground)" }}>
-          {data.map((d) => (
-            <Cell key={d.label} fill={d.color} />
-          ))}
-        </Bar>
-      </BarChart>
-    </ResponsiveContainer>
+    <div className="space-y-1.5">
+      {DIMS.map((d) => {
+        const value = Math.round((score[d.key] as number) * 100);
+        return (
+          <div key={d.key} className="flex items-center gap-2.5">
+            <span className="w-6 shrink-0 text-caption text-muted-foreground">{d.label}</span>
+            <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-surface-2">
+              <div
+                className="h-full rounded-full"
+                style={{ width: `${value}%`, backgroundColor: d.color }}
+              />
+            </div>
+            <span className="w-7 shrink-0 text-right text-caption tabular-nums text-muted-foreground">
+              {value}
+            </span>
+          </div>
+        );
+      })}
+    </div>
   );
 }
