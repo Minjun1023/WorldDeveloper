@@ -7,11 +7,15 @@ import { useEffect, useState } from "react";
 type Params = Record<string, string | boolean | null | undefined>;
 type SavedSearch = { id: string; label: string; params: Params; newCount: number; lastSeenAt: string };
 
+// 저장된 params 키는 백엔드(SavedSearchParams)용 camelCase. /search URL 파라미터는 snake_case 라
+// 라운드트립 시 키를 변환해야 한다(현재 includeUnclear → include_unclear 만 상이).
+const URL_KEY: Record<string, string> = { includeUnclear: "include_unclear" };
+
 function toQuery(params: Params): string {
   const sp = new URLSearchParams();
   for (const [k, v] of Object.entries(params)) {
     if (v === null || v === undefined || v === false || v === "") continue;
-    sp.set(k, String(v));
+    sp.set(URL_KEY[k] ?? k, String(v));
   }
   const s = sp.toString();
   return s ? `/search?${s}` : "/search";
