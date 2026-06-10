@@ -64,11 +64,11 @@ const config: Config = {
         ],
       },
       fontSize: {
-        display: ["2.25rem", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "700" }],
-        h1: ["1.875rem", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "700" }],
+        display: ["2.25rem", { lineHeight: "1.1", letterSpacing: "-0.02em", fontWeight: "800" }],
+        h1: ["1.875rem", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "800" }],
         h2: ["1.5rem", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "600" }],
         h3: ["1.25rem", { lineHeight: "1.4", fontWeight: "600" }],
-        body: ["1rem", { lineHeight: "1.6" }],
+        body: ["0.9375rem", { lineHeight: "1.65" }],
         "body-sm": ["0.875rem", { lineHeight: "1.5" }],
         caption: ["0.75rem", { lineHeight: "1.4" }],
         mono: ["0.8125rem", { lineHeight: "1.5" }],
@@ -77,7 +77,7 @@ const config: Config = {
         sm: "0.25rem",
         md: "0.375rem",
         lg: "0.5rem",
-        xl: "0.75rem",
+        xl: "0.875rem",
       },
       boxShadow: {
         sm: "0 1px 2px 0 rgb(0 0 0 / 0.05)",

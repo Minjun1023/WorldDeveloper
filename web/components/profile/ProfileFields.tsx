@@ -48,7 +48,7 @@ export function ProfileFields({
         </div>
         <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-2">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-violet-500 to-primary"
+            className="h-full rounded-full bg-primary"
             style={{ width: `${(filled / 5) * 100}%` }}
           />
         </div>
