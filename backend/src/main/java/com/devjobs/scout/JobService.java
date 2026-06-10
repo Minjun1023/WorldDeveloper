@@ -79,25 +79,19 @@ public class JobService {
         return search(q, visa, location, remote, sort, discipline, region, null, true, page, pageSize);
     }
 
-    public JobListResponse search(
-        String q, String visa, String location, Boolean remote, String sort, String discipline,
-        String region, String track, boolean includeUnclear, int page, int pageSize) {
+    // search() 와 countMatchesSince() 공유 매핑(정렬 priority 제외).
+    private record MappedQuery(String q, String disc, String regionRegex, String visa, String loc,
+                               Boolean remote, String gateMode) {}
 
-        int safePage = Math.max(1, page);
-        int safeSize = Math.min(Math.max(1, pageSize), MAX_PAGE_SIZE);
-
+    private MappedQuery mapQuery(String q, String visa, String location, Boolean remote,
+                                 String discipline, String region, String track, boolean includeUnclear) {
         boolean hasQuery = q != null && !q.isBlank();
         String discTerms = discipline == null ? null : DISCIPLINE_TERMS.get(discipline);
-
         Region reg = (region == null) ? null
             : REGIONS.stream().filter(x -> x.key().equals(region)).findFirst().orElse(null);
-        String regionRegex = (reg != null) ? reg.regex() : null;    // null for 원격/unknown
+        String regionRegex = (reg != null) ? reg.regex() : null;
         Boolean remoteParam = remote;
-        if (reg != null && "remote".equals(reg.key())) {
-            remoteParam = Boolean.TRUE;                              // 원격 지역 → remote 필터
-        }
-
-        // viability 게이트 모드: track + includeUnclear 조합.
+        if (reg != null && "remote".equals(reg.key())) remoteParam = Boolean.TRUE;
         String gateMode;
         if (includeUnclear) {
             gateMode = "remote".equals(track) ? "remote_unclear"
@@ -106,27 +100,47 @@ public class JobService {
             gateMode = "remote".equals(track) ? "remote"
                      : "relocation".equals(track) ? "relocation" : "both";
         }
+        String qParam = hasQuery ? q.trim() : null;
+        String visaParam = (visa != null && !visa.isBlank()) ? visa.trim() : null;
+        String locParam = (location != null && !location.isBlank())
+            ? "%" + location.trim().toLowerCase() + "%" : null;
+        return new MappedQuery(qParam, discTerms, regionRegex, visaParam, locParam, remoteParam, gateMode);
+    }
+
+    public JobListResponse search(
+        String q, String visa, String location, Boolean remote, String sort, String discipline,
+        String region, String track, boolean includeUnclear, int page, int pageSize) {
+
+        int safePage = Math.max(1, page);
+        int safeSize = Math.min(Math.max(1, pageSize), MAX_PAGE_SIZE);
+
+        boolean hasQuery = q != null && !q.isBlank();
+        MappedQuery m = mapQuery(q, visa, location, remote, discipline, region, track, includeUnclear);
 
         // 정렬 1순위: remote 트랙이면 원격 티어, 아니면 비자 티어. sort=newest 면 둘 다 끔(순수 최신).
         boolean remotePriority = "remote".equals(track) && !"newest".equals(sort);
         boolean visaPriority = !"newest".equals(sort) && !"remote".equals(track);
         boolean byRelevance = hasQuery && !"recent".equals(sort) && !"newest".equals(sort);
-        String qParam = hasQuery ? q.trim() : null;
-        String visaParam = (visa != null && !visa.isBlank()) ? visa.trim() : null;
-        String locParam = (location != null && !location.isBlank())
-            ? "%" + location.trim().toLowerCase() + "%" : null;
         int offset = (safePage - 1) * safeSize;
 
         List<String> ids = repository.searchIds(
-            qParam, discTerms, regionRegex, visaParam, locParam, remoteParam,
-            gateMode, remotePriority, visaPriority, byRelevance, safeSize, offset);
+            m.q(), m.disc(), m.regionRegex(), m.visa(), m.loc(), m.remote(),
+            m.gateMode(), remotePriority, visaPriority, byRelevance, safeSize, offset);
         long total = repository.countSearch(
-            qParam, discTerms, regionRegex, visaParam, locParam, remoteParam, gateMode);
+            m.q(), m.disc(), m.regionRegex(), m.visa(), m.loc(), m.remote(), m.gateMode());
 
         Map<String, JobEntity> byId = new HashMap<>();
         for (JobEntity j : repository.findAllById(ids)) byId.put(j.getId(), j);
         List<JobDto> items = ids.stream().map(byId::get).filter(Objects::nonNull).map(this::toDto).toList();
         return new JobListResponse(items, safePage, safeSize, total, computeFacets());
+    }
+
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public long countMatchesSince(com.devjobs.search.SavedSearchParams p, java.time.OffsetDateTime since) {
+        MappedQuery m = mapQuery(p.q(), p.visa(), p.location(), p.remote(), p.discipline(),
+            p.region(), p.track(), p.includeUnclear());
+        return repository.countSearchSince(m.q(), m.disc(), m.regionRegex(), m.visa(), m.loc(),
+            m.remote(), m.gateMode(), since);
     }
 
     /** 주어진 id 목록을 JobDto 로 변환(입력 순서 보존, 노출 대상 공고만, 없는 건 제외). 저장 공고 목록용. */
