@@ -1714,5 +1714,345 @@
       "productivity",
       "remote"
     ]
+  },
+  "canva": {
+    "ats": "smartrecruiters",
+    "token": "canva",
+    "tags": [
+      "design",
+      "saas"
+    ]
+  },
+  "singlestore": {
+    "ats": "greenhouse",
+    "token": "singlestore",
+    "tags": [
+      "data",
+      "database"
+    ],
+    "h1b_sponsor": true
+  },
+  "sigmacomputing": {
+    "ats": "greenhouse",
+    "token": "sigmacomputing",
+    "tags": [
+      "data",
+      "analytics"
+    ],
+    "h1b_sponsor": true
+  },
+  "intercom": {
+    "ats": "greenhouse",
+    "token": "intercom",
+    "tags": [
+      "saas",
+      "support"
+    ],
+    "h1b_sponsor": true
+  },
+  "crusoe": {
+    "ats": "ashby",
+    "token": "crusoe",
+    "tags": [
+      "ai",
+      "infra",
+      "cloud"
+    ],
+    "h1b_sponsor": true
+  },
+  "deepgram": {
+    "ats": "ashby",
+    "token": "deepgram",
+    "tags": [
+      "ai",
+      "speech"
+    ],
+    "h1b_sponsor": true
+  },
+  "coreweave": {
+    "ats": "greenhouse",
+    "token": "coreweave",
+    "tags": [
+      "ai",
+      "infra",
+      "cloud"
+    ],
+    "h1b_sponsor": true
+  },
+  "nebius": {
+    "ats": "greenhouse",
+    "token": "nebius",
+    "tags": [
+      "ai",
+      "infra",
+      "cloud"
+    ]
+  },
+  "chainguard": {
+    "ats": "greenhouse",
+    "token": "chainguard",
+    "tags": [
+      "security",
+      "devtools"
+    ],
+    "h1b_sponsor": true
+  },
+  "fireworksai": {
+    "ats": "greenhouse",
+    "token": "fireworksai",
+    "tags": [
+      "ai",
+      "infra"
+    ],
+    "h1b_sponsor": true
+  },
+  "justworks": {
+    "ats": "greenhouse",
+    "token": "justworks",
+    "tags": [
+      "hr-tech",
+      "saas"
+    ],
+    "h1b_sponsor": true
+  },
+  "salesloft": {
+    "ats": "greenhouse",
+    "token": "salesloft",
+    "tags": [
+      "saas",
+      "sales"
+    ],
+    "h1b_sponsor": true
+  },
+  "semgrep": {
+    "ats": "ashby",
+    "token": "semgrep",
+    "tags": [
+      "security",
+      "devtools"
+    ],
+    "h1b_sponsor": true
+  },
+  "mesh": {
+    "ats": "greenhouse",
+    "token": "mesh",
+    "tags": [
+      "fintech"
+    ]
+  },
+  "anyscale": {
+    "ats": "ashby",
+    "token": "anyscale",
+    "tags": [
+      "ai",
+      "infra"
+    ],
+    "h1b_sponsor": true
+  },
+  "runpod": {
+    "ats": "greenhouse",
+    "token": "runpod",
+    "tags": [
+      "ai",
+      "infra"
+    ],
+    "h1b_sponsor": true
+  },
+  "coder": {
+    "ats": "ashby",
+    "token": "coder",
+    "tags": [
+      "devtools"
+    ]
+  },
+  "socket": {
+    "ats": "ashby",
+    "token": "socket",
+    "tags": [
+      "security",
+      "devtools"
+    ]
+  },
+  "railway": {
+    "ats": "ashby",
+    "token": "railway",
+    "tags": [
+      "devtools",
+      "infra"
+    ]
+  },
+  "alchemy": {
+    "ats": "ashby",
+    "token": "alchemy",
+    "tags": [
+      "crypto",
+      "infra"
+    ]
+  },
+  "mavenclinic": {
+    "ats": "greenhouse",
+    "token": "mavenclinic",
+    "tags": [
+      "health-tech"
+    ],
+    "h1b_sponsor": true
+  },
+  "lithic": {
+    "ats": "greenhouse",
+    "token": "lithic",
+    "tags": [
+      "fintech"
+    ]
+  },
+  "highnote": {
+    "ats": "greenhouse",
+    "token": "highnote",
+    "tags": [
+      "fintech"
+    ],
+    "h1b_sponsor": true
+  },
+  "includedhealth": {
+    "ats": "lever",
+    "token": "includedhealth",
+    "tags": [
+      "health-tech"
+    ],
+    "h1b_sponsor": true
+  },
+  "infisical": {
+    "ats": "ashby",
+    "token": "infisical",
+    "tags": [
+      "security",
+      "devtools"
+    ],
+    "h1b_sponsor": true
+  },
+  "unit": {
+    "ats": "ashby",
+    "token": "unit",
+    "tags": [
+      "fintech"
+    ]
+  },
+  "oscar": {
+    "ats": "greenhouse",
+    "token": "oscar",
+    "tags": [
+      "health-tech",
+      "insurance"
+    ],
+    "h1b_sponsor": true
+  },
+  "assemblyai": {
+    "ats": "greenhouse",
+    "token": "assemblyai",
+    "tags": [
+      "ai",
+      "speech"
+    ],
+    "h1b_sponsor": true
+  },
+  "rho": {
+    "ats": "ashby",
+    "token": "rho",
+    "tags": [
+      "fintech"
+    ]
+  },
+  "stabilityai": {
+    "ats": "greenhouse",
+    "token": "stabilityai",
+    "tags": [
+      "ai",
+      "ml"
+    ]
+  },
+  "browserbase": {
+    "ats": "ashby",
+    "token": "browserbase",
+    "tags": [
+      "ai",
+      "devtools"
+    ]
+  },
+  "moderntreasury": {
+    "ats": "ashby",
+    "token": "moderntreasury",
+    "tags": [
+      "fintech"
+    ],
+    "h1b_sponsor": true
+  },
+  "finix": {
+    "ats": "lever",
+    "token": "finix",
+    "tags": [
+      "fintech",
+      "payments"
+    ],
+    "h1b_sponsor": true
+  },
+  "betterup": {
+    "ats": "ashby",
+    "token": "betterup",
+    "tags": [
+      "hr-tech"
+    ],
+    "h1b_sponsor": true
+  },
+  "imbue": {
+    "ats": "greenhouse",
+    "token": "imbue",
+    "tags": [
+      "ai",
+      "ml"
+    ],
+    "h1b_sponsor": true
+  },
+  "descript": {
+    "ats": "greenhouse",
+    "token": "descript",
+    "tags": [
+      "ai",
+      "media"
+    ],
+    "h1b_sponsor": true
+  },
+  "materialize": {
+    "ats": "ashby",
+    "token": "materialize",
+    "tags": [
+      "data",
+      "database"
+    ],
+    "h1b_sponsor": true
+  },
+  "montecarlodata": {
+    "ats": "ashby",
+    "token": "montecarlodata",
+    "tags": [
+      "data",
+      "observability"
+    ],
+    "h1b_sponsor": true
+  },
+  "mercari": {
+    "ats": "greenhouse",
+    "token": "mercari",
+    "tags": [
+      "ecommerce",
+      "japan",
+      "asia"
+    ],
+    "h1b_sponsor": true
+  },
+  "modernhealth": {
+    "ats": "greenhouse",
+    "token": "modernhealth",
+    "tags": [
+      "health-tech"
+    ]
   }
 }
