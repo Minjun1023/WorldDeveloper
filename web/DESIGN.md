@@ -1,8 +1,8 @@
 ---
 name: dev-jobs Design System
 version: 0.1.0
-style: minimal-developer
-inspiration: [Linear, Vercel]
+style: friendly-korean-service
+inspiration: [generic Korean consumer services]
 color_schemes: [light, dark]
 fonts:
   sans: "Pretendard Variable, Pretendard, Inter, -apple-system, BlinkMacSystemFont, system-ui, sans-serif"
@@ -12,31 +12,31 @@ colors:
   light:
     background: "#ffffff"
     surface: "#ffffff"
-    surface-2: "#f4f4f5"
-    foreground: "#09090b"
-    muted-foreground: "#71717a"
-    border: "#e4e4e7"
-    input: "#e4e4e7"
-    primary: "#4f46e5"
+    surface-2: "#f3f4f6"
+    foreground: "#111827"
+    muted-foreground: "#6b7280"
+    border: "#e5e7eb"
+    input: "#e5e7eb"
+    primary: "#2b6cf0"
     primary-foreground: "#ffffff"
-    ring: "#4f46e5"
-    accent: "#f4f4f5"
+    ring: "#2b6cf0"
+    accent: "#f3f4f6"
     success: "#16a34a"
     warning: "#d97706"
     destructive: "#dc2626"
     verified: "#ca8a04"
   dark:
-    background: "#09090b"
-    surface: "#18181b"
-    surface-2: "#27272a"
-    foreground: "#fafafa"
-    muted-foreground: "#a1a1aa"
-    border: "#27272a"
-    input: "#27272a"
-    primary: "#6366f1"
+    background: "#111418"
+    surface: "#1a1f26"
+    surface-2: "#232a33"
+    foreground: "#f5f7fa"
+    muted-foreground: "#9aa4b2"
+    border: "#2a313b"
+    input: "#2a313b"
+    primary: "#5b8df5"
     primary-foreground: "#ffffff"
-    ring: "#6366f1"
-    accent: "#27272a"
+    ring: "#5b8df5"
+    accent: "#232a33"
     success: "#22c55e"
     warning: "#f59e0b"
     destructive: "#ef4444"
@@ -95,7 +95,7 @@ container:
 
 ## 디자인 원칙
 
-1. **개발자 친화 미니멀** (Linear / Vercel) — 거의 흑백 grayscale 위에 indigo 포인트 하나. 색은 의미를 가질 때만 쓴다.
+1. **친근한 한국형 서비스** — 밝은 흰 배경, 부드러운 라운드(카드 14px), 단일 파랑 액센트(#2b6cf0). 그라데이션·장식 금지, 색은 의미를 가질 때만.
 2. **정보 밀도 우선** — 채용 사이트는 한 화면에 많은 공고를 비교한다. 여백보다 스캔 가능성.
 3. **의미론적 색상** — 색은 장식이 아니라 신호. 비자 상태(녹/적/회), 점수 차원(6색)처럼 정보를 색으로 전달.
 4. **라이트/다크 동등** — 개발자 타겟이라 다크모드는 1급 시민. 모든 토큰을 두 스킴으로 정의.
@@ -103,7 +103,7 @@ container:
 ## Color
 
 - **Neutral (zinc 계열)**: background / surface / border / foreground / muted-foreground 가 거의 모든 화면을 채운다.
-- **Primary (indigo)**: 액션(버튼, 링크, 포커스 ring)에만. 남발하면 미니멀이 깨진다.
+- **Primary (파랑 단색, #2b6cf0 라이트 / #5b8df5 다크)**: indigo→파랑 단색으로 전환, 그라데이션 금지. 액션(버튼, 링크, 포커스 ring)에만. 남발하면 미니멀이 깨진다.
 - **Semantic**:
   - `success` (green) — 비자 sponsors, 긍정 신호
   - `destructive` (red) — 비자 no_sponsor, 위험
