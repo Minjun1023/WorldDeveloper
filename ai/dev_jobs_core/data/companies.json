@@ -1317,7 +1317,8 @@
       "payments",
       "japan",
       "asia"
-    ]
+    ],
+    "hq": "Tokyo, Japan"
   },
   "woven-by-toyota": {
     "ats": "lever",
@@ -1328,7 +1329,8 @@
       "robotics",
       "japan",
       "asia"
-    ]
+    ],
+    "hq": "Tokyo, Japan"
   },
   "airwallex": {
     "ats": "ashby",

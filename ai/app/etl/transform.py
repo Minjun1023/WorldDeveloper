@@ -23,6 +23,27 @@ def slugify(name: str) -> str:
     return s or "unknown"
 
 
+# 근무형태만 적힌(도시·국가 없는) generic location. 회사 HQ 가 알려진 경우 이걸로 보정한다.
+_GENERIC_LOC = {
+    "remote", "hybrid", "onsite", "on-site", "on site", "anywhere", "worldwide",
+    "global", "flexible", "remote/hybrid", "hybrid/remote", "fully remote",
+    "remote - anywhere", "in office", "in-office", "office",
+}
+
+
+def _enrich_location(loc: str | None, hq: str | None) -> str | None:
+    """location 이 근무형태만 있는 generic 값이고 회사 HQ 가 있으면 HQ 로 지역을 보정.
+    실제 도시/국가가 있으면 그대로 둔다(예: 'Hybrid-Palo Alto, CA' 는 미국 유지).
+    """
+    if not hq:
+        return loc
+    norm = re.sub(r"\s+", " ", (loc or "").strip().lower())
+    if not norm or norm in _GENERIC_LOC:
+        original = (loc or "").strip()
+        return f"{hq} ({original})" if original else hq
+    return loc
+
+
 def html_strip(html: str) -> str:
     text = re.sub(r"<[^>]+>", " ", html or "")
     return re.sub(r"\s+", " ", text).strip()
@@ -58,11 +79,13 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
         ats = info.get("ats")
         ats_token = info["token"]
         ctags = info.get("tags", []) or []
+        hq = info.get("hq")
     else:
         slug = slugify(j.company)
         ats = None
         ats_token = None
         ctags = []
+        hq = None
 
     company_row = {
         "slug": slug,
@@ -85,7 +108,7 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
         "source": j.source,
         "title": j.title,
         "company_slug": slug,
-        "location": j.location or None,
+        "location": _enrich_location(j.location, hq),
         "is_remote": bool(j.is_remote),
         "employment_type": j.employment_type or None,
         "description": j.description or None,
