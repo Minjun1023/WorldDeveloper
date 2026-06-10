@@ -29,6 +29,14 @@ class ProfileServiceTest {
         assertThat(r.topK()).isEqualTo(9);
     }
 
+    @org.junit.jupiter.api.Test
+    void passesBioIntoRecommendRequest() {
+        UserProfileEntity e = profile();
+        e.setBio("backend engineer who loves distributed systems");
+        RecommendRequest r = ProfileService.toRecommendRequest(e, null);
+        assertThat(r.bio()).isEqualTo("backend engineer who loves distributed systems");
+    }
+
     @Test
     void mergesNoteSkillsAndLocations() {
         var note = new com.devjobs.strategist.AiClient.ParseResult.Profile(

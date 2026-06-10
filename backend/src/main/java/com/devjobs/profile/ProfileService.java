@@ -39,6 +39,7 @@ public class ProfileService {
         e.setPreferredLocations(p.preferredLocations() == null ? List.of() : p.preferredLocations());
         e.setRemotePreference(p.remotePreference());
         e.setDesiredSalaryUsd(p.desiredSalaryUsd());
+        e.setBio(p.bio());
         e.setUpdatedAt(OffsetDateTime.now());
         repo.save(e);
     }
@@ -50,7 +51,7 @@ public class ProfileService {
 
     private ProfileDto.Profile toDto(UserProfileEntity e) {
         return new ProfileDto.Profile(e.getSkills(), e.getSeniority(), e.getYearsExperience(),
-            e.getPreferredLocations(), e.getRemotePreference(), e.getDesiredSalaryUsd());
+            e.getPreferredLocations(), e.getRemotePreference(), e.getDesiredSalaryUsd(), e.getBio());
     }
 
     public static RecommendRequest toRecommendRequest(UserProfileEntity e, AiClient.ParseResult.Profile note) {
@@ -61,7 +62,7 @@ public class ProfileService {
         String remote = note != null && note.remotePreference() != null ? note.remotePreference() : e.getRemotePreference();
         Integer salary = note != null && note.desiredSalaryUsd() != null ? note.desiredSalaryUsd() : e.getDesiredSalaryUsd();
         return new RecommendRequest(
-            skills, seniority, years, null, null,
+            skills, seniority, years, e.getBio(), null,
             true,
             locs, remote, salary, null, 9, 2);
     }
