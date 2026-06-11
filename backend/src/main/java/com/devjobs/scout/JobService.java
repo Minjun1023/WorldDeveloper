@@ -203,8 +203,11 @@ public class JobService {
 
         RemoteDto remote = new RemoteDto(j.getRemoteEligibility(), j.getRemoteEvidence());
 
-        SalaryDto salary = (j.getSalaryMinUsd() != null || j.getSalaryMaxUsd() != null)
-            ? new SalaryDto(j.getSalaryMinUsd(), j.getSalaryMaxUsd())
+        boolean hasSalary = j.getSalaryMinUsd() != null || j.getSalaryMaxUsd() != null
+            || j.getSalaryMin() != null || j.getSalaryMax() != null;
+        SalaryDto salary = hasSalary
+            ? new SalaryDto(j.getSalaryMinUsd(), j.getSalaryMaxUsd(),
+                            j.getSalaryMin(), j.getSalaryMax(), j.getSalaryCurrency(), j.getSalaryPeriod())
             : null;
 
         // description(HTML) 우선, 없으면 description_text(plain)
@@ -258,8 +261,11 @@ public class JobService {
 
         RemoteDto remote = new RemoteDto(j.getRemoteEligibility(), j.getRemoteEvidence());
 
-        SalaryDto salary = (j.getSalaryMinUsd() != null || j.getSalaryMaxUsd() != null)
-            ? new SalaryDto(j.getSalaryMinUsd(), j.getSalaryMaxUsd())
+        boolean hasSalary = j.getSalaryMinUsd() != null || j.getSalaryMaxUsd() != null
+            || j.getSalaryMin() != null || j.getSalaryMax() != null;
+        SalaryDto salary = hasSalary
+            ? new SalaryDto(j.getSalaryMinUsd(), j.getSalaryMaxUsd(),
+                            j.getSalaryMin(), j.getSalaryMax(), j.getSalaryCurrency(), j.getSalaryPeriod())
             : null;
 
         return new JobDto(
