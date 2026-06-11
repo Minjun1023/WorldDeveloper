@@ -5,14 +5,8 @@ import type { ReactNode } from "react";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { SaveJobButton } from "@/components/job/SaveJobButton";
 import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
+import { formatSalary } from "@/lib/salary";
 import type { JobDetail } from "@/lib/types";
-
-function salaryText(min?: number | null, max?: number | null): string | null {
-  if (!min && !max) return null;
-  const k = (n: number) => `$${Math.round(n / 1000)}k`;
-  if (min && max) return `${k(min)} – ${k(max)}`;
-  return k((min ?? max)!);
-}
 
 const VISA_LABEL: Record<string, { text: string; cls: string }> = {
   sponsors: { text: "지원 가능", cls: "text-success" },
@@ -23,7 +17,7 @@ const VISA_LABEL: Record<string, { text: string; cls: string }> = {
 export function JobActionCard({ job, loggedIn, companyJobCount }: {
   job: JobDetail; loggedIn: boolean; companyJobCount?: number;
 }) {
-  const salary = salaryText(job.salary?.min_usd, job.salary?.max_usd);
+  const salary = formatSalary(job.salary);
   const posted = postedRelativeLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
   const visa = job.visa?.status ? VISA_LABEL[job.visa.status] : undefined;

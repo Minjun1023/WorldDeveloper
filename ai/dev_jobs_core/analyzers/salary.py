@@ -81,3 +81,92 @@ def compute_salary_stats(jobs: list[JobPosting]) -> dict:
         "jobs_with_salary": len(samples),
         "disclosure_rate": round(len(samples) / len(jobs), 2) if jobs else 0,
     }
+
+
+import re
+
+# 통화 기호/접두/통화어 → ISO 코드
+_SAL_SYMBOL = {"$": "USD", "£": "GBP", "€": "EUR"}
+_SAL_PREFIX = {"US$": "USD", "C$": "CAD", "A$": "AUD", "S$": "SGD"}
+_SAL_CUR_WORD = re.compile(r"\b(USD|CAD|AUD|SGD|GBP|EUR|CHF)\b")
+
+# 앵커: 연봉 명시 문구(오탐 방지). 금액 직전 ~80자 내에 있어야 인정.
+# 핵심: 연봉어(salary/pay/compensation)를 range/band 또는 금액 맥락과 *바로* 붙여야 한다.
+# 임의 단어를 사이에 허용하면 "compensation package ... a value range of $X"(지분 가치) 같은
+# 비-연봉 금액이 새어 들어온다 → 인접 결합만 인정.
+_SAL_ANCHOR = re.compile(
+    r"(?:salary|pay|compensation)\s+(?:range|band)"                       # "salary range", "pay band"
+    r"|(?:base|annual|target|total|gross|yearly|expected|on[- ]target|ote)\s+(?:salary|pay|compensation)"  # "annual salary"
+    r"|(?:salary|compensation)\s*(?::|of\b|is\b)"                          # "Salary:", "salary of/is"
+    r"|(?:range|band)\s+(?:of|for)\s+(?:the\s+)?(?:base\s+|annual\s+)?(?:salary|pay|compensation)"  # "range of base salary"
+    r"|salary\s+for\s+this",
+    re.I,
+)
+
+# 제외: 금액 직전에 이런 단서가 있으면 연봉이 아님(지분/펀딩/매출/법적/예산 등).
+_SAL_EXCLUDE = re.compile(
+    r"equity|option|grant|vest|valuation|raised|fundrais|funding|revenue"
+    r"|\bARR\b|\bACV\b|contract\s+value|annual\s+contract|damages|stipend|reimburs|budget",
+    re.I,
+)
+
+# 통화기호 + 숫자 + (k) + 구분자 + (통화기호) + 숫자 + (k)
+_SAL_RANGE = re.compile(
+    r"(?P<sym>US\$|C\$|A\$|S\$|[$£€])\s?"
+    r"(?P<min>\d{1,3}(?:,\d{3})+|\d{1,7})(?:\.\d+)?\s?(?P<munit>[kK])?"
+    r"\s*(?:-|–|—|to|~)\s*"
+    r"(?:US\$|C\$|A\$|S\$|[$£€])?\s?"
+    r"(?P<max>\d{1,3}(?:,\d{3})+|\d{1,7})(?:\.\d+)?\s?(?P<xunit>[kK])?"
+)
+
+_SAL_PERIODS = [
+    (re.compile(r"per\s+hour|/\s?hour|hourly|/\s?hr\b|an\s+hour", re.I), "HOUR"),
+    (re.compile(r"per\s+month|monthly|/\s?month|/\s?mo\b", re.I), "MONTH"),
+]
+
+
+def _sal_num(s: str, unit: str | None) -> float:
+    v = float(s.replace(",", ""))
+    if unit and unit.lower() == "k":
+        v *= 1000
+    return v
+
+
+def extract_salary_from_description(text: str | None) -> dict | None:
+    """본문에서 명시된 연봉 '범위'를 추출. 없으면 None.
+
+    정직성: 'salary/pay/compensation range' 등 명시 문구가 금액 직전(~80자)에
+    있어야만 인정(펀딩/매출/지분 $금액 오탐 방지). 범위(두 금액)만, 단일값 제외.
+    반환 {min,max(원본통화 정수), currency(ISO), period(YEAR|MONTH|HOUR)}.
+    """
+    if not text:
+        return None
+    for m in _SAL_RANGE.finditer(text):
+        pre = text[max(0, m.start() - 80): m.start()]
+        if not _SAL_ANCHOR.search(pre):
+            continue
+        # 금액 직전 25자에 지분/펀딩/매출 등 비-연봉 단서가 있으면 스킵(앵커가 통과해도).
+        if _SAL_EXCLUDE.search(text[max(0, m.start() - 25): m.start()]):
+            continue
+        lo = _sal_num(m.group("min"), m.group("munit"))
+        hi = _sal_num(m.group("max"), m.group("xunit") or m.group("munit"))
+        if hi < lo:
+            lo, hi = hi, lo
+        sym = m.group("sym").upper()
+        cur = _SAL_PREFIX.get(sym) or _SAL_SYMBOL.get(sym[-1]) or "USD"
+        cw = _SAL_CUR_WORD.search(text[m.end(): m.end() + 6].upper())
+        if cw:
+            cur = cw.group(1)
+        period = "YEAR"
+        window = text[max(0, m.start() - 30): m.end() + 30]
+        for rx, p in _SAL_PERIODS:
+            if rx.search(window):
+                period = p
+                break
+        if period == "HOUR":
+            if not (5 <= lo <= 2000 and 5 <= hi <= 2000):
+                continue
+        elif not (10_000 <= lo <= 10_000_000 and 10_000 <= hi <= 10_000_000):
+            continue
+        return {"min": int(lo), "max": int(hi), "currency": cur, "period": period}
+    return None

@@ -9,7 +9,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from dev_jobs_core.analyzers.remote_geo import classify_remote_eligibility
-from dev_jobs_core.analyzers.salary import _to_usd_year
+from dev_jobs_core.analyzers.salary import _to_usd_year, extract_salary_from_description
 from dev_jobs_core.analyzers.stack import extract_tech
 from dev_jobs_core.analyzers.visa import classify_visa
 from dev_jobs_core.models import JobPosting
@@ -103,6 +103,15 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
     tags = j.tags or extract_tech(j.description)
     embedding = embed_text(f"{j.title}\n{plain}")
 
+    # 구조화 연봉이 없으면 본문에서 명시 범위 추출(원본 통화 표시 + USD 환산 점수용).
+    raw_min, raw_max = j.salary_min, j.salary_max
+    raw_cur, raw_period = j.salary_currency, j.salary_period
+    if raw_min is None and raw_max is None:
+        ext = extract_salary_from_description(j.description)
+        if ext:
+            raw_min, raw_max = ext["min"], ext["max"]
+            raw_cur, raw_period = ext["currency"], ext["period"]
+
     job_row = {
         "id": j.job_id,
         "source": j.source,
@@ -117,8 +126,12 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
         "posted_at": parse_dt(j.posted_at),
         "closes_at": parse_dt(j.closes_at),
         "tags": tags,
-        "salary_min_usd": _usd(j.salary_min, j.salary_currency, j.salary_period),
-        "salary_max_usd": _usd(j.salary_max, j.salary_currency, j.salary_period),
+        "salary_min": raw_min,
+        "salary_max": raw_max,
+        "salary_currency": raw_cur or None,
+        "salary_period": raw_period or None,
+        "salary_min_usd": _usd(raw_min, raw_cur, raw_period),
+        "salary_max_usd": _usd(raw_max, raw_cur, raw_period),
         "visa_status": status,
         "visa_evidence": evidence,
         "remote_eligibility": remote_status,

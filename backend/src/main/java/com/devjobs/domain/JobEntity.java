@@ -62,6 +62,18 @@ public class JobEntity {
     @Column(name = "salary_max_usd")
     private Integer salaryMaxUsd;
 
+    @Column(name = "salary_min")
+    private Long salaryMin;
+
+    @Column(name = "salary_max")
+    private Long salaryMax;
+
+    @Column(name = "salary_currency")
+    private String salaryCurrency;
+
+    @Column(name = "salary_period")
+    private String salaryPeriod;
+
     @Column(name = "visa_status")
     private String visaStatus;
 
@@ -99,6 +111,10 @@ public class JobEntity {
     public List<String> getTags() { return tags; }
     public Integer getSalaryMinUsd() { return salaryMinUsd; }
     public Integer getSalaryMaxUsd() { return salaryMaxUsd; }
+    public Long getSalaryMin() { return salaryMin; }
+    public Long getSalaryMax() { return salaryMax; }
+    public String getSalaryCurrency() { return salaryCurrency; }
+    public String getSalaryPeriod() { return salaryPeriod; }
     public String getVisaStatus() { return visaStatus; }
     public List<String> getVisaEvidence() { return visaEvidence; }
     public String getRemoteEligibility() { return remoteEligibility; }

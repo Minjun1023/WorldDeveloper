@@ -20,7 +20,7 @@ public final class JobDtos {
 
     public record RemoteDto(String eligibility, List<String> evidence) {}
 
-    public record SalaryDto(Integer minUsd, Integer maxUsd) {}
+    public record SalaryDto(Integer minUsd, Integer maxUsd, Long min, Long max, String currency, String period) {}
 
     public record JobDto(
         String id,

@@ -5,20 +5,12 @@ import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { Card } from "@/components/ui/card";
 import { flagFromLocation } from "@/lib/flags";
 import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
+import { formatSalary } from "@/lib/salary";
 import type { Job } from "@/lib/types";
 
 import { RegisterVerifiedBadge } from "./RegisterVerifiedBadge";
 import { RemoteBadge } from "./RemoteBadge";
 import { VisaBadge } from "./VisaBadge";
-
-function formatSalary(salary?: Job["salary"]): string | null {
-  if (!salary) return null;
-  const { min_usd, max_usd } = salary;
-  if (!min_usd && !max_usd) return null;
-  const k = (n: number) => `$${Math.round(n / 1000)}k`;
-  if (min_usd && max_usd) return `${k(min_usd)} – ${k(max_usd)}`;
-  return k((min_usd ?? max_usd)!);
-}
 
 // 카드 전체가 상세 페이지(/jobs/[id]) 링크. 외부 "지원" 버튼은 상세 페이지에만 둔다.
 // hideVisaBadge: 이미 전부 스폰서인 맥락(홈 "비자 스폰서십" 섹션)에선 중복이라 비자 배지를 숨긴다.

@@ -29,6 +29,10 @@ export interface JobRemote {
 export interface JobSalary {
   min_usd?: number | null;
   max_usd?: number | null;
+  min?: number;
+  max?: number;
+  currency?: string;
+  period?: string;
 }
 
 export interface Job {
