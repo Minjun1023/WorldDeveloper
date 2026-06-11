@@ -13,7 +13,7 @@ _LEVELS = [
     (re.compile(r"\b(?:senior|sr)\b", re.I), "Senior"),
     (re.compile(r"\b(?:junior|jr)\b", re.I), "Junior"),
     (re.compile(r"\bintern\b", re.I), "Intern"),
-    (re.compile(r"\bentry\b", re.I), "Entry"),
+    (re.compile(r"\b(?:entry|new ?grad(?:uate)?)\b", re.I), "Entry"),
 ]
 
 
