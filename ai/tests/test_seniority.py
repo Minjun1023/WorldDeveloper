@@ -19,3 +19,14 @@ def test_no_false_positive_on_substrings():
     assert extract_seniority("Leading Platform Engineer") is None
     assert extract_seniority("Software Engineer") is None
     assert extract_seniority("") is None
+
+
+def test_member_of_technical_staff_is_not_staff_seniority():
+    # 'Member of Technical Staff' = AI 랩의 일반 IC 직함, Staff 시니어리티 아님
+    assert extract_seniority("Member of Technical Staff (Software Engineer)") is None
+    assert extract_seniority("Member of Technical Staff (AI Researcher)") is None
+
+
+def test_real_staff_engineer_still_detected():
+    assert extract_seniority("Staff Software Engineer") == "Staff"
+    assert extract_seniority("Senior Staff Engineer") == "Staff"  # 더 높은 직급 우선

@@ -8,7 +8,7 @@ import re
 
 _LEVELS = [
     (re.compile(r"\bprincipal\b", re.I), "Principal"),
-    (re.compile(r"\bstaff\b", re.I), "Staff"),
+    (re.compile(r"(?<!technical )\bstaff\b", re.I), "Staff"),
     (re.compile(r"\blead\b", re.I), "Lead"),
     (re.compile(r"\b(?:senior|sr)\b", re.I), "Senior"),
     (re.compile(r"\b(?:junior|jr)\b", re.I), "Junior"),
