@@ -108,7 +108,9 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
           AND (:verifiedOnly = false
                OR (visa_status = 'sponsors'
                    AND visa_evidence::text ~ '스폰서 라이선스|Employer Data Hub|erkende referenten'))
+          AND (CAST(:minSalary AS integer) IS NULL OR salary_max_usd >= CAST(:minSalary AS integer))
         ORDER BY
+          CASE WHEN :salarySort THEN salary_max_usd END DESC NULLS LAST,
           CASE WHEN :remotePriority THEN
             (CASE remote_eligibility WHEN 'worldwide' THEN 0 WHEN 'apac_ok' THEN 1 ELSE 2 END)
           ELSE 0 END ASC,
@@ -129,8 +131,10 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
         @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
         @Param("gateMode") String gateMode, @Param("verifiedOnly") boolean verifiedOnly,
+        @Param("minSalary") Integer minSalary,
         @Param("remotePriority") boolean remotePriority,
         @Param("visaPriority") boolean visaPriority, @Param("byRelevance") boolean byRelevance,
+        @Param("salarySort") boolean salarySort,
         @Param("lim") int lim, @Param("off") int off);
 
     @Query(value = """
@@ -159,11 +163,13 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
           AND (:verifiedOnly = false
                OR (visa_status = 'sponsors'
                    AND visa_evidence::text ~ '스폰서 라이선스|Employer Data Hub|erkende referenten'))
+          AND (CAST(:minSalary AS integer) IS NULL OR salary_max_usd >= CAST(:minSalary AS integer))
         """, nativeQuery = true)
     long countSearch(
         @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
         @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
-        @Param("gateMode") String gateMode, @Param("verifiedOnly") boolean verifiedOnly);
+        @Param("gateMode") String gateMode, @Param("verifiedOnly") boolean verifiedOnly,
+        @Param("minSalary") Integer minSalary);
 
     @Query(value = """
         SELECT count(*) FROM jobs
