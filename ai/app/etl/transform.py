@@ -4,6 +4,7 @@
 """
 from __future__ import annotations
 
+import html as html_lib
 import re
 from datetime import UTC, datetime
 from typing import Any
@@ -48,6 +49,7 @@ def _enrich_location(loc: str | None, hq: str | None) -> str | None:
 
 def html_strip(html: str) -> str:
     text = re.sub(r"<[^>]+>", " ", html or "")
+    text = html_lib.unescape(text)   # &mdash; &nbsp; &amp; 등 디코드
     return re.sub(r"\s+", " ", text).strip()
 
 
