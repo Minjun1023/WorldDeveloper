@@ -21,9 +21,12 @@ export function RecommendPreviewCard({ item }: { item: RecommendationItem }) {
         <div className="min-w-0 flex-1">
           <Link href={`/jobs/${encodeURIComponent(job.id)}`} className="block">
             <h3 className="line-clamp-2 text-body font-semibold leading-snug transition-colors hover:text-primary">
-              {job.title}
+              {job.title_ko ?? job.title}
             </h3>
           </Link>
+          {job.title_ko && (
+            <p className="mt-0.5 line-clamp-1 text-caption text-muted-foreground">{job.title}</p>
+          )}
           <p className="mt-1 truncate text-body-sm text-muted-foreground">
             {job.company.display_name}
             {job.location ? ` · ${job.location}` : ""}

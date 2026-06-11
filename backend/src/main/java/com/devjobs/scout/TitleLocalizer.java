@@ -73,6 +73,8 @@ public final class TitleLocalizer {
         {"Application", "애플리케이션"}, {"Applications", "애플리케이션"}, {"Services", "서비스"},
         {"Integration", "통합"}, {"Automation", "자동화"}, {"Performance", "성능"},
         {"Identity", "아이덴티티"}, {"Compute", "컴퓨트"}, {"Networking", "네트워킹"},
+        {"Development", "개발"}, {"Native", "네이티브"}, {"Quality", "품질"}, {"Test", "테스트"},
+        {"Solutions", "솔루션"}, {"Solution", "솔루션"},
         // 기술/언어
         {"Python", "파이썬"}, {"Java", "자바"}, {"Javascript", "자바스크립트"}, {"Typescript", "타입스크립트"},
         {"React", "리액트"}, {"Kubernetes", "쿠버네티스"}, {"Design", "디자인"},
@@ -86,6 +88,24 @@ public final class TitleLocalizer {
 
     private static final Pattern HANGUL = Pattern.compile("[\\uAC00-\\uD7A3\\u3040-\\u30FF\\u3400-\\u9FFF]");
 
+    // 적용 순서대로 미리 컴파일한 규칙(요청마다 재컴파일하지 않도록): 구절 → 단어 → 약어정규화.
+    private record Rule(Pattern pattern, String replacement) {}
+    private static final List<Rule> RULES;
+    static {
+        List<Rule> rules = new java.util.ArrayList<>();
+        for (Map.Entry<String, String> e : PHRASES.entrySet()) rules.add(rule(e.getKey(), e.getValue()));
+        for (Map.Entry<String, String> e : WORDS.entrySet()) rules.add(rule(e.getKey(), e.getValue()));
+        for (String ac : KEEP_ACRONYMS) rules.add(rule(ac, ac)); // 표준 대문자로 정규화
+        RULES = List.copyOf(rules);
+    }
+
+    // 단어 경계 기준 대소문자 무시 치환 규칙. "ai"가 "available" 안에 매칭되지 않도록 lookaround 사용.
+    private static Rule rule(String from, String to) {
+        Pattern p = Pattern.compile("(?<![A-Za-z])" + Pattern.quote(from) + "(?![A-Za-z])",
+            Pattern.CASE_INSENSITIVE);
+        return new Rule(p, Matcher.quoteReplacement(to));
+    }
+
     private static Map<String, String> ordered(String[][] pairs) {
         // 키 길이 내림차순(최장일치 우선). LinkedHashMap 으로 순서 보존.
         Map<String, String> m = new LinkedHashMap<>();
@@ -96,7 +116,7 @@ public final class TitleLocalizer {
     }
 
     /**
-     * 영어 제목을 한국어 표시용으로 변환. 한국어/일본어 등 비라틴 문자가 이미 들어있으면 원문 유지(null 반환 안 함).
+     * 영어 제목을 한국어 표시용으로 변환. 한국어/일본어 등 비라틴 문자가 이미 들어있으면 원문 유지(null 반환).
      * 글로서리 적용으로 한글이 하나도 생기지 않으면(전부 미등록) null 반환 — 호출부는 영어 원제목만 표시.
      */
     public static String localize(String title) {
@@ -105,23 +125,10 @@ public final class TitleLocalizer {
         if (HANGUL.matcher(title).find()) return null;
 
         String s = title;
-        for (Map.Entry<String, String> e : PHRASES.entrySet()) {
-            s = replaceWord(s, e.getKey(), e.getValue());
-        }
-        for (Map.Entry<String, String> e : WORDS.entrySet()) {
-            s = replaceWord(s, e.getKey(), e.getValue());
-        }
-        for (String ac : KEEP_ACRONYMS) {
-            s = replaceWord(s, ac, ac); // 표준 대문자로 정규화
+        for (Rule r : RULES) {
+            s = r.pattern().matcher(s).replaceAll(r.replacement());
         }
         // 글로서리 매칭이 전혀 없었으면(한글 0) 표시 이득 없음 → null.
         return HANGUL.matcher(s).find() ? s.trim() : null;
-    }
-
-    // 단어 경계 기준 대소문자 무시 치환. "ai"가 "available" 안에 매칭되지 않도록 \b 사용.
-    private static String replaceWord(String text, String from, String to) {
-        Pattern p = Pattern.compile("(?<![A-Za-z])" + Pattern.quote(from) + "(?![A-Za-z])",
-            Pattern.CASE_INSENSITIVE);
-        return p.matcher(text).replaceAll(Matcher.quoteReplacement(to));
     }
 }
