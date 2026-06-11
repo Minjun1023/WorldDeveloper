@@ -26,6 +26,10 @@ export function JobDescription({ jobId, original }: { jobId: string; original: s
   // 마운트 시 자동 번역(공고당 1회, 백엔드 캐시). 도착 전엔 원문이 placeholder.
   useEffect(() => {
     let alive = true;
+    setLoading(true);
+    setKo(null);
+    setFailed(false);
+    setView("ko");
     fetch("/api/translate", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -34,7 +38,13 @@ export function JobDescription({ jobId, original }: { jobId: string; original: s
       .then(async (res) => {
         if (!res.ok) throw new Error(String(res.status));
         const data = (await res.json()) as Translation;
-        if (alive) setKo(data.description);
+        if (!alive) return;
+        if (data.description) {
+          setKo(data.description);
+        } else {
+          setFailed(true);
+          setView("original");
+        }
       })
       .catch(() => {
         if (alive) {
@@ -84,6 +94,7 @@ export function JobDescription({ jobId, original }: { jobId: string; original: s
             <button
               type="button"
               onClick={() => setView("ko")}
+              disabled={loading}
               className={cn(
                 "rounded-lg px-3 py-1 font-semibold transition-colors",
                 view === "ko" ? "bg-primary/10 text-primary" : "text-primary hover:bg-primary/5",

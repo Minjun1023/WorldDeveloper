@@ -34,6 +34,8 @@ describe("JobDescription", () => {
     vi.stubGlobal("fetch", mockTranslate({ status: 503 }));
     render(<JobDescription jobId="a:b:1" original={ORIGINAL} />);
     expect(await screen.findByText(/English body content here/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "원문" })).not.toBeInTheDocument();
+    expect(screen.getByText(/번역을 사용할 수 없어/)).toBeInTheDocument();
   });
 
   it("원문 토글을 누르면 원문을 고정한다", async () => {
