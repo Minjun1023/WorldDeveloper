@@ -19,7 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/recommend/me")
 public class MeRecommendController {
 
-    public record MeRecommendRequest(String note) {}
+    /** topK: 호출처별 개수 제어(홈 미리보기 3 / 추천 페이지 20). JSON 은 전역 SNAKE_CASE 라 top_k. */
+    public record MeRecommendRequest(String note, Integer topK) {}
 
     private final ProfileService profileService;
     private final RecommendService recommendService;
@@ -59,7 +60,8 @@ public class MeRecommendController {
             AiClient.ParseResult parsed = aiClient.parseProfile(noteText);
             if (parsed != null) note = parsed.profile();
         }
-        RecommendRequest rr = ProfileService.toRecommendRequest(profileOpt.get(), note);
+        int topK = req != null && req.topK() != null ? req.topK() : ProfileService.DEFAULT_TOP_K;
+        RecommendRequest rr = ProfileService.toRecommendRequest(profileOpt.get(), note, topK);
         RecommendResponse rec = recommendService.recommend(rr);
         java.util.Set<String> disliked = feedbackService.dislikedJobIds(id);
         if (!disliked.isEmpty()) {

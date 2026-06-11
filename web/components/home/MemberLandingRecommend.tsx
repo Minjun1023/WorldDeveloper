@@ -8,7 +8,8 @@ import { InteractiveJobCard, type Reaction } from "@/components/recommend/Intera
 import { recordEvents } from "@/lib/feedback";
 import type { RecommendResponse } from "@/lib/types";
 
-const TOP_N = 6;
+// 홈은 "미리보기" 역할만: 1행(3개) 티저, 전체 목록·조건 입력은 /recommend. (역할 분리)
+const TOP_N = 3;
 
 export function MemberLandingRecommend() {
   const [loading, setLoading] = useState(true);
@@ -22,7 +23,7 @@ export function MemberLandingRecommend() {
     (async () => {
       try {
         const [recRes, interRes] = await Promise.all([
-          fetch("/api/me/recommend", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ note: null }) }),
+          fetch("/api/me/recommend", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ note: null, top_k: TOP_N }) }),
           fetch("/api/me/interactions"),
         ]);
         if (recRes.status === 409) { setNeedsProfile(true); return; }
@@ -63,7 +64,7 @@ export function MemberLandingRecommend() {
         title="당신을 위한 6차원 매칭 공고"
         subtitle="프로필 기반으로 스택·비자·지역·레벨·연봉·의미 6축 점수를 계산했어요."
         href="/recommend"
-        hrefLabel="전체 보기"
+        hrefLabel="추천 전체 보기"
       />
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {visible.map((item, i) => (

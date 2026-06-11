@@ -54,17 +54,27 @@ public class ProfileService {
             e.getPreferredLocations(), e.getRemotePreference(), e.getDesiredSalaryUsd(), e.getBio());
     }
 
+    /** 기본 topK(9) — 기존 호출처/테스트 호환용. */
     public static RecommendRequest toRecommendRequest(UserProfileEntity e, AiClient.ParseResult.Profile note) {
+        return toRecommendRequest(e, note, DEFAULT_TOP_K);
+    }
+
+    public static final int DEFAULT_TOP_K = 9;
+    public static final int MAX_TOP_K = 30;
+
+    public static RecommendRequest toRecommendRequest(
+            UserProfileEntity e, AiClient.ParseResult.Profile note, int topK) {
         List<String> skills = union(e.getSkills(), note == null ? null : note.skills());
         List<String> locs = union(e.getPreferredLocations(), note == null ? null : note.preferredLocations());
         String seniority = note != null && note.seniority() != null ? note.seniority() : e.getSeniority();
         Integer years = note != null && note.yearsExperience() != null ? note.yearsExperience() : e.getYearsExperience();
         String remote = note != null && note.remotePreference() != null ? note.remotePreference() : e.getRemotePreference();
         Integer salary = note != null && note.desiredSalaryUsd() != null ? note.desiredSalaryUsd() : e.getDesiredSalaryUsd();
+        int safeTopK = Math.min(Math.max(1, topK), MAX_TOP_K);
         return new RecommendRequest(
             skills, seniority, years, e.getBio(), null,
             true,
-            locs, remote, salary, null, 9, 2);
+            locs, remote, salary, null, safeTopK, 2);
     }
 
     private static List<String> union(List<String> a, List<String> b) {
