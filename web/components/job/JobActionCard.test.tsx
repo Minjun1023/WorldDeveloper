@@ -21,7 +21,7 @@ describe("JobActionCard 경력/근무형태", () => {
     render(<JobActionCard job={job({ experience_years: 5, seniority: "Senior", employment_type: "FULLTIME" })} loggedIn={false} />);
     expect(screen.getByText("경력")).toBeInTheDocument();
     expect(screen.getByText(/5년\+/)).toBeInTheDocument();
-    expect(screen.getByText(/Senior/)).toBeInTheDocument();
+    expect(screen.getByText(/시니어/)).toBeInTheDocument();
     expect(screen.getByText("근무형태")).toBeInTheDocument();
     expect(screen.getByText("정규직")).toBeInTheDocument();
   });
@@ -29,6 +29,16 @@ describe("JobActionCard 경력/근무형태", () => {
   it("경력 0이면 신입으로 표기", () => {
     render(<JobActionCard job={job({ experience_years: 0 })} loggedIn={false} />);
     expect(screen.getByText("신입")).toBeInTheDocument();
+  });
+
+  it("seniority Entry/New Grad 는 신입으로 표기", () => {
+    render(<JobActionCard job={job({ seniority: "Entry" })} loggedIn={false} />);
+    expect(screen.getByText("신입")).toBeInTheDocument();
+  });
+
+  it("seniority Intern 은 인턴으로 표기(신입과 구분)", () => {
+    render(<JobActionCard job={job({ seniority: "Intern" })} loggedIn={false} />);
+    expect(screen.getByText("인턴")).toBeInTheDocument();
   });
 
   it("데이터 없으면 경력/근무형태 행을 생략한다", () => {

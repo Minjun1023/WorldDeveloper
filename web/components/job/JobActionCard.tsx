@@ -22,10 +22,17 @@ const EMP_LABEL: Record<string, string> = {
   INTERN: "인턴",
 };
 
-// 경력 표기: 0=신입, n>0="n년+". seniority 와 합쳐 "Senior · 5년+".
+const SENIORITY_KO: Record<string, string> = {
+  Principal: "프린시플", Staff: "스태프", Lead: "리드",
+  Senior: "시니어", Junior: "주니어", Intern: "인턴", Entry: "신입",
+};
+
+// 경력 표기: Entry/0년=신입, 그 외 직급(한국어)+연차. 둘 다 없으면 null.
 function experienceText(years?: number | null, seniority?: string | null): string | null {
-  const exp = years == null ? null : years === 0 ? "신입" : `${years}년+`;
-  return [seniority, exp].filter(Boolean).join(" · ") || null;
+  if (seniority === "Entry" || years === 0) return "신입";
+  const level = seniority ? (SENIORITY_KO[seniority] ?? seniority) : null;
+  const yrs = years != null ? `${years}년+` : null;
+  return [level, yrs].filter(Boolean).join(" · ") || null;
 }
 
 // 상세 우측 sticky 카드: 지원/저장 + 핵심 메타 + 회사 미니카드.
