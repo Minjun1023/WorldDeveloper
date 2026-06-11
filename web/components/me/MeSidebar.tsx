@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, FileText, ListChecks, User } from "lucide-react";
+import { Bell, Bookmark, FileText, ListChecks, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 const ITEMS = [
   { href: "/me/profile", label: "프로필", icon: User },
   { href: "/me/saved", label: "저장한 공고", icon: Bookmark },
+  { href: "/me/searches", label: "저장 검색", icon: Bell },
   { href: "/me/applications", label: "지원 현황", icon: ListChecks },
   { href: "/me/coach", label: "이력서 코치", icon: FileText },
 ];
