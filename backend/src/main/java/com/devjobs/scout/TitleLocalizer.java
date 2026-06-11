@@ -164,11 +164,15 @@ public final class TitleLocalizer {
         // 한국어가 전혀 생기지 않았으면(미등록) 표시 이득 없음 → null. (일본어 잔존만으론 부족)
         if (!KOREAN.matcher(s).find()) return null;
         // 카타카나가 붙어있어 한글↔영문이 공백 없이 맞닿은 경우 띄어쓰기(예 "시니어SRE엔지니어").
-        s = s.replaceAll("([\\uAC00-\\uD7A3])([A-Za-z])", "$1 $2")
-             .replaceAll("([A-Za-z])([\\uAC00-\\uD7A3])", "$1 $2")
-             .replaceAll("\\s{2,}", " ");
+        s = SPACE_KO_LATIN.matcher(s).replaceAll("$1 $2");
+        s = SPACE_LATIN_KO.matcher(s).replaceAll("$1 $2");
+        s = MULTI_SPACE.matcher(s).replaceAll(" ");
         return dedupeBilingual(s.trim());
     }
+
+    private static final Pattern SPACE_KO_LATIN = Pattern.compile("([\\uAC00-\\uD7A3])([A-Za-z])");
+    private static final Pattern SPACE_LATIN_KO = Pattern.compile("([A-Za-z])([\\uAC00-\\uD7A3])");
+    private static final Pattern MULTI_SPACE = Pattern.compile("\\s{2,}");
 
     // 일·영 병기 제목은 같은 직함이 두 언어로 들어와 로컬라이즈 후 "백엔드 엔지니어/백엔드 엔지니어(...)" 처럼
     // 중복될 수 있다. '/'·'／'·'・' 구분 세그먼트 중 다른 세그먼트에 포함되는(부분문자열) 것을 제거해 정리한다.
@@ -184,6 +188,8 @@ public final class TitleLocalizer {
             if (t.isEmpty()) continue;
             // 한국어가 없는 세그먼트(AI, ML 등)는 슬래시 의미 보존을 위해 합치지 않고 그대로 둔다.
             if (!KOREAN.matcher(t).find()) return s;
+            // 가정: 구분된 세그먼트는 같은 직함의 일·영 중복이라 한쪽이 다른 쪽의 부분문자열(긴 쪽 유지).
+            // 현재 일본어 14건은 모두 이 패턴. 서로 다른 두 직함이 우연히 부분문자열인 경우는 미발생(후속 시 길이비 게이트 고려).
             boolean redundant = false;
             for (int i = 0; i < kept.size(); i++) {
                 if (kept.get(i).contains(t)) { redundant = true; break; }
