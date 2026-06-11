@@ -25,7 +25,7 @@ export function SaveJobButton({ jobId, loggedIn, className }: { jobId: string; l
     return (
       <Link
         href={`/signin?callbackUrl=${encodeURIComponent(`/jobs/${encodeURIComponent(jobId)}`)}`}
-        className={cn("inline-flex h-11 items-center justify-center gap-1.5 rounded-[10px] border border-border px-4 text-body-sm font-semibold text-foreground transition-colors hover:bg-accent", className)}
+        className={cn("inline-flex h-11 items-center justify-center gap-1.5 rounded-[10px] border border-border px-4 text-body-sm font-semibold text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", className)}
       >
         <Heart className="h-4 w-4" aria-hidden="true" /> 저장
       </Link>
@@ -48,7 +48,7 @@ export function SaveJobButton({ jobId, loggedIn, className }: { jobId: string; l
       type="button"
       onClick={toggle}
       className={cn(
-        "inline-flex h-11 items-center justify-center gap-1.5 rounded-[10px] border px-4 text-body-sm font-semibold transition-colors",
+        "inline-flex h-11 items-center justify-center gap-1.5 rounded-[10px] border px-4 text-body-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         saved ? "border-primary/40 bg-primary/5 text-primary" : "border-border text-foreground hover:bg-accent",
         className,
       )}

@@ -7,7 +7,7 @@ export interface HomeStats {
   countries: number;
 }
 
-export function HeroStats({ stats }: { stats: HomeStats }) {
+export function HeroStats({ stats, compact = false }: { stats: HomeStats; compact?: boolean }) {
   const items = [
     { value: stats.sponsors, label: "스폰서십 명시 공고" },
     { value: stats.total, label: "전체 공고" },
@@ -18,7 +18,13 @@ export function HeroStats({ stats }: { stats: HomeStats }) {
   if (items.length === 0) return null;
 
   return (
-    <div className="mx-auto mt-12 grid max-w-4xl grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+    <div
+      className={
+        compact
+          ? "grid grid-cols-2 gap-3"
+          : "grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"
+      }
+    >
       {items.map((i) => (
         <div
           key={i.label}

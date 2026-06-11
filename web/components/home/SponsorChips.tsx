@@ -9,7 +9,7 @@ export function SponsorChips({ companies }: { companies: CompanySummary[] }) {
   if (companies.length === 0) return null;
 
   return (
-    <div className="mt-7 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-body-sm">
+    <div className="mt-7 flex flex-wrap items-center justify-start gap-x-5 gap-y-2 text-body-sm">
       <span className="text-muted-foreground">검증 회사</span>
       {companies.map((c) => (
         <Link
