@@ -12,6 +12,27 @@ from .greenhouse import _strip_html
 
 BASE = "https://api.ashbyhq.com/posting-api/job-board"
 
+# Ashby interval("1 YEAR" 등) → JobPosting.salary_period
+_INTERVAL_PERIOD = {"YEAR": "YEAR", "MONTH": "MONTH", "HOUR": "HOUR", "WEEK": "WEEK", "DAY": "DAY"}
+
+
+def _salary_from_comp(comp: dict) -> tuple[int | None, int | None, str, str]:
+    """Ashby compensation → (salary_min, salary_max, currency, period).
+
+    minValue/maxValue/currencyCode/interval 는 component 에 '직접' 들어있다
+    (중첩 'value' 키가 아님 — 과거 버그). compensationTiers[0].components 우선,
+    없으면 summaryComponents 폴백. 'Salary' 타입만 사용.
+    """
+    comp = comp or {}
+    tiers = comp.get("compensationTiers") or []
+    components = (tiers[0].get("components") if tiers else None) or comp.get("summaryComponents") or []
+    for c in components:
+        if c.get("compensationType") == "Salary" and c.get("minValue") is not None:
+            parts = (c.get("interval") or "").split()
+            period = _INTERVAL_PERIOD.get(parts[-1].upper(), "YEAR") if parts else "YEAR"
+            return c.get("minValue"), c.get("maxValue"), c.get("currencyCode") or "", period
+    return None, None, "", ""
+
 
 async def fetch(company: str, query: str = "", limit: int = 100) -> list[JobPosting]:
     url = f"{BASE}/{company}"
@@ -46,20 +67,8 @@ async def fetch(company: str, query: str = "", limit: int = 100) -> list[JobPost
         }
         emp = emp_mapping.get(emp_type, emp_type)
 
-        # Ashby 의 compensation 구조: {compensationTierSummary, compensationTiers}
-        comp = item.get("compensation") or {}
-        comp_tiers = comp.get("compensationTiers") or []
-        salary_min, salary_max, currency = None, None, ""
-        if comp_tiers:
-            tier = comp_tiers[0]
-            tier_components = tier.get("components") or []
-            for c in tier_components:
-                if c.get("compensationType") == "Salary":
-                    val = c.get("value") or {}
-                    salary_min = val.get("minValue")
-                    salary_max = val.get("maxValue")
-                    currency = val.get("currencyCode", "")
-                    break
+        salary_min, salary_max, currency, salary_period = _salary_from_comp(
+            item.get("compensation") or {})
 
         postings.append(JobPosting(
             job_id=f"ashby:{company}:{item.get('id')}",
@@ -75,7 +84,7 @@ async def fetch(company: str, query: str = "", limit: int = 100) -> list[JobPost
             salary_min=salary_min,
             salary_max=salary_max,
             salary_currency=currency,
-            salary_period="YEAR" if salary_min else "",
+            salary_period=salary_period,
             # 기술 스택은 transform 의 extract_tech 가 추출. department 는 스택이 아니므로 제외.
             tags=[],
         ))
