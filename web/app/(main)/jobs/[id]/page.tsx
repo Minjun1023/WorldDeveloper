@@ -53,7 +53,8 @@ export default async function JobDetailPage({ params }: { params: { id: string }
           <div className="flex items-start gap-3">
             <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={48} />
             <div className="min-w-0">
-              <h1 className="text-h1">{job.title}</h1>
+              <h1 className="text-h1">{job.title_ko ?? job.title}</h1>
+              {job.title_ko && <p className="mt-0.5 text-body-sm text-muted-foreground">{job.title}</p>}
               <p className="mt-1 text-muted-foreground">
                 {[job.company.display_name, job.location, job.is_remote ? "원격" : null].filter(Boolean).join(" · ")}
               </p>

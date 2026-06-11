@@ -82,7 +82,7 @@ class CoachChatControllerTest {
 
     private static JobDetailDto minimalJob(String id) {
         // company/visa/remote/salary 등은 buildContext가 null 허용 → 전부 null.
-        return new JobDetailDto(id, "Backend Engineer", null, null, null, null,
+        return new JobDetailDto(id, "Backend Engineer", null, null, null, null, null,
             null, null, null, null, null, null, null, null, null, null);
     }
 
