@@ -49,13 +49,16 @@ def upsert_job(conn: psycopg.Connection, job: dict[str, Any]) -> None:
         INSERT INTO jobs (
             id, source, title, company_slug, location, is_remote, employment_type,
             description, description_text, apply_url, posted_at, closes_at, tags,
+            salary_min, salary_max, salary_currency, salary_period,
             salary_min_usd, salary_max_usd, visa_status, visa_evidence,
             remote_eligibility, remote_evidence, embedding,
             first_seen_at, last_seen_at, is_active
         ) VALUES (
             %(id)s, %(source)s, %(title)s, %(company_slug)s, %(location)s, %(is_remote)s,
             %(employment_type)s, %(description)s, %(description_text)s, %(apply_url)s,
-            %(posted_at)s, %(closes_at)s, %(tags)s, %(salary_min_usd)s, %(salary_max_usd)s,
+            %(posted_at)s, %(closes_at)s, %(tags)s,
+            %(salary_min)s, %(salary_max)s, %(salary_currency)s, %(salary_period)s,
+            %(salary_min_usd)s, %(salary_max_usd)s,
             %(visa_status)s, %(visa_evidence)s,
             %(remote_eligibility)s, %(remote_evidence)s, %(embedding)s,
             now(), now(), true
@@ -71,6 +74,10 @@ def upsert_job(conn: psycopg.Connection, job: dict[str, Any]) -> None:
             posted_at       = EXCLUDED.posted_at,
             closes_at       = EXCLUDED.closes_at,
             tags            = EXCLUDED.tags,
+            salary_min      = EXCLUDED.salary_min,
+            salary_max      = EXCLUDED.salary_max,
+            salary_currency = EXCLUDED.salary_currency,
+            salary_period   = EXCLUDED.salary_period,
             salary_min_usd  = EXCLUDED.salary_min_usd,
             salary_max_usd  = EXCLUDED.salary_max_usd,
             visa_status     = EXCLUDED.visa_status,
