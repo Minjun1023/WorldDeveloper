@@ -38,6 +38,13 @@ class ProfileServiceTest {
     }
 
     @Test
+    void passesTopKThroughAndClamps() {
+        assertThat(ProfileService.toRecommendRequest(profile(), null, 20).topK()).isEqualTo(20);
+        assertThat(ProfileService.toRecommendRequest(profile(), null, 100).topK()).isEqualTo(30); // 상한
+        assertThat(ProfileService.toRecommendRequest(profile(), null, 0).topK()).isEqualTo(1); // 하한
+    }
+
+    @Test
     void mergesNoteSkillsAndLocations() {
         var note = new com.devjobs.strategist.AiClient.ParseResult.Profile(
             List.of("go", "python"), null, null, true, List.of("netherlands"), null, null);
