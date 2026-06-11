@@ -31,6 +31,15 @@ describe("visa-guide", () => {
     expect(guideForLocation("San Francisco, CA")?.slug).toBe("us");
   });
 
+  it("부분일치 오매칭 방지(Fukuoka→일본, Milwaukee→미국, 'uk' 충돌 없음)", () => {
+    // "fukuoka"에 'uk'가 들어있어 영국으로 새지 않아야 함
+    expect(guideForLocation("Fukuoka, Japan")?.slug).toBe("japan");
+    expect(guideForLocation("Milwaukee, WI, United States")?.slug).toBe("us");
+    // 진짜 영국 표기는 여전히 매칭
+    expect(guideForLocation("Remote, UK")?.slug).toBe("uk");
+    expect(guideForLocation("London, UK")?.slug).toBe("uk");
+  });
+
   it("매칭 안 되거나 빈 입력은 undefined", () => {
     expect(guideForLocation("Mars Base One")).toBeUndefined();
     expect(guideForLocation(null)).toBeUndefined();

@@ -43,7 +43,8 @@ export const VISA_GUIDES: VisaGuide[] = [
     },
     registerNote:
       "이 사이트의 '명부검증' 배지는 회사가 위 Home Office 명부에 등재돼 있는지 대조한 결과입니다.",
-    locationKeywords: ["united kingdom", "england", "london", "manchester", "edinburgh", "scotland", "uk"],
+    // 주의: 바닐라 "uk"는 "Fukuoka"(일본) 등에 오매칭하므로 금지. 앞 공백 " uk"로 "Remote, UK"만 안전 매칭.
+    locationKeywords: ["united kingdom", "england", "london", "manchester", "edinburgh", "scotland", " uk"],
   },
   {
     slug: "us",
