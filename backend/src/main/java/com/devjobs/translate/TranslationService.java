@@ -41,8 +41,8 @@ public class TranslationService {
             return Optional.empty();
         }
 
-        // 번역 입력은 정제된 plain text 우선 (HTML 깨짐 방지)
-        String src = job.getDescriptionText() != null ? job.getDescriptionText() : job.getDescription();
+        // 번역 입력은 원문 HTML 우선 — AI 가 format=html 로 구조 보존
+        String src = job.getDescription() != null ? job.getDescription() : job.getDescriptionText();
         AiTranslation t = ai.translate(job.getTitle(), src, lang);
         if (t == null) {
             throw new TranslationUnavailableException();
