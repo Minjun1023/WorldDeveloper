@@ -55,9 +55,26 @@ class TitleLocalizerTest {
     }
 
     @Test
-    void leavesJapaneseOrKoreanTitlesUntouched() {
-        // 이미 CJK 포함(일본어 등)이면 Phase 2 대상 — null 반환(원문 유지).
-        assertThat(TitleLocalizer.localize("バックエンドエンジニア")).isNull();
-        assertThat(TitleLocalizer.localize("シニアSREエンジニア")).isNull();
+    void localizesJapaneseKatakanaTitles() {
+        // Phase 2: 카타카나 직함도 결정적 글로서리로(MT 미사용).
+        assertThat(TitleLocalizer.localize("バックエンドエンジニア")).isEqualTo("백엔드 엔지니어");
+        assertThat(TitleLocalizer.localize("シニアSREエンジニア")).isEqualTo("시니어 SRE 엔지니어");
+        assertThat(TitleLocalizer.localize("エンジニアリングマネージャー")).isEqualTo("엔지니어링 매니저");
+        assertThat(TitleLocalizer.localize("機械学習リサーチャー")).isEqualTo("머신러닝 리서처");
+    }
+
+    @Test
+    void dedupesBilingualJapaneseEnglishTitles() {
+        // 일·영 병기 — 같은 직함 중복을 정리(긴 쪽 유지). 영어 원제목은 화면에 따로 노출됨.
+        assertThat(TitleLocalizer.localize("バックエンドエンジニア/Backend Engineer(Langaku)"))
+            .isEqualTo("백엔드 엔지니어(Langaku)");
+        assertThat(TitleLocalizer.localize("Backend Engineer / バックエンドエンジニア (New Bank Project)"))
+            .isEqualTo("백엔드 엔지니어 (New Bank Project)");
+    }
+
+    @Test
+    void preservesSlashWhenSegmentHasNoKorean() {
+        // "AI/ML" 처럼 한쪽이 한국어 없으면 슬래시 의미 보존(분리하지 않음).
+        assertThat(TitleLocalizer.localize("AI/ML Engineer")).isEqualTo("AI/ML 엔지니어");
     }
 }

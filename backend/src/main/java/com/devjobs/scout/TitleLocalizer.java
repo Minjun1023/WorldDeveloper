@@ -74,7 +74,7 @@ public final class TitleLocalizer {
         {"Integration", "통합"}, {"Automation", "자동화"}, {"Performance", "성능"},
         {"Identity", "아이덴티티"}, {"Compute", "컴퓨트"}, {"Networking", "네트워킹"},
         {"Development", "개발"}, {"Native", "네이티브"}, {"Quality", "품질"}, {"Test", "테스트"},
-        {"Solutions", "솔루션"}, {"Solution", "솔루션"},
+        {"Solutions", "솔루션"}, {"Solution", "솔루션"}, {"App", "앱"},
         // 기술/언어
         {"Python", "파이썬"}, {"Java", "자바"}, {"Javascript", "자바스크립트"}, {"Typescript", "타입스크립트"},
         {"React", "리액트"}, {"Kubernetes", "쿠버네티스"}, {"Design", "디자인"},
@@ -86,24 +86,59 @@ public final class TitleLocalizer {
         "SRE", "DevOps", "MLOps", "SDE", "QA", "API", "ETL", "ELT", "LLM", "NLP",
         "AI", "ML", "UI", "UX", "iOS", "SaaS", "GenAI", "RAG");
 
-    private static final Pattern HANGUL = Pattern.compile("[\\uAC00-\\uD7A3\\u3040-\\u30FF\\u3400-\\u9FFF]");
+    // 일본어(카타카나/한자) 직함 글로서리 — 카타카나 직함은 영어 음차라 결정적 매핑 가능(MT 불필요).
+    // 합성 직함은 한국어 값에 공백을 넣어 "백엔드 엔지니어"처럼 띄어 표기. 일·영 병기 제목도 함께 처리됨.
+    private static final Map<String, String> JA_TERMS = ordered(new String[][] {
+        {"エンジニアリングマネージャー", "엔지니어링 매니저"},
+        {"シニアプロダクトマネージャー", "시니어 프로덕트 매니저"},
+        {"プロダクトマネージャー", "프로덕트 매니저"},
+        {"バックエンドエンジニア", "백엔드 엔지니어"},
+        {"フロントエンドエンジニア", "프론트엔드 엔지니어"},
+        {"モバイルアプリエンジニア", "모바일 앱 엔지니어"},
+        {"システムエンジニア", "시스템 엔지니어"},
+        {"クラウドプラットフォーム", "클라우드 플랫폼"},
+        {"機械学習リサーチャー", "머신러닝 리서처"},
+        {"Webエンジニア", "웹 엔지니어"},
+        {"MLエンジニア", "ML 엔지니어"},
+        {"AIエンジニア", "AI 엔지니어"},
+        {"機械学習", "머신러닝"},
+        {"シニア", "시니어"}, {"ジュニア", "주니어"},
+        {"エンジニア", "엔지니어"}, {"マネージャー", "매니저"}, {"リサーチャー", "리서처"},
+        {"デベロッパー", "개발자"}, {"アーキテクト", "아키텍트"}, {"デザイナー", "디자이너"},
+        {"プロダクト", "프로덕트"}, {"バックエンド", "백엔드"}, {"フロントエンド", "프론트엔드"},
+        {"モバイル", "모바일"}, {"アプリ", "앱"}, {"クラウド", "클라우드"},
+        {"プラットフォーム", "플랫폼"}, {"システム", "시스템"}, {"ウェブ", "웹"},
+        {"セキュリティ", "보안"}, {"データ", "데이터"}, {"インフラ", "인프라"},
+    });
 
-    // 적용 순서대로 미리 컴파일한 규칙(요청마다 재컴파일하지 않도록): 구절 → 단어 → 약어정규화.
+    // 한글 음절(가-힣) — 로컬라이즈가 실제로 한국어를 만들어냈는지 판정용(일본어 잔존과 구분).
+    private static final Pattern KOREAN = Pattern.compile("[\\uAC00-\\uD7A3]");
+
+    // 적용 순서대로 미리 컴파일한 규칙(요청마다 재컴파일하지 않도록): 구절(영) → 단어(영) → 일본어 → 약어정규화.
     private record Rule(Pattern pattern, String replacement) {}
     private static final List<Rule> RULES;
     static {
         List<Rule> rules = new java.util.ArrayList<>();
+        // 일본어 먼저 — "Webエンジニア" 처럼 Latin+카타카나 합성어를 EN 규칙(Web→웹)이 쪼개기 전에 통째 매핑.
+        for (Map.Entry<String, String> e : JA_TERMS.entrySet()) rules.add(jaRule(e.getKey(), e.getValue()));
         for (Map.Entry<String, String> e : PHRASES.entrySet()) rules.add(rule(e.getKey(), e.getValue()));
         for (Map.Entry<String, String> e : WORDS.entrySet()) rules.add(rule(e.getKey(), e.getValue()));
         for (String ac : KEEP_ACRONYMS) rules.add(rule(ac, ac)); // 표준 대문자로 정규화
         RULES = List.copyOf(rules);
     }
 
-    // 단어 경계 기준 대소문자 무시 치환 규칙. "ai"가 "available" 안에 매칭되지 않도록 lookaround 사용.
+    // 영어 단어 규칙: Latin 단어경계. "ai"가 "available" 안에 매칭되지 않도록 lookaround 사용.
     private static Rule rule(String from, String to) {
         Pattern p = Pattern.compile("(?<![A-Za-z])" + Pattern.quote(from) + "(?![A-Za-z])",
             Pattern.CASE_INSENSITIVE);
         return new Rule(p, Matcher.quoteReplacement(to));
+    }
+
+    // 일본어 규칙: 카타카나/한자는 Latin 경계가 의미 없고(예 "シニアSRE…"에서 SRE 가 매칭을 막음)
+    // 자체로 구분되므로 경계 없는 최장일치(JA_TERMS 길이 내림차순)로 치환한다.
+    private static Rule jaRule(String from, String to) {
+        return new Rule(Pattern.compile(Pattern.quote(from), Pattern.CASE_INSENSITIVE),
+            Matcher.quoteReplacement(to));
     }
 
     private static Map<String, String> ordered(String[][] pairs) {
@@ -116,19 +151,46 @@ public final class TitleLocalizer {
     }
 
     /**
-     * 영어 제목을 한국어 표시용으로 변환. 한국어/일본어 등 비라틴 문자가 이미 들어있으면 원문 유지(null 반환).
-     * 글로서리 적용으로 한글이 하나도 생기지 않으면(전부 미등록) null 반환 — 호출부는 영어 원제목만 표시.
+     * 영어/일본어 제목을 한국어 표시용으로 변환. 글로서리(영어+일본어)로 직함을 매핑한다(MT 미사용).
+     * 한글이 하나도 생기지 않으면(미등록) null — 호출부는 원제목만 표시. 미등록 토큰(고유명사 등)은 원문 유지.
      */
     public static String localize(String title) {
         if (title == null || title.isBlank()) return null;
-        // 이미 CJK(일본어 등) 포함이면 손대지 않음(Phase 2 대상).
-        if (HANGUL.matcher(title).find()) return null;
 
         String s = title;
         for (Rule r : RULES) {
             s = r.pattern().matcher(s).replaceAll(r.replacement());
         }
-        // 글로서리 매칭이 전혀 없었으면(한글 0) 표시 이득 없음 → null.
-        return HANGUL.matcher(s).find() ? s.trim() : null;
+        // 한국어가 전혀 생기지 않았으면(미등록) 표시 이득 없음 → null. (일본어 잔존만으론 부족)
+        if (!KOREAN.matcher(s).find()) return null;
+        // 카타카나가 붙어있어 한글↔영문이 공백 없이 맞닿은 경우 띄어쓰기(예 "시니어SRE엔지니어").
+        s = s.replaceAll("([\\uAC00-\\uD7A3])([A-Za-z])", "$1 $2")
+             .replaceAll("([A-Za-z])([\\uAC00-\\uD7A3])", "$1 $2")
+             .replaceAll("\\s{2,}", " ");
+        return dedupeBilingual(s.trim());
+    }
+
+    // 일·영 병기 제목은 같은 직함이 두 언어로 들어와 로컬라이즈 후 "백엔드 엔지니어/백엔드 엔지니어(...)" 처럼
+    // 중복될 수 있다. '/'·'／'·'・' 구분 세그먼트 중 다른 세그먼트에 포함되는(부분문자열) 것을 제거해 정리한다.
+    // 단 "AI/ML" 이나 한자 부기(社内DX・생산성…)처럼 한쪽이 한국어를 포함하지 않으면 건드리지 않는다(구분자 의미 보존).
+    private static final Pattern SEP = Pattern.compile("[/／・｜]");
+    private static String dedupeBilingual(String s) {
+        if (!SEP.matcher(s).find()) return s;
+        String[] parts = s.split("\\s*[/／・｜]\\s*");
+        if (parts.length < 2) return s;
+        java.util.List<String> kept = new java.util.ArrayList<>();
+        for (String raw : parts) {
+            String t = raw.trim();
+            if (t.isEmpty()) continue;
+            // 한국어가 없는 세그먼트(AI, ML 등)는 슬래시 의미 보존을 위해 합치지 않고 그대로 둔다.
+            if (!KOREAN.matcher(t).find()) return s;
+            boolean redundant = false;
+            for (int i = 0; i < kept.size(); i++) {
+                if (kept.get(i).contains(t)) { redundant = true; break; }
+                if (t.contains(kept.get(i))) { kept.set(i, t); redundant = true; break; }
+            }
+            if (!redundant) kept.add(t);
+        }
+        return String.join(" · ", kept);
     }
 }
