@@ -81,3 +81,78 @@ def compute_salary_stats(jobs: list[JobPosting]) -> dict:
         "jobs_with_salary": len(samples),
         "disclosure_rate": round(len(samples) / len(jobs), 2) if jobs else 0,
     }
+
+
+import re
+
+# 통화 기호/접두/통화어 → ISO 코드
+_SAL_SYMBOL = {"$": "USD", "£": "GBP", "€": "EUR"}
+_SAL_PREFIX = {"US$": "USD", "C$": "CAD", "A$": "AUD", "S$": "SGD"}
+_SAL_CUR_WORD = re.compile(r"\b(USD|CAD|AUD|SGD|GBP|EUR|CHF)\b")
+
+# 앵커: 연봉 명시 문구(오탐 방지). 금액 직전 ~80자 내에 있어야 인정.
+_SAL_ANCHOR = re.compile(
+    r"(salary|pay|compensation|comp)\b[^.]{0,40}?(range|band)"
+    r"|(base|annual|target|expected|on[- ]target|ote)\s+(salary|pay|compensation)"
+    r"|range\s+for\s+this\s+(role|position)"
+    r"|salary\s+for\s+this",
+    re.I,
+)
+
+# 통화기호 + 숫자 + (k) + 구분자 + (통화기호) + 숫자 + (k)
+_SAL_RANGE = re.compile(
+    r"(?P<sym>US\$|C\$|A\$|S\$|[$£€])\s?"
+    r"(?P<min>\d{1,3}(?:,\d{3})+|\d{1,7})(?:\.\d+)?\s?(?P<munit>[kK])?"
+    r"\s*(?:-|–|—|to|~)\s*"
+    r"(?:US\$|C\$|A\$|S\$|[$£€])?\s?"
+    r"(?P<max>\d{1,3}(?:,\d{3})+|\d{1,7})(?:\.\d+)?\s?(?P<xunit>[kK])?"
+)
+
+_SAL_PERIODS = [
+    (re.compile(r"per\s+hour|/\s?hour|hourly|/\s?hr\b|an\s+hour", re.I), "HOUR"),
+    (re.compile(r"per\s+month|monthly|/\s?month|/\s?mo\b", re.I), "MONTH"),
+]
+
+
+def _sal_num(s: str, unit: str | None) -> float:
+    v = float(s.replace(",", ""))
+    if unit and unit.lower() == "k":
+        v *= 1000
+    return v
+
+
+def extract_salary_from_description(text: str | None) -> dict | None:
+    """본문에서 명시된 연봉 '범위'를 추출. 없으면 None.
+
+    정직성: 'salary/pay/compensation range' 등 명시 문구가 금액 직전(~80자)에
+    있어야만 인정(펀딩/매출/지분 $금액 오탐 방지). 범위(두 금액)만, 단일값 제외.
+    반환 {min,max(원본통화 정수), currency(ISO), period(YEAR|MONTH|HOUR)}.
+    """
+    if not text:
+        return None
+    for m in _SAL_RANGE.finditer(text):
+        pre = text[max(0, m.start() - 80): m.start()]
+        if not _SAL_ANCHOR.search(pre):
+            continue
+        lo = _sal_num(m.group("min"), m.group("munit"))
+        hi = _sal_num(m.group("max"), m.group("xunit") or m.group("munit"))
+        if hi < lo:
+            lo, hi = hi, lo
+        sym = m.group("sym").upper()
+        cur = _SAL_PREFIX.get(sym) or _SAL_SYMBOL.get(sym[-1]) or "USD"
+        cw = _SAL_CUR_WORD.search(text[m.end(): m.end() + 6].upper())
+        if cw:
+            cur = cw.group(1)
+        period = "YEAR"
+        window = text[max(0, m.start() - 30): m.end() + 30]
+        for rx, p in _SAL_PERIODS:
+            if rx.search(window):
+                period = p
+                break
+        if period == "HOUR":
+            if not (5 <= lo <= 2000 and 5 <= hi <= 2000):
+                continue
+        elif not (10_000 <= lo <= 10_000_000 and 10_000 <= hi <= 10_000_000):
+            continue
+        return {"min": int(lo), "max": int(hi), "currency": cur, "period": period}
+    return None
