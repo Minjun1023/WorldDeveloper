@@ -91,11 +91,22 @@ _SAL_PREFIX = {"US$": "USD", "C$": "CAD", "A$": "AUD", "S$": "SGD"}
 _SAL_CUR_WORD = re.compile(r"\b(USD|CAD|AUD|SGD|GBP|EUR|CHF)\b")
 
 # 앵커: 연봉 명시 문구(오탐 방지). 금액 직전 ~80자 내에 있어야 인정.
+# 핵심: 연봉어(salary/pay/compensation)를 range/band 또는 금액 맥락과 *바로* 붙여야 한다.
+# 임의 단어를 사이에 허용하면 "compensation package ... a value range of $X"(지분 가치) 같은
+# 비-연봉 금액이 새어 들어온다 → 인접 결합만 인정.
 _SAL_ANCHOR = re.compile(
-    r"(salary|pay|compensation|comp)\b[^.]{0,40}?(range|band)"
-    r"|(base|annual|target|expected|on[- ]target|ote)\s+(salary|pay|compensation)"
-    r"|range\s+for\s+this\s+(role|position)"
+    r"(?:salary|pay|compensation)\s+(?:range|band)"                       # "salary range", "pay band"
+    r"|(?:base|annual|target|total|gross|yearly|expected|on[- ]target|ote)\s+(?:salary|pay|compensation)"  # "annual salary"
+    r"|(?:salary|compensation)\s*(?::|of\b|is\b)"                          # "Salary:", "salary of/is"
+    r"|(?:range|band)\s+(?:of|for)\s+(?:the\s+)?(?:base\s+|annual\s+)?(?:salary|pay|compensation)"  # "range of base salary"
     r"|salary\s+for\s+this",
+    re.I,
+)
+
+# 제외: 금액 직전에 이런 단서가 있으면 연봉이 아님(지분/펀딩/매출/법적/예산 등).
+_SAL_EXCLUDE = re.compile(
+    r"equity|option|grant|vest|valuation|raised|fundrais|funding|revenue"
+    r"|\bARR\b|\bACV\b|contract\s+value|annual\s+contract|damages|stipend|reimburs|budget",
     re.I,
 )
 
@@ -133,6 +144,9 @@ def extract_salary_from_description(text: str | None) -> dict | None:
     for m in _SAL_RANGE.finditer(text):
         pre = text[max(0, m.start() - 80): m.start()]
         if not _SAL_ANCHOR.search(pre):
+            continue
+        # 금액 직전 25자에 지분/펀딩/매출 등 비-연봉 단서가 있으면 스킵(앵커가 통과해도).
+        if _SAL_EXCLUDE.search(text[max(0, m.start() - 25): m.start()]):
             continue
         lo = _sal_num(m.group("min"), m.group("munit"))
         hi = _sal_num(m.group("max"), m.group("xunit") or m.group("munit"))
