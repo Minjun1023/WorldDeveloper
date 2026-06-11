@@ -50,7 +50,7 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
         {/* 좌측: 로고 + 데스크톱 링크 */}
         <div className="flex items-center gap-7">
           <Link href="/" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-violet-500 text-white shadow-sm">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-sm">
               <Globe className="h-[18px] w-[18px]" aria-hidden="true" />
             </span>
             <span className="text-lg font-bold tracking-tight text-foreground">
@@ -85,7 +85,7 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
             {!loggedIn && (
               <Link
                 href="/signup"
-                className="rounded-lg bg-foreground px-4 py-2 text-body-sm font-medium text-background transition-opacity hover:opacity-90"
+                className="rounded-lg bg-primary px-4 py-2 text-body-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
               >
                 시작하기
               </Link>
@@ -164,7 +164,7 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
                       href="/signup"
                       role="menuitem"
                       onClick={() => setOpen(false)}
-                      className="mt-1 block rounded-md bg-foreground px-3 py-2 text-center text-body-sm font-medium text-background"
+                      className="mt-1 block rounded-md bg-primary px-3 py-2 text-center text-body-sm font-bold text-primary-foreground"
                     >
                       시작하기
                     </Link>

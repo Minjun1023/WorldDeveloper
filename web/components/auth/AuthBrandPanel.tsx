@@ -11,7 +11,7 @@ const FEATURES = [
 
 export function AuthBrandPanel({ heading, subtitle }: { heading: string; subtitle: string }) {
   return (
-    <div className="hidden flex-col gap-10 bg-gradient-to-br from-primary to-violet-600 p-10 text-white md:flex lg:p-12">
+    <div className="hidden flex-col gap-10 bg-primary p-10 text-white md:flex lg:p-12">
       <Link href="/" className="flex w-fit items-center gap-2">
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
           <Globe className="h-[18px] w-[18px]" aria-hidden="true" />

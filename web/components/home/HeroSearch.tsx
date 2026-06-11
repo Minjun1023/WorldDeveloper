@@ -36,7 +36,7 @@ export function HeroSearch({ regions = [] }: { regions?: RegionCount[] }) {
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="React, Go, ML 등 기술이나 직무를 입력하세요"
+          placeholder="어떤 일을 찾고 계세요? (예: React, 백엔드, ML)"
           aria-label="공고 검색"
           className="h-11 w-full bg-transparent text-body placeholder:text-muted-foreground focus:outline-none"
         />

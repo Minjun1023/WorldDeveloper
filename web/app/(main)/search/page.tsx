@@ -1,9 +1,11 @@
-import { JobCard } from "@/components/job/JobCard";
+import { JobRow } from "@/components/job/JobRow";
 import { Pagination } from "@/components/search/Pagination";
+import { SaveSearchButton } from "@/components/search/SaveSearchButton";
 import { SearchBar } from "@/components/search/SearchBar";
 import { SearchFilters } from "@/components/search/SearchFilters";
 import { SortToggle } from "@/components/search/SortToggle";
 import { fetchJobs, fetchRegions } from "@/lib/api";
+import { getSession } from "@/lib/session-server";
 
 export const dynamic = "force-dynamic";
 
@@ -32,9 +34,10 @@ export default async function SearchPage({
   const includeUnclear = searchParams.include_unclear === "true";
   const verifiedOnly = searchParams.verified_only === "true";
 
-  const [result, regions] = await Promise.all([
+  const [result, regions, session] = await Promise.all([
     fetchJobs({ q, visa, location, region, remote, sort, discipline, track, includeUnclear, verifiedOnly, page, pageSize: PAGE_SIZE }),
     fetchRegions(),
+    getSession(),
   ]);
 
   return (
@@ -60,7 +63,15 @@ export default async function SearchPage({
           ) : (
             <span />
           )}
-          <SortToggle />
+          <div className="flex flex-wrap items-center gap-2">
+            <SaveSearchButton
+              loggedIn={!!session}
+              label={[q, region, visa === "sponsors" ? "스폰서" : null].filter(Boolean).join(" · ") || "전체 공고"}
+              params={{ q, visa, location, region, remote: remote || undefined, sort, discipline, track,
+                        includeUnclear: includeUnclear || undefined }}
+            />
+            <SortToggle />
+          </div>
         </div>
 
         {!result.ok ? (
@@ -76,9 +87,9 @@ export default async function SearchPage({
           </div>
         ) : (
           <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
               {result.data.items.map((job) => (
-                <JobCard key={job.id} job={job} />
+                <JobRow key={job.id} job={job} />
               ))}
             </div>
             <Pagination
