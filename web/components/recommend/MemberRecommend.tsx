@@ -47,16 +47,19 @@ export function MemberRecommend() {
   }
 
   useEffect(() => {
-    run();
-    // 저장/반응 초기 상태(베스트 에포트 — 실패해도 추천 자체는 동작)
-    fetch("/api/me/interactions")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((it) => {
-        if (!it) return;
-        setSaved(new Set<string>(it.saved ?? []));
-        setReactions(it.reactions ?? {});
-      })
-      .catch(() => {});
+    (async () => {
+      // 저장/반응 초기 상태를 먼저 적재(빠른 GET) — 카드가 mount 될 때 반영되도록.
+      // InteractiveJobCard 는 initialSaved 를 useState 로 1회만 시드하므로 순서가 중요하다.
+      try {
+        const r = await fetch("/api/me/interactions");
+        if (r.ok) {
+          const it = await r.json();
+          setSaved(new Set<string>(it.saved ?? []));
+          setReactions(it.reactions ?? {});
+        }
+      } catch { /* 베스트 에포트 — 실패해도 추천 자체는 동작 */ }
+      run();
+    })();
   }, []);
 
   if (needsProfile) {
