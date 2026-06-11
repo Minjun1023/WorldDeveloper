@@ -8,8 +8,10 @@ import re
 from datetime import UTC, datetime
 from typing import Any
 
+from dev_jobs_core.analyzers.experience import extract_experience_years
 from dev_jobs_core.analyzers.remote_geo import classify_remote_eligibility
 from dev_jobs_core.analyzers.salary import _to_usd_year, extract_salary_from_description
+from dev_jobs_core.analyzers.seniority import extract_seniority
 from dev_jobs_core.analyzers.stack import extract_tech
 from dev_jobs_core.analyzers.visa import classify_visa
 from dev_jobs_core.models import JobPosting
@@ -136,6 +138,8 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
         "visa_evidence": evidence,
         "remote_eligibility": remote_status,
         "remote_evidence": remote_evidence,
+        "experience_years": extract_experience_years(plain),
+        "seniority": extract_seniority(j.title or ""),
         "embedding": embedding,
     }
     return company_row, job_row

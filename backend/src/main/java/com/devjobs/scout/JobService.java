@@ -227,7 +227,9 @@ public class JobService {
             j.getTags(),
             visa,
             remote,
-            salary);
+            salary,
+            j.getExperienceYears(),
+            j.getSeniority());
     }
 
     private FacetsDto computeFacets() {

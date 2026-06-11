@@ -14,6 +14,20 @@ const VISA_LABEL: Record<string, { text: string; cls: string }> = {
   no_sponsor: { text: "스폰서 불가", cls: "text-destructive" },
 };
 
+const EMP_LABEL: Record<string, string> = {
+  FULLTIME: "정규직",
+  PARTTIME: "파트타임",
+  CONTRACTOR: "계약직",
+  TEMPORARY: "임시직",
+  INTERN: "인턴",
+};
+
+// 경력 표기: 0=신입, n>0="n년+". seniority 와 합쳐 "Senior · 5년+".
+function experienceText(years?: number | null, seniority?: string | null): string | null {
+  const exp = years == null ? null : years === 0 ? "신입" : `${years}년+`;
+  return [seniority, exp].filter(Boolean).join(" · ") || null;
+}
+
 // 상세 우측 sticky 카드: 지원/저장 + 핵심 메타 + 회사 미니카드.
 export function JobActionCard({ job, loggedIn, companyJobCount }: {
   job: JobDetail; loggedIn: boolean; companyJobCount?: number;
@@ -31,6 +45,10 @@ export function JobActionCard({ job, loggedIn, companyJobCount }: {
     rows.push({ label: "비자", value: <span className="font-semibold text-success">명부검증 스폰서</span> });
   }
   rows.push({ label: "위치", value: <span className="font-semibold">{[job.location, job.is_remote ? "원격" : null].filter(Boolean).join(" · ") || "미표기"}</span> });
+  const exp = experienceText(job.experience_years, job.seniority);
+  if (exp) rows.push({ label: "경력", value: <span className="font-semibold">{exp}</span> });
+  const emp = job.employment_type ? EMP_LABEL[job.employment_type] : undefined;
+  if (emp) rows.push({ label: "근무형태", value: <span className="font-semibold">{emp}</span> });
   if (salary) rows.push({ label: "연봉", value: <span className="font-semibold">{salary}</span> });
   if (posted) rows.push({ label: "게시", value: <span className="font-semibold">{posted}</span> });
   rows.push({ label: "마감", value: <span className={deadline.urgent ? "font-semibold text-warning" : "font-semibold"}>{deadline.text}</span> });
