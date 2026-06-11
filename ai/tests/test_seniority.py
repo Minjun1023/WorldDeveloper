@@ -30,3 +30,13 @@ def test_member_of_technical_staff_is_not_staff_seniority():
 def test_real_staff_engineer_still_detected():
     assert extract_seniority("Staff Software Engineer") == "Staff"
     assert extract_seniority("Senior Staff Engineer") == "Staff"  # 더 높은 직급 우선
+
+
+def test_new_grad_is_entry():
+    assert extract_seniority("iOS Software Engineer, New Grad") == "Entry"
+    assert extract_seniority("New Graduate Software Engineer") == "Entry"
+    assert extract_seniority("Newgrad Backend Engineer") == "Entry"
+
+
+def test_entry_keyword_still_works():
+    assert extract_seniority("Entry Level Engineer") == "Entry"
