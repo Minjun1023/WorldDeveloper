@@ -25,7 +25,7 @@ ENGINE = "libretranslate"
 
 class TranslateRequest(BaseModel):
     title: str = ""
-    description: str = Field("", max_length=20_000)
+    description: str = Field("", max_length=60_000)
     target_lang: str = "ko"
 
 
@@ -36,12 +36,13 @@ class TranslateResponse(BaseModel):
 
 
 async def _lt_translate(
-    client: httpx.AsyncClient, base_url: str, api_key: str, target: str, text: str
+    client: httpx.AsyncClient, base_url: str, api_key: str, target: str, text: str,
+    fmt: str = "text",
 ) -> str:
-    """LibreTranslate /translate 호출. 빈 텍스트는 그대로 빈 문자열."""
+    """LibreTranslate /translate 호출. 빈 텍스트는 그대로 빈 문자열. fmt='html' 이면 태그 보존."""
     if not text:
         return ""
-    payload: dict[str, str] = {"q": text, "source": "auto", "target": target, "format": "text"}
+    payload: dict[str, str] = {"q": text, "source": "auto", "target": target, "format": fmt}
     if api_key:
         payload["api_key"] = api_key
     resp = await client.post(f"{base_url}/translate", json=payload)
@@ -66,7 +67,7 @@ async def translate(req: TranslateRequest) -> TranslateResponse:
     try:
         async with httpx.AsyncClient(timeout=60) as client:
             title = await _lt_translate(client, base_url, api_key, target, req.title)
-            description = await _lt_translate(client, base_url, api_key, target, req.description)
+            description = await _lt_translate(client, base_url, api_key, target, req.description, fmt="html")
     except (httpx.HTTPError, KeyError, ValueError) as e:
         log.warning("libretranslate 호출 실패: %s", e)
         raise HTTPException(502, f"translation request failed: {e}") from e
