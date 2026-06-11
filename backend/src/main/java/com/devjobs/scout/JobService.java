@@ -36,6 +36,58 @@ public class JobService {
         "data-ml", "ml | ai | nlp | scientist | analytics",
         "devops", "devops | sre | kubernetes | infrastructure | terraform | platform");
 
+    // 한국어 자유검색어 → 영어 키워드 치환. 공고 제목/설명이 영어라(english tsvector) 한국어로
+    // 타이핑하면 0건이던 문제 해결. 긴 키 우선 치환 위해 키 길이 내림차순으로 적용한다.
+    private static final List<Map.Entry<String, String>> KO_QUERY_TERMS;
+    static {
+        Map<String, String> m = new java.util.LinkedHashMap<>();
+        // 직무/분야
+        m.put("프론트엔드", "frontend"); m.put("프론트", "frontend");
+        m.put("백엔드", "backend"); m.put("풀스택", "fullstack");
+        m.put("데이터베이스", "database"); m.put("데이터", "data");
+        m.put("머신러닝", "machine learning"); m.put("인공지능", "ai"); m.put("딥러닝", "deep learning");
+        m.put("데브옵스", "devops"); m.put("인프라", "infrastructure"); m.put("클라우드", "cloud");
+        m.put("플랫폼", "platform"); m.put("시스템", "systems"); m.put("네트워크", "network");
+        m.put("보안", "security"); m.put("게임", "game"); m.put("블록체인", "blockchain");
+        m.put("임베디드", "embedded"); m.put("알고리즘", "algorithm"); m.put("서버", "server");
+        m.put("안드로이드", "android"); m.put("아이오에스", "ios"); m.put("모바일", "mobile"); m.put("웹", "web");
+        // 언어/기술
+        m.put("자바스크립트", "javascript"); m.put("타입스크립트", "typescript"); m.put("자바", "java");
+        m.put("파이썬", "python"); m.put("리액트", "react"); m.put("뷰", "vue"); m.put("앵귤러", "angular");
+        m.put("노드", "node"); m.put("코틀린", "kotlin"); m.put("스위프트", "swift"); m.put("러스트", "rust");
+        m.put("고랭", "golang"); m.put("스칼라", "scala"); m.put("루비", "ruby"); m.put("쿠버네티스", "kubernetes");
+        // 레벨
+        m.put("시니어", "senior"); m.put("주니어", "junior");
+        KO_QUERY_TERMS = m.entrySet().stream()
+            .sorted((a, b) -> b.getKey().length() - a.getKey().length())
+            .toList();
+    }
+
+    // 과도하게 좁히는 일반어(websearch AND 의미라 recall 손해) — 치환 후 제거한다.
+    private static final List<String> KO_QUERY_DROP = List.of(
+        "개발자", "엔지니어", "채용", "공고", "구인", "구직", "모집", "포지션", "직무", "일자리", "직군");
+
+    /** 한국어 검색어를 영어 키워드로 치환. 알 수 없는 한글 토큰은 제거(0매칭 방지), 전부 비면 원문 유지. */
+    static String translateKoreanQuery(String q) {
+        if (q == null || q.isBlank()) return q;
+        String s = q;
+        for (Map.Entry<String, String> e : KO_QUERY_TERMS) {
+            s = s.replace(e.getKey(), " " + e.getValue() + " ");
+        }
+        for (String drop : KO_QUERY_DROP) {
+            s = s.replace(drop, " ");
+        }
+        // 잔여 한글 토큰 제거(영어 코퍼스에 매칭되지 않아 결과를 죽임).
+        StringBuilder out = new StringBuilder();
+        for (String tok : s.trim().split("\\s+")) {
+            if (tok.isBlank() || tok.matches(".*[가-힣ㄱ-ㅎㅏ-ㅣ].*")) continue;
+            if (out.length() > 0) out.append(' ');
+            out.append(tok);
+        }
+        String result = out.toString();
+        return result.isBlank() ? q.trim() : result;
+    }
+
     private record Region(String key, String label, String regex) {} // regex null = 원격(is_remote)
     private static final List<Region> REGIONS = List.of(
         new Region("remote", "원격", null),
@@ -100,7 +152,7 @@ public class JobService {
             gateMode = "remote".equals(track) ? "remote"
                      : "relocation".equals(track) ? "relocation" : "both";
         }
-        String qParam = hasQuery ? q.trim() : null;
+        String qParam = hasQuery ? translateKoreanQuery(q.trim()) : null;
         String visaParam = (visa != null && !visa.isBlank()) ? visa.trim() : null;
         String locParam = (location != null && !location.isBlank())
             ? "%" + location.trim().toLowerCase() + "%" : null;
