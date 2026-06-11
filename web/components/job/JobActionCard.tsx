@@ -42,10 +42,23 @@ export function JobActionCard({ job, loggedIn, companyJobCount }: {
   return (
     <div className="space-y-4 rounded-2xl border border-border bg-surface p-5 shadow-sm">
       <div className="space-y-2">
-        <a href={job.apply_url ?? "#"} target="_blank" rel="noopener noreferrer"
-          className="flex h-11 w-full items-center justify-center gap-1.5 rounded-[10px] bg-primary text-body-sm font-bold text-primary-foreground transition-opacity hover:opacity-90">
-          지원하기 <ExternalLink className="h-4 w-4" aria-hidden="true" />
-        </a>
+        {job.apply_url ? (
+          <a
+            href={job.apply_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex h-11 w-full items-center justify-center gap-1.5 rounded-[10px] bg-primary text-body-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            지원하기 <ExternalLink className="h-4 w-4" aria-hidden="true" />
+          </a>
+        ) : (
+          <div
+            aria-disabled="true"
+            className="flex h-11 w-full cursor-not-allowed items-center justify-center rounded-[10px] bg-surface-2 text-body-sm font-semibold text-muted-foreground"
+          >
+            지원 링크 미제공
+          </div>
+        )}
         <SaveJobButton jobId={job.id} loggedIn={loggedIn} className="w-full" />
       </div>
 
@@ -59,7 +72,7 @@ export function JobActionCard({ job, loggedIn, companyJobCount }: {
       </dl>
 
       <Link href={`/companies/${job.company.slug}`}
-        className="flex items-center gap-3 rounded-xl border border-border p-3 transition-colors hover:border-primary/40">
+        className="flex items-center gap-3 rounded-xl border border-border p-3 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
         <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={36} />
         <div className="min-w-0">
           <div className="truncate text-body-sm font-bold">{job.company.display_name}</div>
