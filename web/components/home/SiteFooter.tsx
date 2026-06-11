@@ -16,6 +16,7 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
     title: "탐색",
     links: [
       { label: "비자 스폰서 공고", href: "/search?visa=sponsors" },
+      { label: "비자 가이드", href: "/visa" },
       { label: "원격 가능 공고", href: "/search?track=remote" },
       { label: "국가별 공고", href: "/regions" },
       { label: "자주 묻는 질문", href: "/#faq" },
