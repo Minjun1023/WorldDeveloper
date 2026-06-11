@@ -29,9 +29,12 @@ export function RecommendationCard({ item, rank }: { item: RecommendationItem; r
             </div>
             <Link href={`/jobs/${encodeURIComponent(job.id)}`}>
               <CardTitle className="mt-1 line-clamp-2 hover:text-primary transition-colors">
-                {job.title}
+                {job.title_ko ?? job.title}
               </CardTitle>
             </Link>
+            {job.title_ko && (
+              <p className="mt-0.5 line-clamp-1 text-caption text-muted-foreground">{job.title}</p>
+            )}
             <p className="mt-1 line-clamp-2 text-body-sm text-muted-foreground">{meta.join(" · ")}</p>
           </div>
         </div>

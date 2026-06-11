@@ -24,7 +24,7 @@ export function JobRow({ job }: { job: Job }) {
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="truncate text-body font-bold text-foreground group-hover:text-primary">{job.title}</span>
+          <span className="truncate text-body font-bold text-foreground group-hover:text-primary">{job.title_ko ?? job.title}</span>
           {job.visa?.register_verified ? (
             <span
               className="shrink-0 rounded-lg px-1.5 py-0.5 text-caption font-semibold text-verified"
@@ -49,6 +49,9 @@ export function JobRow({ job }: { job: Job }) {
             </span>
           )}
         </div>
+        {job.title_ko && (
+          <div className="truncate text-caption text-muted-foreground">{job.title}</div>
+        )}
         <div className="mt-0.5 flex items-center gap-1 text-body-sm text-muted-foreground">
           <span className="truncate">
             {job.company.display_name}

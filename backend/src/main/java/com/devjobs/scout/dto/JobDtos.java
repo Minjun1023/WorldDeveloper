@@ -25,6 +25,7 @@ public final class JobDtos {
     public record JobDto(
         String id,
         String title,
+        String titleKo,
         CompanyDto company,
         String location,
         Boolean isRemote,
@@ -43,6 +44,7 @@ public final class JobDtos {
     public record JobDetailDto(
         String id,
         String title,
+        String titleKo,
         CompanyDto company,
         String location,
         Boolean isRemote,

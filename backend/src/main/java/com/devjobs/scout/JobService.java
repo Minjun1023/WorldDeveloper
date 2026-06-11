@@ -272,6 +272,7 @@ public class JobService {
         return new JobDetailDto(
             j.getId(),
             j.getTitle(),
+            TitleLocalizer.localize(j.getTitle()),
             company,
             j.getLocation(),
             j.getIsRemote(),
@@ -329,6 +330,7 @@ public class JobService {
         return new JobDto(
             j.getId(),
             j.getTitle(),
+            TitleLocalizer.localize(j.getTitle()),
             company,
             j.getLocation(),
             j.getIsRemote(),

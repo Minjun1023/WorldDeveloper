@@ -38,6 +38,7 @@ export interface JobSalary {
 export interface Job {
   id: string;
   title: string;
+  title_ko?: string;
   company: JobCompany;
   location?: string;
   is_remote?: boolean;
@@ -55,6 +56,7 @@ export interface Job {
 export interface JobDetail {
   id: string;
   title: string;
+  title_ko?: string;
   company: JobCompany;
   location?: string;
   is_remote?: boolean;

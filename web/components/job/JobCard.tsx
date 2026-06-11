@@ -39,8 +39,11 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
           <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={40} />
           <div className="min-w-0 flex-1">
             <h3 className="line-clamp-2 text-body font-semibold leading-snug transition-colors group-hover:text-primary">
-              {job.title}
+              {job.title_ko ?? job.title}
             </h3>
+            {job.title_ko && (
+              <p className="mt-0.5 line-clamp-1 text-caption text-muted-foreground">{job.title}</p>
+            )}
             <p className="mt-1 flex min-w-0 items-center gap-1 text-body-sm text-muted-foreground">
               <span className="truncate">{job.company.display_name}</span>
               {locText && (
