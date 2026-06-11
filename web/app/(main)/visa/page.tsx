@@ -14,7 +14,7 @@ export default function VisaGuideIndexPage() {
         <p className="text-body-sm font-semibold text-primary">비자 가이드</p>
         <h1 className="text-display">국가별 비자 스폰서십, 핵심만</h1>
         <p className="text-muted-foreground">
-          "비자 스폰서"가 나라마다 어떤 의미인지, 어디서 공식 정보를 확인하는지 간단히 정리했어요.
+          &ldquo;비자 스폰서&rdquo;가 나라마다 어떤 의미인지, 어디서 공식 정보를 확인하는지 간단히 정리했어요.
         </p>
       </header>
 
