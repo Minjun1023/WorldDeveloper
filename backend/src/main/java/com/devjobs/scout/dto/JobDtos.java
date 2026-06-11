@@ -54,7 +54,9 @@ public final class JobDtos {
         List<String> tags,
         VisaDto visa,
         RemoteDto remote,
-        SalaryDto salary
+        SalaryDto salary,
+        Integer experienceYears,
+        String seniority
     ) {}
 
     public record FacetsDto(

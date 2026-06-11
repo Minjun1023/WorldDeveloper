@@ -74,6 +74,12 @@ public class JobEntity {
     @Column(name = "salary_period")
     private String salaryPeriod;
 
+    @Column(name = "experience_years")
+    private Integer experienceYears;
+
+    @Column(name = "seniority")
+    private String seniority;
+
     @Column(name = "visa_status")
     private String visaStatus;
 
@@ -115,6 +121,8 @@ public class JobEntity {
     public Long getSalaryMax() { return salaryMax; }
     public String getSalaryCurrency() { return salaryCurrency; }
     public String getSalaryPeriod() { return salaryPeriod; }
+    public Integer getExperienceYears() { return experienceYears; }
+    public String getSeniority() { return seniority; }
     public String getVisaStatus() { return visaStatus; }
     public List<String> getVisaEvidence() { return visaEvidence; }
     public String getRemoteEligibility() { return remoteEligibility; }

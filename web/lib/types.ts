@@ -67,6 +67,8 @@ export interface JobDetail {
   visa?: JobVisa;
   remote?: JobRemote;
   salary?: JobSalary;
+  experience_years?: number | null;
+  seniority?: string | null;
 }
 
 export interface Facets {
