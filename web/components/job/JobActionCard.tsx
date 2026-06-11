@@ -7,6 +7,7 @@ import { SaveJobButton } from "@/components/job/SaveJobButton";
 import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
 import { formatSalary } from "@/lib/salary";
 import type { JobDetail } from "@/lib/types";
+import { guideForLocation } from "@/lib/visa-guide";
 
 const VISA_LABEL: Record<string, { text: string; cls: string }> = {
   sponsors: { text: "지원 가능", cls: "text-success" },
@@ -21,6 +22,7 @@ export function JobActionCard({ job, loggedIn, companyJobCount }: {
   const posted = postedRelativeLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
   const visa = job.visa?.status ? VISA_LABEL[job.visa.status] : undefined;
+  const guide = guideForLocation(job.location);
 
   const rows: { label: string; value: ReactNode }[] = [];
   if (visa) {
@@ -75,6 +77,17 @@ export function JobActionCard({ job, loggedIn, companyJobCount }: {
           )}
         </div>
       </Link>
+
+      {guide && (
+        <Link
+          href={`/visa/${guide.slug}`}
+          className="block rounded-xl border border-border p-3 text-body-sm transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <span aria-hidden="true">{guide.flag}</span>{" "}
+          <span className="font-semibold text-foreground">{guide.country} 비자 가이드</span>
+          <span className="text-muted-foreground"> · {guide.visaName} 안내 →</span>
+        </Link>
+      )}
     </div>
   );
 }
