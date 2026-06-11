@@ -10,6 +10,7 @@ const OPTIONS: { value: string | null; key: string; label: string }[] = [
   { value: null, key: "relevance", label: "관련도순" },
   { value: "recent", key: "recent", label: "최신순" },
   { value: "newest", key: "newest", label: "게시일순" },
+  { value: "salary", key: "salary", label: "연봉순" },
 ];
 
 const RELEVANCE_HINT = "검색어를 입력하면 검색어와 관련된 공고가 먼저 나와요. 검색어가 없으면 최신순으로 정렬돼요.";

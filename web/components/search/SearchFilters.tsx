@@ -31,6 +31,7 @@ export function SearchFilters({ regions }: { regions: RegionCount[] }) {
   const remote = searchParams.get("remote") === "true";
   const includeUnclear = searchParams.get("include_unclear") === "true";
   const verifiedOnly = searchParams.get("verified_only") === "true";
+  const minSalary = searchParams.get("min_salary");
 
   const regionChips = regions.filter((r) => r.value !== "remote").slice(0, TOP_REGIONS);
 
@@ -76,6 +77,22 @@ export function SearchFilters({ regions }: { regions: RegionCount[] }) {
             ))}
           </>
         )}
+        <span className="mx-1 h-5 w-px bg-border" aria-hidden />
+        {[
+          { v: "100000", label: "$100k+" },
+          { v: "150000", label: "$150k+" },
+          { v: "200000", label: "$200k+" },
+        ].map((c) => (
+          <button
+            key={c.v}
+            type="button"
+            onClick={() => update({ min_salary: minSalary === c.v ? null : c.v })}
+            className={pillClass(minSalary === c.v)}
+            title="급여가 명시된 공고만 보여줘요"
+          >
+            {c.label}
+          </button>
+        ))}
       </div>
 
       <div className="flex flex-wrap items-center gap-4">
