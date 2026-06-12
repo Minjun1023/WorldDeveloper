@@ -1,4 +1,5 @@
 import { CompanySpotlight } from "@/components/home/CompanySpotlight";
+import { ContactForm } from "@/components/home/ContactForm";
 import { CountryTiles } from "@/components/home/CountryTiles";
 import { CtaSection } from "@/components/home/CtaSection";
 import { FaqSection } from "@/components/home/FaqSection";
@@ -156,6 +157,18 @@ export default async function HomePage() {
       {/* CTA (흰색 위 그라데이션 배너) */}
       <Section>
         <CtaSection loggedIn={!!session} />
+      </Section>
+
+      {/* 문의 (맨 밑, 푸터 직전) */}
+      <Section muted id="contact">
+        <div className="mx-auto max-w-xl">
+          <SectionHeader
+            overline="문의"
+            title="궁금한 점이 있으신가요?"
+            subtitle="제품·공고·제휴 관련 문의를 남겨주세요. 메일로 회신드려요."
+          />
+          <ContactForm />
+        </div>
       </Section>
     </>
   );
