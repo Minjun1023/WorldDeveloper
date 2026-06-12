@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { RecommendationItem } from "@/lib/types";
 
-import { ScoreBreakdownBars } from "./ScoreBreakdownBars";
+import { ScoreRadar } from "./ScoreRadar";
 
 export function RecommendationCard({
   item,
@@ -54,12 +54,16 @@ export function RecommendationCard({
       </CardHeader>
 
       <CardContent className="flex-1 space-y-3">
-        <ScoreBreakdownBars score={score} />
+        <div className="flex justify-center py-1">
+          <ScoreRadar score={score} />
+        </div>
 
         {score.reasons.length > 0 && (
           <ul className="space-y-1 text-caption text-muted-foreground">
             {score.reasons.map((r, i) => (
-              <li key={i}>+ {r}</li>
+              <li key={i}>
+                <span className="font-semibold text-warning">+</span> {r}
+              </li>
             ))}
           </ul>
         )}

@@ -1,19 +1,22 @@
 import { CredibilityPill } from "@/components/home/CredibilityPill";
+import { HeroPreviewCard } from "@/components/home/HeroPreviewCard";
 import { HeroSearch } from "@/components/home/HeroSearch";
 import { HeroStats, type HomeStats } from "@/components/home/HeroStats";
 import { SponsorChips } from "@/components/home/SponsorChips";
 import type { RegionCount } from "@/lib/api";
-import type { CompanySummary } from "@/lib/types";
+import type { CompanySummary, RecommendationItem } from "@/lib/types";
 
-// 전폭 흰색 히어로 — lg 2단(좌 콘텐츠 좌측정렬 / 우 실데이터 통계). 카피·데이터 변경 없음.
+// 전폭 흰색 히어로 — lg 2단(좌 콘텐츠 좌측정렬 / 우 실데이터 통계 + 6차원 매칭 미리보기).
 export function Hero({
   stats,
   sponsorCompanies,
   regions,
+  previewItem,
 }: {
   stats: HomeStats;
   sponsorCompanies: CompanySummary[];
   regions: RegionCount[];
+  previewItem?: RecommendationItem | null;
 }) {
   return (
     <section className="relative overflow-hidden">
@@ -38,24 +41,26 @@ export function Hero({
               <span className="text-gradient-brand">비자부터 확인하세요.</span>
             </h1>
             <p className="mt-4 max-w-xl text-body text-muted-foreground">
-              비자 스폰서십이 명시된 공고만,{" "}
-              <strong className="font-semibold text-foreground">6차원 점수</strong>로 추천. 매칭 근거
-              문장까지 함께 보여드려요.
+              정부 명부(USCIS·UK 내무부·NL IND)로 교차검증된 비자 스폰서십 명시 공고만 모아,{" "}
+              <strong className="font-semibold text-foreground">6차원 점수</strong>로 추천해요. 매칭
+              근거 문장까지 함께 보여드려요.
             </p>
 
             <HeroSearch regions={regions} />
 
             <SponsorChips companies={sponsorCompanies} />
 
-            {/* 모바일/태블릿: 통계는 본문 아래 */}
-            <div className="mt-10 lg:hidden">
+            {/* 모바일/태블릿: 통계 + 미리보기는 본문 아래 */}
+            <div className="mt-10 space-y-4 lg:hidden">
               <HeroStats stats={stats} />
+              {previewItem && <HeroPreviewCard item={previewItem} />}
             </div>
           </div>
 
-          {/* 우(lg): 통계 2×2 */}
-          <aside className="hidden lg:block">
+          {/* 우(lg): 통계 2×2 + 6차원 매칭 미리보기 */}
+          <aside className="hidden space-y-4 lg:block">
             <HeroStats stats={stats} compact />
+            {previewItem && <HeroPreviewCard item={previewItem} />}
           </aside>
         </div>
       </div>

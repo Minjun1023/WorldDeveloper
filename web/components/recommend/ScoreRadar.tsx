@@ -1,0 +1,85 @@
+import type { ScoreBreakdown } from "@/lib/types";
+
+// 6차원 점수를 육각형 레이더(거미줄) 차트로 시각화. 차트 라이브러리 없이 순수 SVG.
+// 축 순서(상단부터 시계방향): 스택 → 비자 → 지역 → 레벨 → 연봉 → 의미.
+const DIMS: { key: keyof ScoreBreakdown; label: string }[] = [
+  { key: "stack", label: "스택" },
+  { key: "visa", label: "비자" },
+  { key: "location", label: "지역" },
+  { key: "seniority", label: "레벨" },
+  { key: "salary", label: "연봉" },
+  { key: "semantic", label: "의미" },
+];
+
+const C = 75; // viewBox 150 중심
+const R = 46; // 최대 반지름(라벨 공간 확보)
+const RINGS = 4;
+const LABEL_R = 59;
+
+const angle = (i: number) => ((-90 + i * 60) * Math.PI) / 180;
+const point = (i: number, radius: number): [number, number] => [
+  C + radius * Math.cos(angle(i)),
+  C + radius * Math.sin(angle(i)),
+];
+const polygon = (radius: number | ((i: number) => number)) =>
+  DIMS.map((_, i) => point(i, typeof radius === "function" ? radius(i) : radius).map((n) => n.toFixed(2)).join(" "))
+    .join(" L ");
+const clamp01 = (n: number) => Math.max(0, Math.min(1, Number(n) || 0)); // 누락/NaN 방어
+
+// 라벨 정렬: 상/하=가운데, 우측 2개=왼쪽기준 시작, 좌측 2개=오른쪽기준 끝.
+const anchorFor = (i: number) => (i === 0 || i === 3 ? "middle" : i === 1 || i === 2 ? "start" : "end");
+
+export function ScoreRadar({ score, size = 150 }: { score: ScoreBreakdown; size?: number }) {
+  const ringPaths = Array.from({ length: RINGS }, (_, k) => `M ${polygon((R * (k + 1)) / RINGS)} Z`);
+  const dataPath = `M ${polygon((i) => R * clamp01(score[DIMS[i].key] as number))} Z`;
+
+  return (
+    <svg
+      viewBox="0 0 150 150"
+      width={size}
+      height={size}
+      role="img"
+      aria-label="6차원 매칭 점수 차트"
+      className="overflow-visible"
+    >
+      {/* 동심 육각형 그리드 */}
+      {ringPaths.map((d, k) => (
+        <path key={k} d={d} fill="none" style={{ stroke: "var(--border)" }} strokeWidth={1} />
+      ))}
+      {/* 축 선 */}
+      {DIMS.map((_, i) => {
+        const [x, y] = point(i, R);
+        return <line key={i} x1={C} y1={C} x2={x} y2={y} style={{ stroke: "var(--border)" }} strokeWidth={1} />;
+      })}
+      {/* 점수 영역 */}
+      <path
+        d={dataPath}
+        style={{ fill: "color-mix(in srgb, var(--primary) 15%, transparent)", stroke: "var(--primary)" }}
+        strokeWidth={1.5}
+        strokeLinejoin="round"
+      />
+      {/* 데이터 포인트 */}
+      {DIMS.map((d, i) => {
+        const [x, y] = point(i, R * clamp01(score[d.key] as number));
+        return <circle key={d.key} cx={x} cy={y} r={2.4} style={{ fill: "var(--primary)" }} />;
+      })}
+      {/* 축 라벨 */}
+      {DIMS.map((d, i) => {
+        const [x, y] = point(i, LABEL_R);
+        return (
+          <text
+            key={d.key}
+            x={x}
+            y={y}
+            fontSize={9}
+            textAnchor={anchorFor(i)}
+            dominantBaseline="middle"
+            style={{ fill: "var(--muted-foreground)" }}
+          >
+            {d.label}
+          </text>
+        );
+      })}
+    </svg>
+  );
+}
