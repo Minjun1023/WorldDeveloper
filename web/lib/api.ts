@@ -45,6 +45,7 @@ export interface JobQuery {
   includeUnclear?: boolean;
   verifiedOnly?: boolean;
   minSalary?: number;
+  complete?: boolean;
   page?: number;
   pageSize?: number;
 }
@@ -66,6 +67,7 @@ export async function fetchJobs(query: JobQuery = {}): Promise<JobsResult> {
   if (query.includeUnclear) url.searchParams.set("include_unclear", "true");
   if (query.verifiedOnly) url.searchParams.set("verified_only", "true");
   if (query.minSalary) url.searchParams.set("min_salary", String(query.minSalary));
+  if (query.complete) url.searchParams.set("complete", "true");
   if (query.page) url.searchParams.set("page", String(query.page));
   if (query.pageSize) url.searchParams.set("page_size", String(query.pageSize));
 
