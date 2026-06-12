@@ -13,4 +13,10 @@ describe("MeSidebar", () => {
     expect(screen.getByRole("link", { name: /저장한 공고/ })).not.toHaveAttribute("aria-current");
     expect(screen.getByRole("link", { name: /저장 검색/ })).not.toHaveAttribute("aria-current");
   });
+
+  it("순서가 헤더 계정 드롭다운(AccountMenu)과 동일하다", () => {
+    render(<MeSidebar />);
+    const hrefs = screen.getAllByRole("link").map((a) => a.getAttribute("href"));
+    expect(hrefs).toEqual(["/me/profile", "/me/applications", "/me/saved", "/me/searches", "/me/coach"]);
+  });
 });

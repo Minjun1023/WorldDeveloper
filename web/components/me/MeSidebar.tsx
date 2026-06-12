@@ -6,11 +6,13 @@ import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
+// 순서는 헤더 계정 드롭다운(AccountMenu)과 동일하게 유지:
+// 프로필 → 지원 현황 → 저장한 공고 → 저장 검색 → 이력서 코치.
 const ITEMS = [
   { href: "/me/profile", label: "프로필", icon: User },
+  { href: "/me/applications", label: "지원 현황", icon: ListChecks },
   { href: "/me/saved", label: "저장한 공고", icon: Bookmark },
   { href: "/me/searches", label: "저장 검색", icon: Bell },
-  { href: "/me/applications", label: "지원 현황", icon: ListChecks },
   { href: "/me/coach", label: "이력서 코치", icon: FileText },
 ];
 
