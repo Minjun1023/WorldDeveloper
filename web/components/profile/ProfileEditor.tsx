@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ProfileFields } from "@/components/profile/ProfileFields";
 import { ProfilePreview } from "@/components/profile/ProfilePreview";
 import { Button } from "@/components/ui/button";
+import { clearRecommendCache } from "@/lib/recommend-cache";
 import type { RecommendProfile } from "@/lib/types";
 
 const EMPTY: RecommendProfile = {
@@ -50,6 +51,7 @@ export function ProfileEditor() {
         body: JSON.stringify(profile),
       });
       if (!res.ok) throw new Error(`저장 실패 (HTTP ${res.status})`);
+      clearRecommendCache(); // 프로필 변경 → 추천 캐시 무효화(다음 방문 시 신선하게 재계산)
       setSaved(true);
       setDirty(false);
     } catch (e) {
