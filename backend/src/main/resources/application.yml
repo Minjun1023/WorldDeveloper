@@ -67,6 +67,8 @@ app:
     # NL_RATELIMIT_CAPACITY=100 으로 올린다(build.gradle). 운영은 jar 로 띄워 env 미설정 → 10 유지.
     nl-capacity: ${NL_RATELIMIT_CAPACITY:10}
     nl-window-ms: ${NL_RATELIMIT_WINDOW_MS:3600000}
+    # 요약(AI 생성=캐시 미스) IP당 고정창 한도. 창은 nl-window-ms(1시간) 공유. 운영 기본 20/시간.
+    summary-capacity: ${SUMMARY_RATELIMIT_CAPACITY:20}
     # true 면 RedisRateLimiter(다중 인스턴스 공유 + 재시작 보존), 아니면 인메모리(단일 인스턴스).
     # 운영 다중 인스턴스에서 true + spring.data.redis 설정. 로컬/CI 기본 false.
     redis: ${APP_RATELIMIT_REDIS:false}
