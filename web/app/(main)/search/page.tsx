@@ -1,6 +1,5 @@
 import { JobRow } from "@/components/job/JobRow";
 import { Pagination } from "@/components/search/Pagination";
-import { RecentJobs } from "@/components/search/RecentJobs";
 import { RecentSearches } from "@/components/search/RecentSearches";
 import { SaveSearchButton } from "@/components/search/SaveSearchButton";
 import { SearchBar } from "@/components/search/SearchBar";
@@ -57,8 +56,6 @@ export default async function SearchPage({
         <SearchFilters regions={regions} />
         <RecentSearches />
       </section>
-
-      <RecentJobs />
 
       <section className="space-y-4">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
