@@ -14,15 +14,15 @@ from dev_jobs_core.analyzers.stack import extract_tech, normalize_tech_tags
 
 conn = psycopg.connect(settings.database_url)
 rows = conn.execute(
-    "SELECT id, tags, description_text FROM jobs WHERE is_active = true"
+    "SELECT id, title, tags, description_text FROM jobs WHERE is_active = true"
 ).fetchall()
 total = len(rows)
 
 done = 0
 changed = 0
 with conn.cursor() as cur:
-    for jid, tags, dtext in rows:
-        new_tags = normalize_tech_tags(tags or []) or extract_tech(dtext or "")
+    for jid, title, tags, dtext in rows:
+        new_tags = normalize_tech_tags(tags or []) or extract_tech(f"{title or ''}\n{dtext or ''}")
         if new_tags != (tags or []):
             cur.execute("UPDATE jobs SET tags = %s WHERE id = %s", (new_tags, jid))
             changed += 1
