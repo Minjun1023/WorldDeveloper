@@ -25,7 +25,7 @@ log = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     if settings.etl_enabled:
-        log.info("Starting ETL scheduler (interval=%d min)", settings.etl_interval_minutes)
+        log.info("Starting ETL scheduler (cron='%s' tz=%s)", settings.etl_cron, settings.etl_timezone)
         start_scheduler()
     else:
         log.info("ETL disabled (set ETL_ENABLED=1 to enable)")

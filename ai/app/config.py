@@ -33,7 +33,10 @@ class Settings(BaseSettings):
 
     # ETL
     etl_enabled: bool = False  # MVP skeleton 에서는 비활성
-    etl_interval_minutes: int = 60
+    # 수집 스케줄: 매일 고정 시각(cron). 기본 = 매일 00:00(자정). 변경하려면 ETL_CRON 환경변수.
+    # 시각 기준 타임존(ETL_TIMEZONE). 기본 한국 자정(Asia/Seoul). 컨테이너 TZ 와 무관하게 해당 TZ 자정에 실행.
+    etl_cron: str = "0 0 * * *"
+    etl_timezone: str = "Asia/Seoul"
     # 정기/수동 ETL 사이클에서 비자 LLM 재분류(OpenAI 호출)를 할지. 기본 off = 무비용.
     # 수집·정리(전부 로컬)와 유료 LLM 단계를 분리 — 재분류는 /etl/reclassify-visa 로 옵트인.
     etl_reclassify: bool = False
