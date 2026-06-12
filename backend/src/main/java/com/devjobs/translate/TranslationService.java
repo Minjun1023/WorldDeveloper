@@ -26,6 +26,12 @@ public class TranslationService {
         this.ai = ai;
     }
 
+    /** 캐시된 번역만 반환(AI 호출 안 함). SSR 즉시표시용 — 미스면 Optional.empty(호출부가 클라 번역으로 폴백). */
+    @Transactional(readOnly = true)
+    public Optional<TranslationDto> getCached(String jobId, String lang) {
+        return repo.findByJobIdAndLang(jobId, lang).map(e -> toDto(e, true));
+    }
+
     /** 캐시 우선, 없으면 AI 호출 후 저장. 공고 없으면 Optional.empty (404). */
     @Transactional
     public Optional<TranslationDto> getOrCreate(String jobId, String lang) {

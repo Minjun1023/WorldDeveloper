@@ -11,16 +11,17 @@ import { MobileApplyBar } from "@/components/job/MobileApplyBar";
 import { RecordRecentJob } from "@/components/job/RecordRecentJob";
 import { ResumeOptimizeSection } from "@/components/job/ResumeOptimizeSection";
 import { Badge } from "@/components/ui/badge";
-import { fetchCompany, fetchInterviewPrep, fetchJob } from "@/lib/api";
+import { fetchCachedTranslation, fetchCompany, fetchInterviewPrep, fetchJob } from "@/lib/api";
 import { getSession } from "@/lib/session-server";
 
 export const dynamic = "force-dynamic";
 
 export default async function JobDetailPage({ params }: { params: { id: string } }) {
-  const [result, prep, session] = await Promise.all([
+  const [result, prep, session, initialKo] = await Promise.all([
     fetchJob(params.id),
     fetchInterviewPrep(params.id),
     getSession(),
+    fetchCachedTranslation(params.id, "ko"), // 캐시된 번역만(즉시표시), 미스면 null → 클라 번역
   ]);
 
   if (!result.ok && result.status === 404) {
@@ -56,17 +57,21 @@ export default async function JobDetailPage({ params }: { params: { id: string }
           ← 목록으로
         </Link>
 
-        <header className="space-y-3">
-          <div className="flex items-start gap-3">
-            <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={48} />
-            <div className="min-w-0">
-              <h1 className="text-h1">{job.title_ko ?? job.title}</h1>
-              {job.title_ko && <p className="mt-0.5 text-body-sm text-muted-foreground">{job.title}</p>}
-              <p className="mt-1 text-muted-foreground">
-                {[job.company.display_name, job.location, job.is_remote ? "원격" : null].filter(Boolean).join(" · ")}
-              </p>
-            </div>
+        <header className="space-y-4">
+          {/* 회사 먼저(작게) → 큰 제목. 위치는 아래 정보바에 있어 헤더에서 중복 제거. */}
+          <Link
+            href={`/companies/${job.company.slug}`}
+            className="inline-flex items-center gap-2 rounded-md text-body-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={28} />
+            {job.company.display_name}
+          </Link>
+
+          <div className="space-y-1.5">
+            <h1 className="text-display leading-tight">{job.title_ko ?? job.title}</h1>
+            {job.title_ko && <p className="text-body text-muted-foreground">{job.title}</p>}
           </div>
+
           {job.tags && job.tags.length > 0 && (
             <div className="flex flex-wrap gap-1.5">
               {job.tags.map((t) => (
@@ -82,7 +87,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
         <JobActionCard job={job} loggedIn={!!session} companyJobCount={companyData?.company.job_count} />
 
         {job.description && <JobSummary jobId={job.id} />}
-        {job.description && <JobDescription jobId={job.id} original={job.description} />}
+        {job.description && <JobDescription jobId={job.id} original={job.description} initialKo={initialKo} />}
         {prep && <InterviewPrepSection prep={prep} />}
         <ResumeOptimizeSection jobId={job.id} />
 

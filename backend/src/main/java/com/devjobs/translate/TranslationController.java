@@ -25,9 +25,12 @@ public class TranslationController {
 
     @GetMapping("/translation")
     public ResponseEntity<TranslationDto> translation(
-        @PathVariable String id, @RequestParam(defaultValue = "ko") String lang) {
+        @PathVariable String id, @RequestParam(defaultValue = "ko") String lang,
+        @RequestParam(defaultValue = "false") boolean cacheOnly) {
         try {
-            return service.getOrCreate(id, lang)
+            // cacheOnly=true: 캐시된 번역만(AI 호출 안 함) — SSR 즉시표시. 미스는 404(클라가 번역 폴백).
+            var result = cacheOnly ? service.getCached(id, lang) : service.getOrCreate(id, lang);
+            return result
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
         } catch (TranslationUnavailableException e) {
