@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { ProfileForm } from "@/components/recommend/ProfileForm";
+import { clearRecommendCache } from "@/lib/recommend-cache";
 import type { RecommendProfile } from "@/lib/types";
 
 export function OnboardingProfile() {
@@ -21,6 +22,7 @@ export function OnboardingProfile() {
         body: JSON.stringify(profile),
       });
       if (!res.ok) throw new Error(`저장 실패 (HTTP ${res.status})`);
+      clearRecommendCache(); // 프로필 작성 → 추천 캐시 무효화(랜딩에서 신선하게 계산)
       router.push("/");
       router.refresh();
     } catch (e) {
