@@ -6,6 +6,7 @@ import { Hero } from "@/components/home/Hero";
 import type { HomeStats } from "@/components/home/HeroStats";
 import { JobGrid } from "@/components/home/JobGrid";
 import { MemberLandingRecommend } from "@/components/home/MemberLandingRecommend";
+import { RecentJobs } from "@/components/home/RecentJobs";
 import { SampleRecommend } from "@/components/home/SampleRecommend";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { fetchCompanies, fetchJobs, fetchRegions } from "@/lib/api";
