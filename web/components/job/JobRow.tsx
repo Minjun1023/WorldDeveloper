@@ -5,12 +5,10 @@ import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { RegisterVerifiedBadge } from "@/components/job/RegisterVerifiedBadge";
 import { flagFromLocation } from "@/lib/flags";
 import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
-import { formatSalary } from "@/lib/salary";
 import type { Job } from "@/lib/types";
 
 // 검색 결과 행: 한 화면 스캔량 우선. 신호 배지 최대 1(명부검증 > 스폰서불가) + 마감임박, 태그 최대 3(sm+).
 export function JobRow({ job }: { job: Job }) {
-  const salary = formatSalary(job.salary);
   const posted = postedRelativeLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
   const flag = flagFromLocation(job.location);
@@ -65,15 +63,12 @@ export function JobRow({ job }: { job: Job }) {
         )}
       </div>
 
-      <div className="shrink-0 text-right">
-        {salary && <div className="text-body-sm font-bold text-foreground">{salary}</div>}
-        {posted && (
-          <div className="mt-0.5 flex items-center justify-end gap-1 text-caption text-muted-foreground">
-            <Clock className="h-3 w-3" aria-hidden="true" />
-            {posted}
-          </div>
-        )}
-      </div>
+      {posted && (
+        <div className="flex shrink-0 items-center justify-end gap-1 text-caption text-muted-foreground">
+          <Clock className="h-3 w-3" aria-hidden="true" />
+          {posted}
+        </div>
+      )}
     </Link>
   );
 }
