@@ -45,7 +45,8 @@ export function pushRecentJob(job: Omit<RecentJob, "ts">): void {
 }
 
 export function getRecentSearches(): string[] {
-  return read<string>(SEARCHES_KEY);
+  // 외부에서 손상된 값(비문자 요소)도 방어 — 이후 toLowerCase 등에서 throw 방지.
+  return read<unknown>(SEARCHES_KEY).filter((t): t is string => typeof t === "string");
 }
 
 export function pushRecentSearch(q: string): void {
