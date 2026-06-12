@@ -22,7 +22,8 @@ export function RecommendationCard({
   const meta = [job.company.display_name, job.location, job.is_remote ? "Remote" : null].filter(Boolean);
 
   return (
-    <Card className="flex flex-col">
+    // h-full: 그리드 셀 높이에 맞춰 늘어나 같은 행 카드 높이를 통일(태그/사유 유무로 생기던 들쭉날쭉 제거).
+    <Card className="flex h-full flex-col">
       <CardHeader>
         <div className="flex items-start gap-3">
           <CompanyLogo slug={job.company.slug} name={job.company.display_name} />

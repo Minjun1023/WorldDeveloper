@@ -82,7 +82,9 @@ export function InteractiveJobCard({
 
   return (
     // 카드 클릭(공고 보기) 만 click 이벤트로 기록 — 우측 상단 액션 버튼 클릭은 제외.
+    // h-full: 그리드 셀을 가득 채워 내부 카드가 같은 행 높이로 늘어나도록.
     <div
+      className="h-full"
       onClickCapture={(e) => {
         if ((e.target as HTMLElement).closest("button")) return;
         recordEvent(jobId, "click", { rank, score: item.score.final_score });

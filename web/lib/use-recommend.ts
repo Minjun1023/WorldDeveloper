@@ -14,7 +14,18 @@ import type { RecommendResponse } from "@/lib/types";
 //  - 캐시 미스 → 로딩 표시 + /api/me/recommend 패치 후 캐시에 저장.
 //  - 저장/숨김 토글은 캐시에도 반영(재방문 시 토글 상태 유지).
 //  - run(note) 의 note 결과는 기본 캐시를 오염시키지 않음(일시적 조회).
-export function useCachedRecommend({ cacheKey, topK }: { cacheKey: string; topK: number }) {
+// impressionCount: fetch 직후 노출 임프레션으로 기록할 상위 개수(기본 topK).
+// '더 보기'로 점진 노출하는 화면은 처음 보이는 만큼만 넘겨, 안 보인 카드까지 임프레션으로
+// 과집계되는 것을 막는다(나머지는 노출 시점에 별도 기록).
+export function useCachedRecommend({
+  cacheKey,
+  topK,
+  impressionCount,
+}: {
+  cacheKey: string;
+  topK: number;
+  impressionCount?: number;
+}) {
   const [loading, setLoading] = useState(true);
   const [needsProfile, setNeedsProfile] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -48,7 +59,7 @@ export function useCachedRecommend({ cacheKey, topK }: { cacheKey: string; topK:
       setHidden(new Set());
       tsRef.current = Date.now();
       recordEvents(
-        rec.recommendations.slice(0, topK).map((item, i) => ({
+        rec.recommendations.slice(0, impressionCount ?? topK).map((item, i) => ({
           job_id: item.job.id,
           action: "impression" as const,
           rank: i + 1,
