@@ -79,14 +79,7 @@ export function SearchFilters({ regions }: { regions: RegionCount[] }) {
       </div>
 
       <div className="flex flex-wrap items-center gap-4">
-        <button
-          type="button"
-          onClick={() => update({ remote: remote ? null : "true" })}
-          className={pillClass(remote)}
-        >
-          원격 근무만
-        </button>
-
+        {/* '원격 근무만' 토글 제거 — 위 '비자: 전체' 드롭다운의 '원격근무'(remote=true)와 중복. */}
         <div className="flex items-center gap-2 text-body-sm text-foreground">
           <span>정보 없는 공고 포함</span>
           <span className="group relative inline-flex">
