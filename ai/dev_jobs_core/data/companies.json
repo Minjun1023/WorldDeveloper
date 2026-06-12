@@ -2242,6 +2242,120 @@
     "tags": ["media", "ecommerce", "japan", "asia"],
     "hq": "Tokyo, Japan"
   },
+  "cygames": {
+    "ats": "hrmos",
+    "token": "cygames",
+    "tags": ["gaming", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "medley": {
+    "ats": "hrmos",
+    "token": "medley",
+    "tags": ["healthtech", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "sega": {
+    "ats": "hrmos",
+    "token": "sega",
+    "tags": ["gaming", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "aiming": {
+    "ats": "hrmos",
+    "token": "aiming",
+    "tags": ["gaming", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "estie": {
+    "ats": "hrmos",
+    "token": "estie",
+    "tags": ["proptech", "saas", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "square-enix": {
+    "ats": "hrmos",
+    "token": "square-enix",
+    "tags": ["gaming", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "netprotections": {
+    "ats": "hrmos",
+    "token": "netprotections",
+    "tags": ["fintech", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "bitbank": {
+    "ats": "hrmos",
+    "token": "bitbank",
+    "tags": ["crypto", "fintech", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "beex": {
+    "ats": "hrmos",
+    "token": "beex",
+    "tags": ["data", "consulting", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "smartround": {
+    "ats": "hrmos",
+    "token": "smartround",
+    "tags": ["fintech", "saas", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "zozo": {
+    "ats": "hrmos",
+    "token": "zozo",
+    "tags": ["ecommerce", "fashion", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "micin": {
+    "ats": "hrmos",
+    "token": "micin",
+    "tags": ["healthtech", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "paiza": {
+    "ats": "hrmos",
+    "token": "paiza",
+    "tags": ["hr-tech", "devtools", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "klab": {
+    "ats": "hrmos",
+    "token": "klab",
+    "tags": ["gaming", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "moneytree": {
+    "ats": "hrmos",
+    "token": "moneytree",
+    "tags": ["fintech", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "uzabase": {
+    "ats": "hrmos",
+    "token": "uzabase",
+    "tags": ["saas", "data", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "sumzap": {
+    "ats": "hrmos",
+    "token": "sumzap",
+    "tags": ["gaming", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "gunosy": {
+    "ats": "hrmos",
+    "token": "gunosy",
+    "tags": ["media", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "dwango": {
+    "ats": "hrmos",
+    "token": "dwango",
+    "tags": ["media", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
   "socious": {
     "ats": "smartrecruiters",
     "token": "socious",
