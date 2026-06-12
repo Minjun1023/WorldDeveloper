@@ -81,6 +81,37 @@ def extract_tech(text: str) -> list[str]:
     return found
 
 
+# 큐레이션 어휘 집합(소문자) + vocab 에 없는 흔한 외부 태그 변형 → canonical.
+# (golang·k8s·postgres 등은 이미 vocab 에 있어 직접 매칭되므로 별칭 불필요.)
+_TECH_SET = {kw.lower() for kw in TECH_KEYWORDS}
+_TECH_ALIASES = {
+    "reactjs": "react", "react.js": "react",
+    "nodejs": "node.js", "node": "node.js",
+    "vuejs": "vue", "vue.js": "vue",
+    "tailwindcss": "tailwind",
+}
+
+
+def normalize_tech_tags(tags: list[str]) -> list[str]:
+    """외부/보드 태그(arbeitnow·remoteok·jsearch 등)에서 기술스택만 남긴다.
+
+    'remote'·'management'·'digital nomad'·'fintech' 같은 비기술 라벨을 제거하고,
+    큐레이션된 TECH_KEYWORDS 에 매칭되는 태그만 (소문자·별칭 정규화) 보존한다.
+    대소문자 무시, 중복 제거, 순서 보존. 매칭 0개면 빈 리스트(호출부가 본문 추출로 폴백).
+    """
+    out: list[str] = []
+    seen: set[str] = set()
+    for raw in tags or []:
+        t = (raw or "").strip().lower()
+        if not t:
+            continue
+        canon = _TECH_ALIASES.get(t, t)
+        if canon in _TECH_SET and canon not in seen:
+            seen.add(canon)
+            out.append(canon)
+    return out
+
+
 def match_resume(resume_text: str, job_description: str) -> dict:
     """이력서와 공고를 비교해 스택 갭 분석."""
     job_stack = set(extract_tech(job_description))

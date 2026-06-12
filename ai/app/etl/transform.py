@@ -13,7 +13,7 @@ from dev_jobs_core.analyzers.experience import extract_experience_years
 from dev_jobs_core.analyzers.remote_geo import classify_remote_eligibility
 from dev_jobs_core.analyzers.salary import _to_usd_year, extract_salary_from_description
 from dev_jobs_core.analyzers.seniority import extract_seniority
-from dev_jobs_core.analyzers.stack import extract_tech
+from dev_jobs_core.analyzers.stack import extract_tech, normalize_tech_tags
 from dev_jobs_core.analyzers.visa import classify_visa
 from dev_jobs_core.models import JobPosting
 from dev_jobs_core.recommender.embeddings import embed_text
@@ -104,7 +104,9 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
         j.location or "", bool(j.is_remote), j.description or "", title=j.title or ""
     )
     plain = html_strip(j.description)
-    tags = j.tags or extract_tech(j.description)
+    # 보드 태그(arbeitnow/remoteok 등)는 비기술 라벨이 섞여 들어오므로 기술스택만 정규화.
+    # 남는 기술 태그가 없으면 본문에서 추출로 폴백.
+    tags = normalize_tech_tags(j.tags) or extract_tech(j.description)
     embedding = embed_text(f"{j.title}\n{plain}")
 
     # 구조화 연봉이 없으면 본문에서 명시 범위 추출(원본 통화 표시 + USD 환산 점수용).
