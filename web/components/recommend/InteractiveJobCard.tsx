@@ -1,10 +1,12 @@
 "use client";
 
+import { Heart, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { RecommendationCard } from "@/components/recommend/RecommendationCard";
 import { recordEvent } from "@/lib/feedback";
 import type { RecommendationItem } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 export type Reaction = "like" | "dislike" | null;
 
@@ -40,20 +42,6 @@ export function InteractiveJobCard({
     }
   }
 
-  async function like() {
-    const next: Reaction = reaction === "like" ? null : "like";
-    setReaction(next);
-    try {
-      if (next) {
-        await fetch(`/api/me/reactions/${encodeURIComponent(jobId)}`, {
-          method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ reaction: "like" }),
-        });
-      } else {
-        await fetch(`/api/me/reactions/${encodeURIComponent(jobId)}`, { method: "DELETE" });
-      }
-    } catch { /* 무시 */ }
-  }
-
   async function dislike() {
     setReaction("dislike");
     try {
@@ -69,18 +57,29 @@ export function InteractiveJobCard({
       <div onClickCapture={() => recordEvent(jobId, "click", { rank, score: item.score.final_score })}>
         <RecommendationCard item={item} rank={rank} />
       </div>
-      <div className="mt-1 flex items-center gap-2 text-caption">
-        <button type="button" onClick={toggleSave} aria-pressed={saved}
-          className={saved ? "text-primary" : "text-muted-foreground hover:text-foreground"}>
-          {saved ? "저장됨" : "저장"}
+      <div className="mt-1.5 flex items-center gap-1">
+        <button
+          type="button"
+          onClick={toggleSave}
+          aria-pressed={saved}
+          aria-label={saved ? "저장됨" : "저장"}
+          title={saved ? "저장됨" : "저장"}
+          className={cn(
+            "inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            saved ? "text-primary" : "text-muted-foreground hover:text-foreground hover:bg-accent",
+          )}
+        >
+          <Heart className="h-4 w-4" fill={saved ? "currentColor" : "none"} aria-hidden="true" />
         </button>
-        <button type="button" onClick={like} aria-pressed={reaction === "like"}
-          className={reaction === "like" ? "text-primary" : "text-muted-foreground hover:text-foreground"}>
-          좋아요
-        </button>
-        <button type="button" onClick={dislike}
-          className="text-muted-foreground hover:text-destructive">
-          관심 없음
+        <button
+          type="button"
+          onClick={dislike}
+          disabled={reaction === "dislike"}
+          aria-label="관심 없음"
+          title="관심 없음 (목록에서 삭제)"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+        >
+          <Trash2 className="h-4 w-4" aria-hidden="true" />
         </button>
       </div>
     </div>
