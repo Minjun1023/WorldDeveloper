@@ -16,15 +16,18 @@ function stripTags(html: string): string {
     .trim();
 }
 
-export function JobDescription({ jobId, original }: { jobId: string; original: string }) {
+export function JobDescription({ jobId, original, initialKo }: {
+  jobId: string; original: string; initialKo?: string | null;
+}) {
   const [view, setView] = useState<View>("ko"); // 기본 한국어
-  const [ko, setKo] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [ko, setKo] = useState<string | null>(initialKo ?? null);
+  const [loading, setLoading] = useState(!initialKo); // 서버 캐시로 받으면 로딩 없음(즉시 표시)
   const [failed, setFailed] = useState(false); // 번역 실패/비활성 → 원문 폴백
   const [safeHtml, setSafeHtml] = useState<string | null>(null);
 
-  // 마운트 시 자동 번역(공고당 1회, 백엔드 캐시). 도착 전엔 원문이 placeholder.
+  // 마운트 시 자동 번역(공고당 1회, 백엔드 캐시). 서버가 캐시된 번역(initialKo)을 줬으면 클라 호출 생략.
   useEffect(() => {
+    if (initialKo) return; // 이미 SSR 로 한국어 확보 → fetch 불필요
     let alive = true;
     setLoading(true);
     setKo(null);
@@ -58,7 +61,7 @@ export function JobDescription({ jobId, original }: { jobId: string; original: s
     return () => {
       alive = false;
     };
-  }, [jobId]);
+  }, [jobId, initialKo]);
 
   const text = view === "ko" && ko ? ko : original;
 
