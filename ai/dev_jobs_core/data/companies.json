@@ -1,7 +1,7 @@
 {
   "_meta": {
     "description": "회사명 → ATS 매핑. 추가 가능. ats: greenhouse / lever / ashby / smartrecruiters / personio",
-    "last_updated": "2026-05-29"
+    "last_updated": "2026-06-13"
   },
   "stripe": {
     "ats": "greenhouse",
@@ -2180,6 +2180,66 @@
       "japan",
       "asia"
     ],
+    "hq": "Tokyo, Japan"
+  },
+  "moneyforward": {
+    "ats": "hrmos",
+    "token": "moneyforward",
+    "tags": ["fintech", "saas", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "chatwork": {
+    "ats": "hrmos",
+    "token": "chatwork",
+    "tags": ["saas", "communication", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "givery": {
+    "ats": "hrmos",
+    "token": "givery",
+    "tags": ["ai", "dev-consulting", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "timee": {
+    "ats": "hrmos",
+    "token": "timee",
+    "tags": ["hr-tech", "gig-work", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "studist": {
+    "ats": "hrmos",
+    "token": "studist",
+    "tags": ["saas", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "pixiv": {
+    "ats": "hrmos",
+    "token": "pixiv",
+    "tags": ["creative", "platform", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "colopl": {
+    "ats": "hrmos",
+    "token": "colopl",
+    "tags": ["gaming", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "abeja": {
+    "ats": "hrmos",
+    "token": "abeja",
+    "tags": ["ai", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "visional": {
+    "ats": "hrmos",
+    "token": "visional",
+    "tags": ["hr-tech", "japan", "asia"],
+    "hq": "Tokyo, Japan"
+  },
+  "kakaku": {
+    "ats": "hrmos",
+    "token": "kakaku",
+    "tags": ["media", "ecommerce", "japan", "asia"],
     "hq": "Tokyo, Japan"
   },
   "socious": {
