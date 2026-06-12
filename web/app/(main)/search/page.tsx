@@ -35,9 +35,10 @@ export default async function SearchPage({
   const includeUnclear = searchParams.include_unclear === "true";
   const verifiedOnly = searchParams.verified_only === "true";
   const minSalary = Number(searchParams.min_salary) || undefined;
+  const complete = searchParams.complete === "true";
 
   const [result, regions, session] = await Promise.all([
-    fetchJobs({ q, visa, location, region, remote, sort, discipline, track, includeUnclear, verifiedOnly, minSalary, page, pageSize: PAGE_SIZE }),
+    fetchJobs({ q, visa, location, region, remote, sort, discipline, track, includeUnclear, verifiedOnly, minSalary, complete, page, pageSize: PAGE_SIZE }),
     fetchRegions(),
     getSession(),
   ]);

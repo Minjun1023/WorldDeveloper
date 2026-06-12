@@ -31,6 +31,7 @@ export function SearchFilters({ regions }: { regions: RegionCount[] }) {
   const remote = searchParams.get("remote") === "true";
   const includeUnclear = searchParams.get("include_unclear") === "true";
   const verifiedOnly = searchParams.get("verified_only") === "true";
+  const complete = searchParams.get("complete") === "true";
 
   const regionChips = regions.filter((r) => r.value !== "remote").slice(0, TOP_REGIONS);
 
@@ -151,6 +152,43 @@ export function SearchFilters({ regions }: { regions: RegionCount[] }) {
               className={cn(
                 "inline-block h-5 w-5 rounded-full bg-white shadow ring-1 ring-black/5 transition-transform",
                 verifiedOnly ? "translate-x-[1.125rem]" : "translate-x-0.5",
+              )}
+            />
+          </button>
+        </div>
+
+        <div className="flex items-center gap-2 text-body-sm text-foreground">
+          <span>정보 충실만</span>
+          <span className="group relative inline-flex">
+            <button
+              type="button"
+              aria-label="'정보 충실만' 설명 보기"
+              className="inline-flex items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              <HelpCircle className="h-4 w-4" aria-hidden="true" />
+            </button>
+            <span
+              role="tooltip"
+              className="pointer-events-none absolute bottom-full left-1/2 z-30 mb-2 hidden w-64 -translate-x-1/2 rounded-md border border-border bg-surface px-3 py-2 text-left text-caption font-normal leading-relaxed text-muted-foreground shadow-lg group-hover:block group-focus-within:block"
+            >
+              회사 위치와 상세 설명이 충실히 적힌 공고만 봐요. 기술스택·급여는 정렬 가점으로만 쓰여요(필수 아님).
+            </span>
+          </span>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={complete}
+            aria-label="정보 충실한 공고만"
+            onClick={() => update({ complete: complete ? null : "true" })}
+            className={cn(
+              "relative inline-flex h-6 w-10 items-center rounded-full transition-colors",
+              complete ? "bg-primary" : "bg-surface-2 border border-border",
+            )}
+          >
+            <span
+              className={cn(
+                "inline-block h-5 w-5 rounded-full bg-white shadow ring-1 ring-black/5 transition-transform",
+                complete ? "translate-x-[1.125rem]" : "translate-x-0.5",
               )}
             />
           </button>

@@ -34,10 +34,11 @@ public class JobController {
         @RequestParam(name = "include_unclear", defaultValue = "false") boolean includeUnclear,
         @RequestParam(name = "verified_only", defaultValue = "false") boolean verifiedOnly,
         @RequestParam(name = "min_salary", required = false) Integer minSalary,
+        @RequestParam(defaultValue = "false") boolean complete,
         @RequestParam(defaultValue = "1") int page,
         @RequestParam(name = "page_size", defaultValue = "20") int pageSize) {
         return service.search(q, visa, location, remote, sort, discipline, region,
-            track, includeUnclear, verifiedOnly, minSalary, page, pageSize);
+            track, includeUnclear, verifiedOnly, minSalary, complete, page, pageSize);
     }
 
     @GetMapping("/regions")
