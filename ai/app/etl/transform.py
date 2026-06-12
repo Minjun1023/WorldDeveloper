@@ -105,8 +105,8 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
     )
     plain = html_strip(j.description)
     # 보드 태그(arbeitnow/remoteok 등)는 비기술 라벨이 섞여 들어오므로 기술스택만 정규화.
-    # 남는 기술 태그가 없으면 본문에서 추출로 폴백.
-    tags = normalize_tech_tags(j.tags) or extract_tech(j.description)
+    # 남는 기술 태그가 없으면 제목+본문에서 추출로 폴백("iOS Engineer"·"Go Developer" 등 제목 스택 포착).
+    tags = normalize_tech_tags(j.tags) or extract_tech(f"{j.title or ''}\n{j.description or ''}")
     embedding = embed_text(f"{j.title}\n{plain}")
 
     # 구조화 연봉이 없으면 본문에서 명시 범위 추출(원본 통화 표시 + USD 환산 점수용).
