@@ -85,7 +85,7 @@ export function JobActionCard({ job, loggedIn, companyJobCount }: {
               지원 링크 미제공
             </div>
           )}
-          <SaveJobButton jobId={job.id} loggedIn={loggedIn} className="h-11 px-6" />
+          <SaveJobButton jobId={job.id} loggedIn={loggedIn} />
         </div>
 
         <Link
