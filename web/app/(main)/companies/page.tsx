@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { fetchCompanies } from "@/lib/api";
 import { COMPANY_LOCATIONS } from "@/lib/company-locations";
 import { companyProfile, flagEmoji } from "@/lib/company-profiles";
-import { flagFromLocation } from "@/lib/flags";
+import { isoFromLocation } from "@/lib/flags";
 
 export const dynamic = "force-dynamic";
 
@@ -28,8 +28,10 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
     const description =
       profile?.description ??
       (hasTags ? `${c.tags!.slice(0, 3).join(" · ")} 분야의 회사예요.` : null);
-    const flag = (countryIso ? flagEmoji(countryIso) : "") || (location ? flagFromLocation(location) : "");
-    const countryCode = profile?.countryLabel ?? countryIso?.toUpperCase();
+    // 국기·국가코드를 같은 ISO 한 소스로 도출(큐레이션/스냅샷 ISO 우선, 없으면 위치 문자열 추론).
+    const iso = countryIso ?? (location ? isoFromLocation(location) : undefined);
+    const flag = iso ? flagEmoji(iso) : "";
+    const countryCode = profile?.countryLabel ?? iso?.toUpperCase();
     const website = c.website_url
       ? c.website_url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "")
       : null;
@@ -101,7 +103,9 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                   </div>
 
                   {description && (
-                    <p className="mt-3 line-clamp-2 text-body-sm text-muted-foreground">
+                    // 2줄 높이(text-body-sm 1.5 × 2)를 항상 확보 — 설명이 1줄이어도
+                    // 아래 태그 행이 카드끼리 같은 높이에서 시작하도록 정렬.
+                    <p className="mt-3 line-clamp-2 min-h-[2.625rem] text-body-sm text-muted-foreground">
                       {description}
                     </p>
                   )}
