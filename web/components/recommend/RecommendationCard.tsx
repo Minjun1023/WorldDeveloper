@@ -9,7 +9,15 @@ import type { RecommendationItem } from "@/lib/types";
 
 import { ScoreBreakdownBars } from "./ScoreBreakdownBars";
 
-export function RecommendationCard({ item, rank }: { item: RecommendationItem; rank: number }) {
+export function RecommendationCard({
+  item,
+  rank,
+  actions,
+}: {
+  item: RecommendationItem;
+  rank: number;
+  actions?: React.ReactNode;
+}) {
   const { job, score } = item;
   const meta = [job.company.display_name, job.location, job.is_remote ? "Remote" : null].filter(Boolean);
 
@@ -19,13 +27,17 @@ export function RecommendationCard({ item, rank }: { item: RecommendationItem; r
         <div className="flex items-start gap-3">
           <CompanyLogo slug={job.company.slug} name={job.company.display_name} />
           <div className="min-w-0 flex-1">
-            <div className="flex flex-wrap items-center gap-1.5">
-              <span className="text-caption font-mono text-muted-foreground">#{rank}</span>
-              <span className="rounded-md bg-primary px-2 py-0.5 text-caption font-semibold text-primary-foreground">
-                {Math.round(score.final_score * 100)}점
-              </span>
-              <VisaBadge status={job.visa?.status} />
-              <RemoteBadge eligibility={job.remote?.eligibility} />
+            {/* 메타 줄: 순위·점수 배지 (왼쪽) + 액션 아이콘 (오른쪽, 제목 위) */}
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+                <span className="text-caption font-mono text-muted-foreground">#{rank}</span>
+                <span className="rounded-md bg-primary px-2 py-0.5 text-caption font-semibold text-primary-foreground">
+                  {Math.round(score.final_score * 100)}점
+                </span>
+                <VisaBadge status={job.visa?.status} />
+                <RemoteBadge eligibility={job.remote?.eligibility} />
+              </div>
+              {actions && <div className="-mr-1 -mt-1 flex shrink-0 items-center gap-0.5">{actions}</div>}
             </div>
             <Link href={`/jobs/${encodeURIComponent(job.id)}`}>
               <CardTitle className="mt-1 line-clamp-2 hover:text-primary transition-colors">
