@@ -2,6 +2,7 @@ import { Clock } from "lucide-react";
 import Link from "next/link";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { RegisterVerifiedBadge } from "@/components/job/RegisterVerifiedBadge";
 import { flagFromLocation } from "@/lib/flags";
 import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
 import { formatSalary } from "@/lib/salary";
@@ -26,12 +27,7 @@ export function JobRow({ job }: { job: Job }) {
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="truncate text-body font-bold text-foreground group-hover:text-primary">{job.title_ko ?? job.title}</span>
           {job.visa?.register_verified ? (
-            <span
-              className="shrink-0 rounded-lg px-1.5 py-0.5 text-caption font-semibold text-verified"
-              style={{ backgroundColor: "color-mix(in srgb, var(--verified) 14%, transparent)" }}
-            >
-              명부검증
-            </span>
+            <RegisterVerifiedBadge />
           ) : job.visa?.status === "no_sponsor" ? (
             <span
               className="shrink-0 rounded-lg px-1.5 py-0.5 text-caption font-semibold text-destructive"
