@@ -4,6 +4,8 @@ import { Briefcase, FileText, History, Info, MessageSquareText, RefreshCw, Send,
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { readRecommendCache } from "@/lib/recommend-cache";
+
 type PickJob = { id: string; title: string; company: { display_name: string } };
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -16,7 +18,8 @@ const QUICK_PROMPTS = [
   "면접 예상 질문 뽑아줘",
 ];
 
-export function CoachChat({ initialJobs }: { initialJobs: PickJob[] }) {
+// initialJobs 미제공 시(서버 블로킹 회피) picker 공고를 클라이언트에서 로드한다.
+export function CoachChat({ initialJobs }: { initialJobs?: PickJob[] }) {
   const [jobId, setJobId] = useState("");
   const [resume, setResume] = useState("");
   const [input, setInput] = useState("");
@@ -24,11 +27,64 @@ export function CoachChat({ initialJobs }: { initialJobs: PickJob[] }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hydratedAt, setHydratedAt] = useState<string | null>(null);
+  const [jobs, setJobs] = useState<PickJob[]>(initialJobs ?? []);
+  const [jobsLoading, setJobsLoading] = useState(initialJobs === undefined);
   const threadRef = useRef<HTMLDivElement>(null);
 
   const canSend = !!jobId && resume.trim().length > 0 && input.trim().length > 0 && !pending;
   const ready = !!jobId && resume.trim().length > 0;
-  const selectedJob = initialJobs.find((j) => j.id === jobId);
+  const selectedJob = jobs.find((j) => j.id === jobId);
+
+  // picker 공고 = 저장한 공고(우선) + 추천. 추천은 클라 캐시 우선(즉시), 없으면 네트워크(비블로킹).
+  // initialJobs 가 제공되면(SSR/테스트) 그대로 사용하고 패치하지 않는다.
+  useEffect(() => {
+    if (initialJobs !== undefined) return;
+    let cancelled = false;
+    (async () => {
+      const collected = new Map<string, PickJob>();
+      try {
+        const r = await fetch("/api/me/saved");
+        if (r.ok) {
+          const saved = (await r.json()) as PickJob[];
+          if (Array.isArray(saved)) for (const j of saved) collected.set(j.id, j);
+        }
+      } catch {
+        /* 무시 */
+      }
+      const cached = readRecommendCache("full") ?? readRecommendCache("landing");
+      if (cached) {
+        for (const rec of cached.result.recommendations) {
+          const j = rec.job;
+          if (!collected.has(j.id)) collected.set(j.id, { id: j.id, title: j.title, company: { display_name: j.company.display_name } });
+        }
+      } else {
+        try {
+          const r = await fetch("/api/me/recommend", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ note: null }),
+            signal: AbortSignal.timeout(8000),
+          });
+          if (r.ok) {
+            const data = (await r.json()) as { recommendations?: { job: PickJob }[] };
+            for (const rec of data.recommendations ?? []) {
+              const j = rec.job;
+              if (!collected.has(j.id)) collected.set(j.id, j);
+            }
+          }
+        } catch {
+          /* 타임아웃/실패 — picker 는 저장 공고만으로 동작 */
+        }
+      }
+      if (!cancelled) {
+        setJobs([...collected.values()]);
+        setJobsLoading(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [initialJobs]);
 
   // 새 메시지/타이핑마다 스레드 맨 아래로 스크롤 (jsdom 엔 scrollTo 없음 → scrollTop 폴백)
   useEffect(() => {
@@ -136,7 +192,7 @@ export function CoachChat({ initialJobs }: { initialJobs: PickJob[] }) {
         )}
       </div>
 
-      {initialJobs.length === 0 ? (
+      {!jobsLoading && jobs.length === 0 ? (
         <NoJobs />
       ) : (
         <div className="grid gap-6 lg:grid-cols-[minmax(300px,360px)_1fr] lg:items-start">
@@ -154,10 +210,11 @@ export function CoachChat({ initialJobs }: { initialJobs: PickJob[] }) {
                 <select
                   value={jobId}
                   onChange={(e) => setJobId(e.target.value)}
-                  className="h-10 w-full rounded-lg border border-input bg-background px-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  disabled={jobsLoading}
+                  className="h-10 w-full rounded-lg border border-input bg-background px-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
                 >
-                  <option value="">공고 선택…</option>
-                  {initialJobs.map((j) => (
+                  <option value="">{jobsLoading ? "공고 불러오는 중…" : "공고 선택…"}</option>
+                  {jobs.map((j) => (
                     <option key={j.id} value={j.id}>
                       {j.company.display_name} · {j.title}
                     </option>
