@@ -77,14 +77,12 @@ export function Pagination({
       </div>
 
       <form onSubmit={onJump} className="flex items-center gap-1.5 text-body-sm text-muted-foreground">
-        <span className="hidden sm:inline">페이지 이동</span>
         <input
           type="text"
           inputMode="numeric"
           pattern="[0-9]*"
           value={input}
           onChange={(e) => setInput(e.target.value.replace(/[^0-9]/g, ""))}
-          placeholder={String(current)}
           aria-label="이동할 페이지 번호"
           className="h-8 w-16 rounded-md border border-input bg-surface px-2 text-center tabular-nums text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
