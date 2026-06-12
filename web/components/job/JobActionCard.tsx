@@ -56,7 +56,10 @@ export function JobActionCard({ job, loggedIn, companyJobCount }: {
   if (exp) rows.push({ label: "경력", value: <span className="font-semibold">{exp}</span> });
   const emp = job.employment_type ? EMP_LABEL[job.employment_type] : undefined;
   if (emp) rows.push({ label: "근무형태", value: <span className="font-semibold">{emp}</span> });
-  if (salary) rows.push({ label: "연봉", value: <span className="font-semibold">{salary}</span> });
+  // 연봉은 없어도 행을 유지하고 "미공개"로 표시(공고가 급여를 명시하지 않았음을 명확히).
+  rows.push({ label: "연봉", value: salary
+    ? <span className="font-semibold">{salary}</span>
+    : <span className="text-muted-foreground">미공개</span> });
   if (posted) rows.push({ label: "게시", value: <span className="font-semibold">{posted}</span> });
   rows.push({ label: "마감", value: <span className={deadline.urgent ? "font-semibold text-warning" : "font-semibold"}>{deadline.text}</span> });
 
