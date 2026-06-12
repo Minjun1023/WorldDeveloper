@@ -1,47 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 import { SectionHeader } from "@/components/home/SectionHeader";
-import { InteractiveJobCard, type Reaction } from "@/components/recommend/InteractiveJobCard";
-import { recordEvents } from "@/lib/feedback";
-import type { RecommendResponse } from "@/lib/types";
+import { InteractiveJobCard } from "@/components/recommend/InteractiveJobCard";
+import { useCachedRecommend } from "@/lib/use-recommend";
 
 // 홈은 "미리보기" 역할만: 1행(3개) 티저, 전체 목록·조건 입력은 /recommend. (역할 분리)
+// 결과는 캐시(useCachedRecommend) — 재방문 시 즉시 표시, 첫 방문에만 로딩.
 const TOP_N = 3;
 
 export function MemberLandingRecommend() {
-  const [loading, setLoading] = useState(true);
-  const [needsProfile, setNeedsProfile] = useState(false);
-  const [result, setResult] = useState<RecommendResponse | null>(null);
-  const [saved, setSaved] = useState<Set<string>>(new Set());
-  const [reactions, setReactions] = useState<Record<string, Reaction>>({});
-  const [hidden, setHidden] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    (async () => {
-      try {
-        const [recRes, interRes] = await Promise.all([
-          fetch("/api/me/recommend", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ note: null, top_k: TOP_N }) }),
-          fetch("/api/me/interactions"),
-        ]);
-        if (recRes.status === 409) { setNeedsProfile(true); return; }
-        if (!recRes.ok) return;
-        const rec: RecommendResponse = await recRes.json();
-        setResult(rec);
-        if (interRes.ok) {
-          const it = await interRes.json();
-          setSaved(new Set<string>(it.saved ?? []));
-          setReactions(it.reactions ?? {});
-        }
-        const top = rec.recommendations.slice(0, TOP_N);
-        recordEvents(top.map((item, i) => ({ job_id: item.job.id, action: "impression" as const, rank: i + 1, score: item.score.final_score })));
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
+  const { loading, needsProfile, result, visible, saved, reactions, onSaveChange, onDislike } =
+    useCachedRecommend({ cacheKey: "landing", topK: TOP_N });
 
   if (loading) return <p className="text-body-sm text-muted-foreground">맞춤 공고를 불러오는 중…</p>;
   if (needsProfile) {
@@ -56,7 +27,6 @@ export function MemberLandingRecommend() {
   }
   if (!result || result.recommendations.length === 0) return null;
 
-  const visible = result.recommendations.slice(0, TOP_N).filter((it) => !hidden.has(it.job.id));
   return (
     <section>
       <SectionHeader
@@ -74,8 +44,8 @@ export function MemberLandingRecommend() {
             rank={i + 1}
             initialSaved={saved.has(item.job.id)}
             initialReaction={reactions[item.job.id] ?? null}
-            onSaveChange={(jobId, s) => setSaved((prev) => { const n = new Set(prev); if (s) n.add(jobId); else n.delete(jobId); return n; })}
-            onDislike={(jobId) => setHidden((prev) => new Set(prev).add(jobId))}
+            onSaveChange={onSaveChange}
+            onDislike={onDislike}
           />
         ))}
       </div>
