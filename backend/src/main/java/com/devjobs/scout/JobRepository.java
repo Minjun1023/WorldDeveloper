@@ -109,6 +109,9 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
                OR (visa_status = 'sponsors'
                    AND visa_evidence::text ~ '스폰서 라이선스|Employer Data Hub|erkende referenten'))
           AND (CAST(:minSalary AS integer) IS NULL OR salary_max_usd >= CAST(:minSalary AS integer))
+          AND (:completeOnly = false
+               OR (location IS NOT NULL AND btrim(location) <> ''
+                   AND length(coalesce(description_text, '')) >= 600))
         ORDER BY
           CASE WHEN :salarySort THEN salary_max_usd END DESC NULLS LAST,
           CASE WHEN :remotePriority THEN
@@ -123,6 +126,12 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
                ELSE 2 END)
           ELSE 0 END ASC,
           CASE WHEN :byRelevance THEN ts_rank(search_tsv, websearch_to_tsquery('english', CAST(:q AS text))) END DESC NULLS LAST,
+          CASE WHEN :completeRank THEN
+            ((location IS NOT NULL AND btrim(location) <> '')::int
+             + (length(coalesce(description_text, '')) >= 600)::int
+             + (cardinality(coalesce(tags, '{}')) > 0)::int
+             + (salary_max_usd IS NOT NULL)::int)
+          ELSE 0 END DESC,
           posted_at DESC NULLS LAST,
           id DESC
         LIMIT :lim OFFSET :off
@@ -131,10 +140,10 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
         @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
         @Param("gateMode") String gateMode, @Param("verifiedOnly") boolean verifiedOnly,
-        @Param("minSalary") Integer minSalary,
+        @Param("minSalary") Integer minSalary, @Param("completeOnly") boolean completeOnly,
         @Param("remotePriority") boolean remotePriority,
         @Param("visaPriority") boolean visaPriority, @Param("byRelevance") boolean byRelevance,
-        @Param("salarySort") boolean salarySort,
+        @Param("salarySort") boolean salarySort, @Param("completeRank") boolean completeRank,
         @Param("lim") int lim, @Param("off") int off);
 
     @Query(value = """
@@ -164,12 +173,15 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
                OR (visa_status = 'sponsors'
                    AND visa_evidence::text ~ '스폰서 라이선스|Employer Data Hub|erkende referenten'))
           AND (CAST(:minSalary AS integer) IS NULL OR salary_max_usd >= CAST(:minSalary AS integer))
+          AND (:completeOnly = false
+               OR (location IS NOT NULL AND btrim(location) <> ''
+                   AND length(coalesce(description_text, '')) >= 600))
         """, nativeQuery = true)
     long countSearch(
         @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
         @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
         @Param("gateMode") String gateMode, @Param("verifiedOnly") boolean verifiedOnly,
-        @Param("minSalary") Integer minSalary);
+        @Param("minSalary") Integer minSalary, @Param("completeOnly") boolean completeOnly);
 
     @Query(value = """
         SELECT count(*) FROM jobs

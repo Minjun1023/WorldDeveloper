@@ -128,7 +128,7 @@ public class JobService {
     public JobListResponse search(
         String q, String visa, String location, Boolean remote, String sort, String discipline,
         String region, int page, int pageSize) {
-        return search(q, visa, location, remote, sort, discipline, region, null, true, false, null, page, pageSize);
+        return search(q, visa, location, remote, sort, discipline, region, null, true, false, null, false, page, pageSize);
     }
 
     // search() 와 countMatchesSince() 공유 매핑(정렬 priority 제외).
@@ -162,7 +162,7 @@ public class JobService {
     public JobListResponse search(
         String q, String visa, String location, Boolean remote, String sort, String discipline,
         String region, String track, boolean includeUnclear, boolean verifiedOnly,
-        Integer minSalary, int page, int pageSize) {
+        Integer minSalary, boolean completeOnly, int page, int pageSize) {
 
         int safePage = Math.max(1, page);
         int safeSize = Math.min(Math.max(1, pageSize), MAX_PAGE_SIZE);
@@ -175,15 +175,17 @@ public class JobService {
         boolean remotePriority = "remote".equals(track) && !"newest".equals(sort) && !salarySort;
         boolean visaPriority = !"newest".equals(sort) && !"remote".equals(track) && !salarySort;
         boolean byRelevance = hasQuery && !"recent".equals(sort) && !"newest".equals(sort) && !salarySort;
+        // 완성도 랭킹: 명시적 '최신순(newest)'·'연봉순(salary)' 외에는 완성도 높은 공고를 위로(가점, 숨김 아님).
+        boolean completeRank = !salarySort && !"newest".equals(sort);
         int offset = (safePage - 1) * safeSize;
 
         List<String> ids = repository.searchIds(
             m.q(), m.disc(), m.regionRegex(), m.visa(), m.loc(), m.remote(),
-            m.gateMode(), verifiedOnly, minSalary, remotePriority, visaPriority, byRelevance,
-            salarySort, safeSize, offset);
+            m.gateMode(), verifiedOnly, minSalary, completeOnly, remotePriority, visaPriority, byRelevance,
+            salarySort, completeRank, safeSize, offset);
         long total = repository.countSearch(
             m.q(), m.disc(), m.regionRegex(), m.visa(), m.loc(), m.remote(), m.gateMode(), verifiedOnly,
-            minSalary);
+            minSalary, completeOnly);
 
         Map<String, JobEntity> byId = new HashMap<>();
         for (JobEntity j : repository.findAllById(ids)) byId.put(j.getId(), j);
