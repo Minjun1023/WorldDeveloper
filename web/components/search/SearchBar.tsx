@@ -7,6 +7,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dropdown, type DropdownOption } from "@/components/ui/dropdown";
 import type { RegionCount } from "@/lib/api";
+import { pushRecentSearch } from "@/lib/recent";
 import { useUpdateQuery } from "@/lib/use-update-query";
 
 // elevated 검색 바: 키워드 + 지역 + 검색. 비자/직무 필터는 SearchFilters 로 분리.
@@ -25,7 +26,9 @@ export function SearchBar({ regions }: { regions: RegionCount[] }) {
     <form
       onSubmit={(e) => {
         e.preventDefault();
-        update({ q: value.trim() || null });
+        const q = value.trim();
+        if (q) pushRecentSearch(q);
+        update({ q: q || null });
       }}
       className="flex flex-col items-stretch gap-2 rounded-2xl border border-border bg-surface p-2 shadow-lg sm:flex-row sm:items-center"
     >

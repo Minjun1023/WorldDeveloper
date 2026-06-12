@@ -8,6 +8,7 @@ import { JobCard } from "@/components/job/JobCard";
 import { JobDescription } from "@/components/job/JobDescription";
 import { JobSummary } from "@/components/job/JobSummary";
 import { MobileApplyBar } from "@/components/job/MobileApplyBar";
+import { RecordRecentJob } from "@/components/job/RecordRecentJob";
 import { ResumeOptimizeSection } from "@/components/job/ResumeOptimizeSection";
 import { Badge } from "@/components/ui/badge";
 import { fetchCompany, fetchInterviewPrep, fetchJob } from "@/lib/api";
@@ -45,6 +46,12 @@ export default async function JobDetailPage({ params }: { params: { id: string }
   return (
     <>
       <article className="mx-auto max-w-3xl space-y-6 pb-24 lg:pb-0">
+        <RecordRecentJob
+          id={job.id}
+          title={job.title_ko ?? job.title}
+          company={job.company.display_name}
+          slug={job.company.slug}
+        />
         <Link href="/search" className="inline-block text-body-sm text-muted-foreground hover:text-foreground">
           ← 목록으로
         </Link>
