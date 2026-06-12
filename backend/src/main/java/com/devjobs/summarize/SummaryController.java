@@ -1,7 +1,9 @@
 package com.devjobs.summarize;
 
+import com.devjobs.summarize.SummaryService.SummaryRateLimitedException;
 import com.devjobs.summarize.SummaryService.SummaryUnavailableException;
 import com.devjobs.summarize.dto.SummaryDtos.SummaryDto;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,13 +24,24 @@ public class SummaryController {
 
     @GetMapping("/summary")
     public ResponseEntity<SummaryDto> summary(
-        @PathVariable String id, @RequestParam(defaultValue = "ko") String lang) {
+        @PathVariable String id, @RequestParam(defaultValue = "ko") String lang,
+        HttpServletRequest http) {
         try {
-            return service.getOrCreate(id, lang)
+            return service.getOrCreate(id, lang, clientKey(http))
                 .map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.notFound().build());
+        } catch (SummaryRateLimitedException e) {
+            return ResponseEntity.status(429).header("Retry-After", "3600").build();
         } catch (SummaryUnavailableException e) {
             return ResponseEntity.status(503).build();
         }
+    }
+
+    private String clientKey(HttpServletRequest http) {
+        String fwd = http.getHeader("X-Forwarded-For");
+        if (fwd != null && !fwd.isBlank()) {
+            return fwd.split(",")[0].trim();
+        }
+        return http.getRemoteAddr();
     }
 }
