@@ -5,16 +5,22 @@ import { CtaSection } from "@/components/home/CtaSection";
 import { FaqSection } from "@/components/home/FaqSection";
 import { Hero } from "@/components/home/Hero";
 import type { HomeStats } from "@/components/home/HeroStats";
-import { JobGrid } from "@/components/home/JobGrid";
 import { MemberLandingRecommend } from "@/components/home/MemberLandingRecommend";
-import { RecentJobs } from "@/components/home/RecentJobs";
 import { SampleRecommend } from "@/components/home/SampleRecommend";
 import { SectionHeader } from "@/components/home/SectionHeader";
+import { SponsorJobCard } from "@/components/home/SponsorJobCard";
 import { fetchCompanies, fetchJobs, fetchRegions } from "@/lib/api";
 import { getSession } from "@/lib/session-server";
+import type { RecommendationItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
+
+// 히어로 우측 "6차원 매칭 미리보기" 카드용 예시 점수(개인화 아님 · 일러스트).
+const HERO_PREVIEW_SCORE = {
+  final_score: 0.94, stack: 0.92, visa: 1, location: 0.88, seniority: 0.9, salary: 0.8, semantic: 0.86,
+  penalty_applied: 0, reasons: [], deal_breakers: [],
+};
 
 // 랜딩 전폭 섹션 래퍼: 교차 배경(흰색/연회색) + 안쪽 max-w 컨테이너.
 function Section({
@@ -35,21 +41,20 @@ function Section({
 
 export default async function HomePage() {
   const session = await getSession();
-  const [visaRes, allRes, latestRes, companies, regions] = await Promise.all([
-    fetchJobs({ visa: "sponsors", pageSize: 4 }),
+  const [sponsorRes, allRes, companies, regions] = await Promise.all([
+    // 최신 비자 스폰서십 공고(근거 문장 포함) + 통계(스폰서 총수) + 히어로 미리보기 공고에 함께 사용.
+    fetchJobs({ visa: "sponsors", pageSize: 6, sort: "newest" }),
     fetchJobs({ pageSize: 1, includeUnclear: true }),
-    fetchJobs({ pageSize: 4, sort: "newest" }),
     fetchCompanies(),
     fetchRegions(),
   ]);
 
-  const visaJobs = visaRes.ok ? visaRes.data.items : [];
-  const visaTotal = visaRes.ok ? visaRes.data.total : 0;
+  const sponsorJobs = sponsorRes.ok ? sponsorRes.data.items : [];
+  const visaTotal = sponsorRes.ok ? sponsorRes.data.total : 0;
   const allTotal = allRes.ok ? allRes.data.total : 0;
-  const latestJobs = latestRes.ok ? latestRes.data.items : [];
 
-  // 비로그인 홈의 "당신을 위한 6차원 매칭 공고" 예시 섹션용 (로그인 시엔 실제 추천을 부른다).
-  // page:2 로 아래 "비자 스폰서십 공고"(page:1) 섹션과 공고가 겹치지 않게 한다.
+  // 비로그인 홈의 "당신을 위한 6차원 매칭 공고" 예시 섹션용(로그인 시엔 실제 추천을 부른다).
+  // page:2 로 위 최신 공고(page:1)와 겹치지 않게 한다.
   const sampleRes = session
     ? null
     : await fetchJobs({ visa: "sponsors", pageSize: 6, page: 2, sort: "newest" });
@@ -68,67 +73,46 @@ export default async function HomePage() {
     countries: countryRegions.length,
   };
 
+  const previewItem = sponsorJobs[0]
+    ? ({ job: sponsorJobs[0], score: HERO_PREVIEW_SCORE } as unknown as RecommendationItem)
+    : null;
+
   return (
     <>
-      <Hero stats={stats} sponsorCompanies={sponsorChips} regions={regions} />
+      <div className="border-b border-border">
+        <Hero stats={stats} sponsorCompanies={sponsorChips} regions={regions} previewItem={previewItem} />
+      </div>
 
-      {/* 맞춤 추천 미리보기 (연회색) */}
+      {/* 맞춤 추천 미리보기 (흰색) */}
       {session ? (
-        <Section muted>
+        <Section>
           <MemberLandingRecommend />
         </Section>
       ) : (
         sampleJobs.length > 0 && (
-          <Section muted>
+          <Section>
             <SampleRecommend jobs={sampleJobs} />
           </Section>
         )
       )}
 
-      {/* 비자 스폰서 명시 공고 (흰색) */}
-      {visaJobs.length > 0 && (
-        <Section>
-          <SectionHeader
-            overline="비자 스폰서십"
-            title="비자 스폰서 명시 공고"
-            count={visaTotal}
-            href="/search?visa=sponsors"
-            subtitle="공고 원문에서 비자 스폰서십이 명시적으로 확인된 공고만 모았어요."
-          />
-          <JobGrid jobs={visaJobs} hideVisaBadge />
-        </Section>
-      )}
-
-      {/* 방금 올라온 공고 (연회색) */}
-      {latestJobs.length > 0 && (
-        <Section muted>
-          <SectionHeader
-            overline="최신"
-            title="방금 올라온 공고"
-            href="/search?sort=newest"
-            subtitle="최근 등록된 해외 테크 공고를 모았어요."
-          />
-          <JobGrid jobs={latestJobs} />
-        </Section>
-      )}
-
-      {/* 진출 가능한 국가 (흰색) */}
+      {/* 진출 가능한 국가 (연회색) */}
       {countryRegions.length > 0 && (
-        <Section>
+        <Section muted>
           <SectionHeader
             overline="국가별"
             title="진출 가능한 국가"
             count={countryRegions.length}
             href={countryRegions.length > 10 ? "/regions" : undefined}
-            subtitle="비자 스폰서십 명시 공고가 있는 국가만 모았어요."
+            subtitle="비자 스폰서십이 명시된 공고가 있는 국가만 모았어요."
           />
           <CountryTiles regions={countryRegions} limit={10} />
         </Section>
       )}
 
-      {/* 검증된 회사들 (연회색) */}
+      {/* 검증된 회사들 (흰색) */}
       {spotlight.length > 0 && (
-        <Section muted>
+        <Section>
           <SectionHeader
             overline="회사 스포트라이트"
             title="검증된 회사들"
@@ -137,6 +121,24 @@ export default async function HomePage() {
             subtitle="정부 명부 검증을 통과한 해외 테크 회사들이에요."
           />
           <CompanySpotlight companies={spotlight} />
+        </Section>
+      )}
+
+      {/* 방금 올라온 비자 스폰서십 공고 — 근거 원문 문장 포함 (연회색) */}
+      {sponsorJobs.length > 0 && (
+        <Section muted>
+          <SectionHeader
+            overline="최신 공고"
+            title="방금 올라온 비자 스폰서십 공고"
+            href="/search?visa=sponsors&sort=newest"
+            hrefLabel="전체 공고 보기"
+            subtitle="스폰서십이 명시된 원문 문장을 근거로 함께 보여드려요."
+          />
+          <div className="grid gap-4 sm:grid-cols-2">
+            {sponsorJobs.map((job) => (
+              <SponsorJobCard key={job.id} job={job} />
+            ))}
+          </div>
         </Section>
       )}
 
