@@ -29,6 +29,10 @@ export function JobSummary({ jobId }: { jobId: string }) {
         setError("AI 요약을 사용할 수 없습니다 (API 키 미설정).");
         return;
       }
+      if (res.status === 429) {
+        setError("요청이 많습니다. 잠시 후 다시 시도해 주세요.");
+        return;
+      }
       if (!res.ok) {
         setError(`요약 실패 (HTTP ${res.status}).`);
         return;
