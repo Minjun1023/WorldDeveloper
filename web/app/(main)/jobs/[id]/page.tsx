@@ -3,25 +3,33 @@ import { notFound } from "next/navigation";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { InterviewPrepSection } from "@/components/job/InterviewPrepSection";
-import { JobActionCard } from "@/components/job/JobActionCard";
 import { JobCard } from "@/components/job/JobCard";
 import { JobDescription } from "@/components/job/JobDescription";
+import { JobFactCards } from "@/components/job/JobFactCards";
+import { JobSidebar } from "@/components/job/JobSidebar";
 import { JobSummary } from "@/components/job/JobSummary";
 import { MobileApplyBar } from "@/components/job/MobileApplyBar";
 import { RecordRecentJob } from "@/components/job/RecordRecentJob";
-import { ResumeOptimizeSection } from "@/components/job/ResumeOptimizeSection";
-import { Badge } from "@/components/ui/badge";
-import { fetchCachedTranslation, fetchCompany, fetchInterviewPrep, fetchJob } from "@/lib/api";
+import { TechStackMatch } from "@/components/job/TechStackMatch";
+import { VisaEvidence } from "@/components/job/VisaEvidence";
+import {
+  fetchCachedSummary,
+  fetchCachedTranslation,
+  fetchCompany,
+  fetchInterviewPrep,
+  fetchJob,
+} from "@/lib/api";
 import { getSession } from "@/lib/session-server";
 
 export const dynamic = "force-dynamic";
 
 export default async function JobDetailPage({ params }: { params: { id: string } }) {
-  const [result, prep, session, initialKo] = await Promise.all([
+  const [result, prep, session, initialKo, initialSummary] = await Promise.all([
     fetchJob(params.id),
     fetchInterviewPrep(params.id),
     getSession(),
     fetchCachedTranslation(params.id, "ko"), // 캐시된 번역만(즉시표시), 미스면 null → 클라 번역
+    fetchCachedSummary(params.id, "ko"), // 캐시된 요약만(즉시 펼침), 미스면 null → 클라 생성
   ]);
 
   if (!result.ok && result.status === 404) {
@@ -46,62 +54,69 @@ export default async function JobDetailPage({ params }: { params: { id: string }
 
   return (
     <>
-      <article className="mx-auto max-w-3xl space-y-6 pb-24 lg:pb-0">
+      <div className="mx-auto max-w-6xl pb-24 lg:pb-0">
         <RecordRecentJob
           id={job.id}
           title={job.title_ko ?? job.title}
           company={job.company.display_name}
           slug={job.company.slug}
         />
-        <Link href="/search" className="inline-block text-body-sm text-muted-foreground hover:text-foreground">
+        <Link
+          href="/search"
+          className="mb-4 inline-block text-body-sm text-muted-foreground hover:text-foreground"
+        >
           ← 목록으로
         </Link>
 
-        <header className="space-y-4">
-          {/* 회사 먼저(작게) → 큰 제목. 위치는 아래 정보바에 있어 헤더에서 중복 제거. */}
-          <Link
-            href={`/companies/${job.company.slug}`}
-            className="inline-flex items-center gap-2 rounded-md text-body-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={28} />
-            {job.company.display_name}
-          </Link>
+        <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-8">
+          <article className="min-w-0 space-y-6">
+            <header className="space-y-4">
+              {/* 회사 먼저(작게) → 큰 제목. 위치는 정보 카드에 있어 헤더에서 중복 제거. */}
+              <Link
+                href={`/companies/${job.company.slug}`}
+                className="inline-flex items-center gap-2 rounded-md text-body-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={28} />
+                {job.company.display_name}
+              </Link>
 
-          <div className="space-y-1.5">
-            <h1 className="text-display leading-tight">{job.title_ko ?? job.title}</h1>
-            {job.title_ko && <p className="text-body text-muted-foreground">{job.title}</p>}
-          </div>
+              <div className="space-y-1.5">
+                <h1 className="text-display leading-tight">{job.title_ko ?? job.title}</h1>
+                {job.title_ko && <p className="text-body text-muted-foreground">{job.title}</p>}
+              </div>
+            </header>
 
-          {job.tags && job.tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {job.tags.map((t) => (
-                <Badge key={t} variant="outline" className="font-mono lowercase">
-                  {t}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </header>
+            <JobFactCards job={job} />
+            <VisaEvidence visa={job.visa} />
 
-        {/* 상단 전폭 정보바 (우측 sticky 대체) */}
-        <JobActionCard job={job} loggedIn={!!session} companyJobCount={companyData?.company.job_count} />
+            {job.description && <JobSummary jobId={job.id} initialData={initialSummary} />}
+            {job.tags && job.tags.length > 0 && <TechStackMatch tags={job.tags} />}
+            {job.description && (
+              <JobDescription jobId={job.id} original={job.description} initialKo={initialKo} />
+            )}
+            {prep && <InterviewPrepSection prep={prep} />}
 
-        {job.description && <JobSummary jobId={job.id} />}
-        {job.description && <JobDescription jobId={job.id} original={job.description} initialKo={initialKo} />}
-        {prep && <InterviewPrepSection prep={prep} />}
-        <ResumeOptimizeSection jobId={job.id} />
+            {otherJobs.length > 0 && (
+              <section className="space-y-3 border-t border-border pt-6">
+                <h2 className="text-h3">{job.company.display_name}의 다른 공고</h2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {otherJobs.map((j) => (
+                    <JobCard key={j.id} job={j} />
+                  ))}
+                </div>
+              </section>
+            )}
+          </article>
 
-        {otherJobs.length > 0 && (
-          <section className="space-y-3 border-t border-border pt-6">
-            <h2 className="text-h3">{job.company.display_name}의 다른 공고</h2>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {otherJobs.map((j) => (
-                <JobCard key={j.id} job={j} />
-              ))}
-            </div>
-          </section>
-        )}
-      </article>
+          <aside className="mt-6 lg:mt-0">
+            <JobSidebar
+              job={job}
+              loggedIn={!!session}
+              companyJobCount={companyData?.company.job_count}
+            />
+          </aside>
+        </div>
+      </div>
 
       <MobileApplyBar jobId={job.id} applyUrl={job.apply_url} loggedIn={!!session} />
     </>
