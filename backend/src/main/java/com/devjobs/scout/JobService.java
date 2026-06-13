@@ -139,11 +139,29 @@ public class JobService {
                                  String discipline, String region, String track, boolean includeUnclear) {
         boolean hasQuery = q != null && !q.isBlank();
         String discTerms = discipline == null ? null : DISCIPLINE_TERMS.get(discipline);
-        Region reg = (region == null) ? null
-            : REGIONS.stream().filter(x -> x.key().equals(region)).findFirst().orElse(null);
-        String regionRegex = (reg != null) ? reg.regex() : null;
+        // region: 콤마 구분 다중 지역(예: "us,germany,japan"). 국가들은 각 지역 정규식을 '|'로
+        // 결합해 location ~* 에 OR 매칭. 단일 "remote"만 선택 시엔 기존대로 원격 플래그로 처리.
+        // (UI는 국가만 다중 선택 — remote 는 근무형태라 제외)
         Boolean remoteParam = remote;
-        if (reg != null && "remote".equals(reg.key())) remoteParam = Boolean.TRUE;
+        String regionRegex = null;
+        if (region != null && !region.isBlank()) {
+            List<String> regexes = new ArrayList<>();
+            boolean hasRemote = false;
+            int validKeys = 0;
+            for (String raw : region.split(",")) {
+                String key = raw.trim();
+                if (key.isEmpty()) continue;
+                validKeys++;
+                if ("remote".equals(key)) { hasRemote = true; continue; }
+                REGIONS.stream().filter(x -> x.key().equals(key)).findFirst()
+                    .map(Region::regex).filter(Objects::nonNull).ifPresent(regexes::add);
+            }
+            if (!regexes.isEmpty()) {
+                regionRegex = String.join("|", regexes);
+            } else if (hasRemote && validKeys == 1) {
+                remoteParam = Boolean.TRUE;
+            }
+        }
         String gateMode;
         if (includeUnclear) {
             gateMode = "remote".equals(track) ? "remote_unclear"
