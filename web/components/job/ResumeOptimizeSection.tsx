@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { Badge } from "@/components/ui/badge";
@@ -39,9 +40,13 @@ export function ResumeOptimizeSection({ jobId }: { jobId: string }) {
   return (
     <section className="space-y-4 rounded-lg border border-border bg-surface-2 p-5">
       <div className="space-y-1">
+        <div className="text-caption font-semibold uppercase tracking-wide text-primary">
+          키워드 매칭 · AI 없이 즉시
+        </div>
         <h2 className="text-h3">이력서 최적화</h2>
         <p className="text-body-sm text-muted-foreground">
-          이력서를 붙여넣으면 이 공고 키워드와 매칭해 강조·보완 포인트를 제안합니다. (입력은 저장되지 않음)
+          붙여넣은 이력서를 이 공고 키워드와 바로 대조해 보유·부족 키워드와 강조 포인트를 알려줘요.
+          로그인·AI 없이 무료이고, 입력은 저장되지 않아요.
         </p>
       </div>
 
@@ -128,6 +133,16 @@ export function ResumeOptimizeSection({ jobId }: { jobId: string }) {
           <p className="text-xs text-muted-foreground">{result.note}</p>
         </div>
       )}
+
+      <Link
+        href="/me/coach"
+        className="flex items-center justify-between gap-2 rounded-md border border-border bg-surface px-3.5 py-2.5 text-body-sm transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <span className="text-muted-foreground">
+          더 깊은 조언이 필요하면 <span className="font-medium text-foreground">이력서 코치</span>에서 AI와 1:1 상담받아요
+        </span>
+        <span className="shrink-0 text-primary" aria-hidden="true">→</span>
+      </Link>
     </section>
   );
 }
