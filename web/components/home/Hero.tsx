@@ -29,7 +29,7 @@ export function Hero({
             "radial-gradient(50% 70% at 18% -10%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 70%)",
         }}
       />
-      <div className="relative mx-auto max-w-container px-4 py-14 sm:py-20">
+      <div className="relative mx-auto max-w-container px-4 py-16 sm:py-24">
         <div className="grid items-center gap-10 lg:grid-cols-[1fr_360px]">
           {/* 좌: 콘텐츠(좌측정렬) */}
           <div className="min-w-0">
