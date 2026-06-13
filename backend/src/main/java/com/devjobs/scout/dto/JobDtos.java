@@ -37,7 +37,8 @@ public final class JobDtos {
         List<String> tags,
         VisaDto visa,
         RemoteDto remote,
-        SalaryDto salary
+        SalaryDto salary,
+        String seniority
     ) {}
 
     /** 단일 공고 상세 — 목록과 달리 description 전문 포함. */

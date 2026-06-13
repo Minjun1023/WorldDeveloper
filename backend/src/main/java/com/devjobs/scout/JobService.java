@@ -362,7 +362,8 @@ public class JobService {
             j.getTags(),
             visa,
             remote,
-            salary);
+            salary,
+            j.getSeniority());
     }
 
     private String preview(String text) {

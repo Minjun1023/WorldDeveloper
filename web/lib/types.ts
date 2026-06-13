@@ -51,6 +51,7 @@ export interface Job {
   visa?: JobVisa;
   remote?: JobRemote;
   salary?: JobSalary;
+  seniority?: string | null;
 }
 
 export interface JobDetail {
