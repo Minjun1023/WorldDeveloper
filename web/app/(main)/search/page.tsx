@@ -93,7 +93,7 @@ export default async function SearchPage({
             </div>
           ) : (
             <>
-              <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+              <div className="space-y-3">
                 {result.data.items.map((job) => (
                   <JobRow key={job.id} job={job} />
                 ))}
