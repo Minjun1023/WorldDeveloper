@@ -24,8 +24,15 @@ public class SummaryController {
 
     @GetMapping("/summary")
     public ResponseEntity<SummaryDto> summary(
-        @PathVariable String id, @RequestParam(defaultValue = "ko") String lang,
+        @PathVariable String id,
+        @RequestParam(defaultValue = "ko") String lang,
+        @RequestParam(defaultValue = "false") boolean cacheOnly,
         HttpServletRequest http) {
+        if (cacheOnly) {
+            return service.getCached(id, lang)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
+        }
         try {
             return service.getOrCreate(id, lang, clientKey(http))
                 .map(ResponseEntity::ok)
