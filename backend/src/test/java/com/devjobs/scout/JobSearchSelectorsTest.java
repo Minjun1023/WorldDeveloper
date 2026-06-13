@@ -148,6 +148,21 @@ class JobSearchSelectorsTest {
     }
 
     @Test
+    void multiRegionSearchUnionsCountries() {
+        company("c10", "C10");
+        job("us1", "Eng", "c10", "x", null, "San Francisco, USA", false);
+        job("de1", "Eng", "c10", "x", null, "Berlin, Germany", false);
+        job("jp1", "Eng", "c10", "x", null, "Tokyo, Japan", false);
+        job("uk1", "Eng", "c10", "x", null, "London, United Kingdom", false);
+        // region="us,germany" → 두 지역 정규식을 '|'로 결합해 OR 매칭(일본·영국 제외).
+        JobListResponse res = service.search(null, null, null, null, null, null, "us,germany", 1, 20);
+        assertTrue(res.items().stream().anyMatch(j -> j.id().equals("us1")), "미국 포함");
+        assertTrue(res.items().stream().anyMatch(j -> j.id().equals("de1")), "독일 포함");
+        assertTrue(res.items().stream().noneMatch(j -> j.id().equals("jp1")), "일본 제외");
+        assertTrue(res.items().stream().noneMatch(j -> j.id().equals("uk1")), "영국 제외");
+    }
+
+    @Test
     void regionSearchMatchesNewCountryCityOnly() {
         company("c9", "C9");
         // 도시-only(국가명 없음) 도 region 검색에 잡혀야 함
