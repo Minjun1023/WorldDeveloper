@@ -95,6 +95,23 @@ public class RecommendService {
         return new RecommendResponse(scored.size(), selected.size(), selected);
     }
 
+    /** 단일 공고를 프로필에 대해 채점. 공고 없으면 null. 의미유사도는 단건 쿼리(임베딩 없으면 0). */
+    public RecommendationItem scoreOne(RecommendRequest req, String jobId) {
+        JobEntity job = jobRepository.findById(jobId).orElse(null);
+        if (job == null) return null;
+        double sim = 0.0;
+        String profileText = buildProfileText(req);
+        if (!profileText.isBlank()) {
+            List<Double> vec = aiClient.embed(profileText);
+            if (vec != null && !vec.isEmpty() && !isZero(vec)) {
+                Double s = jobRepository.findSemanticSimilarity(toVectorLiteral(vec), jobId);
+                if (s != null) sim = s;
+            }
+        }
+        ScoreBreakdown sb = scorer.score(job, req, sim);
+        return new RecommendationItem(jobService.toDto(job), sb);
+    }
+
     private List<RecommendationItem> applyDiversity(
             List<RecommendationItem> scored, int topK, int maxPerCompany) {
         Map<String, Integer> companyCount = new HashMap<>();
