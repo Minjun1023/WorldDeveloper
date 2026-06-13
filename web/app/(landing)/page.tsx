@@ -45,7 +45,7 @@ export default async function HomePage() {
   const [sponsorRes, allRes, companies, regions] = await Promise.all([
     // 최신 비자 스폰서십 공고(근거 문장 포함) + 통계(스폰서 총수) + 히어로 미리보기 공고에 함께 사용.
     fetchJobs({ visa: "sponsors", pageSize: 6, sort: "newest" }),
-    fetchJobs({ pageSize: 1, includeUnclear: true }),
+    fetchJobs({ pageSize: 1 }),
     fetchCompanies(),
     fetchRegions(),
   ]);
