@@ -53,6 +53,35 @@ def html_strip(html: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
+# 표시용 본문: 원문 구조(문단·제목·불릿)는 살리고 래퍼/속성/잡태그만 제거. 평문화(html_strip)와 달리
+# 의미 태그를 보존해 .job-desc 가 깔끔히 렌더하도록. BeautifulSoup 없이 정규식(커넥터와 동일 정책).
+_ALLOWED_TAGS = {"p", "ul", "ol", "li", "strong", "b", "em", "i", "h1", "h2", "h3", "h4", "a", "br"}
+# 본문과 무관한 반복 문구(EEO·개인정보·지원 안내 등) 문단 제거 — 보수적(키워드 명확한 것만).
+_BOILERPLATE = re.compile(
+    r"(equal opportunity|reasonable accommodation|privacy policy|committed to inclusion"
+    r"|applicant and candidate|apply for this job|click here to apply)",
+    re.I,
+)
+
+
+def clean_structured_html(html: str) -> str:
+    if not html:
+        return ""
+    h = html
+    h = re.sub(r"(?is)<(script|style)[^>]*>.*?</\1>", "", h)               # script/style 제거
+    h = re.sub(r"(?i)</?(div|span|section|article|figure|table|tbody|thead|tr|td|th)[^>]*>", "", h)  # 래퍼 언랩
+    h = re.sub(r"(?i)<([a-z0-9]+)\b[^>]*>",
+               lambda m: f"<{m.group(1).lower()}>" if m.group(1).lower() in _ALLOWED_TAGS else "", h)  # 허용 여는태그(속성 제거)
+    h = re.sub(r"(?i)</([a-z0-9]+)\s*>",
+               lambda m: f"</{m.group(1).lower()}>" if m.group(1).lower() in _ALLOWED_TAGS else "", h)  # 허용 닫는태그
+    h = re.sub(r"(?is)<p>(.*?)</p>",
+               lambda m: "" if _BOILERPLATE.search(re.sub(r"<[^>]+>", "", m.group(1))) else m.group(0), h)  # 보일러플레이트 문단
+    h = re.sub(r"(?i)<(p|li|ul|ol)>\s*</\1>", "", h)                        # 빈 요소 제거
+    h = re.sub(r"[ \t]*\n[ \t]*", "\n", h)
+    h = re.sub(r"\n{3,}", "\n\n", h)
+    return h.strip()
+
+
 def parse_dt(s: str) -> datetime | None:
     if not s:
         return None
@@ -99,21 +128,23 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
         "tags": ctags,
     }
 
-    status, evidence = classify_visa(j.description)
-    remote_status, remote_evidence = classify_remote_eligibility(
-        j.location or "", bool(j.is_remote), j.description or "", title=j.title or ""
-    )
+    # 분석(비자/원격/기술/연봉/임베딩)은 평문(plain)으로 — j.description 이 HTML 일 수 있어 태그 오염 방지
+    # (비자 evidence 문장에 태그가 섞이던 문제도 함께 해소). 표시용은 아래서 구조 보존 HTML 로 저장.
     plain = html_strip(j.description)
+    status, evidence = classify_visa(plain)
+    remote_status, remote_evidence = classify_remote_eligibility(
+        j.location or "", bool(j.is_remote), plain, title=j.title or ""
+    )
     # 보드 태그(arbeitnow/remoteok 등)는 비기술 라벨이 섞여 들어오므로 기술스택만 정규화.
     # 남는 기술 태그가 없으면 제목+본문에서 추출로 폴백("iOS Engineer"·"Go Developer" 등 제목 스택 포착).
-    tags = normalize_tech_tags(j.tags) or extract_tech(f"{j.title or ''}\n{j.description or ''}")
+    tags = normalize_tech_tags(j.tags) or extract_tech(f"{j.title or ''}\n{plain}")
     embedding = embed_text(f"{j.title}\n{plain}")
 
     # 구조화 연봉이 없으면 본문에서 명시 범위 추출(원본 통화 표시 + USD 환산 점수용).
     raw_min, raw_max = j.salary_min, j.salary_max
     raw_cur, raw_period = j.salary_currency, j.salary_period
     if raw_min is None and raw_max is None:
-        ext = extract_salary_from_description(j.description)
+        ext = extract_salary_from_description(plain)
         if ext:
             raw_min, raw_max = ext["min"], ext["max"]
             raw_cur, raw_period = ext["currency"], ext["period"]
@@ -126,7 +157,7 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
         "location": _enrich_location(j.location, hq),
         "is_remote": bool(j.is_remote),
         "employment_type": j.employment_type or None,
-        "description": j.description or None,
+        "description": clean_structured_html(j.description) or None,
         "description_text": plain or None,
         "apply_url": j.apply_url or None,
         "posted_at": parse_dt(j.posted_at),

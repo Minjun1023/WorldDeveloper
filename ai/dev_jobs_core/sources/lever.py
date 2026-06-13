@@ -25,10 +25,11 @@ async def fetch(company: str, query: str = "", limit: int = 100) -> list[JobPost
 
     for item in items:
         title = item.get("text", "")
-        description = _strip_html(item.get("descriptionPlain") or item.get("description", "") or "")
+        # 구조 보존: HTML(description) 우선, 없으면 descriptionPlain. 평문화/클린은 transform 에서.
+        description = item.get("description") or item.get("descriptionPlain", "") or ""
 
         if query:
-            haystack = f"{title} {description}".lower()
+            haystack = f"{title} {_strip_html(description)}".lower()
             if q_lower not in haystack:
                 continue
 
