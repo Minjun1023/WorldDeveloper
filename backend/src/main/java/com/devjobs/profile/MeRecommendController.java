@@ -6,10 +6,13 @@ import com.devjobs.strategist.RateLimiter;
 import com.devjobs.strategist.RecommendService;
 import com.devjobs.strategist.dto.RecommendDtos.RecommendRequest;
 import com.devjobs.strategist.dto.RecommendDtos.RecommendResponse;
+import com.devjobs.strategist.dto.RecommendDtos.RecommendationItem;
 import java.util.Map;
 import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,5 +74,20 @@ public class MeRecommendController {
             rec = new RecommendResponse(rec.totalCandidates(), kept.size(), kept);
         }
         return ResponseEntity.ok(rec);
+    }
+
+    @GetMapping("/score/{jobId:.+}")
+    public ResponseEntity<?> score(@AuthenticationPrincipal String userId,
+                                   @PathVariable String jobId) {
+        UUID id = UUID.fromString(userId);
+        var profileOpt = profileService.load(id);
+        if (profileOpt.isEmpty()) {
+            return ResponseEntity.status(409).body(Map.of("needs_profile", true,
+                "error", "프로필을 먼저 작성해 주세요."));
+        }
+        RecommendRequest rr = ProfileService.toRecommendRequest(profileOpt.get(), (AiClient.ParseResult.Profile) null, 1);
+        RecommendationItem item = recommendService.scoreOne(rr, jobId);
+        if (item == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(item.score());
     }
 }
