@@ -11,8 +11,8 @@ const SECTIONS: { key: keyof Pick<JobSummaryData, "responsibilities" | "requirem
   { key: "compensation", label: "연봉·복지" },
 ];
 
-export function JobSummary({ jobId }: { jobId: string }) {
-  const [data, setData] = useState<JobSummaryData | null>(null);
+export function JobSummary({ jobId, initialData }: { jobId: string; initialData?: JobSummaryData | null }) {
+  const [data, setData] = useState<JobSummaryData | null>(initialData ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
