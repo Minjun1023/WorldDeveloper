@@ -3,6 +3,211 @@
     "description": "회사명 → ATS 매핑. 추가 가능. ats: greenhouse / lever / ashby / smartrecruiters / personio",
     "last_updated": "2026-06-13"
   },
+  "wolt": {
+    "ats": "greenhouse",
+    "token": "wolt",
+    "tags": ["delivery", "marketplace", "europe"]
+  },
+  "deliveroo": {
+    "ats": "ashby",
+    "token": "deliveroo",
+    "tags": ["delivery", "marketplace", "europe"]
+  },
+  "graphcore": {
+    "ats": "greenhouse",
+    "token": "graphcore",
+    "tags": ["ai", "hardware", "europe"]
+  },
+  "alan": {
+    "ats": "ashby",
+    "token": "alan",
+    "tags": ["healthtech", "insurance", "europe"]
+  },
+  "pennylane": {
+    "ats": "ashby",
+    "token": "pennylane",
+    "tags": ["fintech", "saas", "europe"]
+  },
+  "getyourguide": {
+    "ats": "greenhouse",
+    "token": "getyourguide",
+    "tags": ["travel", "marketplace", "europe"]
+  },
+  "lendable": {
+    "ats": "ashby",
+    "token": "lendable",
+    "tags": ["fintech", "europe"]
+  },
+  "catawiki": {
+    "ats": "greenhouse",
+    "token": "catawiki",
+    "tags": ["marketplace", "ecommerce", "europe"]
+  },
+  "bitpanda": {
+    "ats": "greenhouse",
+    "token": "bitpanda",
+    "tags": ["fintech", "crypto", "europe"]
+  },
+  "multiverse": {
+    "ats": "ashby",
+    "token": "multiverse",
+    "tags": ["edtech", "europe"]
+  },
+  "cabify": {
+    "ats": "greenhouse",
+    "token": "cabify",
+    "tags": ["mobility", "europe"]
+  },
+  "supercell": {
+    "ats": "ashby",
+    "token": "supercell",
+    "tags": ["gaming", "europe"]
+  },
+  "gostudent": {
+    "ats": "greenhouse",
+    "token": "gostudent",
+    "tags": ["edtech", "europe"]
+  },
+  "thought-machine": {
+    "ats": "ashby",
+    "token": "thought-machine",
+    "tags": ["fintech", "devtools", "europe"]
+  },
+  "tide": {
+    "ats": "greenhouse",
+    "token": "tide",
+    "tags": ["fintech", "europe"]
+  },
+  "paddle": {
+    "ats": "ashby",
+    "token": "paddle",
+    "tags": ["fintech", "saas", "europe"]
+  },
+  "complyadvantage": {
+    "ats": "greenhouse",
+    "token": "complyadvantage",
+    "tags": ["fintech", "regtech", "europe"]
+  },
+  "backmarket": {
+    "ats": "ashby",
+    "token": "backmarket",
+    "tags": ["ecommerce", "marketplace", "europe"]
+  },
+  "refurbed": {
+    "ats": "greenhouse",
+    "token": "refurbed",
+    "tags": ["ecommerce", "marketplace", "europe"]
+  },
+  "forto": {
+    "ats": "ashby",
+    "token": "forto",
+    "tags": ["logistics", "europe"]
+  },
+  "marshmallow": {
+    "ats": "ashby",
+    "token": "marshmallow",
+    "tags": ["fintech", "insurance", "europe"]
+  },
+  "quantexa": {
+    "ats": "ashby",
+    "token": "quantexa",
+    "tags": ["data", "ai", "europe"]
+  },
+  "tines": {
+    "ats": "greenhouse",
+    "token": "tines",
+    "tags": ["security", "automation", "europe"]
+  },
+  "freetrade": {
+    "ats": "ashby",
+    "token": "freetrade",
+    "tags": ["fintech", "europe"]
+  },
+  "truelayer": {
+    "ats": "greenhouse",
+    "token": "truelayer",
+    "tags": ["fintech", "europe"]
+  },
+  "staffbase": {
+    "ats": "greenhouse",
+    "token": "staffbase",
+    "tags": ["saas", "communication", "europe"]
+  },
+  "wayflyer": {
+    "ats": "ashby",
+    "token": "wayflyer",
+    "tags": ["fintech", "europe"]
+  },
+  "storyblok": {
+    "ats": "greenhouse",
+    "token": "storyblok",
+    "tags": ["devtools", "cms", "europe"]
+  },
+  "form3": {
+    "ats": "greenhouse",
+    "token": "form3",
+    "tags": ["fintech", "europe"]
+  },
+  "flipdish": {
+    "ats": "greenhouse",
+    "token": "flipdish",
+    "tags": ["saas", "food-tech", "europe"]
+  },
+  "improbable": {
+    "ats": "ashby",
+    "token": "improbable",
+    "tags": ["gaming", "metaverse", "europe"]
+  },
+  "cleo": {
+    "ats": "greenhouse",
+    "token": "cleo",
+    "tags": ["fintech", "europe"]
+  },
+  "grover": {
+    "ats": "greenhouse",
+    "token": "grover",
+    "tags": ["ecommerce", "rental", "europe"]
+  },
+  "letsgetchecked": {
+    "ats": "greenhouse",
+    "token": "letsgetchecked",
+    "tags": ["healthtech", "europe"]
+  },
+  "ledger": {
+    "ats": "ashby",
+    "token": "ledger",
+    "tags": ["crypto", "hardware", "europe"]
+  },
+  "ankorstore": {
+    "ats": "ashby",
+    "token": "ankorstore",
+    "tags": ["ecommerce", "marketplace", "europe"]
+  },
+  "bitmovin": {
+    "ats": "greenhouse",
+    "token": "bitmovin",
+    "tags": ["video", "devtools", "europe"]
+  },
+  "beamery": {
+    "ats": "ashby",
+    "token": "beamery",
+    "tags": ["hr-tech", "saas", "europe"]
+  },
+  "sorare": {
+    "ats": "ashby",
+    "token": "sorare",
+    "tags": ["gaming", "crypto", "europe"]
+  },
+  "tractable": {
+    "ats": "ashby",
+    "token": "tractable",
+    "tags": ["ai", "insurance", "europe"]
+  },
+  "traderepublic": {
+    "ats": "greenhouse",
+    "token": "traderepublic",
+    "tags": ["fintech", "europe"]
+  },
   "stripe": {
     "ats": "greenhouse",
     "token": "stripe",
