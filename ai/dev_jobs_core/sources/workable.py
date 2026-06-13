@@ -36,7 +36,7 @@ async def fetch(company: str, query: str = "", limit: int = 100) -> list[JobPost
         p = _to_posting(company, display, item)
         if p is None:
             continue
-        if query and q_lower not in f"{p.title} {p.description}".lower():
+        if query and q_lower not in f"{p.title} {_strip_html(p.description)}".lower():
             continue
         postings.append(p)
         if len(postings) >= limit:
@@ -59,7 +59,7 @@ def _to_posting(company: str, display: str, item: dict) -> JobPosting | None:
         location=location,
         is_remote=bool(item.get("telecommuting")) or "remote" in location.lower(),
         employment_type=_EMP.get((item.get("employment_type") or "").lower(), "FULLTIME"),
-        description=_strip_html(item.get("description", "") or ""),
+        description=item.get("description", "") or "",  # 구조 보존: 원본 HTML 그대로(클린은 transform)
         apply_url=item.get("application_url") or item.get("url") or item.get("shortlink", ""),
         posted_at=item.get("published_on") or item.get("created_at", ""),
         closes_at="",
