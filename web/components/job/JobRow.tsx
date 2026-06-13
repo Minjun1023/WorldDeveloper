@@ -19,7 +19,7 @@ export function JobRow({ job }: { job: Job }) {
   return (
     <Link
       href={`/jobs/${encodeURIComponent(job.id)}`}
-      className="group flex items-center gap-4 px-4 py-4 transition-colors hover:bg-surface-2/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex items-center gap-4 rounded-xl border border-border bg-surface px-4 py-4 shadow-sm transition-all hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={40} />
 
