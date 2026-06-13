@@ -56,6 +56,14 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         """, nativeQuery = true)
     List<Object[]> findSemanticRemoteViableCandidates(@Param("vec") String vec, @Param("lim") int lim);
 
+    // 단건 의미유사도: 특정 공고 하나에 대한 cosine 유사도. 임베딩 없으면 null 반환.
+    @Query(value = """
+        SELECT 1 - (embedding <=> CAST(:vec AS vector)) AS semantic
+        FROM jobs
+        WHERE id = :jobId AND embedding IS NOT NULL
+        """, nativeQuery = true)
+    Double findSemanticSimilarity(@Param("vec") String vec, @Param("jobId") String jobId);
+
     // fallback (임베딩 없거나 ai 다운): 최신순. 반환: [id, 0.0]
     @Query(value = """
         SELECT id, CAST(0.0 AS double precision) AS semantic

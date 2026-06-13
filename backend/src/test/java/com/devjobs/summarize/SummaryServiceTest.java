@@ -1,5 +1,6 @@
 package com.devjobs.summarize;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -9,6 +10,7 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.devjobs.domain.JobEntity;
@@ -119,5 +121,25 @@ class SummaryServiceTest {
         when(jobRepo.findById("j1")).thenReturn(Optional.empty());
 
         assertTrue(service.getOrCreate("j1", "ko", IP).isEmpty());
+    }
+
+    @Test
+    void getCached_returnsCached_withoutCallingAi() {
+        String json = "{\"responsibilities\":[],\"requirements\":[],\"visa\":[],\"compensation\":[]}";
+        var entity = new JobSummaryEntity("greenhouse:acme:1", "ko", json, "test");
+        when(repo.findByJobIdAndLang("greenhouse:acme:1", "ko")).thenReturn(Optional.of(entity));
+
+        var result = service.getCached("greenhouse:acme:1", "ko");
+
+        assertThat(result).isPresent();
+        verifyNoInteractions(ai);
+    }
+
+    @Test
+    void getCached_missing_returnsEmpty_withoutCallingAi() {
+        when(repo.findByJobIdAndLang("nope", "ko")).thenReturn(Optional.empty());
+
+        assertThat(service.getCached("nope", "ko")).isEmpty();
+        verifyNoInteractions(ai);
     }
 }

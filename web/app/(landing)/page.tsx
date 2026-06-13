@@ -8,6 +8,7 @@ import { MemberLandingRecommend } from "@/components/home/MemberLandingRecommend
 import { SampleRecommend } from "@/components/home/SampleRecommend";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { SponsorJobCard } from "@/components/home/SponsorJobCard";
+import { StatsBand } from "@/components/home/StatsBand";
 import { VerifyMethodology } from "@/components/home/VerifyMethodology";
 import { fetchCompanies, fetchJobs, fetchRegions } from "@/lib/api";
 import { getSession } from "@/lib/session-server";
@@ -61,7 +62,6 @@ export default async function HomePage() {
   const sampleJobs = sampleRes?.ok ? sampleRes.data.items : [];
 
   const spotlight = companies?.items.slice(0, 8) ?? []; // 4열 × 2줄
-  const sponsorChips = companies?.items.slice(0, 5) ?? []; // 히어로 신뢰 칩: 검증 회사 상위 5개
 
   // 원격은 근무형태지 국가가 아니므로 "국가" 수치에서 제외. 공고가 있는 국가만 카운트.
   const countryRegions = regions.filter((r) => r.value !== "remote" && r.count > 0);
@@ -79,9 +79,10 @@ export default async function HomePage() {
 
   return (
     <>
-      <div className="border-b border-border">
-        <Hero stats={stats} sponsorCompanies={sponsorChips} regions={regions} previewItem={previewItem} />
-      </div>
+      <Hero regions={regions} previewItem={previewItem} loggedIn={!!session} />
+
+      {/* 통계 띠 (히어로 직후 전폭) */}
+      <StatsBand stats={stats} />
 
       {/* 맞춤 추천 미리보기 (흰색) */}
       {session ? (

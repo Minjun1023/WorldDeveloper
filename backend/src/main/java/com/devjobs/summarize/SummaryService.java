@@ -48,6 +48,11 @@ public class SummaryService {
         this.summaryCapacity = summaryCapacity;
     }
 
+    /** 캐시된 요약만 반환(AI 미호출). SSR 기본 펼침용. */
+    public Optional<SummaryDto> getCached(String jobId, String lang) {
+        return repo.findByJobIdAndLang(jobId, lang).map(e -> toDto(e, true));
+    }
+
     @Transactional
     public Optional<SummaryDto> getOrCreate(String jobId, String lang, String clientKey) {
         Optional<JobSummaryEntity> cached = repo.findByJobIdAndLang(jobId, lang);
