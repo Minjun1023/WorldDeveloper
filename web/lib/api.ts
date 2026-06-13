@@ -132,7 +132,7 @@ export async function fetchCachedSummary(id: string, lang = "ko"): Promise<JobSu
   try {
     const res = await fetch(
       `${BACKEND_URL}/api/v1/jobs/${id}/summary?lang=${lang}&cacheOnly=true`,
-      { cache: "no-store" },
+      { cache: "no-store", signal: AbortSignal.timeout(3000) },
     );
     if (!res.ok) return null;
     return (await res.json()) as JobSummary;
