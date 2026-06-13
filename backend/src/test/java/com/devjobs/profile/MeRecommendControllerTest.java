@@ -80,5 +80,7 @@ class MeRecommendControllerTest {
             .thenReturn(new RecommendationItem(null, BREAKDOWN));
         var resp = controller.score(USER_ID_STRING, "greenhouse:acme:1");
         assertThat(resp.getStatusCode().value()).isEqualTo(200);
+        // 본문은 전체 RecommendationItem 이 아니라 ScoreBreakdown 이어야 한다(스펙).
+        assertThat(resp.getBody()).isEqualTo(BREAKDOWN);
     }
 }
