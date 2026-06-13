@@ -9,13 +9,12 @@ import { postedRelativeLabel } from "@/lib/jobDates";
 import { formatSalary } from "@/lib/salary";
 import type { Job } from "@/lib/types";
 
-// 최신 비자 스폰서십 공고 카드(2열). 스폰서십 근거 원문 문장(visa.evidence)을 인용으로 함께 노출.
+// 최신 비자 스폰서십 공고 카드(2열). 명부 검증은 배지로만 표시(근거 원문 문장은 상세 페이지에서).
 export function SponsorJobCard({ job }: { job: Job }) {
   const salary = formatSalary(job.salary);
   const posted = postedRelativeLabel(job.posted_at);
   const flag = flagFromLocation(job.location);
   const locText = job.location || (job.is_remote ? "원격" : null);
-  const evidence = job.visa?.evidence?.find((e) => e && e.trim().length > 0);
   const verified = job.visa?.register_verified === true;
 
   return (
@@ -64,13 +63,6 @@ export function SponsorJobCard({ job }: { job: Job }) {
           <RemoteBadge eligibility={job.remote?.eligibility} />
           {salary && <span className="font-semibold text-foreground">{salary}</span>}
         </div>
-
-        {/* 비자 스폰서십 근거 원문 문장 */}
-        {evidence && (
-          <blockquote className="mt-3 rounded-md border-l-2 border-warning bg-surface-2 px-3 py-2 text-caption italic text-muted-foreground">
-            “{evidence}”
-          </blockquote>
-        )}
 
         <div className="min-h-2 flex-1" aria-hidden="true" />
 

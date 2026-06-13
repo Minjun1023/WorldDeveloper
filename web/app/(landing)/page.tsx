@@ -125,7 +125,7 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {/* 방금 올라온 비자 스폰서십 공고 — 근거 원문 문장 포함 (연회색) */}
+      {/* 방금 올라온 비자 스폰서십 공고 (연회색) */}
       {sponsorJobs.length > 0 && (
         <Section muted>
           <SectionHeader
@@ -133,7 +133,7 @@ export default async function HomePage() {
             title="방금 올라온 비자 스폰서십 공고"
             href="/search?visa=sponsors&sort=newest"
             hrefLabel="전체 공고 보기"
-            subtitle="스폰서십이 명시된 원문 문장을 근거로 함께 보여드려요."
+            subtitle="비자 스폰서십이 명시·검증된 최신 공고예요."
           />
           <div className="grid gap-4 sm:grid-cols-2">
             {sponsorJobs.map((job) => (
