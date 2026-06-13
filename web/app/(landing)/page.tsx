@@ -9,6 +9,7 @@ import { MemberLandingRecommend } from "@/components/home/MemberLandingRecommend
 import { SampleRecommend } from "@/components/home/SampleRecommend";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { SponsorJobCard } from "@/components/home/SponsorJobCard";
+import { VerifyMethodology } from "@/components/home/VerifyMethodology";
 import { fetchCompanies, fetchJobs, fetchRegions } from "@/lib/api";
 import { getSession } from "@/lib/session-server";
 import type { RecommendationItem } from "@/lib/types";
@@ -142,8 +143,18 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {/* FAQ (흰색) */}
-      <Section id="faq">
+      {/* 방법론: 어떻게 검증을 신뢰할 수 있나요? (흰색) */}
+      <Section id="methodology">
+        <SectionHeader
+          overline="방법론"
+          title="어떻게 ‘검증’을 신뢰할 수 있나요?"
+          subtitle="정부 공식 명부와 채용 공고 원문을 교차 검증해요. 임의 분류 없이 출처와 근거를 함께 보여드려요."
+        />
+        <VerifyMethodology />
+      </Section>
+
+      {/* FAQ (연회색) */}
+      <Section muted id="faq">
         <div className="mb-8 text-center">
           <div className="mb-1 text-caption font-semibold uppercase tracking-wide text-primary">
             FAQ
