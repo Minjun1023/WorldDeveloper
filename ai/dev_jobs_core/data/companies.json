@@ -6,7 +6,8 @@
   "wolt": {
     "ats": "greenhouse",
     "token": "wolt",
-    "tags": ["delivery", "marketplace", "europe"]
+    "tags": ["delivery", "marketplace", "europe"],
+    "uk_sponsor": true
   },
   "deliveroo": {
     "ats": "ashby",
@@ -16,7 +17,8 @@
   "graphcore": {
     "ats": "greenhouse",
     "token": "graphcore",
-    "tags": ["ai", "hardware", "europe"]
+    "tags": ["ai", "hardware", "europe"],
+    "uk_sponsor": true
   },
   "alan": {
     "ats": "ashby",
@@ -36,7 +38,8 @@
   "lendable": {
     "ats": "ashby",
     "token": "lendable",
-    "tags": ["fintech", "europe"]
+    "tags": ["fintech", "europe"],
+    "uk_sponsor": true
   },
   "catawiki": {
     "ats": "greenhouse",
@@ -46,12 +49,14 @@
   "bitpanda": {
     "ats": "greenhouse",
     "token": "bitpanda",
-    "tags": ["fintech", "crypto", "europe"]
+    "tags": ["fintech", "crypto", "europe"],
+    "uk_sponsor": true
   },
   "multiverse": {
     "ats": "ashby",
     "token": "multiverse",
-    "tags": ["edtech", "europe"]
+    "tags": ["edtech", "europe"],
+    "uk_sponsor": true
   },
   "cabify": {
     "ats": "greenhouse",
@@ -71,7 +76,8 @@
   "thought-machine": {
     "ats": "ashby",
     "token": "thought-machine",
-    "tags": ["fintech", "devtools", "europe"]
+    "tags": ["fintech", "devtools", "europe"],
+    "uk_sponsor": true
   },
   "tide": {
     "ats": "greenhouse",
@@ -81,7 +87,8 @@
   "paddle": {
     "ats": "ashby",
     "token": "paddle",
-    "tags": ["fintech", "saas", "europe"]
+    "tags": ["fintech", "saas", "europe"],
+    "uk_sponsor": true
   },
   "complyadvantage": {
     "ats": "greenhouse",
@@ -101,17 +108,20 @@
   "forto": {
     "ats": "ashby",
     "token": "forto",
-    "tags": ["logistics", "europe"]
+    "tags": ["logistics", "europe"],
+    "uk_sponsor": true
   },
   "marshmallow": {
     "ats": "ashby",
     "token": "marshmallow",
-    "tags": ["fintech", "insurance", "europe"]
+    "tags": ["fintech", "insurance", "europe"],
+    "uk_sponsor": true
   },
   "quantexa": {
     "ats": "ashby",
     "token": "quantexa",
-    "tags": ["data", "ai", "europe"]
+    "tags": ["data", "ai", "europe"],
+    "uk_sponsor": true
   },
   "tines": {
     "ats": "greenhouse",
@@ -121,12 +131,14 @@
   "freetrade": {
     "ats": "ashby",
     "token": "freetrade",
-    "tags": ["fintech", "europe"]
+    "tags": ["fintech", "europe"],
+    "uk_sponsor": true
   },
   "truelayer": {
     "ats": "greenhouse",
     "token": "truelayer",
-    "tags": ["fintech", "europe"]
+    "tags": ["fintech", "europe"],
+    "uk_sponsor": true
   },
   "staffbase": {
     "ats": "greenhouse",
@@ -136,32 +148,38 @@
   "wayflyer": {
     "ats": "ashby",
     "token": "wayflyer",
-    "tags": ["fintech", "europe"]
+    "tags": ["fintech", "europe"],
+    "uk_sponsor": true
   },
   "storyblok": {
     "ats": "greenhouse",
     "token": "storyblok",
-    "tags": ["devtools", "cms", "europe"]
+    "tags": ["devtools", "cms", "europe"],
+    "uk_sponsor": true
   },
   "form3": {
     "ats": "greenhouse",
     "token": "form3",
-    "tags": ["fintech", "europe"]
+    "tags": ["fintech", "europe"],
+    "uk_sponsor": true
   },
   "flipdish": {
     "ats": "greenhouse",
     "token": "flipdish",
-    "tags": ["saas", "food-tech", "europe"]
+    "tags": ["saas", "food-tech", "europe"],
+    "uk_sponsor": true
   },
   "improbable": {
     "ats": "ashby",
     "token": "improbable",
-    "tags": ["gaming", "metaverse", "europe"]
+    "tags": ["gaming", "metaverse", "europe"],
+    "uk_sponsor": true
   },
   "cleo": {
     "ats": "greenhouse",
     "token": "cleo",
-    "tags": ["fintech", "europe"]
+    "tags": ["fintech", "europe"],
+    "uk_sponsor": true
   },
   "grover": {
     "ats": "greenhouse",
@@ -176,12 +194,14 @@
   "ledger": {
     "ats": "ashby",
     "token": "ledger",
-    "tags": ["crypto", "hardware", "europe"]
+    "tags": ["crypto", "hardware", "europe"],
+    "uk_sponsor": true
   },
   "ankorstore": {
     "ats": "ashby",
     "token": "ankorstore",
-    "tags": ["ecommerce", "marketplace", "europe"]
+    "tags": ["ecommerce", "marketplace", "europe"],
+    "uk_sponsor": true
   },
   "bitmovin": {
     "ats": "greenhouse",
@@ -191,7 +211,8 @@
   "beamery": {
     "ats": "ashby",
     "token": "beamery",
-    "tags": ["hr-tech", "saas", "europe"]
+    "tags": ["hr-tech", "saas", "europe"],
+    "uk_sponsor": true
   },
   "sorare": {
     "ats": "ashby",
@@ -201,7 +222,8 @@
   "tractable": {
     "ats": "ashby",
     "token": "tractable",
-    "tags": ["ai", "insurance", "europe"]
+    "tags": ["ai", "insurance", "europe"],
+    "uk_sponsor": true
   },
   "traderepublic": {
     "ats": "greenhouse",
