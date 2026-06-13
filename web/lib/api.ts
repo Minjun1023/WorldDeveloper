@@ -9,6 +9,7 @@ import type {
   Job,
   JobDetail,
   JobListResponse,
+  JobSummary,
 } from "@/lib/types";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
@@ -121,6 +122,20 @@ export async function fetchInterviewPrep(id: string): Promise<InterviewPrep | nu
     });
     if (!res.ok) return null;
     return (await res.json()) as InterviewPrep;
+  } catch {
+    return null;
+  }
+}
+
+/** 캐시된 AI 요약만 가져온다(생성 안 함). SSR 기본 펼침용. 미스/오류 → null. */
+export async function fetchCachedSummary(id: string, lang = "ko"): Promise<JobSummary | null> {
+  try {
+    const res = await fetch(
+      `${BACKEND_URL}/api/v1/jobs/${id}/summary?lang=${lang}&cacheOnly=true`,
+      { cache: "no-store" },
+    );
+    if (!res.ok) return null;
+    return (await res.json()) as JobSummary;
   } catch {
     return null;
   }
