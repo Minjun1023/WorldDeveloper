@@ -24,7 +24,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={`${notoSerifKr.variable} min-h-screen antialiased`}>
+      <head>
+        {/* Pretendard(동적 서브셋) — Tailwind font-sans 스택의 1순위. CDN에서 필요한 글리프만 로드. */}
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css"
+        />
+      </head>
+      <body className={`${notoSerifKr.variable} min-h-screen font-sans antialiased`}>
         <Providers>
           <ThemeProvider
             attribute="class"
