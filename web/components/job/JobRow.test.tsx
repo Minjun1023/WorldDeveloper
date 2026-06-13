@@ -30,4 +30,14 @@ describe("JobRow", () => {
     expect(screen.getByText(/Acme/)).toBeInTheDocument();
     expect(screen.getByText(/Berlin, Germany/)).toBeInTheDocument();
   });
+
+  it("레벨(시니어리티)이 있으면 메타 줄에 대문자로 표시한다", () => {
+    render(<JobRow job={{ ...salariedJob, seniority: "senior" } as unknown as Job} />);
+    expect(screen.getByText(/· Senior/)).toBeInTheDocument();
+  });
+
+  it("레벨이 없으면 표시하지 않는다", () => {
+    render(<JobRow job={salariedJob} />);
+    expect(screen.queryByText(/· Senior/)).not.toBeInTheDocument();
+  });
 });

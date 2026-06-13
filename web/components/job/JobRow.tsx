@@ -13,6 +13,8 @@ export function JobRow({ job }: { job: Job }) {
   const deadline = deadlineLabel(job.closes_at);
   const flag = flagFromLocation(job.location);
   const loc = [job.location, job.is_remote ? "원격" : null].filter(Boolean).join(" · ");
+  // 레벨(시니어리티): "senior" → "Senior". 검색 결과에서 한눈에 직급 파악.
+  const level = job.seniority ? job.seniority.charAt(0).toUpperCase() + job.seniority.slice(1) : null;
 
   return (
     <Link
@@ -50,6 +52,7 @@ export function JobRow({ job }: { job: Job }) {
           <span className="truncate">
             {job.company.display_name}
             {loc ? ` · ${flag ? `${flag} ` : ""}${loc}` : ""}
+            {level ? ` · ${level}` : ""}
           </span>
         </div>
         {job.tags && job.tags.length > 0 && (
