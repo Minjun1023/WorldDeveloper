@@ -3,7 +3,6 @@ import Link from "next/link";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { RegisterVerifiedBadge } from "@/components/job/RegisterVerifiedBadge";
-import { flagFromLocation } from "@/lib/flags";
 import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
 import type { Job } from "@/lib/types";
 
@@ -11,7 +10,6 @@ import type { Job } from "@/lib/types";
 export function JobRow({ job }: { job: Job }) {
   const posted = postedRelativeLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
-  const flag = flagFromLocation(job.location);
   const loc = [job.location, job.is_remote ? "원격" : null].filter(Boolean).join(" · ");
   // 레벨(시니어리티): "senior" → "Senior". 검색 결과에서 한눈에 직급 파악.
   const level = job.seniority ? job.seniority.charAt(0).toUpperCase() + job.seniority.slice(1) : null;
@@ -51,7 +49,7 @@ export function JobRow({ job }: { job: Job }) {
         <div className="mt-0.5 flex items-center gap-1 text-body-sm text-muted-foreground">
           <span className="truncate">
             {job.company.display_name}
-            {loc ? ` · ${flag ? `${flag} ` : ""}${loc}` : ""}
+            {loc ? ` · ${loc}` : ""}
             {level ? ` · ${level}` : ""}
           </span>
         </div>

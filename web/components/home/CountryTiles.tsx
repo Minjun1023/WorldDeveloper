@@ -1,4 +1,3 @@
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 import type { RegionCount } from "@/lib/api";
@@ -30,10 +29,6 @@ export function CountryTiles({ regions, limit }: { regions: RegionCount[]; limit
                 <div className="mt-0.5 text-caption text-muted-foreground">공고 {c.count}</div>
               </div>
             </div>
-            <ArrowRight
-              className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
-              aria-hidden="true"
-            />
           </Link>
         );
       })}

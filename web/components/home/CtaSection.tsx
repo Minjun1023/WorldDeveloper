@@ -1,4 +1,4 @@
-import { ArrowRight, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import Link from "next/link";
 
 // 랜딩 하단 전환 유도(CTA). Readdy 목업: "프로필을 만들고 맞춤 추천을 받아보세요".
@@ -42,7 +42,6 @@ export function CtaSection({ loggedIn = false }: { loggedIn?: boolean }) {
             className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-white px-5 py-3 text-body-sm font-semibold text-primary transition-opacity hover:opacity-90"
           >
             {primaryLabel}
-            <ArrowRight className="h-4 w-4" aria-hidden="true" />
           </Link>
           <Link
             href="/recommend"

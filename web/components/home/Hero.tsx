@@ -1,4 +1,4 @@
-import { ArrowRight, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
 import { HeroPreviewCard } from "@/components/home/HeroPreviewCard";
@@ -58,7 +58,6 @@ export function Hero({
                 className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-5 py-3 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
                 내 프로필 만들기
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
               <Link
                 href="/search"

@@ -1,4 +1,3 @@
-import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
@@ -55,10 +54,7 @@ export function CompanySpotlight({ companies }: { companies: CompanySummary[] })
 
             <div className="flex items-center justify-between gap-2 border-t border-border pt-3 text-body-sm">
               <span className="text-muted-foreground">공고 {c.job_count}</span>
-              <span className="flex items-center gap-1 font-medium text-primary">
-                보기
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-              </span>
+              <span className="font-medium text-primary">보기</span>
             </div>
           </Card>
         </Link>

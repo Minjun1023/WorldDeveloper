@@ -1,4 +1,4 @@
-import { ArrowRight, MapPin } from "lucide-react";
+import { MapPin } from "lucide-react";
 import Link from "next/link";
 
 import { ScoreRadar } from "@/components/recommend/ScoreRadar";
@@ -38,7 +38,6 @@ export function HeroPreviewCard({ item }: { item: RecommendationItem }) {
             className="mt-2 inline-flex items-center gap-1 text-caption font-medium text-primary transition-colors hover:underline"
           >
             추천 전체 보기
-            <ArrowRight className="h-3 w-3" aria-hidden="true" />
           </Link>
         </div>
       </div>
