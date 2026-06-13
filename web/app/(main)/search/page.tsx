@@ -1,9 +1,9 @@
 import { JobRow } from "@/components/job/JobRow";
+import { FilterSidebar } from "@/components/search/FilterSidebar";
 import { Pagination } from "@/components/search/Pagination";
 import { RecentSearches } from "@/components/search/RecentSearches";
 import { SaveSearchButton } from "@/components/search/SaveSearchButton";
 import { SearchBar } from "@/components/search/SearchBar";
-import { SearchFilters } from "@/components/search/SearchFilters";
 import { SortToggle } from "@/components/search/SortToggle";
 import { fetchJobs, fetchRegions } from "@/lib/api";
 import { getSession } from "@/lib/session-server";
@@ -53,57 +53,60 @@ export default async function SearchPage({
       </section>
 
       <section className="space-y-3">
-        <SearchBar regions={regions} />
-        <SearchFilters regions={regions} />
+        <SearchBar />
         <RecentSearches />
       </section>
 
-      <section className="space-y-4">
-        <div className="flex flex-wrap items-baseline justify-between gap-3">
-          {result.ok ? (
-            <p className="text-body-sm text-muted-foreground">
-              총 <span className="font-semibold text-foreground">{result.data.total}</span>개 공고
-            </p>
-          ) : (
-            <span />
-          )}
-          <div className="flex flex-wrap items-center gap-2">
-            <SaveSearchButton
-              loggedIn={!!session}
-              label={[q, region, visa === "sponsors" ? "스폰서" : null].filter(Boolean).join(" · ") || "전체 공고"}
-              params={{ q, visa, location, region, remote: remote || undefined, sort, discipline, track,
-                        includeUnclear: includeUnclear || undefined }}
-            />
-            <SortToggle />
-          </div>
-        </div>
+      <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
+        <FilterSidebar regions={regions} />
 
-        {!result.ok ? (
-          <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
-            백엔드에 연결할 수 없습니다 ({result.error}).
-            <br />
-            <code className="font-mono text-foreground">cd backend &amp;&amp; ./gradlew bootRun</code>{" "}
-            으로 실행하세요.
-          </div>
-        ) : result.data.items.length === 0 ? (
-          <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
-            조건에 맞는 공고가 없습니다. 필터를 조정해보세요.
-          </div>
-        ) : (
-          <>
-            <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
-              {result.data.items.map((job) => (
-                <JobRow key={job.id} job={job} />
-              ))}
+        <section className="space-y-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            {result.ok ? (
+              <p className="text-body-sm text-muted-foreground">
+                총 <span className="font-semibold text-foreground">{result.data.total}</span>개 공고
+              </p>
+            ) : (
+              <span />
+            )}
+            <div className="flex flex-wrap items-center gap-2">
+              <SaveSearchButton
+                loggedIn={!!session}
+                label={[q, region, visa === "sponsors" ? "스폰서" : null].filter(Boolean).join(" · ") || "전체 공고"}
+                params={{ q, visa, location, region, remote: remote || undefined, sort, discipline, track,
+                          includeUnclear: includeUnclear || undefined }}
+              />
+              <SortToggle />
             </div>
-            <Pagination
-              page={result.data.page}
-              pageSize={result.data.page_size}
-              total={result.data.total}
-            />
-          </>
-        )}
-      </section>
+          </div>
+
+          {!result.ok ? (
+            <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
+              백엔드에 연결할 수 없습니다 ({result.error}).
+              <br />
+              <code className="font-mono text-foreground">cd backend &amp;&amp; ./gradlew bootRun</code>{" "}
+              으로 실행하세요.
+            </div>
+          ) : result.data.items.length === 0 ? (
+            <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
+              조건에 맞는 공고가 없습니다. 필터를 조정해보세요.
+            </div>
+          ) : (
+            <>
+              <div className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+                {result.data.items.map((job) => (
+                  <JobRow key={job.id} job={job} />
+                ))}
+              </div>
+              <Pagination
+                page={result.data.page}
+                pageSize={result.data.page_size}
+                total={result.data.total}
+              />
+            </>
+          )}
+        </section>
+      </div>
     </div>
   );
 }
