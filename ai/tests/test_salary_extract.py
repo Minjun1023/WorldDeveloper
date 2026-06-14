@@ -68,3 +68,31 @@ def test_keeps_annual_salary_phrasing():
 
 def test_none_and_empty():
     assert ex(None) is None and ex("") is None and ex("no pay here") is None
+
+
+def test_jp_annual_man_range():
+    # 年収 600万円〜1,000万円 → 6,000,000 ~ 10,000,000 JPY/YEAR
+    r = ex("給与 年収 600万円〜1,000万円 ※経験により決定")
+    assert r == {"min": 6_000_000, "max": 10_000_000, "currency": "JPY", "period": "YEAR"}
+
+
+def test_jp_annual_man_range_no_first_unit():
+    r = ex("想定年収：800〜1200万円")
+    assert r == {"min": 8_000_000, "max": 12_000_000, "currency": "JPY", "period": "YEAR"}
+
+
+def test_jp_monthly_yen_range():
+    # 月給：584,000円〜917,000円 → MONTH
+    r = ex("給与 月給 584,000円〜917,000円 時間外手当別途")
+    assert r == {"min": 584_000, "max": 917_000, "currency": "JPY", "period": "MONTH"}
+
+
+def test_jp_requires_anchor():
+    # 年収/月給 앵커 없는 万円 숫자(매출·자본금 등)는 무시.
+    assert ex("資本金 5000万円〜1億円規模の成長企業") is None
+
+
+def test_jp_english_takes_priority():
+    # 영어 명시 범위가 있으면 그걸 우선(일본어 폴백은 영어 실패 시만).
+    r = ex("The base salary range is $150,000 to $200,000. 年収 800万円〜1000万円")
+    assert r["currency"] == "USD"

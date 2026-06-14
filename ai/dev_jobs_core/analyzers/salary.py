@@ -132,12 +132,51 @@ def _sal_num(s: str, unit: str | None) -> float:
     return v
 
 
+# 일본어 연봉: 年収(연)/月給(월) 앵커 + 범위. HRMOS 외 소스(lever/greenhouse 등)의
+# 일본어 JD 가 본문에만 円/万円 으로 적는 경우를 잡는다. 보수적(앵커 인접 + 범위 + 정상범위).
+_JP_ANCHOR = re.compile(r"年収|月給|想定年収|給与")
+# "600万円〜1,000万円" / "600万〜1000万円" (만엔 = ×10,000). 둘째 항은 万円 필수.
+_JP_MAN_RANGE = re.compile(
+    r"(\d{1,4}(?:,\d{3})?)\s*万?円?\s*[〜~\-–ー]\s*(\d{1,4}(?:,\d{3})?)\s*万円")
+# "584,000円〜917,000円" (만 없이 円). 콤마 또는 5자리+ 숫자.
+_JP_YEN_RANGE = re.compile(
+    r"(\d{1,3}(?:,\d{3})+|\d{5,9})\s*円\s*[〜~\-–ー]\s*(\d{1,3}(?:,\d{3})+|\d{5,9})\s*円")
+
+
+def _extract_jp_salary(text: str) -> dict | None:
+    """일본어 본문 연봉 추출(円/万円). 年収/月給 앵커가 금액 앞 ~25자에 있어야 인정."""
+    for m in _JP_MAN_RANGE.finditer(text):
+        if not _JP_ANCHOR.search(text[max(0, m.start() - 25): m.start()]):
+            continue
+        lo = int(float(m.group(1).replace(",", ""))) * 10_000
+        hi = int(float(m.group(2).replace(",", ""))) * 10_000
+        if hi < lo:
+            lo, hi = hi, lo
+        if 1_000_000 <= lo <= 100_000_000 and 1_000_000 <= hi <= 100_000_000:
+            return {"min": lo, "max": hi, "currency": "JPY", "period": "YEAR"}
+    for m in _JP_YEN_RANGE.finditer(text):
+        anchor = text[max(0, m.start() - 25): m.start()]
+        if not _JP_ANCHOR.search(anchor):
+            continue
+        lo = int(m.group(1).replace(",", ""))
+        hi = int(m.group(2).replace(",", ""))
+        if hi < lo:
+            lo, hi = hi, lo
+        period = "MONTH" if "月給" in anchor else "YEAR"
+        if period == "MONTH" and 100_000 <= lo <= 5_000_000 and 100_000 <= hi <= 5_000_000:
+            return {"min": lo, "max": hi, "currency": "JPY", "period": period}
+        if period == "YEAR" and 1_000_000 <= lo <= 100_000_000 and 1_000_000 <= hi <= 100_000_000:
+            return {"min": lo, "max": hi, "currency": "JPY", "period": period}
+    return None
+
+
 def extract_salary_from_description(text: str | None) -> dict | None:
     """본문에서 명시된 연봉 '범위'를 추출. 없으면 None.
 
     정직성: 'salary/pay/compensation range' 등 명시 문구가 금액 직전(~80자)에
     있어야만 인정(펀딩/매출/지분 $금액 오탐 방지). 범위(두 금액)만, 단일값 제외.
-    반환 {min,max(원본통화 정수), currency(ISO), period(YEAR|MONTH|HOUR)}.
+    일본어(年収/月給 + 円/万円)도 함께 처리. 반환 {min,max(원본통화 정수),
+    currency(ISO), period(YEAR|MONTH|HOUR)}.
     """
     if not text:
         return None
@@ -169,4 +208,5 @@ def extract_salary_from_description(text: str | None) -> dict | None:
         elif not (10_000 <= lo <= 10_000_000 and 10_000 <= hi <= 10_000_000):
             continue
         return {"min": int(lo), "max": int(hi), "currency": cur, "period": period}
-    return None
+    # 영어 패턴이 없으면 일본어(円/万円) 시도.
+    return _extract_jp_salary(text)
