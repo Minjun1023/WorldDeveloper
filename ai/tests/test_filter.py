@@ -40,6 +40,22 @@ def test_drops_presales_and_non_software_engineers():
     assert not is_dev_role("Field Engineer")
 
 
+def test_drops_controls_instrumentation_hardware_hr_sales():
+    # 제어/계측/반도체/AV/HR/영업 — STRONG 없는 비-SW 직무는 drop
+    assert not is_dev_role("Staff Instrumentation & Controls Engineer, Deployment")
+    assert not is_dev_role("Senior Staff Controls Engineer, Platform")
+    assert not is_dev_role("Senior Semiconductor Reliability Engineer – Advanced Silicon")
+    assert not is_dev_role("AV & Event Engineer L4")
+    assert not is_dev_role("People Business Partner Director, Engineering")
+    assert not is_dev_role("Enterprise Revenue Architect")
+
+
+def test_keeps_software_roles_with_hardware_words():
+    # STRONG(backend·infrastructure) 우선 — 제목에 비-SW 단어가 섞여도 보호
+    assert is_dev_role("Backend Engineer, Analytics Instrumentation (Golang)")
+    assert is_dev_role("Audiovisual Infrastructure Engineer")  # infrastructure engineer = STRONG
+
+
 def test_drops_sales_legal_recruiting():
     assert not is_dev_role("Account Executive (Sales)")
     assert not is_dev_role("Commercial Account Exec")

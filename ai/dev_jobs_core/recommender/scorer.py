@@ -46,7 +46,7 @@ def score_stack(user_skills: list[str], job: JobPosting) -> tuple[float, list[st
     job_required = job_tags | job_stack_from_desc
 
     if not job_required:
-        return 0.5, [], []  # 공고에서 기술을 못 찾으면 중립
+        return 0.25, [], []  # 스택 미확인 공고는 강등(중립 0.5 → 0.25): 비자/연봉만으로 상위 노출 방지
 
     matched = sorted(user_set & job_required)
     missing = sorted(job_required - user_set)
