@@ -80,7 +80,9 @@ public class JobScorer {
     }
 
     private double[] scoreStack(List<String> skills, List<String> jobTags) {
-        if (jobTags == null || jobTags.isEmpty()) return new double[]{0.5};
+        // 스택을 전혀 못 잡은 공고(태그 빈)는 '중립 0.5' 대신 0.25 로 강등 — 스택 확인이 안 된 공고가
+        // 비자/연봉만으로 추천 상위에 오던 문제 방지. 0(확정 불일치)은 아님(모르는 것이지 나쁜 건 아님).
+        if (jobTags == null || jobTags.isEmpty()) return new double[]{0.25};
         Set<String> userSet = skills == null ? Set.of()
             : skills.stream().map(String::toLowerCase).collect(Collectors.toSet());
         Set<String> jobSet = jobTags.stream().map(String::toLowerCase).collect(Collectors.toSet());

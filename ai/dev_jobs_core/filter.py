@@ -47,6 +47,7 @@ _DENY = (
     # Customer/Public Sector Solutions Architect). 'software/cloud/data architect'·
     # generic 'architect' 는 STRONG/rule3 로 살아남음(solution(s) 한정 deny).
     "solution architect", "solutions architect",
+    "revenue architect",  # 'Enterprise/Mid-Market Revenue Architect' = 영업 직무(아키텍트 아님)
     # 비SW 엔지니어 — #34: rule3(generic engineer)로 새던 지원/밸류/고객/네트워크 직
     "support engineer", "support engineering", "value engineer", "value engineering",
     "customer engineer", "customer engineering", "network engineer",
@@ -55,8 +56,12 @@ _DENY = (
     "mechanical engineer", "electrical engineer", "civil engineer",
     "chemical engineer", "industrial engineer", "biomedical", "hardware engineer",
     "manufactur", "field engineer", "facilities", "data center", "process engineer",
+    # 제어/계측/반도체/AV — STRONG(backend·infrastructure 등) 없는 순수 하드웨어/설비 직무.
+    # 'Backend Engineer, Analytics Instrumentation' 같은 SW 는 STRONG 우선으로 보호됨.
+    "instrumentation", "controls engineer", "semiconductor", "av & event", "audiovisual",
     # 채용/HR/총무
     "recruit", "talent acquisition", "human resources", "people operations",
+    "business partner",  # HR Business Partner(HRBP) — STRONG 없는 인사 직무
     "office manager", "operations manager", "executive assistant", "administrative",
     # CS/온보딩/구현
     "customer success", "customer support", "onboarding specialist",
