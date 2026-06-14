@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { CompanyInfo } from "@/components/company/CompanyInfo";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { CompanyStats } from "@/components/company/CompanyStats";
 import { JobCard } from "@/components/job/JobCard";
@@ -67,6 +68,9 @@ export default async function CompanyDetailPage({ params }: { params: { slug: st
           </div>
         </div>
       </header>
+
+      {/* 회사 정보 (한 줄 소개 + Wikidata 보강 사실) */}
+      <CompanyInfo slug={company.slug} />
 
       {/* 통계 행 (공고 목록에서 계산) */}
       <CompanyStats jobs={jobs} jobCount={company.job_count} />
