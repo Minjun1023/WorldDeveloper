@@ -11,8 +11,10 @@ import { useCachedRecommend } from "@/lib/use-recommend";
 const TOP_N = 3;
 
 export function MemberLandingRecommend() {
+  // cacheKey 'landing-v2': 과거 삭제(관심없음) 클릭으로 1건 숨겨진 채 캐시된 결과를 무효화
+  // (삭제 버튼 제거 이후엔 다시 3개가 정상 표시되도록 새 키로 재패치 유도).
   const { loading, needsProfile, result, visible, saved, reactions, onSaveChange, onDislike } =
-    useCachedRecommend({ cacheKey: "landing", topK: TOP_N });
+    useCachedRecommend({ cacheKey: "landing-v2", topK: TOP_N });
 
   if (loading) return <p className="text-body-sm text-muted-foreground">맞춤 공고를 불러오는 중…</p>;
   if (needsProfile) {
@@ -46,6 +48,7 @@ export function MemberLandingRecommend() {
             initialReaction={reactions[item.job.id] ?? null}
             onSaveChange={onSaveChange}
             onDislike={onDislike}
+            showDislike={false}
           />
         ))}
       </div>

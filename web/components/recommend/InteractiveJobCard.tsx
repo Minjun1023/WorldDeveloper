@@ -17,6 +17,7 @@ export function InteractiveJobCard({
   initialReaction,
   onSaveChange,
   onDislike,
+  showDislike = true,
 }: {
   item: RecommendationItem;
   rank: number;
@@ -24,6 +25,9 @@ export function InteractiveJobCard({
   initialReaction: Reaction;
   onSaveChange: (jobId: string, saved: boolean) => void;
   onDislike: (jobId: string) => void;
+  // 랜딩 미리보기에선 false — 삭제(관심없음)는 즉시 카드를 지워 미리보기가 줄어들고 오클릭 위험.
+  // 저장/삭제 같은 변경 액션은 /recommend 작업공간에서만. (삭제는 빼고 저장 하트는 유지)
+  showDislike?: boolean;
 }) {
   const jobId = item.job.id;
   const [saved, setSaved] = useState(initialSaved);
@@ -67,16 +71,18 @@ export function InteractiveJobCard({
       >
         <Heart className="h-4 w-4" fill={saved ? "currentColor" : "none"} aria-hidden="true" />
       </button>
-      <button
-        type="button"
-        onClick={dislike}
-        disabled={reaction === "dislike"}
-        aria-label="관심 없음"
-        title="관심 없음 (목록에서 삭제)"
-        className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
-      >
-        <Trash2 className="h-4 w-4" aria-hidden="true" />
-      </button>
+      {showDislike && (
+        <button
+          type="button"
+          onClick={dislike}
+          disabled={reaction === "dislike"}
+          aria-label="관심 없음"
+          title="관심 없음 (목록에서 삭제)"
+          className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+        >
+          <Trash2 className="h-4 w-4" aria-hidden="true" />
+        </button>
+      )}
     </>
   );
 
