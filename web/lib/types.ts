@@ -162,6 +162,12 @@ export interface InterviewStageKit {
   preparation_actions: string[];
 }
 
+export interface InterviewDetectedContext {
+  level: string;
+  primary_stack: string | null;
+  remote: boolean;
+}
+
 export interface InterviewPrep {
   job_id: string;
   title: string;
@@ -169,6 +175,7 @@ export interface InterviewPrep {
   stack_specific_topics: string[];
   questions_to_ask_them: string[];
   stages: InterviewStageKit[];
+  detected?: InterviewDetectedContext;
   note: string;
 }
 
