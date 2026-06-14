@@ -1,3 +1,4 @@
+import { locationDisplayParts } from "@/lib/jobLocation";
 import type { JobDetail } from "@/lib/types";
 
 const EMP_LABEL: Record<string, string> = {
@@ -20,7 +21,7 @@ export function JobFactCards({ job }: { job: JobDetail }) {
   const isSponsor = job.visa?.status === "sponsors";
   const cards = [
     { label: "비자", value: visaText, accent: isSponsor },
-    { label: "위치", value: [job.location_ko ?? job.location, job.is_remote ? "원격" : null].filter(Boolean).join(" · ") || "미표기" },
+    { label: "위치", value: locationDisplayParts(job).join(" · ") || "미표기" },
     { label: "경력", value: experienceText(job.experience_years, job.seniority) },
     { label: "고용형태", value: job.employment_type ? (EMP_LABEL[job.employment_type] ?? job.employment_type) : "미표기" },
   ];

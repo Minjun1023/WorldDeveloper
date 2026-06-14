@@ -2,13 +2,14 @@ import { MapPin } from "lucide-react";
 import Link from "next/link";
 
 import { ScoreRadar } from "@/components/recommend/ScoreRadar";
+import { locationDisplayParts } from "@/lib/jobLocation";
 import type { RecommendationItem } from "@/lib/types";
 
 // 히어로 우측 "6차원 매칭 미리보기" 카드: 작은 레이더 + 예시 공고 + 추천 전체 보기.
 // 실제 공고 + 예시 점수(개인화 아님)로 보여주는 일러스트성 미리보기.
 export function HeroPreviewCard({ item }: { item: RecommendationItem }) {
   const { job, score } = item;
-  const loc = [job.location_ko ?? job.location, job.is_remote ? "원격" : null].filter(Boolean).join(" · ");
+  const loc = locationDisplayParts(job).join(" · ");
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
