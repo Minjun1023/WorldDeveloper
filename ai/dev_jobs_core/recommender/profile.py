@@ -31,9 +31,9 @@ class UserProfile:
 @dataclass
 class ScoringWeights:
     """각 점수 차원의 가중치. 합이 1.0 이 되도록 정규화하면 좋음."""
-    stack: float = 0.35       # 기술 스택 매칭 (최우선)
+    stack: float = 0.42       # 기술 스택 매칭 (최우선, 비중↑: 0.35→0.42)
     visa: float = 0.20        # 비자 적합도
-    location: float = 0.15    # 지역 적합도
+    location: float = 0.08    # 지역 적합도 (비중↓: 0.15→0.08, 약한 스택을 지역만으로 끌어올리지 않도록)
     seniority: float = 0.10   # 시니어리티 매칭
     salary: float = 0.10      # 연봉 만족도
     semantic: float = 0.10    # 임베딩 의미 유사도
