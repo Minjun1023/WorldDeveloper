@@ -28,4 +28,11 @@ describe("InteractiveJobCard", () => {
     await user.click(screen.getByRole("button", { name: /관심 없음/ }));
     expect(onDislike).toHaveBeenCalledWith("greenhouse:acme:1");
   });
+
+  it("hides the dislike(delete) button when showDislike=false (landing preview)", () => {
+    render(<InteractiveJobCard item={item} rank={1} initialSaved={false} initialReaction={null} onSaveChange={() => {}} onDislike={() => {}} showDislike={false} />);
+    // 랜딩 미리보기: 삭제 버튼 없음, 저장(하트)은 유지.
+    expect(screen.queryByRole("button", { name: /관심 없음/ })).toBeNull();
+    expect(screen.queryByRole("button", { name: /저장/ })).not.toBeNull();
+  });
 });
