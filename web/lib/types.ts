@@ -41,6 +41,7 @@ export interface Job {
   title_ko?: string;
   company: JobCompany;
   location?: string;
+  location_ko?: string;
   is_remote?: boolean;
   employment_type?: string;
   description_preview?: string;
@@ -60,6 +61,7 @@ export interface JobDetail {
   title_ko?: string;
   company: JobCompany;
   location?: string;
+  location_ko?: string;
   is_remote?: boolean;
   employment_type?: string;
   description?: string;

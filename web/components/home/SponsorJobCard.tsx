@@ -14,7 +14,7 @@ export function SponsorJobCard({ job }: { job: Job }) {
   const salary = formatSalary(job.salary);
   const posted = postedRelativeLabel(job.posted_at);
   const flag = flagFromLocation(job.location);
-  const locText = job.location || (job.is_remote ? "원격" : null);
+  const locText = (job.location_ko ?? job.location) || (job.is_remote ? "원격" : null);
   const verified = job.visa?.register_verified === true;
 
   return (
