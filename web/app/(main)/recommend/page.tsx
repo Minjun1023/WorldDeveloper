@@ -5,8 +5,14 @@ import { getSession } from "@/lib/session-server";
 
 export const dynamic = "force-dynamic";
 
-export default async function RecommendPage() {
+export default async function RecommendPage({
+  searchParams,
+}: {
+  searchParams: { note?: string };
+}) {
   const session = await getSession();
+  // 히어로 '맞춤 매칭'에서 조건을 들고 진입(?note=)하면 MemberRecommend 가 마운트 시 1회 적용한다.
+  const initialNote = typeof searchParams?.note === "string" ? searchParams.note : undefined;
 
   return (
     <div className="space-y-8">
@@ -18,7 +24,7 @@ export default async function RecommendPage() {
       </section>
 
       {session ? (
-        <MemberRecommend />
+        <MemberRecommend initialNote={initialNote} />
       ) : (
         <div className="rounded-lg border border-border bg-surface p-8 text-center">
           <h2 className="text-h3">로그인하고 맞춤 공고 추천 받기</h2>
