@@ -7,11 +7,40 @@ https://boards-api.greenhouse.io/v1/boards/{company}/jobs?content=true
 회사가 Greenhouse 를 ATS 로 쓰는 경우에만 동작한다.
 """
 from __future__ import annotations
+import html as html_lib
 import re
 import httpx
 from ..models import JobPosting
 
 BASE = "https://boards-api.greenhouse.io/v1/boards"
+
+
+def _to_posting(company: str, item: dict) -> JobPosting | None:
+    """Greenhouse job 항목 → JobPosting. id 없으면 None."""
+    job_id = item.get("id")
+    if not job_id:
+        return None
+    # Greenhouse 의 content 는 HTML 이 **엔티티 인코딩**돼 옴(&lt;p&gt;...&lt;/p&gt;).
+    # 한 번 디코딩해 진짜 HTML 로 만든 뒤 저장해야 transform 의 clean_structured_html
+    # (래퍼/속성 정리)·html_strip(평문화)이 정상 동작한다. 미디코딩 시 본문이 이스케이프된
+    # 채 저장돼 화면에 <p> 같은 태그가 글자 그대로 노출되고, 평문엔 태그 노이즈가 섞인다.
+    description = html_lib.unescape(item.get("content", "") or "")
+    location = (item.get("location") or {}).get("name", "")
+    is_remote = "remote" in location.lower()
+    return JobPosting(
+        job_id=f"greenhouse:{company}:{job_id}",
+        source="greenhouse",
+        title=item.get("title", ""),
+        company=company.replace("-", " ").title(),
+        location=location,
+        is_remote=is_remote,
+        employment_type="FULLTIME",
+        description=description,
+        apply_url=item.get("absolute_url", ""),
+        posted_at=item.get("updated_at", ""),
+        # Greenhouse 만 마감일 필드를 줌 (대부분 null). 문자열/객체 모두 방어적으로.
+        closes_at=_parse_deadline(item.get("application_deadline")),
+    )
 
 
 async def fetch(company: str, query: str = "", limit: int = 100) -> list[JobPosting]:
@@ -28,33 +57,16 @@ async def fetch(company: str, query: str = "", limit: int = 100) -> list[JobPost
     q_lower = query.lower()
 
     for item in data.get("jobs", []):
-        title = item.get("title", "")
-        # description 은 HTML — 구조 보존 위해 원본 HTML 그대로 전달(평문화/클린은 transform 에서).
-        description = item.get("content", "") or ""
+        p = _to_posting(company, item)
+        if p is None:
+            continue
 
         if query:
-            haystack = f"{title} {_strip_html(description)}".lower()
+            haystack = f"{p.title} {_strip_html(p.description)}".lower()
             if q_lower not in haystack:
                 continue
 
-        location = (item.get("location") or {}).get("name", "")
-        is_remote = "remote" in location.lower()
-
-        postings.append(JobPosting(
-            job_id=f"greenhouse:{company}:{item.get('id')}",
-            source="greenhouse",
-            title=title,
-            company=company.replace("-", " ").title(),
-            location=location,
-            is_remote=is_remote,
-            employment_type="FULLTIME",
-            description=description,
-            apply_url=item.get("absolute_url", ""),
-            posted_at=item.get("updated_at", ""),
-            # Greenhouse 만 마감일 필드를 줌 (대부분 null). 문자열/객체 모두 방어적으로.
-            closes_at=_parse_deadline(item.get("application_deadline")),
-        ))
-
+        postings.append(p)
         if len(postings) >= limit:
             break
 
