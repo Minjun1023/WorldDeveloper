@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import asyncio
 import html as html_lib
+import json as json_lib
 import re
 from html.parser import HTMLParser
 
@@ -97,22 +98,104 @@ def _section_text(html: str, target_class: str) -> str:
 _TITLE = re.compile(
     r'<h1[^>]*class="[^"]*sg-corporate-name[^"]*"[^>]*>(.*?)</h1>', re.DOTALL)
 
+# HRMOS 상세 페이지는 schema.org JobPosting 을 JSON-LD 로 임베드한다 — div 스크레이프보다
+# 훨씬 풍부(전체 본문 HTML·연봉·고용형태·게시/마감일·구조화 주소). 이를 1순위로 쓴다.
+_LD_RE = re.compile(
+    r'<script[^>]*type="application/ld\+json"[^>]*>(.*?)</script>', re.DOTALL | re.IGNORECASE)
+_EMP_MAP = {
+    "FULL_TIME": "FULLTIME", "PART_TIME": "PARTTIME",
+    "CONTRACTOR": "CONTRACTOR", "TEMPORARY": "TEMPORARY", "INTERN": "INTERN",
+}
 
-def _parse_detail(html: str) -> dict[str, str]:
-    """상세 HTML → {title, description, location}."""
+
+def _parse_jsonld(html: str) -> dict | None:
+    """페이지의 첫 JobPosting JSON-LD 를 반환(없으면 None). @graph/리스트 래핑도 처리."""
+    for m in _LD_RE.finditer(html):
+        try:
+            data = json_lib.loads(m.group(1))
+        except (ValueError, TypeError):
+            continue
+        candidates = data.get("@graph", [data]) if isinstance(data, dict) else data
+        if not isinstance(candidates, list):
+            candidates = [candidates]
+        for d in candidates:
+            if isinstance(d, dict) and d.get("@type") == "JobPosting":
+                return d
+    return None
+
+
+def _jsonld_location(d: dict) -> str:
+    """jobLocation 주소 → "도도부현 시구" 형태(여러 곳이면 '; ' 결합)."""
+    locs = d.get("jobLocation")
+    if isinstance(locs, dict):
+        locs = [locs]
+    if not isinstance(locs, list):
+        return ""
+    out: list[str] = []
+    for loc in locs:
+        addr = (loc or {}).get("address") if isinstance(loc, dict) else None
+        if not isinstance(addr, dict):
+            continue
+        seg = " ".join(x for x in (addr.get("addressRegion"), addr.get("addressLocality")) if x)
+        if seg:
+            out.append(seg)
+    return "; ".join(out)
+
+
+def _jsonld_salary(d: dict) -> tuple[int | None, int | None, str, str]:
+    """baseSalary → (min, max, currency, period). 값 없으면 (None, None, '', '')."""
+    bs = d.get("baseSalary")
+    val = bs.get("value") if isinstance(bs, dict) else None
+    if not isinstance(val, dict):
+        return (None, None, "", "")
+
+    def _int(v):
+        return int(v) if isinstance(v, (int, float)) else None
+
+    lo, hi = _int(val.get("minValue")), _int(val.get("maxValue"))
+    if lo is None and hi is None:
+        return (None, None, "", "")
+    period = (val.get("unitText") or "").upper()
+    if period not in ("YEAR", "MONTH", "HOUR"):
+        period = "YEAR"
+    return (lo, hi, bs.get("currency") or "", period)
+
+
+def _parse_detail(html: str) -> dict:
+    """상세 HTML → {title, description, location, posted_at, closes_at, employment_type, salary}.
+
+    JSON-LD(JobPosting) 우선, 없으면 기존 div 스크레이프로 폴백."""
+    ld = _parse_jsonld(html)
+    if ld is not None:
+        emp = ld.get("employmentType")
+        if isinstance(emp, list):
+            emp = emp[0] if emp else ""
+        return {
+            "title": _strip_html(ld.get("title") or ""),
+            "description": ld.get("description") or "",  # 전체 본문 HTML(raw)
+            "location": _jsonld_location(ld),
+            "posted_at": ld.get("datePosted") or "",
+            "closes_at": ld.get("validThrough") or "",
+            "employment_type": _EMP_MAP.get((emp or "").upper(), ""),
+            "salary": _jsonld_salary(ld),
+        }
     tm = _TITLE.search(html)
-    title = _strip_html(tm.group(1)) if tm else ""
     return {
-        "title": title,
+        "title": _strip_html(tm.group(1)) if tm else "",
         "description": _section_text(html, "pg-descriptions"),
         "location": _section_text(html, "pg-location-address"),
+        "posted_at": "",
+        "closes_at": "",
+        "employment_type": "",
+        "salary": (None, None, "", ""),
     }
 
 
 def _to_posting(company: str, native_id: str, list_title: str,
-                detail: dict[str, str]) -> JobPosting:
+                detail: dict) -> JobPosting:
     """파싱 결과 → JobPosting (순수 함수, 네트워크 없음)."""
     location = detail.get("location", "") or ""
+    sal = detail.get("salary") or (None, None, "", "")
     return JobPosting(
         job_id=f"hrmos:{company}:{native_id}",
         source="hrmos",
@@ -120,12 +203,16 @@ def _to_posting(company: str, native_id: str, list_title: str,
         company=company.replace("-", " ").title(),
         location=location,
         is_remote=("リモート" in location) or ("remote" in location.lower()),
-        # HRMOS 는 고용형태 필드를 제공하지 않아 정규직으로 가정
-        employment_type="FULLTIME",
+        # JSON-LD 의 employmentType, 없으면 정규직 가정.
+        employment_type=detail.get("employment_type") or "FULLTIME",
         description=detail.get("description", ""),
         apply_url=f"{BASE}/{company}/jobs/{native_id}",
-        posted_at="",
-        closes_at="",
+        posted_at=detail.get("posted_at", "") or "",
+        closes_at=detail.get("closes_at", "") or "",
+        salary_min=sal[0],
+        salary_max=sal[1],
+        salary_currency=sal[2],
+        salary_period=sal[3],
     )
 
 

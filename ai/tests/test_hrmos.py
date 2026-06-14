@@ -83,6 +83,59 @@ def test_parse_detail_works_with_section_container():
     assert d["location"] == "東京都渋谷区"
 
 
+_JSONLD = """
+<html><head>
+<script type="application/ld+json">
+{"@context":"https://schema.org/","@type":"JobPosting",
+ "title":"バックエンドエンジニア",
+ "description":"<h2>募集背景</h2><p>Go と Kubernetes で決済基盤を開発します。</p><ul><li>AWS</li></ul>",
+ "employmentType":"FULL_TIME",
+ "datePosted":"2025-03-01T00:00:00.000Z",
+ "validThrough":"2026-03-01T00:00:00.000Z",
+ "jobLocation":[{"@type":"Place","address":{"@type":"PostalAddress","addressRegion":"東京都","addressLocality":"渋谷区","postalCode":"150-0001"}}],
+ "baseSalary":{"@type":"MonetaryAmount","currency":"JPY","value":{"@type":"QuantitativeValue","minValue":6000000,"maxValue":12000000,"unitText":"YEAR"}}}
+</script></head><body></body></html>
+"""
+
+
+def test_parse_detail_prefers_jsonld():
+    d = hrmos._parse_detail(_JSONLD)
+    assert d["title"] == "バックエンドエンジニア"
+    # 전체 본문 HTML(div 스크레이프보다 풍부) — 태그 보존, 기술 포함
+    assert "Kubernetes" in d["description"] and "<h2>" in d["description"]
+    assert d["location"] == "東京都 渋谷区"
+    assert d["posted_at"].startswith("2025-03-01")
+    assert d["closes_at"].startswith("2026-03-01")
+    assert d["employment_type"] == "FULLTIME"
+    assert d["salary"] == (6000000, 12000000, "JPY", "YEAR")
+
+
+def test_to_posting_carries_jsonld_salary_and_dates():
+    p = hrmos._to_posting("bitbank", "1", "list", hrmos._parse_detail(_JSONLD))
+    assert p.salary_min == 6000000 and p.salary_max == 12000000
+    assert p.salary_currency == "JPY" and p.salary_period == "YEAR"
+    assert p.posted_at.startswith("2025-03-01")
+    assert p.employment_type == "FULLTIME"
+
+
+def test_jsonld_salary_hourly_and_empty():
+    # 시급(maxValue null) — lo 만 있어도 추출.
+    assert hrmos._jsonld_salary(
+        {"baseSalary": {"currency": "JPY", "value": {"minValue": 1300, "maxValue": None, "unitText": "HOUR"}}}
+    ) == (1300, None, "JPY", "HOUR")
+    # baseSalary 없음/빈 값 → 결측.
+    assert hrmos._jsonld_salary({}) == (None, None, "", "")
+    assert hrmos._jsonld_salary({"baseSalary": None}) == (None, None, "", "")
+
+
+def test_parse_detail_falls_back_to_scrape_without_jsonld():
+    # JSON-LD 없으면 기존 div 스크레이프 경로(회귀 보호).
+    d = hrmos._parse_detail(DETAIL_HTML)
+    assert d["title"] == "ソフトウェアエンジニア（バックエンド）"
+    assert "Kubernetes" in d["description"]
+    assert d["location"] == "東京都渋谷区"
+
+
 def test_parse_list_robust_to_attrs_and_nesting():
     # <li> 에 추가 속성, <a> 에 추가 속성, h2 뒤 중첩 <ul><li> 가 있어도 정확히 추출
     html = (
