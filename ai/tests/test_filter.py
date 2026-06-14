@@ -145,6 +145,23 @@ def test_strong_signal_still_wins_over_new_deny():
     assert is_dev_role("Senior Manager, Solutions Architecture, AI & Developer Platform")
 
 
+def test_drops_datacenter_facilities_engineers():
+    # 인프라/데이터센터 회사(Crusoe 등)의 설비·전력·랩 직무 — STRONG 없는 비-SW 는 drop.
+    assert not is_dev_role("Senior Commissioning Engineer, Electrical")
+    assert not is_dev_role("Staff Commissioning Engineer, Mechanical")
+    assert not is_dev_role("Commissioning Engineer II")
+    assert not is_dev_role("Plant Engineer")
+    assert not is_dev_role("Staff Network Deployment Engineer, Lab")
+    assert not is_dev_role("Engineer, Load Integration & Model Development")
+    assert not is_dev_role("Field Engineer, Mechanical")
+
+
+def test_strong_wins_over_facilities_deny():
+    # STRONG(software/backend) 우선 — 비-SW 단어가 섞여도 진짜 SWE 보호.
+    assert is_dev_role("Backend Engineer, Mechanical Systems")
+    assert is_dev_role("Software Engineer, Electrical Grid Analytics")
+
+
 def test_keeps_japanese_dev_titles():
     assert is_dev_role("ソフトウェアエンジニア（バックエンド）")
     assert is_dev_role("機械学習エンジニア")
