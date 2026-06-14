@@ -5,7 +5,9 @@
 import type { Reaction } from "@/components/recommend/InteractiveJobCard";
 import type { RecommendResponse } from "@/lib/types";
 
-const PREFIX = "wd:rec:";
+// 버전 접두사 — 추천 결과 형태/로직이 바뀌면 올려 기존 캐시를 일괄 무효화한다.
+// v2: dislike 백필 수정 + 랜딩 삭제버튼 제거로 과거(개수 줄어든) 캐시를 버림.
+const PREFIX = "wd:rec:v2:";
 // 추천은 ETL(매일 자정)로 갱신되므로 몇 시간 캐시는 충분히 신선. 그 안엔 재요청 없이 즉시 표시.
 export const RECOMMEND_TTL_MS = 1000 * 60 * 60 * 6; // 6시간
 

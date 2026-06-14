@@ -12,6 +12,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +38,14 @@ public class RecommendService {
     }
 
     public RecommendResponse recommend(RecommendRequest req) {
+        return recommend(req, Set.of());
+    }
+
+    /**
+     * 추천 — excludeIds(예: 사용자가 '관심없음'한 공고)는 top_k 로 자르기 <b>전에</b> 후보에서
+     * 제외해 백필이 되게 한다. (제외를 top_k 뒤에 하면 상위가 제외 대상일 때 개수가 줄어든다.)
+     */
+    public RecommendResponse recommend(RecommendRequest req, Set<String> excludeIds) {
         int topK = req.topK() != null ? req.topK() : 10;
         int maxPerCompany = req.maxPerCompany() != null ? req.maxPerCompany() : 2;
 
@@ -80,6 +89,7 @@ public class RecommendService {
 
         List<RecommendationItem> scored = new ArrayList<>();
         for (String id : ids) {
+            if (excludeIds.contains(id)) continue;   // 제외(관심없음 등) — top_k 트리밍 전에 걸러 백필 보장
             JobEntity job = jobsById.get(id);
             if (job == null) continue;
             ScoreBreakdown sb = scorer.score(job, req, semanticById.getOrDefault(id, 0.0));

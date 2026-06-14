@@ -65,14 +65,10 @@ public class MeRecommendController {
         }
         int topK = req != null && req.topK() != null ? req.topK() : ProfileService.DEFAULT_TOP_K;
         RecommendRequest rr = ProfileService.toRecommendRequest(profileOpt.get(), note, topK);
-        RecommendResponse rec = recommendService.recommend(rr);
+        // 관심없음(dislike)은 서비스에 넘겨 top_k 트리밍 '전에' 제외 → 상위가 dislike 여도 백필돼
+        // 개수가 줄지 않는다(이전엔 트리밍 후 제외라 dislike 가 쌓이면 추천 수가 깎였음).
         java.util.Set<String> disliked = feedbackService.dislikedJobIds(id);
-        if (!disliked.isEmpty()) {
-            var kept = rec.recommendations().stream()
-                .filter(item -> !disliked.contains(item.job().id()))
-                .toList();
-            rec = new RecommendResponse(rec.totalCandidates(), kept.size(), kept);
-        }
+        RecommendResponse rec = recommendService.recommend(rr, disliked);
         return ResponseEntity.ok(rec);
     }
 
