@@ -23,6 +23,17 @@ describe("isoFromLocation", () => {
     expect(isoFromLocation("Frankfurt, Germany")).toBe("de");
   });
 
+  it("타이완 국가명을 매핑한다", () => {
+    expect(isoFromLocation("Taipei, Taiwan")).toBe("tw");
+  });
+
+  it("' - '(대시)로 붙은 다단어 국가명도 매핑한다", () => {
+    expect(isoFromLocation("United States - Remote")).toBe("us");
+    expect(isoFromLocation("Remote - US")).toBe("us");
+    expect(isoFromLocation("Flexible - USA")).toBe("us");
+    expect(isoFromLocation("Remote - EMEA")).toBe(""); // 지역명은 빈값(정직)
+  });
+
   it("추론 불가 위치는 빈 문자열(틀린 국기 표시 안 함)", () => {
     expect(isoFromLocation("Eschborn")).toBe("");
     expect(isoFromLocation("원격")).toBe("");
