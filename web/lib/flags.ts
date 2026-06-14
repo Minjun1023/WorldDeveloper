@@ -46,9 +46,10 @@ const COUNTRY_NAME_ISO: Record<string, string> = {
   czechia: "cz", "czech republic": "cz",
   "united kingdom": "gb", uk: "gb", england: "gb", scotland: "gb",
   "united states": "us", usa: "us", us: "us", "united states of america": "us", "u.s.": "us",
-  canada: "ca", japan: "jp",
+  canada: "ca", japan: "jp", taiwan: "tw",
   argentina: "ar", australia: "au", "new zealand": "nz", singapore: "sg",
   israel: "il", india: "in", "hong kong": "hk", "south korea": "kr",
+  serbia: "rs",
 };
 
 // 미국 주 약자(2글자) + DC. 명시적 국가명이 하나도 없을 때만 폴백으로 미국 추론에 사용한다.
@@ -67,7 +68,9 @@ const US_STATES = new Set([
 export function isoFromLocation(location?: string | null): string {
   if (!location) return "";
   const lower = location.toLowerCase();
-  const parts = lower.split(/[,/()|]/).map((s) => s.trim()).filter(Boolean);
+  // 구분자에 ' - '(대시)도 포함 — "United States - Remote", "Remote - US" 처럼
+  // 다단어 국가명이 대시로 붙어 한 조각이 되어 매칭 실패하던 문제를 해소.
+  const parts = lower.split(/[,/()|]| - /).map((s) => s.trim()).filter(Boolean);
   // 마지막 조각(보통 국가)을 먼저, 그다음 나머지 조각을 시도.
   const ordered = parts.length ? [parts[parts.length - 1], ...parts] : [];
   for (const p of ordered) {
