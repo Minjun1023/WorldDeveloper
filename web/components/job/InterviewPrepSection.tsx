@@ -17,6 +17,19 @@ export function InterviewPrepSection({ prep }: { prep: InterviewPrep }) {
         <p className="text-body-sm text-muted-foreground">
           단계별 예상 질문과 준비 행동 + 이 공고 스택의 단골 주제입니다.
         </p>
+        {prep.detected && (
+          <p className="text-caption text-muted-foreground">
+            이 공고{" "}
+            <span className="font-medium text-foreground">{prep.detected.level}</span>
+            {prep.detected.primary_stack && (
+              <>
+                {" · 주력 "}
+                <span className="font-medium text-foreground">{prep.detected.primary_stack}</span>
+              </>
+            )}
+            {prep.detected.remote && " · 원격"} 기준으로 조정했어요
+          </p>
+        )}
       </div>
 
       {prep.stack_specific_topics.length > 0 && (

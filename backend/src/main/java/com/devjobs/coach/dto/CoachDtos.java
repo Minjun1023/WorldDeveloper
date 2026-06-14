@@ -22,6 +22,13 @@ public final class CoachDtos {
         List<String> preparationActions
     ) {}
 
+    /** 공고에서 감지해 단계 가이드를 차등화한 신호(정직성: 무엇으로 조정했는지 노출). */
+    public record DetectedContext(
+        String level,
+        String primaryStack,
+        boolean remote
+    ) {}
+
     public record InterviewPrepResponse(
         String jobId,
         String title,
@@ -29,6 +36,7 @@ public final class CoachDtos {
         List<String> stackSpecificTopics,
         List<String> questionsToAskThem,
         List<StageKit> stages,
+        DetectedContext detected,
         String note
     ) {}
 
