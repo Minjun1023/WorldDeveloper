@@ -17,6 +17,7 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         WHERE company_slug = :slug AND is_active = true
           AND (closes_at IS NULL OR closes_at > now())
           AND NOT is_agency(company_slug)
+          AND (visa_status = 'sponsors' OR remote_eligibility IN ('worldwide','apac_ok'))
         ORDER BY posted_at DESC NULLS LAST
         """, nativeQuery = true)
     List<JobEntity> findLiveByCompanySlug(@Param("slug") String slug);
@@ -38,6 +39,7 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         SELECT id, 1 - (embedding <=> CAST(:vec AS vector)) AS semantic
         FROM jobs
         WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug) AND embedding IS NOT NULL
+          AND (visa_status = 'sponsors' OR remote_eligibility IN ('worldwide','apac_ok'))
         ORDER BY embedding <=> CAST(:vec AS vector)
         LIMIT :lim
         """, nativeQuery = true)
@@ -69,6 +71,7 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         SELECT id, CAST(0.0 AS double precision) AS semantic
         FROM jobs
         WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug)
+          AND (visa_status = 'sponsors' OR remote_eligibility IN ('worldwide','apac_ok'))
         ORDER BY posted_at DESC NULLS LAST
         LIMIT :lim
         """, nativeQuery = true)

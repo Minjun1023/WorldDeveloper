@@ -32,13 +32,12 @@ export default async function SearchPage({
   const sort = str(searchParams.sort) ?? (q ? "relevance" : "recent");
   const discipline = str(searchParams.discipline);
   const track = str(searchParams.track);
-  const includeUnclear = searchParams.include_unclear === "true";
   const verifiedOnly = searchParams.verified_only === "true";
   const minSalary = Number(searchParams.min_salary) || undefined;
   const complete = searchParams.complete === "true";
 
   const [result, regions, session] = await Promise.all([
-    fetchJobs({ q, visa, location, region, remote, sort, discipline, track, includeUnclear, verifiedOnly, minSalary, complete, page, pageSize: PAGE_SIZE }),
+    fetchJobs({ q, visa, location, region, remote, sort, discipline, track, verifiedOnly, minSalary, complete, page, pageSize: PAGE_SIZE }),
     fetchRegions(),
     getSession(),
   ]);
@@ -73,8 +72,7 @@ export default async function SearchPage({
               <SaveSearchButton
                 loggedIn={!!session}
                 label={[q, region, visa === "sponsors" ? "스폰서" : null].filter(Boolean).join(" · ") || "전체 공고"}
-                params={{ q, visa, location, region, remote: remote || undefined, sort, discipline, track,
-                          includeUnclear: includeUnclear || undefined }}
+                params={{ q, visa, location, region, remote: remote || undefined, sort, discipline, track }}
               />
               <SortToggle />
             </div>

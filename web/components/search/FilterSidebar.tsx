@@ -63,7 +63,6 @@ export function FilterSidebar({ regions }: { regions: RegionCount[] }) {
 
   const visa = sp.get("visa");
   const verifiedOnly = sp.get("verified_only") === "true";
-  const includeUnclear = sp.get("include_unclear") === "true";
   const discipline = sp.get("discipline");
   const remote = sp.get("remote") === "true";
   const complete = sp.get("complete") === "true";
@@ -111,11 +110,6 @@ export function FilterSidebar({ regions }: { regions: RegionCount[] }) {
       <Group title="기타">
         <CheckRow checked={remote} onToggle={() => update({ remote: remote ? null : "true" })} label="원격 가능" />
         <CheckRow checked={complete} onToggle={() => update({ complete: complete ? null : "true" })} label="정보 충실만" />
-        <CheckRow
-          checked={includeUnclear}
-          onToggle={() => update({ include_unclear: includeUnclear ? null : "true" })}
-          label="정보 없는 공고 포함"
-        />
       </Group>
     </aside>
   );

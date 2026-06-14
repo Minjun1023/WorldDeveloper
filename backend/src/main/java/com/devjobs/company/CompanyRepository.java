@@ -22,6 +22,7 @@ public interface CompanyRepository extends JpaRepository<CompanyEntity, String> 
           ) AS verified
         FROM companies c
         JOIN jobs j ON j.company_slug = c.slug AND j.is_active = true AND (j.closes_at IS NULL OR j.closes_at > now())
+          AND (j.visa_status = 'sponsors' OR j.remote_eligibility IN ('worldwide','apac_ok'))
         WHERE (:tag IS NULL OR :tag = ANY(c.tags)) AND NOT is_agency(c.slug)
         GROUP BY c.slug
         ORDER BY job_count DESC
@@ -29,7 +30,8 @@ public interface CompanyRepository extends JpaRepository<CompanyEntity, String> 
     List<Object[]> findWithJobCount(@Param("tag") String tag);
 
     @Query(value = "SELECT count(*) FROM jobs WHERE company_slug = :slug AND is_active = true "
-        + "AND (closes_at IS NULL OR closes_at > now())",
+        + "AND (closes_at IS NULL OR closes_at > now()) "
+        + "AND (visa_status = 'sponsors' OR remote_eligibility IN ('worldwide','apac_ok'))",
         nativeQuery = true)
     long countActiveJobs(@Param("slug") String slug);
 
@@ -38,6 +40,7 @@ public interface CompanyRepository extends JpaRepository<CompanyEntity, String> 
         SELECT c.slug, c.display_name, count(j.id) AS job_count
         FROM companies c
         JOIN jobs j ON j.company_slug = c.slug AND j.is_active = true AND (j.closes_at IS NULL OR j.closes_at > now())
+          AND (j.visa_status = 'sponsors' OR j.remote_eligibility IN ('worldwide','apac_ok'))
         WHERE c.tags && CAST(:tags AS text[]) AND c.slug <> :excludeSlug AND NOT is_agency(c.slug)
         GROUP BY c.slug, c.display_name
         ORDER BY job_count DESC

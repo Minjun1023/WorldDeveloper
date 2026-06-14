@@ -45,9 +45,11 @@ class CompanyDirectoryQualityTest {
     }
 
     private void job(String id, String slug, String tagsCsv) {
+        // visa_status='sponsors' = viable. 디렉터리/회사 쿼리는 viable(sponsors 또는 원격)만 집계하므로
+        // 비자 무관 테스트의 회사가 사라지지 않도록 sponsors 로 적재한다.
         jdbc.update(
-            "INSERT INTO jobs(id, source, title, company_slug, description_text, tags, is_remote, posted_at, is_active) "
-                + "VALUES (?, 'test', 'Engineer', ?, 'desc', string_to_array(?, ','), false, now(), true)",
+            "INSERT INTO jobs(id, source, title, company_slug, description_text, tags, is_remote, visa_status, posted_at, is_active) "
+                + "VALUES (?, 'test', 'Engineer', ?, 'desc', string_to_array(?, ','), false, 'sponsors', now(), true)",
             id, slug, tagsCsv);
     }
 
