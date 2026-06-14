@@ -56,6 +56,10 @@ _DENY = (
     "mechanical engineer", "electrical engineer", "civil engineer",
     "chemical engineer", "industrial engineer", "biomedical", "hardware engineer",
     "manufactur", "field engineer", "facilities", "data center", "process engineer",
+    # 데이터센터/설비 직무 — Crusoe 등 인프라 회사의 시운전·플랜트·전력·랩 배치 직무가
+    # generic 'engineer'(rule3)로 새던 것 차단(STRONG 없는 순수 설비/하드웨어).
+    "commissioning", "plant engineer", "network deployment", "load integration",
+    ", mechanical", ", electrical",  # "Engineer, Mechanical/Electrical" 콤마 형태
     # 제어/계측/반도체/AV — STRONG(backend·infrastructure 등) 없는 순수 하드웨어/설비 직무.
     # 'Backend Engineer, Analytics Instrumentation' 같은 SW 는 STRONG 우선으로 보호됨.
     "instrumentation", "controls engineer", "semiconductor", "av & event", "audiovisual",
