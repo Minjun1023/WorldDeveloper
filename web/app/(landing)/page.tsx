@@ -61,7 +61,9 @@ export default async function HomePage() {
     : await fetchJobs({ visa: "sponsors", pageSize: 6, page: 2, sort: "newest" });
   const sampleJobs = sampleRes?.ok ? sampleRes.data.items : [];
 
-  const spotlight = companies?.items.slice(0, 8) ?? []; // 4열 × 2줄
+  // "검증된 회사들" 섹션은 헤더가 "정부 명부 검증을 통과한 회사"라고 단언하므로, 실제로 명부 검증
+  // (verified=Home Office/USCIS 근거 보유)된 회사만 노출한다. 공고 수 상위라도 미검증(Anthropic 등)은 제외.
+  const spotlight = (companies?.items ?? []).filter((c) => c.verified).slice(0, 8); // 4열 × 2줄
 
   // 원격은 근무형태지 국가가 아니므로 "국가" 수치에서 제외. 공고가 있는 국가만 카운트.
   const countryRegions = regions.filter((r) => r.value !== "remote" && r.count > 0);
