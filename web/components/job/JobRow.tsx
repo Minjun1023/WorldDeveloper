@@ -4,13 +4,14 @@ import Link from "next/link";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { RegisterVerifiedBadge } from "@/components/job/RegisterVerifiedBadge";
 import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
+import { locationDisplayParts } from "@/lib/jobLocation";
 import type { Job } from "@/lib/types";
 
 // 검색 결과 행: 한 화면 스캔량 우선. 신호 배지 최대 1(명부검증 > 스폰서불가) + 마감임박, 태그 최대 3(sm+).
 export function JobRow({ job }: { job: Job }) {
   const posted = postedRelativeLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
-  const loc = [job.location_ko ?? job.location, job.is_remote ? "원격" : null].filter(Boolean).join(" · ");
+  const loc = locationDisplayParts(job).join(" · ");
   // 레벨(시니어리티): "senior" → "Senior". 검색 결과에서 한눈에 직급 파악.
   const level = job.seniority ? job.seniority.charAt(0).toUpperCase() + job.seniority.slice(1) : null;
 
