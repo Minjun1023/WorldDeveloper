@@ -411,6 +411,46 @@ export const COMPANY_PROFILES: Record<string, CompanyProfile> = {
     country: "gb",
     countryLabel: "UK",
   },
+
+  // ── 위치가 지역명(Europe/Global/Remote 등)으로만 집계되어 국기가 안 잡히던 회사들 ──
+  //    실제 본사를 웹 출처로 확인해 큐레이션(추정 금지·정확도 우선).
+  synthesia: {
+    description: "텍스트로 AI 아바타 영상을 생성하는 생성형 영상 플랫폼입니다.",
+    location: "London, UK",
+    country: "gb",
+    countryLabel: "UK",
+  },
+  improbable: {
+    description: "대규모 가상세계·시뮬레이션 인프라를 개발하는 테크 기업입니다.",
+    location: "London, UK",
+    country: "gb",
+    countryLabel: "UK",
+  },
+  wayflyer: {
+    description: "이커머스 브랜드를 위한 매출 기반 자금조달을 제공하는 핀테크입니다.",
+    location: "Dublin, Ireland",
+    country: "ie",
+  },
+  montecarlodata: {
+    description: "데이터 신뢰성을 모니터링하는 데이터 옵저버빌리티 플랫폼입니다.",
+    location: "San Francisco, USA",
+    country: "us",
+  },
+  alpaca: {
+    description: "개발자를 위한 주식·암호화폐 거래 API를 제공하는 핀테크입니다.",
+    location: "San Mateo, USA",
+    country: "us",
+  },
+  railway: {
+    description: "코드를 손쉽게 클라우드에 배포하는 인프라 플랫폼입니다.",
+    location: "San Francisco, USA",
+    country: "us",
+  },
+  thumbtack: {
+    description: "지역 서비스 전문가와 고객을 연결하는 마켓플레이스입니다.",
+    location: "San Francisco, USA",
+    country: "us",
+  },
 };
 
 /** ISO2(소문자/대문자) → 국기 이모지. 유효하지 않으면 빈 문자열. */
