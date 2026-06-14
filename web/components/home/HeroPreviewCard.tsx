@@ -8,7 +8,7 @@ import type { RecommendationItem } from "@/lib/types";
 // 실제 공고 + 예시 점수(개인화 아님)로 보여주는 일러스트성 미리보기.
 export function HeroPreviewCard({ item }: { item: RecommendationItem }) {
   const { job, score } = item;
-  const loc = [job.location, job.is_remote ? "원격" : null].filter(Boolean).join(" · ");
+  const loc = [job.location_ko ?? job.location, job.is_remote ? "원격" : null].filter(Boolean).join(" · ");
 
   return (
     <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">

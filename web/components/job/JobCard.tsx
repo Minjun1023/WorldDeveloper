@@ -19,7 +19,7 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
   const posted = postedRelativeLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
   const flag = flagFromLocation(job.location);
-  const locText = job.location || (job.is_remote ? "원격" : null);
+  const locText = (job.location_ko ?? job.location) || (job.is_remote ? "원격" : null);
   // VisaBadge 가 실제로 렌더하는 상태만 true(sponsors 는 null 이라 제외). unclear 는 중립
   // "비자 정보 없음" 라벨로 정직하게 노출(opt-in 으로 미확인 공고를 켰을 때만 등장).
   const showVisa =

@@ -77,4 +77,23 @@ class TitleLocalizerTest {
         // "AI/ML" 처럼 한쪽이 한국어 없으면 슬래시 의미 보존(분리하지 않음).
         assertThat(TitleLocalizer.localize("AI/ML Engineer")).isEqualTo("AI/ML 엔지니어");
     }
+
+    @Test
+    void localizesAddedJapaneseRoleTerms() {
+        // 글로서리 보강: ソフトウェア/アプリケーション/データサイエンティスト 등.
+        assertThat(TitleLocalizer.localize("ソフトウェアエンジニア")).isEqualTo("소프트웨어 엔지니어");
+        assertThat(TitleLocalizer.localize("アプリケーションエンジニア")).isEqualTo("애플리케이션 엔지니어");
+        assertThat(TitleLocalizer.localize("データサイエンティスト")).isEqualTo("데이터 사이언티스트");
+        assertThat(TitleLocalizer.localize("インフラエンジニア")).isEqualTo("인프라 엔지니어");
+        assertThat(TitleLocalizer.localize("ゲームプログラマー")).isEqualTo("게임 프로그래머");
+    }
+
+    @Test
+    void spacesAdjacentKatakanaTermsAndDedupesScope() {
+        // 붙어있는 카타카나 합성(シニア+ソフトウェア+エンジニア)을 띄우고, ・로 구분된 역할/스코프 보존.
+        assertThat(TitleLocalizer.localize("シニアソフトウェアエンジニア"))
+            .isEqualTo("시니어 소프트웨어 엔지니어");
+        assertThat(TitleLocalizer.localize("シニアソフトウェアエンジニア・Build Infrastructure (ADAS)"))
+            .isEqualTo("시니어 소프트웨어 엔지니어 · Build 인프라 (ADAS)");
+    }
 }
