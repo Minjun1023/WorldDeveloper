@@ -4,7 +4,6 @@ import Link from "next/link";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { RemoteBadge } from "@/components/job/RemoteBadge";
 import { Card } from "@/components/ui/card";
-import { flagFromLocation } from "@/lib/flags";
 import { postedRelativeLabel } from "@/lib/jobDates";
 import { formatSalary } from "@/lib/salary";
 import type { Job } from "@/lib/types";
@@ -13,7 +12,6 @@ import type { Job } from "@/lib/types";
 export function SponsorJobCard({ job }: { job: Job }) {
   const salary = formatSalary(job.salary);
   const posted = postedRelativeLabel(job.posted_at);
-  const flag = flagFromLocation(job.location);
   const locText = (job.location_ko ?? job.location) || (job.is_remote ? "원격" : null);
   const verified = job.visa?.register_verified === true;
 
@@ -52,11 +50,6 @@ export function SponsorJobCard({ job }: { job: Job }) {
         <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-body-sm">
           {locText && (
             <span className="flex min-w-0 items-center gap-1 text-muted-foreground">
-              {flag && (
-                <span aria-hidden="true" className="shrink-0">
-                  {flag}
-                </span>
-              )}
               <span className="truncate">{locText}</span>
             </span>
           )}
