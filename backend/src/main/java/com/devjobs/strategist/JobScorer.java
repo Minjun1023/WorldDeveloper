@@ -16,10 +16,13 @@ import org.springframework.stereotype.Component;
 @Component
 public class JobScorer {
 
-    // 기본 가중치 (profile.py ScoringWeights)
-    private static final double W_STACK = 0.35;
+    // 기본 가중치 (profile.py ScoringWeights 와 동기화, 합=1.0)
+    // 스택 매칭 비중↑(0.35→0.42), 지역 비중↓(0.15→0.08): 약한 스택 매칭이 단지 원격/선호지역
+    // 일치만으로 상위에 오던 문제 해소(예: 보안 역할이 Golang 역할보다 위로 뜨던 케이스 역전).
+    // 지역의 하드 제약(remote_only·region_restricted)은 별도 deal-breaker 패널티로 여전히 보장됨.
+    private static final double W_STACK = 0.42;
     private static final double W_VISA = 0.20;
-    private static final double W_LOCATION = 0.15;
+    private static final double W_LOCATION = 0.08;
     private static final double W_SENIORITY = 0.10;
     private static final double W_SALARY = 0.10;
     private static final double W_SEMANTIC = 0.10;
