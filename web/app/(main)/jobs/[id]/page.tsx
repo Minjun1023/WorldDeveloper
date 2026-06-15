@@ -50,7 +50,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
 
   const job = result.data;
   const companyData = await fetchCompany(job.company.slug);
-  const otherJobs = (companyData?.jobs ?? []).filter((j) => j.id !== job.id).slice(0, 3);
+  const otherJobs = (companyData?.jobs ?? []).filter((j) => j.id !== job.id).slice(0, 4);
 
   return (
     <>

@@ -4,6 +4,7 @@ import { Briefcase, FileText, History, Info, MessageSquareText, RefreshCw, Send,
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
+import { getRecentJobs } from "@/lib/recent";
 import { readRecommendCache } from "@/lib/recommend-cache";
 
 type PickJob = { id: string; title: string; company: { display_name: string } };
@@ -42,6 +43,12 @@ export function CoachChat({ initialJobs }: { initialJobs?: PickJob[] }) {
     let cancelled = false;
     (async () => {
       const collected = new Map<string, PickJob>();
+      // 최근 본 공고(로컬, 로그인 불필요) 우선 — 방금 본 공고로 바로 상담 시작.
+      for (const r of getRecentJobs()) {
+        if (r.id && !collected.has(r.id)) {
+          collected.set(r.id, { id: r.id, title: r.title, company: { display_name: r.company } });
+        }
+      }
       try {
         const r = await fetch("/api/me/saved");
         if (r.ok) {
@@ -177,7 +184,7 @@ export function CoachChat({ initialJobs }: { initialJobs?: PickJob[] }) {
           </div>
           <h1 className="text-h1">이력서 코치</h1>
           <p className="mt-2 max-w-2xl text-body-sm text-muted-foreground">
-            저장하거나 추천받은 공고에 맞춰 이력서를 어떻게 고칠지 상담해드려요.
+            최근 본·저장한·추천받은 공고에 맞춰 이력서를 어떻게 고칠지 상담해드려요.
           </p>
         </div>
         {messages.length > 0 && (

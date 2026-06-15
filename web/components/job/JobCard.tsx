@@ -29,7 +29,8 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
   // 명부 검증 골드 마커는 비자 배지를 숨기는 맥락(홈 스폰서 섹션)에서도 표시 — 스폰서 사이에서
   // "정부 명부 확인"을 구분해주는 신호이므로 중복이 아니다.
   const showVerified = job.visa?.register_verified === true;
-  const hasBadges = showVisa || showRemote || showVerified;
+  // 명부검증은 회사명 옆 인라인이라 배지 행 노출 조건에서 제외(빈 행 방지).
+  const hasBadges = showVisa || showRemote;
 
   return (
     <Link href={`/jobs/${encodeURIComponent(job.id)}`} className="group block h-full">
@@ -38,7 +39,8 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
         <div className="flex items-start gap-3">
           <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={40} />
           <div className="min-w-0 flex-1">
-            <h3 className="line-clamp-2 text-body font-semibold leading-snug transition-colors group-hover:text-primary">
+            {/* 제목은 2줄 높이를 고정 — 1줄/2줄 제목이 섞여도 아래 회사·배지·태그 줄이 카드 간 정렬되게. */}
+            <h3 className="line-clamp-2 min-h-[2.6rem] text-body font-semibold leading-snug transition-colors group-hover:text-primary">
               {job.title_ko ?? job.title}
             </h3>
             {job.title_ko && (
@@ -46,6 +48,8 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
             )}
             <p className="mt-1 flex min-w-0 items-center gap-1 text-body-sm text-muted-foreground">
               <span className="truncate">{job.company.display_name}</span>
+              {/* 명부검증 방패는 회사명 옆 인라인(별도 줄 차지 안 하게 — 카드 정렬·간결). */}
+              {showVerified && <RegisterVerifiedBadge />}
               {locText && (
                 <>
                   <span aria-hidden="true">·</span>
@@ -69,11 +73,10 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
           )}
         </div>
 
-        {/* 신호 배지 */}
+        {/* 신호 배지(비자·원격 — 명부검증 방패는 위 회사명 옆 인라인으로 분리) */}
         {hasBadges && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {showVisa && <VisaBadge status={job.visa?.status} />}
-            {showVerified && <RegisterVerifiedBadge />}
             <RemoteBadge eligibility={job.remote?.eligibility} />
           </div>
         )}
