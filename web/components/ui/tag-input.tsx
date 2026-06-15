@@ -4,6 +4,14 @@ import { useMemo, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
+// 자동완성 후보. value 는 실제 저장/매칭되는 값(영문), keywords 는 검색용 별칭(한글 등).
+// 예: { value: "Germany", keywords: ["독일"] } → "독" 입력해도 Germany 추천, 선택 시 "Germany" 저장.
+export type TagSuggestion = { value: string; keywords?: string[] };
+
+function normalize(items?: (string | TagSuggestion)[]): TagSuggestion[] {
+  return (items ?? []).map((s) => (typeof s === "string" ? { value: s } : s));
+}
+
 export function TagInput({
   id,
   label,
@@ -18,8 +26,8 @@ export function TagInput({
   value: string[];
   onChange: (next: string[]) => void;
   placeholder?: string;
-  /** 자동완성 후보(있으면 입력 시 드롭다운). 자유 입력도 그대로 허용. */
-  suggestions?: string[];
+  /** 자동완성 후보(있으면 입력 시 드롭다운). 문자열 또는 {value, keywords}. 자유 입력도 허용. */
+  suggestions?: (string | TagSuggestion)[];
   hint?: string;
 }) {
   const [draft, setDraft] = useState("");
@@ -35,14 +43,21 @@ export function TagInput({
     onChange([...value, t]);
   }
 
+  const pool = useMemo(() => normalize(suggestions), [suggestions]);
+
   const matches = useMemo(() => {
     const q = draft.trim().toLowerCase();
-    if (!q || !suggestions) return [];
+    if (!q || pool.length === 0) return [];
     const chosen = new Set(value.map((v) => v.toLowerCase()));
-    return suggestions
-      .filter((s) => s.toLowerCase().includes(q) && !chosen.has(s.toLowerCase()))
+    return pool
+      .filter(
+        (s) =>
+          !chosen.has(s.value.toLowerCase()) &&
+          (s.value.toLowerCase().includes(q) ||
+            (s.keywords ?? []).some((k) => k.toLowerCase().includes(q))),
+      )
       .slice(0, 8);
-  }, [draft, suggestions, value]);
+  }, [draft, pool, value]);
 
   const showMenu = open && matches.length > 0;
 
@@ -57,7 +72,7 @@ export function TagInput({
     }
     if (e.key === "Enter" || e.key === ",") {
       e.preventDefault();
-      add(showMenu ? matches[active] ?? draft : draft);
+      add(showMenu ? matches[active]?.value ?? draft : draft);
     } else if (e.key === "Escape") {
       setOpen(false);
     } else if (e.key === "Backspace" && !draft && value.length) {
@@ -122,7 +137,7 @@ export function TagInput({
             role="listbox"
           >
             {matches.map((s, i) => (
-              <li key={s}>
+              <li key={s.value}>
                 <button
                   type="button"
                   role="option"
@@ -130,16 +145,21 @@ export function TagInput({
                   onMouseDown={(e) => {
                     e.preventDefault();
                     if (blurTimer.current) clearTimeout(blurTimer.current);
-                    add(s);
+                    add(s.value);
                   }}
                   onMouseEnter={() => setActive(i)}
                   className={cn(
-                    "flex w-full items-center justify-between px-3 py-1.5 text-body-sm",
+                    "flex w-full items-center justify-between gap-3 px-3 py-1.5 text-body-sm",
                     i === active ? "bg-primary/10 text-primary" : "hover:bg-accent",
                   )}
                 >
-                  <span>{s}</span>
-                  <span className="text-caption text-muted-foreground">+ 추가</span>
+                  <span className="truncate">
+                    {s.value}
+                    {s.keywords?.[0] && (
+                      <span className="ml-1.5 text-caption text-muted-foreground">{s.keywords[0]}</span>
+                    )}
+                  </span>
+                  <span className="shrink-0 text-caption text-muted-foreground">+ 추가</span>
                 </button>
               </li>
             ))}
