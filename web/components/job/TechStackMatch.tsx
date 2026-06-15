@@ -6,7 +6,7 @@ export function TechStackMatch({ tags, skills }: { tags: string[]; skills?: stri
   const skillSet = skills ? new Set(skills.map(norm)) : null;
   const matched = skillSet ? tags.filter((t) => skillSet.has(norm(t))) : [];
   return (
-    <section>
+    <section className="rounded-lg border border-border bg-surface p-5">
       <div className="flex items-center justify-between">
         <h2 className="text-h3">기술 스택</h2>
         {skillSet && (

@@ -79,7 +79,7 @@ export function JobDescription({ jobId, original, initialKo }: {
   }, [text]);
 
   return (
-    <section className="space-y-2">
+    <section className="space-y-2 rounded-lg border border-border bg-surface p-5">
       <div className="flex items-center justify-between gap-3">
         <h2 className="text-h3">상세 설명</h2>
         {!failed && (

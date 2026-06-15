@@ -72,11 +72,11 @@ export function JobSummary({ jobId, initialData }: { jobId: string; initialData?
       )}
 
       {data && nonEmpty.length > 0 && (
-        <div className="mt-3 space-y-4">
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
           {nonEmpty.map((s) => (
-            <div key={s.key}>
+            <div key={s.key} className="rounded-md border border-border bg-surface p-3.5">
               <h3 className="text-body-sm font-semibold">{s.label}</h3>
-              <ul className="mt-1 space-y-1 text-body-sm text-muted-foreground">
+              <ul className="mt-1.5 space-y-1 text-body-sm text-muted-foreground">
                 {(data[s.key] as string[]).map((item, i) => (
                   <li key={i}>· {item}</li>
                 ))}
