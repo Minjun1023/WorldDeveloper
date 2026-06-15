@@ -5,7 +5,9 @@ import { useEffect, useState } from "react";
 import { ProfileFields } from "@/components/profile/ProfileFields";
 import { ProfilePreview } from "@/components/profile/ProfilePreview";
 import { Button } from "@/components/ui/button";
+import { DIM_TOTAL, reflectedCount } from "@/lib/profile-dimensions";
 import { clearRecommendCache } from "@/lib/recommend-cache";
+import { cn } from "@/lib/utils";
 import type { RecommendProfile } from "@/lib/types";
 
 const EMPTY: RecommendProfile = {
@@ -61,24 +63,57 @@ export function ProfileEditor() {
     }
   }
 
-  if (!ready) return <p className="text-body-sm text-muted-foreground">불러오는 중…</p>;
+  const reflected = reflectedCount(profile);
 
   return (
-    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
-      <ProfileFields value={profile} onChange={update} />
-      {/* 미리보기 카드 + 저장 버튼을 한 덩어리로 sticky — 카드만 sticky 면 스크롤 시 저장 버튼이
-          카드 위로 겹쳐 보이던 버그를 막는다. */}
-      <div className="space-y-3 lg:sticky lg:top-20 lg:self-start">
-        <ProfilePreview profile={profile} />
-        <Button onClick={save} disabled={saving} className="w-full">
-          {saving ? "저장 중…" : "저장"}
-        </Button>
-        {dirty && !saved && (
-          <p className="text-center text-caption text-muted-foreground">변경사항 있음</p>
+    <div className="space-y-6">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="text-display">프로필</h1>
+          <p className="mt-2 text-muted-foreground">
+            채울수록 <strong className="font-semibold text-foreground">6차원 매칭</strong>이 정확해져요.
+            비자 스폰서십은 기본 포함이에요.
+          </p>
+        </div>
+        {ready && (
+          <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-2.5 shadow-sm">
+            <span className="text-body-sm font-bold tabular-nums">
+              {reflected}/{DIM_TOTAL}
+            </span>
+            <div className="flex gap-1" aria-hidden="true">
+              {Array.from({ length: DIM_TOTAL }).map((_, i) => (
+                <span
+                  key={i}
+                  className={cn("h-1.5 w-4 rounded-full", i < reflected ? "bg-primary" : "bg-surface-2")}
+                />
+              ))}
+            </div>
+          </div>
         )}
-        {saved && <p className="text-center text-body-sm text-success">저장됐어요.</p>}
-        {error && <p className="text-center text-body-sm text-destructive">{error}</p>}
-      </div>
+      </header>
+
+      {!ready ? (
+        <p className="text-body-sm text-muted-foreground">불러오는 중…</p>
+      ) : (
+        <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+          <ProfileFields value={profile} onChange={update} />
+          {/* 미리보기 카드 + 저장 버튼을 한 덩어리로 sticky — 카드만 sticky 면 스크롤 시 저장 버튼이
+              카드 위로 겹쳐 보이던 버그를 막는다. */}
+          <div className="space-y-3 lg:sticky lg:top-20 lg:self-start">
+            <ProfilePreview profile={profile} />
+            <Button onClick={save} disabled={saving} className="w-full">
+              {saving ? "저장 중…" : "저장"}
+            </Button>
+            {dirty && !saved && (
+              <p className="text-center text-caption text-muted-foreground">
+                변경사항 있음 · 저장하면 추천에 반영돼요
+              </p>
+            )}
+            {saved && <p className="text-center text-body-sm text-success">저장됐어요.</p>}
+            {error && <p className="text-center text-body-sm text-destructive">{error}</p>}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

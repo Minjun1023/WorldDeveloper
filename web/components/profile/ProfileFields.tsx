@@ -1,16 +1,22 @@
 "use client";
 
-import { ShieldCheck } from "lucide-react";
+import { Code2, ShieldCheck, SlidersHorizontal } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Segmented } from "@/components/ui/segmented";
 import { TagInput } from "@/components/ui/tag-input";
+import { LOCATION_VOCAB } from "@/lib/location-vocab";
+import { TECH_VOCAB } from "@/lib/tech-vocab";
 import type { RecommendProfile } from "@/lib/types";
 
-const SENIORITY = ["junior", "mid", "senior", "staff", "principal"].map((v) => ({
-  value: v,
-  label: v,
-}));
+const SENIORITY = [
+  { value: "entry", label: "신입" },
+  { value: "junior", label: "junior" },
+  { value: "mid", label: "mid" },
+  { value: "senior", label: "senior" },
+  { value: "staff", label: "staff" },
+  { value: "principal", label: "principal" },
+];
 const REMOTE = [
   { value: "any", label: "상관없음" },
   { value: "remote", label: "원격" },
@@ -18,14 +24,18 @@ const REMOTE = [
 ];
 const SALARY_MAX = 250000;
 
-function completeness(p: RecommendProfile): number {
-  let n = 0;
-  if (p.skills.length) n++;
-  if (p.years_experience != null) n++;
-  if ((p.preferred_locations?.length ?? 0) > 0) n++;
-  if (p.desired_salary_usd != null) n++;
-  if (p.bio?.trim()) n++;
-  return n;
+function SectionHead({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div className="flex items-center gap-3">
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+        {icon}
+      </span>
+      <div>
+        <h2 className="text-h3">{title}</h2>
+        <p className="text-caption text-muted-foreground">{desc}</p>
+      </div>
+    </div>
+  );
 }
 
 export function ProfileFields({
@@ -36,110 +46,110 @@ export function ProfileFields({
   onChange: (next: RecommendProfile) => void;
 }) {
   const set = (patch: Partial<RecommendProfile>) => onChange({ ...value, ...patch });
-  const filled = completeness(value);
   const salary = value.desired_salary_usd ?? 0;
 
   return (
     <div className="space-y-5">
-      <div>
-        <div className="flex justify-between text-caption text-muted-foreground">
-          <span>프로필 완성도</span>
-          <span className="tabular-nums">{filled} / 5</span>
-        </div>
-        <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-surface-2">
-          <div
-            className="h-full rounded-full bg-primary"
-            style={{ width: `${(filled / 5) * 100}%` }}
+      <section className="rounded-2xl border border-border bg-surface p-6">
+        <SectionHead
+          icon={<Code2 className="h-[18px] w-[18px]" aria-hidden="true" />}
+          title="기술 · 경력"
+          desc="스택·레벨·소개로 매칭 정확도를 높여요."
+        />
+        <div className="mt-5 space-y-4">
+          <TagInput
+            id="skills"
+            label="기술 스택"
+            hint="입력하면 자동완성 추천"
+            value={value.skills}
+            onChange={(skills) => set({ skills })}
+            suggestions={TECH_VOCAB}
+            placeholder="예: Python, Kubernetes…"
           />
-        </div>
-      </div>
-
-      <fieldset className="space-y-4 rounded-lg border border-border bg-surface p-5">
-        <legend className="px-1 text-caption font-medium uppercase tracking-wide text-muted-foreground">
-          기술 · 경력
-        </legend>
-        <TagInput
-          id="skills"
-          label="기술 스택"
-          value={value.skills}
-          onChange={(skills) => set({ skills })}
-          placeholder="React, Go… Enter로 추가"
-        />
-        <Segmented
-          label="시니어리티"
-          options={SENIORITY}
-          value={value.seniority}
-          onChange={(seniority) => set({ seniority })}
-        />
-        <label className="block space-y-1.5">
-          <span className="text-body-sm font-medium">연차 (선택)</span>
-          <Input
-            type="number"
-            min={0}
-            value={value.years_experience ?? ""}
-            onChange={(e) =>
-              set({ years_experience: e.target.value ? Number(e.target.value) : undefined })
-            }
-            className="font-mono"
+          <Segmented
+            label="시니어리티"
+            options={SENIORITY}
+            value={value.seniority}
+            onChange={(seniority) => set({ seniority })}
           />
-        </label>
-        <label className="block space-y-1.5">
-          <span className="text-body-sm font-medium">
-            자기소개{" "}
-            <span className="font-normal text-muted-foreground">(의미 매칭에 사용)</span>
-          </span>
-          <textarea
-            value={value.bio ?? ""}
-            onChange={(e) => set({ bio: e.target.value })}
-            rows={3}
-            placeholder="한두 문장으로 본인을 소개해 주세요."
-            className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-body-sm resize-y placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          />
-        </label>
-      </fieldset>
-
-      <fieldset className="space-y-4 rounded-lg border border-border bg-surface p-5">
-        <legend className="px-1 text-caption font-medium uppercase tracking-wide text-muted-foreground">
-          선호 근무조건
-        </legend>
-        <TagInput
-          id="locations"
-          label="선호 지역"
-          value={value.preferred_locations ?? []}
-          onChange={(preferred_locations) => set({ preferred_locations })}
-          placeholder="Berlin, Amsterdam…"
-        />
-        <Segmented
-          label="원격 / 이주"
-          options={REMOTE}
-          value={value.remote_preference ?? "any"}
-          onChange={(remote_preference) => set({ remote_preference })}
-        />
-        <label className="block space-y-1.5">
-          <span className="flex items-center justify-between text-body-sm font-medium">
-            희망 연봉
-            <span className="tabular-nums text-primary">
-              {salary ? `$${Math.round(salary / 1000)}k` : "미설정"}
+          <label className="block space-y-1.5">
+            <span className="text-body-sm font-medium">
+              연차 <span className="font-normal text-muted-foreground">(선택)</span>
             </span>
-          </span>
-          <input
-            type="range"
-            min={0}
-            max={SALARY_MAX}
-            step={5000}
-            value={salary}
-            onChange={(e) => {
-              const v = Number(e.target.value);
-              set({ desired_salary_usd: v === 0 ? undefined : v });
-            }}
-            aria-label="희망 연봉"
-            className="w-full accent-primary"
+            <Input
+              type="number"
+              min={0}
+              value={value.years_experience ?? ""}
+              onChange={(e) =>
+                set({ years_experience: e.target.value ? Number(e.target.value) : undefined })
+              }
+              className="max-w-[180px] font-mono"
+            />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="text-body-sm font-medium">
+              자기소개{" "}
+              <span className="font-normal text-muted-foreground">(의미 매칭에 사용)</span>
+            </span>
+            <textarea
+              value={value.bio ?? ""}
+              onChange={(e) => set({ bio: e.target.value })}
+              rows={3}
+              placeholder="한두 문장으로 본인을 소개해 주세요. 의미 매칭에 쓰여요. (예: 대규모 결제 시스템을 운영한 백엔드 엔지니어, 유럽 이주 희망)"
+              className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-body-sm resize-y placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            />
+          </label>
+        </div>
+      </section>
+
+      <section className="rounded-2xl border border-border bg-surface p-6">
+        <SectionHead
+          icon={<SlidersHorizontal className="h-[18px] w-[18px]" aria-hidden="true" />}
+          title="선호 근무조건"
+          desc="지역·근무형태·연봉으로 우선순위를 맞춰요."
+        />
+        <div className="mt-5 space-y-4">
+          <TagInput
+            id="locations"
+            label="선호 지역"
+            hint="입력하면 자동완성 추천"
+            value={value.preferred_locations ?? []}
+            onChange={(preferred_locations) => set({ preferred_locations })}
+            suggestions={LOCATION_VOCAB}
+            placeholder="예: Berlin, Tokyo, Germany…"
           />
-        </label>
-        <p className="flex items-center gap-1.5 text-caption text-muted-foreground">
-          <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden /> 비자 스폰서십은 기본 포함돼요.
-        </p>
-      </fieldset>
+          <Segmented
+            label="원격 / 이주"
+            options={REMOTE}
+            value={value.remote_preference ?? "any"}
+            onChange={(remote_preference) => set({ remote_preference })}
+          />
+          <label className="block space-y-1.5">
+            <span className="flex items-center justify-between text-body-sm font-medium">
+              희망 연봉
+              <span className="tabular-nums text-primary">
+                {salary ? `$${Math.round(salary / 1000)}k` : "미설정"}
+              </span>
+            </span>
+            <input
+              type="range"
+              min={0}
+              max={SALARY_MAX}
+              step={5000}
+              value={salary}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                set({ desired_salary_usd: v === 0 ? undefined : v });
+              }}
+              aria-label="희망 연봉"
+              className="w-full accent-primary"
+            />
+          </label>
+          <p className="flex items-center gap-2 rounded-lg border border-success/20 bg-success/5 px-3 py-2 text-caption font-medium text-success">
+            <ShieldCheck className="h-3.5 w-3.5 shrink-0" aria-hidden="true" /> 비자 스폰서십은 항상 기본 포함돼요.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }

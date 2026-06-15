@@ -1,49 +1,11 @@
 "use client";
 
+import { RefreshCw } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { DIM_TOTAL, PROFILE_DIMS, dimState, reflectedCount } from "@/lib/profile-dimensions";
 import { cn } from "@/lib/utils";
 import type { RecommendProfile, RecommendResponse } from "@/lib/types";
-
-const DIMS = [
-  { key: "stack", label: "기술 스택", color: "var(--score-stack)" },
-  { key: "seniority", label: "시니어리티", color: "var(--score-seniority)" },
-  { key: "location", label: "선호 지역", color: "var(--score-location)" },
-  { key: "visa", label: "비자", color: "var(--score-visa)" },
-  { key: "salary", label: "연봉", color: "var(--score-salary)" },
-  { key: "semantic", label: "의미 매칭", color: "var(--score-semantic)" },
-] as const;
-
-function dimState(p: RecommendProfile, key: string): { active: boolean; note: string } {
-  switch (key) {
-    case "stack":
-      return {
-        active: p.skills.length > 0,
-        note: p.skills.length
-          ? `${p.skills[0]}${p.skills.length > 1 ? ` +${p.skills.length - 1}` : ""}`
-          : "미입력",
-      };
-    case "seniority":
-      return { active: true, note: p.seniority };
-    case "location": {
-      const n = p.preferred_locations?.length ?? 0;
-      return { active: n > 0, note: n ? `${n}곳` : "미입력" };
-    }
-    // 비자 스폰서십은 항상 필요로 가정한다(폼에 토글 없음, 백엔드가 항상 true 강제) — 의도된 동작.
-    case "visa":
-      return { active: true, note: "필요(기본)" };
-    case "salary":
-      return {
-        active: p.desired_salary_usd != null,
-        note: p.desired_salary_usd != null ? `$${Math.round(p.desired_salary_usd / 1000)}k` : "미입력",
-      };
-    case "semantic":
-      return { active: !!p.bio?.trim(), note: p.bio?.trim() ? "자기소개 반영" : "미입력" };
-    default:
-      return { active: false, note: "" };
-  }
-}
 
 export function ProfilePreview({ profile }: { profile: RecommendProfile }) {
   const [count, setCount] = useState<number | null>(null);
@@ -79,40 +41,53 @@ export function ProfilePreview({ profile }: { profile: RecommendProfile }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const reflected = reflectedCount(profile);
+
   return (
-    <div className="space-y-4 rounded-xl border border-primary/30 bg-primary/5 p-5">
-      <div className="border-b border-primary/15 pb-4 text-center">
+    <div className="space-y-3">
+      {/* 매칭 수 — 레일 히어로 */}
+      <div className="rounded-2xl border border-primary/40 bg-primary/5 p-5 text-center">
         {loading ? (
-          <p className="py-1 text-body-sm text-muted-foreground">매칭 공고 계산 중…</p>
+          <p className="py-1.5 text-body-sm text-muted-foreground">매칭 공고 계산 중…</p>
         ) : error ? (
-          <p className="py-1 text-body-sm text-muted-foreground">매칭 수를 불러올 수 없어요.</p>
+          <p className="py-1.5 text-body-sm text-muted-foreground">매칭 수를 불러올 수 없어요.</p>
         ) : (
           <p className="text-body-sm text-muted-foreground">
-            <span className="text-3xl font-extrabold tabular-nums text-primary">{count ?? "—"}</span>
-            개 공고가 지금 프로필과 매칭
+            <span className="block text-4xl font-extrabold tabular-nums leading-none text-primary">
+              {count ?? "—"}
+            </span>
+            <span className="mt-1 inline-block">개 공고가 지금 내 프로필과 매칭</span>
           </p>
         )}
-        <Button variant="outline" size="sm" onClick={refresh} disabled={loading} className="mt-2">
-          갱신 ↻
-        </Button>
+        <button
+          type="button"
+          onClick={refresh}
+          disabled={loading}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 text-caption font-semibold text-muted-foreground transition-colors hover:bg-accent disabled:opacity-60"
+        >
+          <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
+          갱신
+        </button>
       </div>
 
-      <div>
-        <p className="mb-2 text-caption font-medium uppercase tracking-wide text-muted-foreground">
-          6차원 반영
-        </p>
-        <ul className="space-y-1.5 text-body-sm">
-          {DIMS.map((d) => {
+      {/* 6차원 반영 */}
+      <div className="rounded-2xl border border-border bg-surface p-4">
+        <div className="mb-2.5 flex items-center justify-between">
+          <p className="text-caption font-medium uppercase tracking-wide text-muted-foreground">6차원 반영</p>
+          <span className="text-caption font-semibold text-foreground">{reflected}/{DIM_TOTAL} 입력됨</span>
+        </div>
+        <ul className="text-body-sm">
+          {PROFILE_DIMS.map((d) => {
             const s = dimState(profile, d.key);
             return (
-              <li key={d.key} className="flex items-center gap-2">
+              <li key={d.key} className="flex items-center gap-2.5 border-t border-muted py-2 first:border-t-0">
                 <span
                   aria-hidden
-                  className={cn("h-2 w-2 shrink-0 rounded-full", s.active ? "" : "bg-muted")}
+                  className={cn("h-2.5 w-2.5 shrink-0 rounded-full", s.active ? "" : "bg-border")}
                   style={s.active ? { backgroundColor: d.color } : undefined}
                 />
-                <span className={s.active ? "" : "text-muted-foreground"}>{d.label}</span>
-                <span className="ml-auto text-caption text-muted-foreground">
+                <span className={cn("font-medium", !s.active && "text-muted-foreground")}>{d.label}</span>
+                <span className={cn("ml-auto text-caption font-medium", s.active ? "text-foreground/70" : "text-muted-foreground")}>
                   {s.active ? s.note : `→ ${s.note}`}
                 </span>
               </li>
