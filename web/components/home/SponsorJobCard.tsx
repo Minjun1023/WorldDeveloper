@@ -1,7 +1,8 @@
-import { Clock, ShieldCheck } from "lucide-react";
+import { Clock } from "lucide-react";
 import Link from "next/link";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { RegisterVerifiedBadge } from "@/components/job/RegisterVerifiedBadge";
 import { RemoteBadge } from "@/components/job/RemoteBadge";
 import { Card } from "@/components/ui/card";
 import { postedRelativeLabel } from "@/lib/jobDates";
@@ -27,15 +28,8 @@ export function SponsorJobCard({ job }: { job: Job }) {
             </h3>
             <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-body-sm text-muted-foreground">
               <span className="truncate">{job.company.display_name}</span>
-              {verified && (
-                <span
-                  className="inline-flex shrink-0 items-center gap-0.5 rounded-full px-1.5 py-0.5 text-caption font-medium text-verified"
-                  style={{ backgroundColor: "color-mix(in srgb, var(--verified) 16%, transparent)" }}
-                >
-                  <ShieldCheck className="h-3 w-3" aria-hidden="true" />
-                  명부 검증
-                </span>
-              )}
+              {/* 명부 검증은 골드 방패 아이콘만(텍스트 제거) — 의미는 title/aria-label 로 전달. */}
+              {verified && <RegisterVerifiedBadge />}
             </div>
           </div>
           {posted && (

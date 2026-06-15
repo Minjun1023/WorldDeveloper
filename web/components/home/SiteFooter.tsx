@@ -26,7 +26,6 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
     title: "회사",
     links: [
       { label: "소개", href: "/" },
-      { label: "문의", href: "/contact" },
       { label: "회원가입", href: "/signup" },
       { label: "로그인", href: "/signin" },
     ],

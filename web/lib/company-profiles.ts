@@ -451,6 +451,21 @@ export const COMPANY_PROFILES: Record<string, CompanyProfile> = {
     location: "San Francisco, USA",
     country: "us",
   },
+  coreweave: {
+    description: "GPU 클라우드로 AI·머신러닝 컴퓨팅 인프라를 제공하는 기업입니다.",
+    location: "Livingston, NJ",
+    country: "us",
+  },
+  verkada: {
+    description: "클라우드 기반 CCTV·출입통제 등 물리 보안 플랫폼 기업입니다.",
+    location: "San Mateo, CA",
+    country: "us",
+  },
+  crusoe: {
+    description: "남는 에너지로 AI·클라우드 컴퓨팅을 돌리는 인프라 기업입니다.",
+    location: "San Francisco, USA",
+    country: "us",
+  },
 };
 
 /** ISO2(소문자/대문자) → 국기 이모지. 유효하지 않으면 빈 문자열. */
