@@ -47,9 +47,11 @@ describe("MatchScorePanel", () => {
     expect(screen.getByText("스택")).toBeInTheDocument();
   });
 
-  it("error → 렌더 없음", () => {
-    mockUseMatchScore.mockReturnValue({ state: "error", score: null });
-    const { container } = render(<MatchScorePanel jobId="x" />);
-    expect(container).toBeEmptyDOMElement();
+  it("error → 안내 + 다시 시도 버튼", () => {
+    const retry = vi.fn();
+    mockUseMatchScore.mockReturnValue({ state: "error", score: null, retry });
+    render(<MatchScorePanel jobId="x" />);
+    expect(screen.getByText(/불러오지 못했어요/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "다시 시도" })).toBeInTheDocument();
   });
 });
