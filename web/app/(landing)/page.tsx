@@ -12,16 +12,9 @@ import { StatsBand } from "@/components/home/StatsBand";
 import { VerifyMethodology } from "@/components/home/VerifyMethodology";
 import { fetchCompanies, fetchJobs, fetchRegions } from "@/lib/api";
 import { getSession } from "@/lib/session-server";
-import type { RecommendationItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
-
-// 히어로 우측 "6차원 매칭 미리보기" 카드용 예시 점수(개인화 아님 · 일러스트).
-const HERO_PREVIEW_SCORE = {
-  final_score: 0.94, stack: 0.92, visa: 1, location: 0.88, seniority: 0.9, salary: 0.8, semantic: 0.86,
-  penalty_applied: 0, reasons: [], deal_breakers: [],
-};
 
 // 랜딩 전폭 섹션 래퍼: 교차 배경(흰색/연회색) + 안쪽 max-w 컨테이너.
 function Section({
@@ -63,7 +56,9 @@ export default async function HomePage() {
 
   // "검증된 회사들" 섹션은 헤더가 "정부 명부 검증을 통과한 회사"라고 단언하므로, 실제로 명부 검증
   // (verified=Home Office/USCIS 근거 보유)된 회사만 노출한다. 공고 수 상위라도 미검증(Anthropic 등)은 제외.
-  const spotlight = (companies?.items ?? []).filter((c) => c.verified).slice(0, 8); // 4열 × 2줄
+  const verifiedCompanies = (companies?.items ?? []).filter((c) => c.verified);
+  const spotlight = verifiedCompanies.slice(0, 8); // 4열 × 2줄
+  const heroCompanies = verifiedCompanies.slice(0, 9); // 히어로 로고 월 3×3
 
   // 원격은 근무형태지 국가가 아니므로 "국가" 수치에서 제외. 공고가 있는 국가만 카운트.
   const countryRegions = regions.filter((r) => r.value !== "remote" && r.count > 0);
@@ -75,13 +70,14 @@ export default async function HomePage() {
     countries: countryRegions.length,
   };
 
-  const previewItem = sponsorJobs[0]
-    ? ({ job: sponsorJobs[0], score: HERO_PREVIEW_SCORE } as unknown as RecommendationItem)
-    : null;
-
   return (
     <>
-      <Hero regions={regions} previewItem={previewItem} loggedIn={!!session} />
+      <Hero
+        regions={regions}
+        companies={heroCompanies}
+        companyCount={stats.companies}
+        loggedIn={!!session}
+      />
 
       {/* 통계 띠 (히어로 직후 전폭) */}
       <StatsBand stats={stats} />
