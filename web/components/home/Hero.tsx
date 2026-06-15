@@ -1,4 +1,4 @@
-import { ShieldCheck } from "lucide-react";
+import { ShieldCheck, Target } from "lucide-react";
 import Link from "next/link";
 
 import { HeroPreviewCard } from "@/components/home/HeroPreviewCard";
@@ -52,12 +52,14 @@ export function Hero({
 
             <HeroSearch regions={regions} />
 
+            {/* 검색(위)과 추천(아래)을 분리: 검색=키워드, 추천=프로필 기반 6축 매칭. */}
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <Link
-                href={loggedIn ? "/me/profile" : "/signup"}
+                href={loggedIn ? "/recommend" : "/signup"}
                 className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-5 py-3 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
-                내 프로필 만들기
+                <Target className="h-4 w-4" aria-hidden="true" />
+                내 프로필로 추천받기
               </Link>
               <Link
                 href="/search"
@@ -66,6 +68,10 @@ export function Hero({
                 공고 둘러보기
               </Link>
             </div>
+            <p className="mt-2.5 text-caption text-muted-foreground">
+              검색은 키워드로 공고를 찾고, 추천은 내 프로필을 6가지 기준(스택·비자·지역·레벨·연봉·의미)으로
+              맞춰드려요.
+            </p>
 
             {/* 모바일/태블릿: 미리보기는 본문 아래 */}
             {previewItem && <div className="mt-10 lg:hidden">{<HeroPreviewCard item={previewItem} />}</div>}

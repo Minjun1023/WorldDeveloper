@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 import { InteractiveJobCard } from "@/components/recommend/InteractiveJobCard";
 import { RecommendationSkeleton } from "@/components/recommend/RecommendationSkeleton";
@@ -15,21 +15,11 @@ import { useCachedRecommend } from "@/lib/use-recommend";
 const POOL = 60; // 백엔드에서 받아오는 추천 풀(회사당 최대 2개 다양성 제약 안에서 상위 60).
 const PAGE = 12; // 처음 노출/‘더 보기’ 1회당 추가 노출 수(3열 × 4행).
 
-export function MemberRecommend({ initialNote }: { initialNote?: string } = {}) {
-  const [note, setNote] = useState(initialNote ?? "");
+export function MemberRecommend() {
+  const [note, setNote] = useState("");
   const [shown, setShown] = useState(PAGE);
   const { loading, needsProfile, error, result, visible, saved, reactions, run, onSaveChange, onDislike } =
     useCachedRecommend({ cacheKey: "full", topK: POOL, impressionCount: PAGE });
-
-  // 히어로 '맞춤 매칭'에서 조건(?note=)을 들고 진입한 경우 마운트 시 1회 적용(입력칸은 미리 채워둠).
-  useEffect(() => {
-    const seed = initialNote?.trim();
-    if (seed) {
-      setShown(PAGE);
-      run(seed);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const items = visible.slice(0, shown);
   const remaining = visible.length - items.length;
