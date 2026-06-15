@@ -46,6 +46,15 @@ public class JobController {
         return service.regionCounts();
     }
 
+    // 최근 스크랩(수집) 공고 피드 (viable·first_seen_at 내림차순). "/recent" 는 "/{id:.+}" 보다
+    // 구체적 매핑이라 id 패턴보다 우선 라우팅된다.
+    @GetMapping("/recent")
+    public JobListResponse recent(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(name = "page_size", defaultValue = "20") int pageSize) {
+        return service.recentScraped(page, pageSize);
+    }
+
     // id 는 콜론 포함 ("greenhouse:stripe:7737237") — {id:.+} 로 전체 segment 매칭
     @GetMapping("/{id:.+}")
     public ResponseEntity<JobDetailDto> getOne(@PathVariable String id) {
