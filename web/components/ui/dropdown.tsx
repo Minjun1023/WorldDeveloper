@@ -47,7 +47,7 @@ export function Dropdown({
         <ChevronDown className="h-4 w-4 shrink-0" />
       </button>
       {open && (
-        <div className="absolute z-20 mt-1 max-h-72 w-full min-w-[12rem] overflow-y-auto rounded-md border border-border bg-surface py-1 shadow-md">
+        <div className="absolute left-0 right-0 z-30 mt-1 max-h-72 overflow-y-auto rounded-md border border-border bg-surface py-1 shadow-md">
           <button
             type="button"
             onClick={() => { onSelect(null); setOpen(false); }}
