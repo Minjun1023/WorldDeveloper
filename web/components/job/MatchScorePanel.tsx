@@ -17,7 +17,7 @@ const AXES: { key: keyof ScoreBreakdown; label: string }[] = [
 const pct = (n: number) => Math.round(Math.max(0, Math.min(1, Number(n) || 0)) * 100);
 
 export function MatchScorePanel({ jobId }: { jobId: string }) {
-  const { state, score } = useMatchScore(jobId);
+  const { state, score, retry } = useMatchScore(jobId);
 
   if (state === "loading") {
     return (
@@ -28,7 +28,24 @@ export function MatchScorePanel({ jobId }: { jobId: string }) {
     );
   }
 
-  if (state === "error") return null;
+  // 백엔드 응답 실패/지연 시: 패널을 숨기지 않고 다시 시도할 수 있게 안내.
+  if (state === "error") {
+    return (
+      <div className="rounded-2xl border border-border bg-surface p-5 text-center">
+        <p className="text-body-sm font-semibold">매칭 점수를 불러오지 못했어요</p>
+        <p className="mt-1 text-caption text-muted-foreground">
+          잠시 후 다시 시도해 주세요.
+        </p>
+        <button
+          type="button"
+          onClick={retry}
+          className="mt-3 rounded-[10px] border border-border px-4 py-2 text-body-sm font-semibold transition-colors hover:bg-accent"
+        >
+          다시 시도
+        </button>
+      </div>
+    );
+  }
 
   if (state === "loggedOut" || state === "needsProfile") {
     const cta =

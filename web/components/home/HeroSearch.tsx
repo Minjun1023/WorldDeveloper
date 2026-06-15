@@ -14,7 +14,10 @@ export function HeroSearch({ regions = [] }: { regions?: RegionCount[] }) {
   const [q, setQ] = useState("");
   const [region, setRegion] = useState<string | null>(null);
 
-  const regionOptions = regions.map((r) => ({ value: r.value, label: r.label, count: r.count }));
+  // 원격은 근무형태지 지역(국가)이 아니므로 지역 선택 드롭다운에서 제외.
+  const regionOptions = regions
+    .filter((r) => r.value !== "remote")
+    .map((r) => ({ value: r.value, label: r.label, count: r.count }));
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
