@@ -1,24 +1,27 @@
-import { ShieldCheck, Target } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import Link from "next/link";
 
-import { HeroPreviewCard } from "@/components/home/HeroPreviewCard";
 import { HeroSearch } from "@/components/home/HeroSearch";
+import { HeroVisual } from "@/components/home/HeroVisual";
 import type { RegionCount } from "@/lib/api";
-import type { RecommendationItem } from "@/lib/types";
+import type { CompanySummary } from "@/lib/types";
 
-// 전폭 히어로 — lg 2단(좌 콘텐츠 / 우 6차원 매칭 미리보기). 통계는 아래 StatsBand 로 분리.
+// 전폭 히어로 — lg 2단(좌 콘텐츠 / 우 검증 회사 로고 월). 통계는 아래 StatsBand 로 분리.
+// 주의: 지역 드롭다운이 섹션 밖으로 펼쳐지므로 overflow-hidden 을 두지 않는다(드롭다운 잘림 방지).
 export function Hero({
   regions,
-  previewItem,
+  companies = [],
+  companyCount = 0,
   loggedIn = false,
 }: {
   regions: RegionCount[];
-  previewItem?: RecommendationItem | null;
+  companies?: CompanySummary[];
+  companyCount?: number;
   loggedIn?: boolean;
 }) {
   return (
-    <section className="relative overflow-hidden">
-      {/* 좌상단 은은한 브랜드 틴트 */}
+    <section className="relative">
+      {/* 좌상단 은은한 브랜드 틴트 (자체 박스에 한정되어 overflow-hidden 없이도 새지 않음) */}
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-0 h-[420px] opacity-70"
@@ -56,10 +59,9 @@ export function Hero({
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <Link
                 href={loggedIn ? "/recommend" : "/signup"}
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-primary px-5 py-3 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
-                <Target className="h-4 w-4" aria-hidden="true" />
-                내 프로필로 추천받기
+                프로필 작성하러가기
               </Link>
               <Link
                 href="/search"
@@ -73,14 +75,18 @@ export function Hero({
               맞춰드려요.
             </p>
 
-            {/* 모바일/태블릿: 미리보기는 본문 아래 */}
-            {previewItem && <div className="mt-10 lg:hidden">{<HeroPreviewCard item={previewItem} />}</div>}
+            {/* 모바일/태블릿: 로고 월은 본문 아래 */}
+            {companies.length > 0 && (
+              <div className="mt-10 lg:hidden">
+                <HeroVisual companies={companies} totalVerified={companyCount} />
+              </div>
+            )}
           </div>
 
-          {/* 우(lg): 6차원 매칭 미리보기 */}
-          {previewItem && (
+          {/* 우(lg): 검증 회사 로고 월 */}
+          {companies.length > 0 && (
             <aside className="hidden lg:block">
-              <HeroPreviewCard item={previewItem} />
+              <HeroVisual companies={companies} totalVerified={companyCount} />
             </aside>
           )}
         </div>
