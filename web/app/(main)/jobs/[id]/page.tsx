@@ -69,9 +69,9 @@ export default async function JobDetailPage({ params }: { params: { id: string }
         </Link>
 
         <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-8">
-          <article className="min-w-0 space-y-6">
-            <header className="space-y-4">
-              {/* 회사 먼저(작게) → 큰 제목. 위치는 정보 카드에 있어 헤더에서 중복 제거. */}
+          <article className="min-w-0 space-y-5">
+            {/* 헤더 카드: 회사 → 제목 → '한눈에' 칩 → 비자 근거 한 줄 */}
+            <header className="space-y-4 rounded-2xl border border-border bg-surface p-6">
               <Link
                 href={`/companies/${job.company.slug}`}
                 className="inline-flex items-center gap-2 rounded-md text-body-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
@@ -84,16 +84,16 @@ export default async function JobDetailPage({ params }: { params: { id: string }
                 <h1 className="text-display leading-tight">{job.title_ko ?? job.title}</h1>
                 {job.title_ko && <p className="text-body text-muted-foreground">{job.title}</p>}
               </div>
+
+              <JobFactCards job={job} />
+              <VisaEvidence visa={job.visa} />
             </header>
 
-            <JobFactCards job={job} />
-            <VisaEvidence visa={job.visa} />
-
             {job.description && <JobSummary jobId={job.id} initialData={initialSummary} />}
-            {job.tags && job.tags.length > 0 && <TechStackMatch tags={job.tags} />}
             {job.description && (
               <JobDescription jobId={job.id} original={job.description} initialKo={initialKo} />
             )}
+            {job.tags && job.tags.length > 0 && <TechStackMatch tags={job.tags} />}
             {prep && <InterviewPrepSection prep={prep} />}
 
             {otherJobs.length > 0 && (

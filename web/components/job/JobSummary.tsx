@@ -1,8 +1,10 @@
 "use client";
 
+import { ChevronDown, Sparkles } from "lucide-react";
 import { useState } from "react";
 
 import type { JobSummary as JobSummaryData } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 const SECTIONS: { key: keyof Pick<JobSummaryData, "responsibilities" | "requirements" | "visa" | "compensation">; label: string }[] = [
   { key: "responsibilities", label: "주요 업무" },
@@ -15,6 +17,7 @@ export function JobSummary({ jobId, initialData }: { jobId: string; initialData?
   const [data, setData] = useState<JobSummaryData | null>(initialData ?? null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState(false);
 
   async function load() {
     setLoading(true);
@@ -48,21 +51,43 @@ export function JobSummary({ jobId, initialData }: { jobId: string; initialData?
   const nonEmpty = data
     ? SECTIONS.filter((s) => (data[s.key] as string[]).length > 0)
     : [];
+  const hasBody = nonEmpty.length > 0;
 
+  // 본문(흰 카드)과 구분되는 액센트 패널 — 'AI 보조'임을 시각적으로 분리한다.
   return (
-    <section className="rounded-lg border border-border bg-surface-2 p-4">
+    <section className="rounded-2xl border border-primary/20 bg-primary/5 p-5">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-h3">AI 요약</h2>
-        {!data && (
-          <button
-            type="button"
-            onClick={load}
-            disabled={loading}
-            className="rounded-md px-2.5 py-1 text-body-sm text-primary hover:underline disabled:text-muted-foreground"
-          >
-            {loading ? "요약 중…" : "AI 요약 보기"}
-          </button>
-        )}
+        <div className="flex items-center gap-2">
+          <span className="grid h-6 w-6 place-items-center rounded-md bg-primary text-primary-foreground">
+            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+          </span>
+          <h2 className="text-h3 text-primary">AI 요약</h2>
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          <span className="hidden text-caption text-muted-foreground sm:inline">원문에서 핵심만 추출</span>
+          {!data && (
+            <button
+              type="button"
+              onClick={load}
+              disabled={loading}
+              className="rounded-md px-2.5 py-1 text-body-sm font-medium text-primary hover:underline disabled:text-muted-foreground"
+            >
+              {loading ? "요약 중…" : "AI 요약 보기"}
+            </button>
+          )}
+          {hasBody && (
+            <button
+              type="button"
+              onClick={() => setCollapsed((c) => !c)}
+              aria-expanded={!collapsed}
+              className="inline-flex items-center gap-1 rounded-md border border-primary/20 bg-surface px-2.5 py-1 text-caption font-semibold text-primary hover:bg-primary/10"
+            >
+              <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", collapsed && "-rotate-90")} aria-hidden="true" />
+              {collapsed ? "펼치기" : "접기"}
+            </button>
+          )}
+        </div>
       </div>
 
       {error && <p className="mt-2 text-body-sm text-destructive">{error}</p>}
@@ -71,12 +96,12 @@ export function JobSummary({ jobId, initialData }: { jobId: string; initialData?
         <p className="mt-2 text-body-sm text-muted-foreground">요약할 핵심 정보를 찾지 못했습니다.</p>
       )}
 
-      {data && nonEmpty.length > 0 && (
-        <div className="mt-3 space-y-3">
+      {data && hasBody && !collapsed && (
+        <div className="mt-4 space-y-3">
           {nonEmpty.map((s) => (
             <div
               key={s.key}
-              className="rounded-md border border-border bg-surface p-3.5 sm:flex sm:gap-5"
+              className="rounded-lg border border-primary/10 bg-surface p-3.5 sm:flex sm:gap-5"
             >
               <h3 className="shrink-0 text-body-sm font-semibold sm:w-24 sm:pt-0.5">{s.label}</h3>
               <ul className="mt-1.5 flex-1 space-y-1 text-body-sm text-muted-foreground sm:mt-0">
