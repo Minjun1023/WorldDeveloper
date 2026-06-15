@@ -1,24 +1,74 @@
-// 선호 지역 자동완성용 큐레이션 사전. 추천 엔진이 공고의 영문 location 문자열에 부분일치로
-// 매칭하므로(예: "Berlin, Germany"), 한글이 아니라 영문 도시·국가명으로 둔다. 자유 입력도 가능.
-// 우리가 다루는 목적국의 주요 테크 허브 도시 + 국가명.
-export const LOCATION_VOCAB: string[] = [
-  // countries (국가 단위 선호)
-  "United States", "United Kingdom", "Germany", "Netherlands", "Japan", "Canada",
-  "Singapore", "Ireland", "France", "Spain", "Switzerland", "Sweden", "Australia",
-  "Denmark", "Norway", "Finland", "Portugal", "Belgium", "Austria", "Poland",
-  // United States
-  "San Francisco", "New York", "Seattle", "Austin", "Boston", "Los Angeles", "Chicago", "Remote - US",
-  // United Kingdom
-  "London", "Manchester", "Edinburgh", "Cambridge",
-  // Germany
-  "Berlin", "Munich", "Hamburg", "Frankfurt",
-  // Netherlands
-  "Amsterdam", "Rotterdam", "Eindhoven",
-  // Japan
-  "Tokyo", "Osaka", "Kyoto",
-  // Canada
-  "Toronto", "Vancouver", "Montreal",
-  // others
-  "Dublin", "Paris", "Barcelona", "Madrid", "Zurich", "Geneva", "Stockholm", "Lisbon",
-  "Sydney", "Melbourne", "Copenhagen", "Helsinki", "Oslo", "Vienna", "Warsaw",
+import type { TagSuggestion } from "@/components/ui/tag-input";
+
+// 선호 지역 자동완성 사전. value 는 영문(추천 엔진이 공고 location 에 부분일치로 매칭),
+// keywords 는 한글 별칭 — "독일"·"베를린"처럼 한글로 입력해도 찾아지고, 저장값은 영문이 된다.
+export const LOCATION_VOCAB: TagSuggestion[] = [
+  // 국가
+  { value: "United States", keywords: ["미국", "유에스", "us", "usa"] },
+  { value: "United Kingdom", keywords: ["영국", "유케이", "uk"] },
+  { value: "Germany", keywords: ["독일"] },
+  { value: "Netherlands", keywords: ["네덜란드"] },
+  { value: "Japan", keywords: ["일본"] },
+  { value: "Canada", keywords: ["캐나다"] },
+  { value: "Singapore", keywords: ["싱가포르"] },
+  { value: "Ireland", keywords: ["아일랜드"] },
+  { value: "France", keywords: ["프랑스"] },
+  { value: "Spain", keywords: ["스페인"] },
+  { value: "Switzerland", keywords: ["스위스"] },
+  { value: "Sweden", keywords: ["스웨덴"] },
+  { value: "Australia", keywords: ["호주", "오스트레일리아"] },
+  { value: "Denmark", keywords: ["덴마크"] },
+  { value: "Norway", keywords: ["노르웨이"] },
+  { value: "Finland", keywords: ["핀란드"] },
+  { value: "Portugal", keywords: ["포르투갈"] },
+  { value: "Belgium", keywords: ["벨기에"] },
+  { value: "Austria", keywords: ["오스트리아"] },
+  { value: "Poland", keywords: ["폴란드"] },
+  // 미국 도시
+  { value: "San Francisco", keywords: ["샌프란시스코", "샌프란"] },
+  { value: "New York", keywords: ["뉴욕"] },
+  { value: "Seattle", keywords: ["시애틀"] },
+  { value: "Austin", keywords: ["오스틴"] },
+  { value: "Boston", keywords: ["보스턴"] },
+  { value: "Los Angeles", keywords: ["로스앤젤레스", "la", "엘에이"] },
+  { value: "Chicago", keywords: ["시카고"] },
+  { value: "Remote - US", keywords: ["미국 원격", "원격 미국"] },
+  // 영국
+  { value: "London", keywords: ["런던"] },
+  { value: "Manchester", keywords: ["맨체스터"] },
+  { value: "Edinburgh", keywords: ["에든버러"] },
+  { value: "Cambridge", keywords: ["케임브리지"] },
+  // 독일
+  { value: "Berlin", keywords: ["베를린"] },
+  { value: "Munich", keywords: ["뮌헨"] },
+  { value: "Hamburg", keywords: ["함부르크"] },
+  { value: "Frankfurt", keywords: ["프랑크푸르트"] },
+  // 네덜란드
+  { value: "Amsterdam", keywords: ["암스테르담"] },
+  { value: "Rotterdam", keywords: ["로테르담"] },
+  { value: "Eindhoven", keywords: ["에인트호번"] },
+  // 일본
+  { value: "Tokyo", keywords: ["도쿄", "동경"] },
+  { value: "Osaka", keywords: ["오사카"] },
+  { value: "Kyoto", keywords: ["교토"] },
+  // 캐나다
+  { value: "Toronto", keywords: ["토론토"] },
+  { value: "Vancouver", keywords: ["밴쿠버"] },
+  { value: "Montreal", keywords: ["몬트리올"] },
+  // 기타 유럽·오세아니아
+  { value: "Dublin", keywords: ["더블린"] },
+  { value: "Paris", keywords: ["파리"] },
+  { value: "Barcelona", keywords: ["바르셀로나"] },
+  { value: "Madrid", keywords: ["마드리드"] },
+  { value: "Zurich", keywords: ["취리히"] },
+  { value: "Geneva", keywords: ["제네바"] },
+  { value: "Stockholm", keywords: ["스톡홀름"] },
+  { value: "Lisbon", keywords: ["리스본"] },
+  { value: "Sydney", keywords: ["시드니"] },
+  { value: "Melbourne", keywords: ["멜버른"] },
+  { value: "Copenhagen", keywords: ["코펜하겐"] },
+  { value: "Helsinki", keywords: ["헬싱키"] },
+  { value: "Oslo", keywords: ["오슬로"] },
+  { value: "Vienna", keywords: ["빈"] },
+  { value: "Warsaw", keywords: ["바르샤바"] },
 ];
