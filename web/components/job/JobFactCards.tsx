@@ -1,5 +1,7 @@
 import { locationDisplayParts } from "@/lib/jobLocation";
+import { formatSalary } from "@/lib/salary";
 import type { JobDetail } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 const EMP_LABEL: Record<string, string> = {
   FULLTIME: "정규직", PARTTIME: "파트타임", CONTRACTOR: "계약직", TEMPORARY: "임시직", INTERN: "인턴",
@@ -19,14 +21,21 @@ function experienceText(years?: number | null, seniority?: string | null): strin
 export function JobFactCards({ job }: { job: JobDetail }) {
   const visaText = job.visa?.status ? (VISA_LABEL[job.visa.status] ?? "정보 불충분") : "정보 불충분";
   const isSponsor = job.visa?.status === "sponsors";
+  const salaryText = formatSalary(job.salary); // 급여 명시 시에만 카드 추가(미명시면 생략).
   const cards = [
     { label: "비자", value: visaText, accent: isSponsor },
     { label: "위치", value: locationDisplayParts(job).join(" · ") || "미표기" },
     { label: "경력", value: experienceText(job.experience_years, job.seniority) },
     { label: "고용형태", value: job.employment_type ? (EMP_LABEL[job.employment_type] ?? job.employment_type) : "미표기" },
+    ...(salaryText ? [{ label: "연봉", value: salaryText }] : []),
   ];
   return (
-    <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+    <div
+      className={cn(
+        "grid grid-cols-2 gap-3",
+        cards.length >= 5 ? "lg:grid-cols-5" : "lg:grid-cols-4",
+      )}
+    >
       {cards.map((c) => (
         <div key={c.label} className={`rounded-xl border p-3 ${c.accent ? "border-success/30 bg-success/5" : "border-border bg-surface"}`}>
           <div className="text-caption text-muted-foreground">{c.label}</div>
