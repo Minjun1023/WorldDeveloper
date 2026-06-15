@@ -16,6 +16,7 @@ const NAV_LINKS = [
   { href: "/search", label: "검색" },
   { href: "/recommend", label: "추천" },
   { href: "/companies", label: "회사" },
+  { href: "/community", label: "커뮤니티" },
   { href: "/me/coach", label: "이력서 코치" },
 ];
 
