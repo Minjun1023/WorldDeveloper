@@ -60,6 +60,8 @@ export function ProfilePreview({ profile }: { profile: RecommendProfile }) {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(profileRef.current),
+        // 백엔드(추천 엔진)가 느려도 '계산 중…'에 무한히 갇히지 않도록 타임아웃.
+        signal: AbortSignal.timeout(10_000),
       });
       if (!res.ok) throw new Error();
       const data = (await res.json()) as RecommendResponse;
@@ -78,16 +80,18 @@ export function ProfilePreview({ profile }: { profile: RecommendProfile }) {
   }, []);
 
   return (
-    <div className="sticky top-20 space-y-4 rounded-xl border border-primary/30 bg-primary/5 p-5">
+    <div className="space-y-4 rounded-xl border border-primary/30 bg-primary/5 p-5">
       <div className="border-b border-primary/15 pb-4 text-center">
         {loading ? (
-          <p className="text-body-sm text-muted-foreground">계산 중…</p>
+          <p className="py-1 text-body-sm text-muted-foreground">매칭 공고 계산 중…</p>
         ) : error ? (
-          <p className="text-body-sm text-muted-foreground">불러올 수 없어요.</p>
+          <p className="py-1 text-body-sm text-muted-foreground">매칭 수를 불러올 수 없어요.</p>
         ) : (
-          <p className="text-3xl font-extrabold tabular-nums text-primary">{count ?? "—"}</p>
+          <p className="text-body-sm text-muted-foreground">
+            <span className="text-3xl font-extrabold tabular-nums text-primary">{count ?? "—"}</span>
+            개 공고가 지금 프로필과 매칭
+          </p>
         )}
-        <p className="text-caption text-muted-foreground">개 공고가 지금 프로필과 매칭</p>
         <Button variant="outline" size="sm" onClick={refresh} disabled={loading} className="mt-2">
           갱신 ↻
         </Button>
