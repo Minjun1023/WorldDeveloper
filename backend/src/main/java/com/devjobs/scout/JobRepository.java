@@ -157,6 +157,24 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         @Param("salarySort") boolean salarySort, @Param("completeRank") boolean completeRank,
         @Param("lim") int lim, @Param("off") int off);
 
+    // 최근 스크랩(수집) 공고 — viable 게이트만 적용하고 first_seen_at(우리가 처음 수집한 시각) 내림차순.
+    // 검색 머신(searchIds/mapQuery)과 분리해 정렬/필터 결합도를 낮춤(전용 피드).
+    @Query(value = """
+        SELECT id FROM jobs
+        WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug)
+          AND (visa_status = 'sponsors' OR remote_eligibility IN ('worldwide','apac_ok'))
+        ORDER BY first_seen_at DESC NULLS LAST, id DESC
+        LIMIT :lim OFFSET :off
+        """, nativeQuery = true)
+    List<String> recentScrapedIds(@Param("lim") int lim, @Param("off") int off);
+
+    @Query(value = """
+        SELECT count(*) FROM jobs
+        WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug)
+          AND (visa_status = 'sponsors' OR remote_eligibility IN ('worldwide','apac_ok'))
+        """, nativeQuery = true)
+    long countRecentScraped();
+
     @Query(value = """
         SELECT count(*) FROM jobs
         WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug)

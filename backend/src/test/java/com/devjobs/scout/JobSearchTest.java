@@ -63,6 +63,11 @@ class JobSearchTest {
         jdbc.update("UPDATE jobs SET closes_at = " + closesSql + " WHERE id = ?", id);
     }
 
+    /** firstSeenSql: first_seen_at SQL 식 (예 "now() - interval '3 days'"). */
+    private void setFirstSeen(String id, String firstSeenSql) {
+        jdbc.update("UPDATE jobs SET first_seen_at = " + firstSeenSql + " WHERE id = ?", id);
+    }
+
     @Test
     void relevanceRanksTitleAboveDescription() {
         company("acme", "Acme Inc");
@@ -98,6 +103,28 @@ class JobSearchTest {
         setVisa("new", "sponsors");  // 같은 비자 티어로 고정 → 티어 내부 최신순을 명시적으로 검증
         JobListResponse res = service.search("backend", null, null, null, "recent", null, null, 1, 20);
         assertEquals("new", res.items().get(0).id(), "같은 비자 티어 안에서 최신순이면 새 공고 먼저");
+    }
+
+    @Test
+    void recentScrapedOrdersByFirstSeenAndGatesViable() {
+        company("rs", "RS Co");
+        job("rs_old", "Backend Engineer", "rs", "x", "backend", false, "now()");
+        job("rs_new", "Backend Engineer", "rs", "x", "backend", false, "now()");
+        job("rs_unclear", "Backend Engineer", "rs", "x", "backend", false, "now()");
+        setVisa("rs_old", "sponsors");
+        setVisa("rs_new", "sponsors");
+        setVisa("rs_unclear", "unclear");  // 비원격 unclear → 비-viable → 제외
+        setFirstSeen("rs_old", "now() - interval '3 days'");
+        setFirstSeen("rs_new", "now()");
+        setFirstSeen("rs_unclear", "now()");
+
+        JobListResponse res = service.recentScraped(1, 20);
+        java.util.List<String> ids = res.items().stream().map(i -> i.id()).toList();
+        assertTrue(ids.contains("rs_new") && ids.contains("rs_old"), "viable 공고 노출");
+        assertTrue(!ids.contains("rs_unclear"), "비-viable(unclear·비원격) 제외");
+        assertTrue(ids.indexOf("rs_new") < ids.indexOf("rs_old"), "수집 시각(first_seen) 내림차순");
+        assertTrue(res.items().stream().anyMatch(i -> i.id().equals("rs_new") && i.firstSeenAt() != null),
+            "first_seen_at DTO 노출");
     }
 
     @Test

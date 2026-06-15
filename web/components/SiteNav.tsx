@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 // /search 필터에 있으므로 헤더에는 두지 않는다. "이력서 코치"는 로그인 시 동작(게스트는 로그인 유도).
 const NAV_LINKS = [
   { href: "/search", label: "검색" },
+  { href: "/recent", label: "최근 공고" },
   { href: "/recommend", label: "추천" },
   { href: "/companies", label: "회사" },
   { href: "/community", label: "커뮤니티" },

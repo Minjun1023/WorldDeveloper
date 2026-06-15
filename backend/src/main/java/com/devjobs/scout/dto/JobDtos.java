@@ -39,7 +39,8 @@ public final class JobDtos {
         VisaDto visa,
         RemoteDto remote,
         SalaryDto salary,
-        String seniority
+        String seniority,
+        OffsetDateTime firstSeenAt   // 우리가 처음 수집한 시각("최근 스크랩" 표시/정렬용)
     ) {}
 
     /** 단일 공고 상세 — 목록과 달리 description 전문 포함. */
