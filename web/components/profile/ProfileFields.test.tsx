@@ -13,14 +13,9 @@ const base: RecommendProfile = {
 };
 
 describe("ProfileFields", () => {
-  it("shows completeness as filled/5", () => {
-    render(
-      <ProfileFields
-        value={{ ...base, skills: ["go"], bio: "hi" }}
-        onChange={() => {}}
-      />,
-    );
-    expect(screen.getByText("2 / 5")).toBeInTheDocument();
+  it("renders the 신입(entry) seniority option", () => {
+    render(<ProfileFields value={base} onChange={() => {}} />);
+    expect(screen.getByRole("button", { name: "신입" })).toBeInTheDocument();
   });
 
   it("emits seniority change via Segmented", async () => {

@@ -20,8 +20,9 @@ final class Seniority {
             p("\\bnew\\s+grad\\b"), p("\\bgraduate\\b"), p("\\bintern\\b")))
     );
 
+    // "entry"(신입/취준생)는 junior 와 같은 레벨로 본다 — entry-level/new-grad 공고가 junior 로 감지되므로.
     private static final Map<String, Integer> ORDER = Map.of(
-        "junior", 1, "mid", 2, "senior", 3, "staff", 4, "principal", 5, "unspecified", 0);
+        "entry", 1, "junior", 1, "mid", 2, "senior", 3, "staff", 4, "principal", 5, "unspecified", 0);
 
     private static Pattern p(String re) {
         return Pattern.compile(re, Pattern.CASE_INSENSITIVE);
