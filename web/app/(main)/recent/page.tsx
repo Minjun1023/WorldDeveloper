@@ -20,7 +20,7 @@ export default function RecentPage() {
         <div>
           <h1 className="text-display">최근 본 공고</h1>
           <p className="mt-2 text-muted-foreground">
-            상세를 열어본 공고를 이 기기에 기록해 다시 찾기 쉽게 모았어요. (로그인 불필요)
+            상세를 열어본 공고를 이 기기에 기록해 다시 찾기 쉽게 모았어요.
           </p>
         </div>
         {jobs && jobs.length > 0 && (

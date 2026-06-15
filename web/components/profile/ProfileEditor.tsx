@@ -64,9 +64,11 @@ export function ProfileEditor() {
   if (!ready) return <p className="text-body-sm text-muted-foreground">불러오는 중…</p>;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+    <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
       <ProfileFields value={profile} onChange={update} />
-      <div className="space-y-3">
+      {/* 미리보기 카드 + 저장 버튼을 한 덩어리로 sticky — 카드만 sticky 면 스크롤 시 저장 버튼이
+          카드 위로 겹쳐 보이던 버그를 막는다. */}
+      <div className="space-y-3 lg:sticky lg:top-20 lg:self-start">
         <ProfilePreview profile={profile} />
         <Button onClick={save} disabled={saving} className="w-full">
           {saving ? "저장 중…" : "저장"}
