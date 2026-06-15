@@ -1,5 +1,6 @@
-import { Check } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import type { JobVisa } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 // 표시단에서 자주 나오는 HTML 엔티티만 디코드(SSR이라 DOM 미사용). 그 외는 원형 유지.
 const NAMED_ENTITIES: Record<string, string> = {
@@ -31,24 +32,36 @@ export function cleanEvidence(raw: string): string {
     .trim();
 }
 
+// 비자 근거를 큰 박스 대신 제목 영역의 칩 아래 '한 줄'로 압축한다.
+// register_verified(정부 명부 대조)면 골드 강조, 그 외 근거는 중립 톤(과장 금지).
 export function VisaEvidence({ visa }: { visa?: JobVisa }) {
   const evidence = (visa?.evidence ?? [])
     .map(cleanEvidence)
     .filter((e) => /[\p{L}\p{N}]/u.test(e)); // 태그만 있던 항목은 빈 값이 되어 제거
-  if (evidence.length === 0 && !visa?.register_verified) return null;
+  const verified = !!visa?.register_verified;
+  if (evidence.length === 0 && !verified) return null;
   return (
-    <div className="rounded-xl border border-success/30 bg-success/5 p-3">
-      {visa?.register_verified && (
-        <span className="mb-2 inline-block rounded-full bg-success/15 px-2 py-0.5 text-caption font-semibold text-success">명부검증</span>
+    <div
+      className={cn(
+        "flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border px-3 py-2 text-body-sm",
+        verified ? "border-verified/25 bg-verified/10" : "border-border bg-surface-2",
       )}
-      <ul className="space-y-1.5">
-        {evidence.map((e, i) => (
-          <li key={i} className="flex items-start gap-1.5 text-body-sm text-foreground">
-            <Check className="mt-0.5 h-4 w-4 shrink-0 text-success" aria-hidden="true" />
-            <span>{e}</span>
-          </li>
-        ))}
-      </ul>
+    >
+      <span
+        className={cn(
+          "inline-flex shrink-0 items-center gap-1.5 font-semibold",
+          verified ? "text-verified" : "text-muted-foreground",
+        )}
+      >
+        <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
+        {verified ? "정부 명부 검증" : "비자 근거"}
+      </span>
+      {evidence.length > 0 && (
+        <>
+          <span className="text-muted-foreground" aria-hidden="true">—</span>
+          <span className="text-foreground/80">{evidence.join(" · ")}</span>
+        </>
+      )}
     </div>
   );
 }
