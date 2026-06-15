@@ -53,7 +53,6 @@ export interface Job {
   remote?: JobRemote;
   salary?: JobSalary;
   seniority?: string | null;
-  first_seen_at?: string;
 }
 
 export interface JobDetail {
