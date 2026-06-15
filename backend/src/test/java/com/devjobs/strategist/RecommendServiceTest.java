@@ -165,6 +165,6 @@ class RecommendServiceTest {
 
     private static JobDto dto(String id) {
         return new JobDto(id, id, null, new CompanyDto("co-" + id, "Co " + id, List.of()),
-            null, null, null, null, null, null, null, null, null, null, null, null, null, null);
+            null, null, null, null, null, null, null, null, null, null, null, null, null);
     }
 }

@@ -211,22 +211,6 @@ public class JobService {
         return new JobListResponse(items, safePage, safeSize, total, computeFacets());
     }
 
-    /** 최근 스크랩(수집) 공고 — viable 만, first_seen_at 내림차순. 검색 필터와 무관한 전용 피드. */
-    @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public JobListResponse recentScraped(int page, int pageSize) {
-        int safePage = Math.max(1, page);
-        int safeSize = Math.min(Math.max(1, pageSize), MAX_PAGE_SIZE);
-        int offset = (safePage - 1) * safeSize;
-
-        List<String> ids = repository.recentScrapedIds(safeSize, offset);
-        long total = repository.countRecentScraped();
-
-        Map<String, JobEntity> byId = new HashMap<>();
-        for (JobEntity j : repository.findAllById(ids)) byId.put(j.getId(), j);
-        List<JobDto> items = ids.stream().map(byId::get).filter(Objects::nonNull).map(this::toDto).toList();
-        return new JobListResponse(items, safePage, safeSize, total, computeFacets());
-    }
-
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public long countMatchesSince(com.devjobs.search.SavedSearchParams p, java.time.OffsetDateTime since) {
         MappedQuery m = mapQuery(p.q(), p.visa(), p.location(), p.remote(), p.discipline(),
@@ -381,8 +365,7 @@ public class JobService {
             visa,
             remote,
             salary,
-            j.getSeniority(),
-            j.getFirstSeenAt());
+            j.getSeniority());
     }
 
     private String preview(String text) {

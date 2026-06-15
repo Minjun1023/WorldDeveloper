@@ -52,10 +52,6 @@ public class JobEntity {
     @Column(name = "closes_at")
     private OffsetDateTime closesAt;
 
-    // 우리가 이 공고를 처음 수집한 시각(INSERT 시 set, 재관측 시 불변) — "최근 스크랩" 정렬/표시용.
-    @Column(name = "first_seen_at")
-    private OffsetDateTime firstSeenAt;
-
     @JdbcTypeCode(SqlTypes.ARRAY)
     @Column(columnDefinition = "text[]")
     private List<String> tags;
@@ -118,7 +114,6 @@ public class JobEntity {
     public String getApplyUrl() { return applyUrl; }
     public OffsetDateTime getPostedAt() { return postedAt; }
     public OffsetDateTime getClosesAt() { return closesAt; }
-    public OffsetDateTime getFirstSeenAt() { return firstSeenAt; }
     public List<String> getTags() { return tags; }
     public Integer getSalaryMinUsd() { return salaryMinUsd; }
     public Integer getSalaryMaxUsd() { return salaryMaxUsd; }

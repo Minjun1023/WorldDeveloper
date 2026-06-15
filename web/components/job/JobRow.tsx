@@ -8,10 +8,8 @@ import { locationDisplayParts } from "@/lib/jobLocation";
 import type { Job } from "@/lib/types";
 
 // 검색 결과 행: 한 화면 스캔량 우선. 신호 배지 최대 1(명부검증 > 스폰서불가) + 마감임박, 태그 최대 3(sm+).
-// showScrapedAt=true(최근 스크랩 페이지): 우측을 게시일 대신 "수집 N일 전"(first_seen_at)으로.
-export function JobRow({ job, showScrapedAt = false }: { job: Job; showScrapedAt?: boolean }) {
+export function JobRow({ job }: { job: Job }) {
   const posted = postedRelativeLabel(job.posted_at);
-  const scraped = postedRelativeLabel(job.first_seen_at);
   const deadline = deadlineLabel(job.closes_at);
   const loc = locationDisplayParts(job).join(" · ");
   // 레벨(시니어리티): "senior" → "Senior". 검색 결과에서 한눈에 직급 파악.
@@ -67,17 +65,12 @@ export function JobRow({ job, showScrapedAt = false }: { job: Job; showScrapedAt
         )}
       </div>
 
-      {showScrapedAt && scraped ? (
-        <div className="flex shrink-0 items-center justify-end gap-1 text-caption text-muted-foreground">
-          <Clock className="h-3 w-3" aria-hidden="true" />
-          수집 {scraped}
-        </div>
-      ) : posted ? (
+      {posted && (
         <div className="flex shrink-0 items-center justify-end gap-1 text-caption text-muted-foreground">
           <Clock className="h-3 w-3" aria-hidden="true" />
           {posted}
         </div>
-      ) : null}
+      )}
     </Link>
   );
 }

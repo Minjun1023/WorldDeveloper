@@ -87,20 +87,6 @@ export async function fetchJobs(query: JobQuery = {}): Promise<JobsResult> {
   }
 }
 
-// 최근 스크랩(수집) 공고 피드 — viable·first_seen_at 내림차순(검색 필터 무관).
-export async function fetchRecentJobs(page = 1, pageSize = 20): Promise<JobsResult> {
-  const url = new URL(`${BACKEND_URL}/api/v1/jobs/recent`);
-  url.searchParams.set("page", String(page));
-  url.searchParams.set("page_size", String(pageSize));
-  try {
-    const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(5000) });
-    if (!res.ok) return { ok: false, error: `HTTP ${res.status}` };
-    return { ok: true, data: (await res.json()) as JobListResponse };
-  } catch (e) {
-    return { ok: false, error: e instanceof Error ? e.message : String(e) };
-  }
-}
-
 export type JobResult =
   | { ok: true; data: JobDetail }
   | { ok: false; error: string; status?: number };
