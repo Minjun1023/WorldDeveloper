@@ -39,7 +39,7 @@ export function BookmarksTabs({ loggedIn }: { loggedIn: boolean }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-5 overflow-x-auto border-b border-border" role="tablist">
+      <div className="flex gap-5 overflow-x-auto overflow-y-hidden border-b border-border" role="tablist">
         {TABS.map((t) => (
           <button
             key={t.key}
