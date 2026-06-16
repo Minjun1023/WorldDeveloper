@@ -1,7 +1,6 @@
 import Link from "next/link";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
-import { Badge } from "@/components/ui/badge";
 import { fetchCompanies } from "@/lib/api";
 import { COMPANY_LOCATIONS } from "@/lib/company-locations";
 import { companyProfile, flagEmoji } from "@/lib/company-profiles";
@@ -11,10 +10,12 @@ export const dynamic = "force-dynamic";
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 
-// 기업 디렉터리 — 직행 '기업' 페이지처럼 컬럼 리스트(기업 | 분야 | 지역 | 공고).
+// 기업 디렉터리 — 직행 '기업' 페이지처럼 컬럼 리스트(기업 | 분야 | 지역 | 채용중 공고).
+// 상단 분야(카테고리) 칩으로 탐색 — 실데이터 태그 기반(추정/조회수 없음).
 export default async function CompaniesPage({ searchParams }: { searchParams: SearchParams }) {
   const tag = typeof searchParams.tag === "string" ? searchParams.tag : undefined;
-  const data = await fetchCompanies(tag);
+  // 전체를 받아 분야 칩을 집계하고, 선택된 분야는 클라/서버 JS 필터로 좁힌다.
+  const data = await fetchCompanies();
 
   // 위치: 큐레이션 ?? 정적 스냅샷 ?? 백엔드 파생. 국기: ISO 우선, 없으면 위치 문자열 추론.
   // '내용 없는' 희소 기업은 디렉터리에서만 숨긴다(공고는 검색/추천에 남음).
@@ -32,17 +33,44 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
     const bare = !location && !hasTags && !description && c.job_count <= 1;
     return { c, location, flag, countryCode, bare };
   });
-  const visible = enriched.filter((e) => !e.bare);
+  const allVisible = enriched.filter((e) => !e.bare);
+
+  // 분야 칩: 노출 기업들의 태그를 빈도순으로 집계해 상위 12개. 선택 분야는 빠지면 앞에 끼운다.
+  const tagCounts = new Map<string, number>();
+  for (const e of allVisible) {
+    for (const t of e.c.tags ?? []) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+  }
+  const topTags = [...tagCounts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 12)
+    .map(([t]) => t);
+  const chipTags = tag && !topTags.includes(tag) ? [tag, ...topTags] : topTags;
+
+  // 선택된 분야로 좁히기(정확 일치).
+  const visible = tag ? allVisible.filter((e) => (e.c.tags ?? []).includes(tag)) : allVisible;
+
+  const chipBase =
+    "inline-flex items-center rounded-full border px-3 py-1 text-caption transition-colors";
+  const chipActive = "border-primary bg-primary text-primary-foreground";
+  const chipIdle = "border-border text-muted-foreground hover:border-primary hover:text-foreground";
 
   return (
     <div className="space-y-4">
-      {tag && (
-        <div className="flex items-center gap-2 text-body-sm">
-          <span className="text-muted-foreground">필터:</span>
-          <Badge variant="default">{tag}</Badge>
-          <Link href="/companies" className="text-primary hover:underline">
-            전체 보기
+      {/* 분야(카테고리) 칩 — 직행식 탐색 */}
+      {chipTags.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          <Link href="/companies" className={`${chipBase} ${tag ? chipIdle : chipActive}`}>
+            전체
           </Link>
+          {chipTags.map((t) => (
+            <Link
+              key={t}
+              href={`/companies?tag=${encodeURIComponent(t)}`}
+              className={`${chipBase} ${tag === t ? chipActive : chipIdle}`}
+            >
+              {t}
+            </Link>
+          ))}
         </div>
       )}
 
@@ -67,7 +95,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
               <span className="flex-1">기업</span>
               <span className="hidden w-44 shrink-0 lg:block">분야</span>
               <span className="hidden w-28 shrink-0 sm:block">지역</span>
-              <span className="w-16 shrink-0 text-right">공고</span>
+              <span className="w-20 shrink-0 whitespace-nowrap text-right">채용중 공고</span>
             </div>
 
             {visible.map((e, i) => {
@@ -112,8 +140,8 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                     )}
                     <span className="truncate">{location ?? countryCode ?? "-"}</span>
                   </div>
-                  {/* 공고 수 */}
-                  <div className="w-16 shrink-0 text-right text-body-sm">
+                  {/* 채용중 공고 수 */}
+                  <div className="w-20 shrink-0 text-right text-body-sm">
                     <span className="font-semibold text-foreground">{c.job_count}</span>
                     <span className="text-caption text-muted-foreground">개</span>
                   </div>
