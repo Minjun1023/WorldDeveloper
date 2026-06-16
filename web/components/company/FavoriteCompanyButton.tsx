@@ -6,11 +6,11 @@ import { useEffect, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-// 관심 기업(즐겨찾기) 토글 — 회사 상세 히어로용 라벨 버튼(별).
+// 관심 기업(즐겨찾기) 토글 — 회사 상세 히어로용 별 아이콘 버튼(라벨 없이 아이콘만).
 // 기존 /api/me/favorite-companies PUT/DELETE 재사용. 초기 상태는 목록 1회 조회로 동기화.
-// 낙관적 토글 + 실패 시 롤백. 로그아웃 시 로그인 유도 링크.
-const PILL =
-  "inline-flex items-center gap-1.5 rounded-md border px-3 py-2 text-body-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+// 낙관적 토글 + 실패 시 롤백. 로그아웃 시 로그인 유도 링크. 의미는 aria-label/title 로 제공.
+const ICON_BTN =
+  "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function FavoriteCompanyButton({
   slug,
@@ -41,11 +41,11 @@ export function FavoriteCompanyButton({
     return (
       <Link
         href={`/signin?callbackUrl=${encodeURIComponent(`/companies/${slug}`)}`}
+        aria-label="관심 기업"
         title="관심 기업으로 저장하려면 로그인하세요"
-        className={cn(PILL, "border-border text-foreground hover:bg-accent", className)}
+        className={cn(ICON_BTN, "border-border text-foreground hover:bg-accent", className)}
       >
-        <Star className="h-4 w-4" aria-hidden="true" />
-        관심 기업
+        <Star className="h-5 w-5" aria-hidden="true" />
       </Link>
     );
   }
@@ -68,15 +68,15 @@ export function FavoriteCompanyButton({
       type="button"
       onClick={toggle}
       aria-pressed={fav}
+      aria-label={fav ? "관심 기업 해제" : "관심 기업으로 저장"}
       title={fav ? "관심 기업 해제" : "관심 기업으로 저장"}
       className={cn(
-        PILL,
+        ICON_BTN,
         fav ? "border-primary/40 bg-primary/5 text-primary" : "border-border text-foreground hover:bg-accent",
         className,
       )}
     >
-      <Star className={cn("h-4 w-4", fav && "fill-current")} aria-hidden="true" />
-      {fav ? "관심 기업" : "관심 기업 추가"}
+      <Star className={cn("h-5 w-5", fav && "fill-current")} aria-hidden="true" />
     </button>
   );
 }

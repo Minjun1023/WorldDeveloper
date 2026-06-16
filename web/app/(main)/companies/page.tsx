@@ -32,7 +32,9 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
     const flag = iso ? flagEmoji(iso) : "";
     const countryCode = profile?.countryLabel ?? iso?.toUpperCase();
     const bare = !location && !hasTags && !description && c.job_count <= 1;
-    return { c, location, flag, countryCode, bare };
+    // 행에 표시할 한 줄 소개는 큐레이션 설명만(태그 기반 폴백은 분야 컬럼과 중복이라 제외).
+    const blurb = profile?.description ?? null;
+    return { c, location, flag, countryCode, bare, blurb };
   });
   const allVisible = enriched.filter((e) => !e.bare);
 
@@ -103,7 +105,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
             </div>
 
             {visible.map((e, i) => {
-              const { c, location, flag, countryCode } = e;
+              const { c, location, flag, countryCode, blurb } = e;
               return (
                 <Link
                   key={c.slug}
@@ -117,6 +119,12 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                     <span className="block truncate font-semibold text-foreground group-hover:text-primary">
                       {c.display_name}
                     </span>
+                    {/* 큐레이션 한 줄 소개 (있는 회사만) — 데스크톱에서 이름 아래로 */}
+                    {blurb && (
+                      <span className="mt-0.5 hidden truncate text-caption text-muted-foreground sm:block">
+                        {blurb}
+                      </span>
+                    )}
                     {/* 모바일: 지역을 이름 아래로 */}
                     {location && (
                       <span className="mt-0.5 block truncate text-caption text-muted-foreground sm:hidden">

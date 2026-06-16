@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Globe, Menu } from "lucide-react";
+import { Bookmark, ChevronDown, Globe, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -154,8 +154,16 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
           </nav>
         </div>
 
-        {/* 우측: 테마 + 계정/CTA */}
+        {/* 우측: 북마크 + 테마 + 계정/CTA */}
         <div className="flex items-center gap-2">
+          <Link
+            href="/bookmarks"
+            aria-label="북마크"
+            title="저장한 공고·최근 본 공고"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-foreground transition-colors hover:bg-accent"
+          >
+            <Bookmark className="h-4 w-4" aria-hidden="true" />
+          </Link>
           <ThemeToggle />
           <div className="hidden items-center gap-2 md:flex">
             <AccountMenu loggedIn={loggedIn} />
