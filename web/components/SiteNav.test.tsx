@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
 vi.mock("@/components/auth/AccountMenu", () => ({ AccountMenu: () => null }));
-vi.mock("@/components/NotificationBell", () => ({ NotificationBell: () => null }));
 vi.mock("@/components/theme-toggle", () => ({ ThemeToggle: () => null }));
 
 import { SiteNav } from "@/components/SiteNav";

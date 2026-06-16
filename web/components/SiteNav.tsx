@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { AccountMenu } from "@/components/auth/AccountMenu";
-import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
@@ -157,7 +156,6 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
 
         {/* 우측: 테마 + 계정/CTA */}
         <div className="flex items-center gap-2">
-          {loggedIn && <NotificationBell />}
           <ThemeToggle />
           <div className="hidden items-center gap-2 md:flex">
             <AccountMenu loggedIn={loggedIn} />
