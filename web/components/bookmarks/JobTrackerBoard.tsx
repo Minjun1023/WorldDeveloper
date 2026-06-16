@@ -96,9 +96,9 @@ export function JobTrackerBoard() {
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <div className="flex gap-3 overflow-x-auto pb-2">
+      <div className="flex min-h-[28rem] gap-3 overflow-x-auto pb-2">
         {/* 북마크 공고 풀 (드래그 소스) */}
-        <div className="w-60 shrink-0">
+        <div className="w-56 shrink-0">
           <div className="mb-2 px-1 text-body-sm font-semibold">
             북마크 공고 <span className="text-primary">{poolJobs.length}개</span>
           </div>
@@ -136,7 +136,7 @@ function ColumnDrop({ col, jobs }: { col: Column; jobs: Job[] }) {
     <div
       ref={setNodeRef}
       className={cn(
-        "flex w-60 shrink-0 flex-col rounded-xl border border-border p-2",
+        "flex min-w-[12rem] flex-1 flex-col rounded-xl border border-border p-2",
         col.tint,
         isOver && "ring-2 ring-primary",
       )}
@@ -145,7 +145,7 @@ function ColumnDrop({ col, jobs }: { col: Column; jobs: Job[] }) {
         {col.label}
         <span className="rounded-full bg-foreground/10 px-1.5 text-caption tabular-nums">{jobs.length}</span>
       </div>
-      <div className="min-h-[140px] flex-1 space-y-2">
+      <div className="flex-1 space-y-2">
         {jobs.map((j) => (
           <JobChip key={j.id} job={j} />
         ))}
