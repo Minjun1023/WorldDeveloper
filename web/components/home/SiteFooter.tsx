@@ -47,7 +47,7 @@ export function SiteFooter() {
           {/* 브랜드 */}
           <div>
             <Link href="/" className="flex items-center gap-2">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-sm">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
                 <GlobeMark />
               </span>
               <span className="text-lg font-bold tracking-tight text-foreground">

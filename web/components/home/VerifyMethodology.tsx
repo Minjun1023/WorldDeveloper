@@ -27,7 +27,7 @@ export function VerifyMethodology() {
   return (
     <div className="grid gap-4 sm:grid-cols-3">
       {STEPS.map((s) => (
-        <div key={s.n} className="flex flex-col rounded-2xl border border-border bg-surface p-6 shadow-sm">
+        <div key={s.n} className="flex flex-col rounded-lg border border-border bg-surface p-6">
           <div className="flex items-center justify-between">
             <span
               className="flex h-10 w-10 items-center justify-center rounded-xl text-primary"

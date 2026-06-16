@@ -28,7 +28,7 @@ export function HeroStats({ stats, compact = false }: { stats: HomeStats; compac
       {items.map((i) => (
         <div
           key={i.label}
-          className="rounded-xl border border-border bg-surface px-6 py-5 text-left shadow-sm"
+          className="rounded-xl border border-border bg-surface px-6 py-5 text-left"
         >
           <div className="text-[1.75rem] font-bold leading-none tabular-nums text-foreground">
             <CountUp value={i.value} />

@@ -28,7 +28,7 @@ function Section({
 }) {
   return (
     <section id={id} className={cn(muted && "section-muted")}>
-      <div className="mx-auto max-w-container px-4 py-16 sm:py-24">{children}</div>
+      <div className="mx-auto max-w-container px-4 py-12 sm:py-16">{children}</div>
     </section>
   );
 }

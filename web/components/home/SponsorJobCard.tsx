@@ -18,7 +18,7 @@ export function SponsorJobCard({ job }: { job: Job }) {
 
   return (
     <Link href={`/jobs/${encodeURIComponent(job.id)}`} className="group block h-full">
-      <Card className="flex h-full flex-col rounded-xl p-5 transition-all hover:border-primary/40 hover:shadow-md">
+      <Card className="flex h-full flex-col rounded-lg p-5 transition-colors hover:border-primary/40">
         {/* 헤더: 로고 + 제목/회사(+명부검증) + 게시일 */}
         <div className="flex items-start gap-3">
           <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={40} />

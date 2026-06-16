@@ -17,7 +17,7 @@ export function HeroVisual({
   if (companies.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
+    <div className="rounded-lg border border-border bg-surface p-5">
       <div className="flex items-center gap-1.5 text-caption font-semibold text-primary">
         <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
         정부 명부로 검증된 회사
