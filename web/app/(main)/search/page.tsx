@@ -2,11 +2,9 @@ import { JobRow } from "@/components/job/JobRow";
 import { FilterSidebar } from "@/components/search/FilterSidebar";
 import { Pagination } from "@/components/search/Pagination";
 import { RecentSearches } from "@/components/search/RecentSearches";
-import { SaveSearchButton } from "@/components/search/SaveSearchButton";
 import { SearchBar } from "@/components/search/SearchBar";
 import { SortToggle } from "@/components/search/SortToggle";
 import { fetchJobs, fetchRegions } from "@/lib/api";
-import { getSession } from "@/lib/session-server";
 
 export const dynamic = "force-dynamic";
 
@@ -36,21 +34,13 @@ export default async function SearchPage({
   const minSalary = Number(searchParams.min_salary) || undefined;
   const complete = searchParams.complete === "true";
 
-  const [result, regions, session] = await Promise.all([
+  const [result, regions] = await Promise.all([
     fetchJobs({ q, visa, location, region, remote, sort, discipline, track, verifiedOnly, minSalary, complete, page, pageSize: PAGE_SIZE }),
     fetchRegions(),
-    getSession(),
   ]);
 
   return (
     <div className="space-y-6">
-      <section>
-        <h1 className="text-h1">공고 검색</h1>
-        <p className="mt-1.5 text-body-sm text-muted-foreground">
-          키워드로 해외 개발 공고를 찾고, 왼쪽 필터로 지역·비자·연봉을 좁혀보세요.
-        </p>
-      </section>
-
       <section className="space-y-3">
         <SearchBar />
         <RecentSearches />
@@ -68,14 +58,7 @@ export default async function SearchPage({
             ) : (
               <span />
             )}
-            <div className="flex flex-wrap items-center gap-2">
-              <SaveSearchButton
-                loggedIn={!!session}
-                label={[q, region, visa === "sponsors" ? "스폰서" : null].filter(Boolean).join(" · ") || "전체 공고"}
-                params={{ q, visa, location, region, remote: remote || undefined, sort, discipline, track }}
-              />
-              <SortToggle />
-            </div>
+            <SortToggle />
           </div>
 
           {!result.ok ? (
