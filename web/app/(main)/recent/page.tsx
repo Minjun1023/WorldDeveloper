@@ -16,13 +16,8 @@ export default function RecentPage() {
 
   return (
     <div className="space-y-8">
-      <section className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-display">최근 본 공고</h1>
-          <p className="mt-2 text-muted-foreground">
-            상세를 열어본 공고를 이 기기에 기록해 다시 찾기 쉽게 모았어요.
-          </p>
-        </div>
+      <section className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-h2">최근 본 공고</h1>
         {jobs && jobs.length > 0 && (
           <button
             type="button"

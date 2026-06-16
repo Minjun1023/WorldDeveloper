@@ -10,13 +10,6 @@ export default async function RecommendPage() {
 
   return (
     <div className="space-y-8">
-      <section>
-        <h1 className="text-display">맞춤 추천</h1>
-        <p className="mt-2 text-muted-foreground">
-          프로필(기술스택·경력·선호 조건)을 기반으로 6차원 점수(스택·비자·지역·레벨·연봉·의미)로 추천해요.
-        </p>
-      </section>
-
       {session ? (
         <MemberRecommend />
       ) : (
