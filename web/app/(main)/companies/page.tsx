@@ -54,9 +54,16 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
 
   return (
     <div className="space-y-4">
-      {/* 분야(카테고리) 드롭다운 — 실데이터 태그 기반 탐색 */}
+      {/* 분야 필터 — 작은 화면 폴백(헤더가 숨는 lg 미만). lg+ 는 헤더 '분야' 컬럼에 위치. */}
       {tagOptions.length > 0 && (
-        <CompanyTagFilter options={tagOptions} selected={tag ?? null} />
+        <div className="lg:hidden">
+          <CompanyTagFilter
+            options={tagOptions}
+            selected={tag ?? null}
+            placeholder="전체 분야"
+            variant="input"
+          />
+        </div>
       )}
 
       {!data ? (
@@ -78,7 +85,19 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
             <div className="hidden items-center gap-3 border-b border-border bg-surface-2 px-4 py-2.5 text-caption font-medium text-muted-foreground md:flex">
               <span className="h-9 w-9 shrink-0" aria-hidden="true" />
               <span className="flex-1">기업</span>
-              <span className="hidden w-44 shrink-0 lg:block">분야</span>
+              {/* 분야 컬럼 헤더 = 분야 필터(드롭다운). 헤더 자리에서 바로 거르기. */}
+              <div className="hidden w-44 shrink-0 lg:block">
+                {tagOptions.length > 0 ? (
+                  <CompanyTagFilter
+                    options={tagOptions}
+                    selected={tag ?? null}
+                    placeholder="분야"
+                    variant="header"
+                  />
+                ) : (
+                  <span>분야</span>
+                )}
+              </div>
               <span className="hidden w-28 shrink-0 sm:block">지역</span>
               <span className="w-20 shrink-0 whitespace-nowrap text-right">채용중 공고</span>
             </div>
