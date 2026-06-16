@@ -153,12 +153,9 @@ export default async function HomePage() {
 
       {/* FAQ (연회색) */}
       <Section muted id="faq">
-        <div className="mb-8 text-center">
-          <div className="mb-1 text-caption font-semibold uppercase tracking-wide text-primary">
-            FAQ
-          </div>
-          <h2 className="text-h1">자주 묻는 질문</h2>
-          <p className="mx-auto mt-2 max-w-xl text-body-sm text-muted-foreground">
+        <div className="mb-6 text-center">
+          <h2 className="text-h2">자주 묻는 질문</h2>
+          <p className="mx-auto mt-1.5 max-w-xl text-body-sm text-muted-foreground">
             비자 분류 기준과 6차원 점수에 대한 궁금증을 풀어드려요.
           </p>
         </div>
