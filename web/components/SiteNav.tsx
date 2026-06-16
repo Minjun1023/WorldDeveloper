@@ -1,6 +1,6 @@
 "use client";
 
-import { Globe, Menu } from "lucide-react";
+import { ChevronDown, Globe, Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -10,20 +10,94 @@ import { NotificationBell } from "@/components/NotificationBell";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { cn } from "@/lib/utils";
 
-// 전역 헤더. 직무(discipline) 스위처는 헤더에 두되, 비자 트랙(이주/원격/둘다)은 랜딩 히어로와
-// /search 필터에 있으므로 헤더에는 두지 않는다. "이력서 코치"는 로그인 시 동작(게스트는 로그인 유도).
-const NAV_LINKS = [
+// 전역 헤더. 공고를 찾는 동선(검색·추천·회사)은 "채용" 드롭다운으로 묶고,
+// 커뮤니티·이력서 코치는 최상위에 둔다. "최근 본 공고"는 개인 열람 이력이라
+// 로그인 계정 메뉴(내 활동)에 두고, 모바일 메뉴/랜딩에서는 게스트도 접근 가능하다.
+const JOBS_ITEMS = [
   { href: "/search", label: "검색" },
-  { href: "/recent", label: "최근 본 공고" },
   { href: "/recommend", label: "추천" },
   { href: "/companies", label: "회사" },
+];
+
+const TOP_LINKS = [
   { href: "/community", label: "커뮤니티" },
   { href: "/me/coach", label: "이력서 코치" },
 ];
 
+const RECENT_LINK = { href: "/recent", label: "최근 본 공고" };
+
 function useIsActive() {
   const pathname = usePathname();
   return (href: string) => pathname === href || pathname.startsWith(href + "/");
+}
+
+// 데스크톱 "채용" 드롭다운: 클릭 토글 + 바깥클릭/Esc 닫힘. 하위 항목이 활성이면 채용도 활성 표시.
+function JobsDropdown({ isActive }: { isActive: (href: string) => boolean }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const groupActive = JOBS_ITEMS.some((l) => isActive(l.href));
+
+  useEffect(() => {
+    if (!open) return;
+    function onDown(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className={cn(
+          "flex items-center gap-1 transition-colors",
+          groupActive || open ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
+        )}
+      >
+        채용
+        <ChevronDown
+          className={cn("h-3.5 w-3.5 transition-transform", open && "rotate-180")}
+          aria-hidden="true"
+        />
+      </button>
+      {open && (
+        <div
+          role="menu"
+          className="absolute left-0 mt-2 w-40 rounded-lg border border-border bg-surface p-1 shadow-lg"
+        >
+          {JOBS_ITEMS.map((l) => {
+            const active = isActive(l.href);
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                role="menuitem"
+                aria-current={active ? "page" : undefined}
+                onClick={() => setOpen(false)}
+                className={cn(
+                  "block rounded-md px-3 py-2 text-body-sm hover:bg-muted",
+                  active ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {l.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
@@ -61,7 +135,8 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
             </span>
           </Link>
           <nav className="hidden items-center gap-4 text-[13px] md:flex">
-            {NAV_LINKS.map((l) => {
+            <JobsDropdown isActive={isActive} />
+            {TOP_LINKS.map((l) => {
               const active = isActive(l.href);
               return (
                 <Link
@@ -115,7 +190,30 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
                 role="menu"
                 className="absolute right-0 mt-2 w-56 rounded-lg border border-border bg-surface p-2 shadow-lg"
               >
-                {NAV_LINKS.map((l) => {
+                <p className="px-3 pb-1 pt-1 text-caption font-medium uppercase tracking-wide text-muted-foreground">
+                  채용
+                </p>
+                {JOBS_ITEMS.map((l) => {
+                  const active = isActive(l.href);
+                  return (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      role="menuitem"
+                      aria-current={active ? "page" : undefined}
+                      onClick={() => setOpen(false)}
+                      className={cn(
+                        "block rounded-md py-2 pl-5 pr-3 text-body-sm hover:bg-muted",
+                        active ? "font-medium text-foreground" : "text-muted-foreground hover:text-foreground",
+                      )}
+                    >
+                      {l.label}
+                    </Link>
+                  );
+                })}
+
+                <div className="my-1.5 border-t border-border" />
+                {[...TOP_LINKS, RECENT_LINK].map((l) => {
                   const active = isActive(l.href);
                   return (
                     <Link
