@@ -9,7 +9,7 @@ vi.mock("@/components/theme-toggle", () => ({ ThemeToggle: () => null }));
 import { SiteNav } from "@/components/SiteNav";
 
 describe("SiteNav 채용 드롭다운", () => {
-  it("채용 트리거를 누르면 검색·추천·회사가 나타난다", () => {
+  it("채용 트리거를 누르면 검색·추천·기업이 나타난다", () => {
     render(<SiteNav loggedIn={false} />);
 
     // 닫힌 상태에서는 하위 항목이 아직 렌더되지 않는다
@@ -23,7 +23,7 @@ describe("SiteNav 채용 드롭다운", () => {
     expect(trigger).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("menuitem", { name: "검색" })).toHaveAttribute("href", "/search");
     expect(screen.getByRole("menuitem", { name: "추천" })).toHaveAttribute("href", "/recommend");
-    expect(screen.getByRole("menuitem", { name: "회사" })).toHaveAttribute("href", "/companies");
+    expect(screen.getByRole("menuitem", { name: "기업" })).toHaveAttribute("href", "/companies");
   });
 
   it("커뮤니티·이력서 코치는 최상위 링크로 항상 보인다", () => {
