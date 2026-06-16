@@ -32,7 +32,7 @@ export function HeroSearch({ regions = [] }: { regions?: RegionCount[] }) {
   return (
     <form
       onSubmit={submit}
-      className="mt-8 flex max-w-2xl flex-col items-stretch gap-2 rounded-2xl border border-border bg-surface p-2.5 text-left shadow-lg sm:flex-row sm:items-center"
+      className="mt-8 flex max-w-2xl flex-col items-stretch gap-2 rounded-lg border border-border bg-surface p-2.5 text-left sm:flex-row sm:items-center"
     >
       <div className="flex flex-1 items-center gap-2 px-1.5">
         <Search className="h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />

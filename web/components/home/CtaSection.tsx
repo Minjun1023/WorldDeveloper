@@ -9,7 +9,7 @@ export function CtaSection({ loggedIn = false }: { loggedIn?: boolean }) {
 
   return (
     <section
-      className="bg-brand-gradient relative overflow-hidden rounded-3xl px-7 py-12 sm:px-12 sm:py-14"
+      className="bg-brand-gradient relative overflow-hidden rounded-xl px-7 py-12 sm:px-12 sm:py-14"
     >
       {/* 은은한 격자 패턴 */}
       <div
@@ -39,13 +39,13 @@ export function CtaSection({ loggedIn = false }: { loggedIn?: boolean }) {
         <div className="flex shrink-0 flex-col gap-3 sm:flex-row lg:flex-col xl:flex-row">
           <Link
             href={primaryHref}
-            className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-white px-5 py-3 text-body-sm font-semibold text-primary transition-opacity hover:opacity-90"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md bg-white px-5 py-3 text-body-sm font-semibold text-primary transition-opacity hover:opacity-90"
           >
             {primaryLabel}
           </Link>
           <Link
             href="/recommend"
-            className="inline-flex items-center justify-center rounded-xl border border-white/40 bg-white/10 px-5 py-3 text-body-sm font-medium text-white transition-colors hover:bg-white/20"
+            className="inline-flex items-center justify-center rounded-md border border-white/40 bg-white/10 px-5 py-3 text-body-sm font-medium text-white transition-colors hover:bg-white/20"
           >
             샘플 추천 보기
           </Link>

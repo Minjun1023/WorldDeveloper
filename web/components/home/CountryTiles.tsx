@@ -16,7 +16,7 @@ export function CountryTiles({ regions, limit }: { regions: RegionCount[]; limit
           <Link
             key={c.value}
             href={`/search?region=${c.value}`}
-            className="group flex items-center justify-between gap-2 rounded-xl border border-border bg-surface p-4 shadow-sm transition-all hover:border-primary/40 hover:shadow-md"
+            className="group flex items-center justify-between gap-2 rounded-xl border border-border bg-surface p-4 transition-all hover:border-primary/40"
           >
             <div className="flex min-w-0 items-center gap-2.5">
               {flag && (

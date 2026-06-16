@@ -20,17 +20,8 @@ export function Hero({
   loggedIn?: boolean;
 }) {
   return (
-    <section className="relative">
-      {/* 좌상단 은은한 브랜드 틴트 (자체 박스에 한정되어 overflow-hidden 없이도 새지 않음) */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-[420px] opacity-70"
-        style={{
-          background:
-            "radial-gradient(50% 70% at 18% -10%, color-mix(in srgb, var(--primary) 10%, transparent), transparent 70%)",
-        }}
-      />
-      <div className="relative mx-auto max-w-container px-4 py-16 sm:py-24">
+    <section className="relative border-b border-border">
+      <div className="relative mx-auto max-w-container px-4 py-12 sm:py-16">
         <div className="grid items-center gap-10 lg:grid-cols-[1fr_360px]">
           {/* 좌: 콘텐츠 */}
           <div className="min-w-0">
@@ -59,13 +50,13 @@ export function Hero({
             <div className="mt-4 flex flex-wrap items-center gap-3">
               <Link
                 href={loggedIn ? "/recommend" : "/signup"}
-                className="inline-flex items-center justify-center rounded-xl bg-primary px-5 py-3 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-3 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
                 프로필 작성하러가기
               </Link>
               <Link
                 href="/search"
-                className="inline-flex items-center justify-center rounded-xl border border-border bg-surface px-5 py-3 text-body-sm font-medium text-foreground transition-colors hover:bg-accent"
+                className="inline-flex items-center justify-center rounded-md border border-border bg-surface px-5 py-3 text-body-sm font-medium text-foreground transition-colors hover:bg-accent"
               >
                 공고 둘러보기
               </Link>

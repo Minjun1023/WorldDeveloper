@@ -14,7 +14,7 @@ export function CompanySpotlight({ companies }: { companies: CompanySummary[] })
         const blurb = companyProfile(c.slug)?.description;
         return (
           <Link key={c.slug} href={`/companies/${c.slug}`} className="group block h-full">
-            <Card className="flex h-full flex-col rounded-xl p-5 transition-all hover:border-primary/40 hover:shadow-md">
+            <Card className="flex h-full flex-col rounded-xl p-5 transition-all hover:border-primary/40">
               <div className="flex items-start justify-between">
                 <CompanyLogo slug={c.slug} name={c.display_name} size={52} />
                 {c.verified && (

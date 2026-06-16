@@ -79,10 +79,10 @@
   background-color: var(--primary);
 }
 .hero-gradient {
-  background: linear-gradient(180deg, #f7f9fc 0%, #ffffff 100%);
+  background: var(--background);
 }
 .dark .hero-gradient {
-  background: #111418;
+  background: var(--background);
 }
 
 /* 랜딩 전폭 섹션의 교차 배경. <section> 단위로 깔고, 안쪽에 max-w 컨테이너를 둔다. */
