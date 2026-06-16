@@ -9,6 +9,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import { Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -90,32 +91,35 @@ export function JobTrackerBoard() {
       .catch(() => setStatusByJob((s) => ({ ...s, [jobId]: prev })));
   }
 
+  function removeBookmark(jobId: string) {
+    setJobs((js) => (js ? js.filter((j) => j.id !== jobId) : js)); // 낙관적
+    fetch(`/api/me/saved/${encodeURIComponent(jobId)}`, { method: "DELETE" }).catch(() => {});
+  }
+
   if (jobs === null) return <p className="text-body-sm text-muted-foreground">불러오는 중…</p>;
 
   const poolJobs = jobs.filter((j) => columnKeyForStatus(statusByJob[j.id]) === POOL);
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <div className="flex min-h-[28rem] gap-3 overflow-x-auto pb-2">
+      {/* 뷰포트 높이를 채우고(전체 크기), 가로는 항상 맞춰(슬라이드 없음) 카드만 컬럼 내부 스크롤. */}
+      <div className="flex h-[calc(100vh-17rem)] gap-2 overflow-x-auto sm:gap-3 md:overflow-x-hidden">
         {/* 북마크 공고 풀 (드래그 소스) */}
-        <div className="w-56 shrink-0">
+        <div className="flex w-52 shrink-0 flex-col">
           <div className="mb-2 px-1 text-body-sm font-semibold">
             북마크 공고 <span className="text-primary">{poolJobs.length}개</span>
           </div>
-          {poolJobs.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border p-5 text-center">
-              <p className="text-caption text-muted-foreground">관심 있는 공고부터 하나씩 담아보세요</p>
-              <Link href="/search" className="mt-2 inline-block text-caption font-medium text-primary">
-                공고 보기 →
-              </Link>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {poolJobs.map((j) => (
-                <JobChip key={j.id} job={j} />
-              ))}
-            </div>
-          )}
+          <div className="flex-1 space-y-2 overflow-y-auto pr-0.5">
+            <Link
+              href="/search"
+              className="flex items-center justify-center gap-1 rounded-lg border border-dashed border-border py-2.5 text-caption font-medium text-muted-foreground transition-colors hover:border-primary/50 hover:text-primary"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" /> 공고 추가
+            </Link>
+            {poolJobs.map((j) => (
+              <JobChip key={j.id} job={j} onRemove={removeBookmark} />
+            ))}
+          </div>
         </div>
 
         {COLUMNS.map((col) => (
@@ -123,6 +127,7 @@ export function JobTrackerBoard() {
             key={col.key}
             col={col}
             jobs={jobs.filter((j) => columnKeyForStatus(statusByJob[j.id]) === col.key)}
+            onRemove={removeBookmark}
           />
         ))}
       </div>
@@ -130,13 +135,21 @@ export function JobTrackerBoard() {
   );
 }
 
-function ColumnDrop({ col, jobs }: { col: Column; jobs: Job[] }) {
+function ColumnDrop({
+  col,
+  jobs,
+  onRemove,
+}: {
+  col: Column;
+  jobs: Job[];
+  onRemove: (jobId: string) => void;
+}) {
   const { setNodeRef, isOver } = useDroppable({ id: col.key });
   return (
     <div
       ref={setNodeRef}
       className={cn(
-        "flex min-w-[12rem] flex-1 flex-col rounded-xl border border-border p-2",
+        "flex min-w-[14rem] flex-1 flex-col rounded-xl border border-border p-2 md:min-w-0",
         col.tint,
         isOver && "ring-2 ring-primary",
       )}
@@ -145,16 +158,16 @@ function ColumnDrop({ col, jobs }: { col: Column; jobs: Job[] }) {
         {col.label}
         <span className="rounded-full bg-foreground/10 px-1.5 text-caption tabular-nums">{jobs.length}</span>
       </div>
-      <div className="flex-1 space-y-2">
+      <div className="flex-1 space-y-2 overflow-y-auto pr-0.5">
         {jobs.map((j) => (
-          <JobChip key={j.id} job={j} />
+          <JobChip key={j.id} job={j} onRemove={onRemove} />
         ))}
       </div>
     </div>
   );
 }
 
-function JobChip({ job }: { job: Job }) {
+function JobChip({ job, onRemove }: { job: Job; onRemove: (jobId: string) => void }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: job.id });
   const style = transform
     ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 50 }
@@ -166,11 +179,24 @@ function JobChip({ job }: { job: Job }) {
       {...listeners}
       {...attributes}
       className={cn(
-        "cursor-grab touch-none rounded-lg border border-border bg-surface p-3 active:cursor-grabbing",
+        "group relative cursor-grab touch-none rounded-lg border border-border bg-surface p-3 active:cursor-grabbing",
         isDragging && "opacity-60 shadow-lg ring-2 ring-primary",
       )}
     >
-      <div className="flex items-center gap-2">
+      <button
+        type="button"
+        aria-label="북마크에서 삭제"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          onRemove(job.id);
+        }}
+        className="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-destructive focus-visible:opacity-100 group-hover:opacity-100"
+      >
+        <X className="h-3.5 w-3.5" aria-hidden="true" />
+      </button>
+      <div className="flex items-center gap-2 pr-5">
         <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={28} />
         <div className="min-w-0">
           <div className="truncate text-body-sm font-semibold text-foreground">{job.title_ko ?? job.title}</div>
