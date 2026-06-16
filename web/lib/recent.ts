@@ -1,5 +1,5 @@
 // 최근 본 공고 / 최근 검색어 — 클라이언트 localStorage 기반(로그인 불필요, 기기 로컬).
-// 저장 검색(서버·알림)과 별개: 이쪽은 즉시 동작하는 편의 기능.
+// 즉시 동작하는 편의 기능(서버 저장 없음).
 
 const JOBS_KEY = "recentJobs";
 const SEARCHES_KEY = "recentSearches";

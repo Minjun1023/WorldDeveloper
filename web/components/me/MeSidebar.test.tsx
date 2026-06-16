@@ -6,17 +6,16 @@ vi.mock("next/navigation", () => ({ usePathname: () => "/me/profile" }));
 import { MeSidebar } from "@/components/me/MeSidebar";
 
 describe("MeSidebar", () => {
-  it("renders 5 items and marks the active route", () => {
+  it("renders 4 items and marks the active route", () => {
     render(<MeSidebar />);
-    expect(screen.getAllByRole("link")).toHaveLength(5);
+    expect(screen.getAllByRole("link")).toHaveLength(4);
     expect(screen.getByRole("link", { name: /프로필/ })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("link", { name: /저장한 공고/ })).not.toHaveAttribute("aria-current");
-    expect(screen.getByRole("link", { name: /저장 검색/ })).not.toHaveAttribute("aria-current");
   });
 
   it("순서가 헤더 계정 드롭다운(AccountMenu)과 동일하다", () => {
     render(<MeSidebar />);
     const hrefs = screen.getAllByRole("link").map((a) => a.getAttribute("href"));
-    expect(hrefs).toEqual(["/me/profile", "/me/applications", "/me/saved", "/me/searches", "/me/coach"]);
+    expect(hrefs).toEqual(["/me/profile", "/me/applications", "/me/saved", "/me/coach"]);
   });
 });
