@@ -16,18 +16,18 @@ export function SectionHeader({
   subtitle?: string;
 }) {
   return (
-    <div className="mb-6">
+    <div className="mb-5">
       <div className="flex items-end justify-between gap-4">
         <div className="min-w-0">
           {overline && (
-            <div className="mb-1.5 text-caption font-semibold uppercase tracking-wide text-primary">
+            <div className="mb-1 text-caption font-medium text-muted-foreground">
               {overline}
             </div>
           )}
-          <h2 className="flex items-baseline gap-2 text-h1">
+          <h2 className="flex items-baseline gap-2 text-h2">
             {title}
             {count !== undefined && count > 0 && (
-              <span className="text-h3 font-normal text-muted-foreground">
+              <span className="text-body font-semibold text-primary">
                 {count.toLocaleString()}
               </span>
             )}
@@ -36,13 +36,13 @@ export function SectionHeader({
         {href && (
           <Link
             href={href}
-            className="group flex shrink-0 items-center gap-1 text-body-sm font-medium text-foreground transition-colors hover:text-primary"
+            className="group flex shrink-0 items-center gap-1 text-body-sm font-medium text-muted-foreground transition-colors hover:text-primary"
           >
             {hrefLabel}
           </Link>
         )}
       </div>
-      {subtitle && <p className="mt-2 text-body-sm text-muted-foreground">{subtitle}</p>}
+      {subtitle && <p className="mt-1.5 text-body-sm text-muted-foreground">{subtitle}</p>}
     </div>
   );
 }

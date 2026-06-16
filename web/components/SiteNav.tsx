@@ -1,8 +1,8 @@
 "use client";
 
-import { Globe, Menu } from "lucide-react";
+import { Globe, Menu, Search } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
 import { AccountMenu } from "@/components/auth/AccountMenu";
@@ -28,8 +28,16 @@ function useIsActive() {
 
 export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
   const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const isActive = useIsActive();
+  const router = useRouter();
+
+  function onSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const term = q.trim();
+    router.push(term ? `/search?q=${encodeURIComponent(term)}` : "/search");
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -53,14 +61,14 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
         {/* 좌측: 로고 + 데스크톱 링크 */}
         <div className="flex items-center gap-7">
           <Link href="/" className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white shadow-sm">
-              <Globe className="h-[18px] w-[18px]" aria-hidden="true" />
+            <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-white">
+              <Globe className="h-[16px] w-[16px]" aria-hidden="true" />
             </span>
-            <span className="text-lg font-bold tracking-tight text-foreground">
+            <span className="text-base font-bold tracking-tight text-foreground">
               World<span className="text-primary">Dev</span>
             </span>
           </Link>
-          <nav className="hidden items-center gap-5 text-body-sm md:flex">
+          <nav className="hidden items-center gap-4 text-[13px] md:flex">
             {NAV_LINKS.map((l) => {
               const active = isActive(l.href);
               return (
@@ -80,8 +88,21 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
           </nav>
         </div>
 
-        {/* 우측: 테마 + 계정/CTA */}
+        {/* 우측: 검색 + 테마 + 계정/CTA */}
         <div className="flex items-center gap-2">
+          {/* 직행식 네비 검색 — 데스크톱(lg+)에서 노출, 제출 시 /search 로 */}
+          <form onSubmit={onSearch} className="hidden lg:block">
+            <div className="flex h-9 items-center gap-1.5 rounded-md border border-border bg-surface-2 px-3 focus-within:border-primary">
+              <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <input
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                placeholder="공고·회사 검색"
+                aria-label="공고 검색"
+                className="w-40 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground focus:outline-none"
+              />
+            </div>
+          </form>
           {loggedIn && <NotificationBell />}
           <ThemeToggle />
           <div className="hidden items-center gap-2 md:flex">
@@ -89,7 +110,7 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
             {!loggedIn && (
               <Link
                 href="/signup"
-                className="rounded-lg bg-primary px-4 py-2 text-body-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                className="rounded-md bg-primary px-4 py-2 text-[13px] font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
                 시작하기
               </Link>
