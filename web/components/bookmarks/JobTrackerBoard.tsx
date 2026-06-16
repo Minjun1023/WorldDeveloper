@@ -103,7 +103,7 @@ export function JobTrackerBoard() {
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
       {/* 뷰포트 높이를 채우고(전체 크기), 가로는 항상 맞춰(슬라이드 없음) 카드만 컬럼 내부 스크롤. */}
-      <div className="flex h-[calc(100vh-17rem)] gap-2 overflow-x-auto sm:gap-3 md:overflow-x-hidden">
+      <div className="flex h-[calc(100vh-17rem)] gap-2 overflow-x-auto overflow-y-hidden sm:gap-3 md:overflow-x-hidden">
         {/* 북마크 공고 풀 (드래그 소스) */}
         <div className="flex w-52 shrink-0 flex-col">
           <div className="mb-2 px-1 text-body-sm font-semibold">
