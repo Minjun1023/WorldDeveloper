@@ -43,11 +43,11 @@ export default async function SearchPage({
   ]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <section>
-        <h1 className="text-display">한국 개발자의 해외 채용 공고</h1>
-        <p className="mt-2 text-muted-foreground">
-          유럽 진출 — 비자 스폰서십 명시 공고 + 6차원 점수 추천.
+        <h1 className="text-h1">공고 검색</h1>
+        <p className="mt-1.5 text-body-sm text-muted-foreground">
+          키워드로 해외 개발 공고를 찾고, 왼쪽 필터로 지역·비자·연봉을 좁혀보세요.
         </p>
       </section>
 
