@@ -1,4 +1,4 @@
-import { Briefcase, DollarSign, MapPin, ShieldCheck, TrendingUp } from "lucide-react";
+import { Briefcase, MapPin, TrendingUp } from "lucide-react";
 import type { ComponentType } from "react";
 
 import { compactLocation } from "@/lib/jobLocation";
@@ -22,7 +22,7 @@ function experienceText(years?: number | null, seniority?: string | null): strin
 }
 
 type Chip = {
-  icon: ComponentType<{ className?: string }>;
+  icon?: ComponentType<{ className?: string }>;
   text: string;
   tone?: "visa" | "salary";
 };
@@ -35,11 +35,11 @@ export function JobFactCards({ job }: { job: JobDetail }) {
   const salaryText = formatSalary(job.salary); // 급여 명시 시에만 칩 추가(미명시면 생략).
 
   const chips: Chip[] = [
-    { icon: ShieldCheck, text: `비자 ${visaText}`, tone: isSponsor ? "visa" : undefined },
+    { text: `비자 ${visaText}`, tone: isSponsor ? "visa" : undefined },
     { icon: MapPin, text: compactLocation(job) || "위치 미표기" },
     { icon: TrendingUp, text: experienceText(job.experience_years, job.seniority) },
     { icon: Briefcase, text: job.employment_type ? (EMP_LABEL[job.employment_type] ?? job.employment_type) : "고용형태 미표기" },
-    ...(salaryText ? [{ icon: DollarSign, text: salaryText, tone: "salary" as const }] : []),
+    ...(salaryText ? [{ text: salaryText, tone: "salary" as const }] : []),
   ];
 
   return (
@@ -54,12 +54,14 @@ export function JobFactCards({ job }: { job: JobDetail }) {
             !c.tone && "border-border bg-surface text-foreground",
           )}
         >
-          <c.icon
-            className={cn(
-              "h-4 w-4 shrink-0",
-              c.tone === "visa" ? "text-success" : c.tone === "salary" ? "text-primary" : "text-muted-foreground",
-            )}
-          />
+          {c.icon && (
+            <c.icon
+              className={cn(
+                "h-4 w-4 shrink-0",
+                c.tone === "visa" ? "text-success" : c.tone === "salary" ? "text-primary" : "text-muted-foreground",
+              )}
+            />
+          )}
           {c.text}
         </span>
       ))}
