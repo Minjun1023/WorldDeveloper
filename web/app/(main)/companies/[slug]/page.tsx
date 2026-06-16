@@ -4,10 +4,12 @@ import { notFound } from "next/navigation";
 import { CompanyInfo } from "@/components/company/CompanyInfo";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { CompanyStats } from "@/components/company/CompanyStats";
+import { FavoriteCompanyButton } from "@/components/company/FavoriteCompanyButton";
 import { JobCard } from "@/components/job/JobCard";
 import { RegisterVerifiedBadge } from "@/components/job/RegisterVerifiedBadge";
 import { Badge } from "@/components/ui/badge";
 import { fetchCompany } from "@/lib/api";
+import { getSession } from "@/lib/session-server";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +18,7 @@ function cleanUrl(url: string): string {
 }
 
 export default async function CompanyDetailPage({ params }: { params: { slug: string } }) {
-  const data = await fetchCompany(params.slug);
+  const [data, session] = await Promise.all([fetchCompany(params.slug), getSession()]);
   if (!data) notFound();
 
   const { company, jobs } = data;
@@ -66,6 +68,8 @@ export default async function CompanyDetailPage({ params }: { params: { slug: st
               </div>
             )}
           </div>
+
+          <FavoriteCompanyButton slug={company.slug} loggedIn={!!session} className="shrink-0" />
         </div>
       </header>
 
