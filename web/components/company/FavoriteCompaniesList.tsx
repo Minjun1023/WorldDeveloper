@@ -13,7 +13,7 @@ type FavCompany = {
   location?: string | null;
 };
 
-// 관심 기업 목록(/me/saved 섹션) — /api/me/favorite-companies 의 회사 요약을 행으로.
+// 관심 기업 목록(/bookmarks/companies) — /api/me/favorite-companies 의 회사 요약을 행으로.
 export function FavoriteCompaniesList() {
   const [items, setItems] = useState<FavCompany[] | null>(null);
 

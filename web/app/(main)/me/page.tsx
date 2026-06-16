@@ -1,20 +1,16 @@
 "use client";
 
-import { Bookmark, ListChecks, User } from "lucide-react";
+import { ListChecks, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
-type Counts = { saved: number | null; applications: number | null };
+type Counts = { applications: number | null };
 
 // 내 활동 허브: 기존 /api/me/* 를 병렬 조회(베스트 에포트 — 실패 시 카운트만 숨김, 링크는 항상 동작).
 export default function MeHomePage() {
-  const [c, setC] = useState<Counts>({ saved: null, applications: null });
+  const [c, setC] = useState<Counts>({ applications: null });
 
   useEffect(() => {
-    fetch("/api/me/interactions")
-      .then((r) => (r.ok ? r.json() : null))
-      .then((d) => Array.isArray(d?.saved) && setC((x) => ({ ...x, saved: d.saved.length })))
-      .catch(() => {});
     fetch("/api/me/applications")
       .then((r) => (r.ok ? r.json() : null))
       .then((d) => Array.isArray(d?.items) && setC((x) => ({ ...x, applications: d.items.length })))
@@ -22,10 +18,8 @@ export default function MeHomePage() {
   }, []);
 
   const cards = [
-    { href: "/me/saved", icon: Bookmark, title: "저장한 공고", desc: "다시 볼 공고 모음",
-      count: c.saved, badge: null as string | null },
     { href: "/me/applications", icon: ListChecks, title: "지원 현황", desc: "지원한 공고 진행 상태",
-      count: c.applications, badge: null },
+      count: c.applications, badge: null as string | null },
     { href: "/me/profile", icon: User, title: "프로필", desc: "추천 정확도를 높이는 기본 정보",
       count: null, badge: null },
   ];
@@ -34,7 +28,7 @@ export default function MeHomePage() {
     <div className="space-y-5">
       <div>
         <h1 className="text-h2">내 활동</h1>
-        <p className="mt-1 text-body-sm text-muted-foreground">저장한 공고·지원 현황을 한눈에 확인하세요.</p>
+        <p className="mt-1 text-body-sm text-muted-foreground">지원 현황과 프로필을 한눈에 확인하세요.</p>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2">
