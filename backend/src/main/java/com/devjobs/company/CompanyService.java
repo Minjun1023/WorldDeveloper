@@ -4,6 +4,7 @@ import com.devjobs.company.dto.CompanyDtos.CompanyDetail;
 import com.devjobs.company.dto.CompanyDtos.CompanyListResponse;
 import com.devjobs.company.dto.CompanyDtos.CompanySummary;
 import com.devjobs.domain.CompanyEntity;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -63,6 +64,40 @@ public class CompanyService {
         }).toList();
 
         return new CompanyListResponse(items.size(), items);
+    }
+
+    /**
+     * 관심 기업(즐겨찾기) 요약 — 주어진 slug 순서(최신 즐겨찾기순)를 유지해 반환.
+     * 활성 공고가 있는 회사는 디렉터리와 동일 요약(공고수·verified·태그·위치)을 쓰고,
+     * 활성 공고가 0건인 즐겨찾기도 회사 기본 정보(이름·태그)로 표시한다(jobCount 0).
+     * 회사 레코드 자체가 없으면(삭제) 건너뛴다.
+     */
+    public List<CompanySummary> favorites(List<String> slugs) {
+        if (slugs == null || slugs.isEmpty()) return List.of();
+        Map<String, CompanySummary> active = list(null).items().stream()
+            .collect(Collectors.toMap(CompanySummary::slug, s -> s, (a, b) -> a));
+        Map<String, CompanyEntity> entities = repository.findAllById(slugs).stream()
+            .collect(Collectors.toMap(CompanyEntity::getSlug, c -> c));
+        List<CompanySummary> out = new ArrayList<>();
+        for (String slug : slugs) {
+            CompanySummary s = active.get(slug);
+            if (s != null) {
+                out.add(s);
+                continue;
+            }
+            CompanyEntity c = entities.get(slug);
+            if (c != null) {
+                out.add(new CompanySummary(
+                    slug,
+                    c.getDisplayName(),
+                    c.getTags() != null ? c.getTags() : List.of(),
+                    0,
+                    c.getWebsiteUrl(),
+                    false,
+                    null));
+            }
+        }
+        return out;
     }
 
     public Optional<CompanyDetail> detail(String slug) {
