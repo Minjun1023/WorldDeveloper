@@ -81,7 +81,7 @@ export function AccountMenu({ loggedIn }: { loggedIn: boolean }) {
             최근 본 공고
           </Link>
           <Link
-            href="/me/coach"
+            href="/coach"
             role="menuitem"
             onClick={() => setOpen(false)}
             className="block rounded-md px-3 py-2 text-body-sm hover:bg-muted"

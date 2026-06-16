@@ -9,7 +9,7 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
       { label: "공고 검색", href: "/search" },
       { label: "맞춤 추천", href: "/recommend" },
       { label: "기업 디렉터리", href: "/companies" },
-      { label: "이력서 코치", href: "/me/coach" },
+      { label: "이력서 코치", href: "/coach" },
     ],
   },
   {

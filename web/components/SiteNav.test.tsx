@@ -28,6 +28,6 @@ describe("SiteNav 채용 드롭다운", () => {
   it("커뮤니티·이력서 코치는 최상위 링크로 항상 보인다", () => {
     render(<SiteNav loggedIn={false} />);
     expect(screen.getByRole("link", { name: "커뮤니티" })).toHaveAttribute("href", "/community");
-    expect(screen.getByRole("link", { name: "이력서 코치" })).toHaveAttribute("href", "/me/coach");
+    expect(screen.getByRole("link", { name: "이력서 코치" })).toHaveAttribute("href", "/coach");
   });
 });
