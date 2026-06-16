@@ -2,7 +2,6 @@ import { Clock } from "lucide-react";
 import Link from "next/link";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
-import { RegisterVerifiedBadge } from "@/components/job/RegisterVerifiedBadge";
 import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
 import { locationDisplayParts } from "@/lib/jobLocation";
 import type { Job } from "@/lib/types";
@@ -18,23 +17,21 @@ export function JobRow({ job }: { job: Job }) {
   return (
     <Link
       href={`/jobs/${encodeURIComponent(job.id)}`}
-      className="group flex items-center gap-4 rounded-xl border border-border bg-surface px-4 py-4 shadow-sm transition-all hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-4 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={40} />
 
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
           <span className="truncate text-body font-bold text-foreground group-hover:text-primary">{job.title_ko ?? job.title}</span>
-          {job.visa?.register_verified ? (
-            <RegisterVerifiedBadge />
-          ) : job.visa?.status === "no_sponsor" ? (
+          {job.visa?.status === "no_sponsor" && (
             <span
               className="shrink-0 rounded-lg px-1.5 py-0.5 text-caption font-semibold text-destructive"
               style={{ backgroundColor: "color-mix(in srgb, var(--destructive) 10%, transparent)" }}
             >
               스폰서 불가
             </span>
-          ) : null}
+          )}
           {deadline.urgent && (
             <span
               className="shrink-0 rounded-lg px-1.5 py-0.5 text-caption font-semibold text-warning"

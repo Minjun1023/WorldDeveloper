@@ -8,7 +8,6 @@ import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
 import { formatSalary } from "@/lib/salary";
 import type { Job } from "@/lib/types";
 
-import { RegisterVerifiedBadge } from "./RegisterVerifiedBadge";
 import { RemoteBadge } from "./RemoteBadge";
 import { VisaBadge } from "./VisaBadge";
 
@@ -26,15 +25,11 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
     !hideVisaBadge && (job.visa?.status === "no_sponsor" || job.visa?.status === "unclear");
   const showRemote =
     job.remote?.eligibility === "worldwide" || job.remote?.eligibility === "apac_ok";
-  // 명부 검증 골드 마커는 비자 배지를 숨기는 맥락(홈 스폰서 섹션)에서도 표시 — 스폰서 사이에서
-  // "정부 명부 확인"을 구분해주는 신호이므로 중복이 아니다.
-  const showVerified = job.visa?.register_verified === true;
-  // 명부검증은 회사명 옆 인라인이라 배지 행 노출 조건에서 제외(빈 행 방지).
   const hasBadges = showVisa || showRemote;
 
   return (
     <Link href={`/jobs/${encodeURIComponent(job.id)}`} className="group block h-full">
-      <Card className="flex h-full flex-col rounded-xl p-5 transition-all hover:border-primary/40 hover:shadow-md">
+      <Card className="flex h-full flex-col rounded-lg p-5 transition-colors hover:border-primary/40">
         {/* 헤더: 로고 + 제목/회사·지역 + (마감 임박) */}
         <div className="flex items-start gap-3">
           <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={40} />
@@ -48,8 +43,6 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
             )}
             <p className="mt-1 flex min-w-0 items-center gap-1 text-body-sm text-muted-foreground">
               <span className="truncate">{job.company.display_name}</span>
-              {/* 명부검증 방패는 회사명 옆 인라인(별도 줄 차지 안 하게 — 카드 정렬·간결). */}
-              {showVerified && <RegisterVerifiedBadge />}
               {locText && (
                 <>
                   <span aria-hidden="true">·</span>

@@ -2,7 +2,6 @@ import { Clock } from "lucide-react";
 import Link from "next/link";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
-import { RegisterVerifiedBadge } from "@/components/job/RegisterVerifiedBadge";
 import { RemoteBadge } from "@/components/job/RemoteBadge";
 import { Card } from "@/components/ui/card";
 import { postedRelativeLabel } from "@/lib/jobDates";
@@ -14,7 +13,6 @@ export function SponsorJobCard({ job }: { job: Job }) {
   const salary = formatSalary(job.salary);
   const posted = postedRelativeLabel(job.posted_at);
   const locText = (job.location_ko ?? job.location) || (job.is_remote ? "원격" : null);
-  const verified = job.visa?.register_verified === true;
 
   return (
     <Link href={`/jobs/${encodeURIComponent(job.id)}`} className="group block h-full">
@@ -28,8 +26,6 @@ export function SponsorJobCard({ job }: { job: Job }) {
             </h3>
             <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-body-sm text-muted-foreground">
               <span className="truncate">{job.company.display_name}</span>
-              {/* 명부 검증은 골드 방패 아이콘만(텍스트 제거) — 의미는 title/aria-label 로 전달. */}
-              {verified && <RegisterVerifiedBadge />}
             </div>
           </div>
           {posted && (
