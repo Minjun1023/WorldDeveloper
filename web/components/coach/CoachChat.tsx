@@ -178,12 +178,8 @@ export function CoachChat({ initialJobs }: { initialJobs?: PickJob[] }) {
       {/* 페이지 헤더 */}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <div className="mb-2 inline-flex items-center gap-1.5 text-caption font-semibold uppercase tracking-wide text-primary">
-            <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-            AI 이력서 코치
-          </div>
-          <h1 className="text-h1">이력서 코치</h1>
-          <p className="mt-2 max-w-2xl text-body-sm text-muted-foreground">
+          <h1 className="text-h2">이력서 코치</h1>
+          <p className="mt-1.5 max-w-2xl text-body-sm text-muted-foreground">
             최근 본·저장한·추천받은 공고에 맞춰 이력서를 어떻게 고칠지 상담해드려요.
           </p>
         </div>

@@ -36,16 +36,15 @@ const HELPERS = [
 export default function CommunityPage() {
   return (
     <div className="space-y-10">
-      {/* 헤더 */}
+      {/* 헤더 — 라운지 이름은 고유 브랜드라 유지(중복 overline 제거, 제목 축소) */}
       <section>
-        <div className="text-caption font-semibold text-muted-foreground">커뮤니티</div>
-        <div className="mt-1.5 flex flex-wrap items-center gap-2.5">
-          <h1 className="text-display">해외취업 라운지</h1>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <h1 className="text-h1">해외취업 라운지</h1>
           <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-caption font-semibold text-primary">
             BETA
           </span>
         </div>
-        <p className="mt-2 max-w-xl text-body text-muted-foreground">
+        <p className="mt-1.5 max-w-xl text-body-sm text-muted-foreground">
           먼저 간 개발자들의 비자·면접·연봉·정착 경험을 나누는 공간이에요. 추정 없이, 겪은 사람의
           이야기로.
         </p>

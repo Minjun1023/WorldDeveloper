@@ -42,13 +42,6 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
 
   return (
     <div className="space-y-6">
-      <section>
-        <h1 className="text-display">회사 디렉터리</h1>
-        <p className="mt-2 text-muted-foreground">
-          공고가 있는 회사를 모아봤어요. 태그로 원하는 분야의 회사만 좁혀볼 수 있어요.
-        </p>
-      </section>
-
       {tag && (
         <div className="flex items-center gap-2 text-body-sm">
           <span className="text-muted-foreground">필터:</span>
