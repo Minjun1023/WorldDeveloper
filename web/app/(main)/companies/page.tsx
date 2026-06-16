@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { CompanyTagFilter } from "@/components/company/CompanyTagFilter";
 import { fetchCompanies } from "@/lib/api";
 import { COMPANY_LOCATIONS } from "@/lib/company-locations";
 import { companyProfile, flagEmoji } from "@/lib/company-profiles";
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 type SearchParams = { [key: string]: string | string[] | undefined };
 
 // 기업 디렉터리 — 직행 '기업' 페이지처럼 컬럼 리스트(기업 | 분야 | 지역 | 채용중 공고).
-// 상단 분야(카테고리) 칩으로 탐색 — 실데이터 태그 기반(추정/조회수 없음).
+// 상단 분야(카테고리) 드롭다운으로 탐색 — 실데이터 태그 기반(추정/조회수 없음).
 export default async function CompaniesPage({ searchParams }: { searchParams: SearchParams }) {
   const tag = typeof searchParams.tag === "string" ? searchParams.tag : undefined;
   // 전체를 받아 분야 칩을 집계하고, 선택된 분야는 클라/서버 JS 필터로 좁힌다.
@@ -35,43 +36,27 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
   });
   const allVisible = enriched.filter((e) => !e.bare);
 
-  // 분야 칩: 노출 기업들의 태그를 빈도순으로 집계해 상위 12개. 선택 분야는 빠지면 앞에 끼운다.
+  // 분야 옵션: 노출 기업들의 태그를 빈도순으로 집계(전부, 드롭다운은 스크롤). 카운트 동봉.
   const tagCounts = new Map<string, number>();
   for (const e of allVisible) {
     for (const t of e.c.tags ?? []) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
   }
-  const topTags = [...tagCounts.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 12)
-    .map(([t]) => t);
-  const chipTags = tag && !topTags.includes(tag) ? [tag, ...topTags] : topTags;
+  const tagOptions = [...tagCounts.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([value, count]) => ({ value, label: value, count }));
+  // 선택된 분야가 옵션에 없으면(0건 등) 표시되도록 끼워 넣는다.
+  if (tag && !tagOptions.some((o) => o.value === tag)) {
+    tagOptions.unshift({ value: tag, label: tag, count: 0 });
+  }
 
   // 선택된 분야로 좁히기(정확 일치).
   const visible = tag ? allVisible.filter((e) => (e.c.tags ?? []).includes(tag)) : allVisible;
 
-  const chipBase =
-    "inline-flex items-center rounded-full border px-3 py-1 text-caption transition-colors";
-  const chipActive = "border-primary bg-primary text-primary-foreground";
-  const chipIdle = "border-border text-muted-foreground hover:border-primary hover:text-foreground";
-
   return (
     <div className="space-y-4">
-      {/* 분야(카테고리) 칩 — 직행식 탐색 */}
-      {chipTags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          <Link href="/companies" className={`${chipBase} ${tag ? chipIdle : chipActive}`}>
-            전체
-          </Link>
-          {chipTags.map((t) => (
-            <Link
-              key={t}
-              href={`/companies?tag=${encodeURIComponent(t)}`}
-              className={`${chipBase} ${tag === t ? chipActive : chipIdle}`}
-            >
-              {t}
-            </Link>
-          ))}
-        </div>
+      {/* 분야(카테고리) 드롭다운 — 실데이터 태그 기반 탐색 */}
+      {tagOptions.length > 0 && (
+        <CompanyTagFilter options={tagOptions} selected={tag ?? null} />
       )}
 
       {!data ? (
