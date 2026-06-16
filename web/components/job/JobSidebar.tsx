@@ -3,7 +3,6 @@ import Link from "next/link";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { MatchScorePanel } from "@/components/job/MatchScorePanel";
-import { ResumeOptimizeSection } from "@/components/job/ResumeOptimizeSection";
 import { SaveJobButton } from "@/components/job/SaveJobButton";
 import { ShareButton } from "@/components/job/ShareButton";
 import { COMPANY_FACTS } from "@/lib/company-facts";
@@ -73,10 +72,6 @@ export function JobSidebar({ job, loggedIn, companyJobCount }: {
           <span className="text-caption font-medium text-primary">회사 페이지 보기 →</span>
         </div>
       </Link>
-
-      <div className="rounded-2xl border border-border bg-surface p-4">
-        <ResumeOptimizeSection jobId={job.id} />
-      </div>
     </div>
   );
 }

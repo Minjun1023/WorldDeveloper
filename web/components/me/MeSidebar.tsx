@@ -1,18 +1,17 @@
 "use client";
 
-import { Bookmark, FileText, ListChecks, User } from "lucide-react";
+import { Bookmark, ListChecks, User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
 // 순서는 헤더 계정 드롭다운(AccountMenu)과 동일하게 유지:
-// 프로필 → 지원 현황 → 저장한 공고 → 이력서 코치.
+// 프로필 → 지원 현황 → 저장한 공고. (이력서 코치는 /coach 독립 페이지로 분리됨)
 const ITEMS = [
   { href: "/me/profile", label: "프로필", icon: User },
   { href: "/me/applications", label: "지원 현황", icon: ListChecks },
   { href: "/me/saved", label: "저장한 공고", icon: Bookmark },
-  { href: "/me/coach", label: "이력서 코치", icon: FileText },
 ];
 
 export function MeSidebar() {

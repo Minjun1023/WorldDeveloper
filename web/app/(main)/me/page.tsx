@@ -1,6 +1,6 @@
 "use client";
 
-import { Bookmark, FileText, ListChecks, User } from "lucide-react";
+import { Bookmark, ListChecks, User } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -26,8 +26,6 @@ export default function MeHomePage() {
       count: c.saved, badge: null as string | null },
     { href: "/me/applications", icon: ListChecks, title: "지원 현황", desc: "지원한 공고 진행 상태",
       count: c.applications, badge: null },
-    { href: "/me/coach", icon: FileText, title: "이력서 코치", desc: "공고 기반 1:1 이력서 상담",
-      count: null, badge: null },
     { href: "/me/profile", icon: User, title: "프로필", desc: "추천 정확도를 높이는 기본 정보",
       count: null, badge: null },
   ];

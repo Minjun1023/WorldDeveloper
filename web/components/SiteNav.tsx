@@ -20,7 +20,7 @@ const JOBS_ITEMS = [
 
 const TOP_LINKS = [
   { href: "/community", label: "커뮤니티" },
-  { href: "/me/coach", label: "이력서 코치" },
+  { href: "/coach", label: "이력서 코치" },
 ];
 
 const RECENT_LINK = { href: "/recent", label: "최근 본 공고" };

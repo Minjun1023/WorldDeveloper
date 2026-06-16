@@ -26,7 +26,7 @@ const HELPERS = [
     desc: "명부 검증 회사와 직원 규모·업종 등 회사별 사실 정보를 봐요.",
   },
   {
-    href: "/me/coach",
+    href: "/coach",
     Icon: FileText,
     title: "이력서 코치",
     desc: "이 공고에 맞춰 이력서 키워드·강조 포인트를 상담받아요.",
