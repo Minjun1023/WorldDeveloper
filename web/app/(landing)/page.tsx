@@ -109,15 +109,15 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {/* 검증된 회사들 (흰색) */}
+      {/* 검증된 기업들 (흰색) */}
       {spotlight.length > 0 && (
         <Section>
           <SectionHeader
-            overline="회사 스포트라이트"
-            title="검증된 회사들"
+            overline="기업 스포트라이트"
+            title="검증된 기업들"
             href="/companies"
-            hrefLabel="모든 회사 보기"
-            subtitle="정부 명부 검증을 통과한 해외 테크 회사들이에요."
+            hrefLabel="모든 기업 보기"
+            subtitle="정부 명부 검증을 통과한 해외 테크 기업들이에요."
           />
           <CompanySpotlight companies={spotlight} />
         </Section>

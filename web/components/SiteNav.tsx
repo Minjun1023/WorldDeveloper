@@ -16,7 +16,7 @@ import { cn } from "@/lib/utils";
 const JOBS_ITEMS = [
   { href: "/search", label: "검색" },
   { href: "/recommend", label: "추천" },
-  { href: "/companies", label: "회사" },
+  { href: "/companies", label: "기업" },
 ];
 
 const TOP_LINKS = [
