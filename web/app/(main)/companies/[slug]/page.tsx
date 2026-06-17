@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { CompanyInfo } from "@/components/company/CompanyInfo";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { RelatedCommunity } from "@/components/community/RelatedCommunity";
 import { CompanyStats } from "@/components/company/CompanyStats";
 import { FavoriteCompanyButton } from "@/components/company/FavoriteCompanyButton";
 import { JobCard } from "@/components/job/JobCard";
@@ -97,6 +98,14 @@ export default async function CompanyDetailPage({ params }: { params: { slug: st
           </div>
         )}
       </section>
+
+      {/* 라운지 역노출 — 이 회사 관련 글 */}
+      <RelatedCommunity
+        filter={{ company: company.slug }}
+        writeParams={{ company: company.slug, category: "company" }}
+        title="이 회사 라운지 글"
+        writeLabel="후기·질문 쓰기"
+      />
     </div>
   );
 }

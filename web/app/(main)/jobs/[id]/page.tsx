@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { RelatedCommunity } from "@/components/community/RelatedCommunity";
 import { InterviewPrepSection } from "@/components/job/InterviewPrepSection";
 import { JobCard } from "@/components/job/JobCard";
 import { JobDescription } from "@/components/job/JobDescription";
@@ -106,6 +107,14 @@ export default async function JobDetailPage({ params }: { params: { id: string }
                 </div>
               </section>
             )}
+
+            {/* 라운지 역노출 — 이 회사/공고 관련 글 */}
+            <RelatedCommunity
+              filter={{ company: job.company.slug }}
+              writeParams={{ jobId: job.id, company: job.company.slug, category: "interview" }}
+              title="이 회사 관련 라운지 글"
+              writeLabel="면접·후기 쓰기"
+            />
           </article>
 
           <aside className="mt-6 lg:mt-0">

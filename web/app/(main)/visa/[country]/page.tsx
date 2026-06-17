@@ -2,6 +2,7 @@ import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { RelatedCommunity } from "@/components/community/RelatedCommunity";
 import { GUIDE_DISCLAIMER, VISA_GUIDES, getVisaGuide } from "@/lib/visa-guide";
 
 export function generateStaticParams() {
@@ -96,6 +97,14 @@ export default function VisaGuideCountryPage({ params }: { params: { country: st
           {g.country} 스폰서 공고 보기 →
         </Link>
       </div>
+
+      {/* 라운지 역노출 — 이 나라 비자 경험 */}
+      <RelatedCommunity
+        filter={{ country: g.slug }}
+        writeParams={{ country: g.slug, category: "visa" }}
+        title={`${g.country} 비자 경험`}
+        writeLabel="경험 공유하기"
+      />
     </article>
   );
 }
