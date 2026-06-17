@@ -1,0 +1,101 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
+import type { CommunityComment } from "@/lib/community";
+
+export function CommentSection({
+  postId,
+  initialComments,
+  loggedIn,
+}: {
+  postId: string;
+  initialComments: CommunityComment[];
+  loggedIn: boolean;
+}) {
+  const router = useRouter();
+  const [comments, setComments] = useState<CommunityComment[]>(initialComments);
+  const [body, setBody] = useState("");
+  const [anonymous, setAnonymous] = useState(false);
+  const [pending, setPending] = useState(false);
+
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!body.trim() || pending) return;
+    setPending(true);
+    try {
+      const res = await fetch(`/api/community/posts/${postId}/comments`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ body: body.trim(), anonymous }),
+      });
+      if (res.status === 401) {
+        router.push(`/signin?callbackUrl=/community/${postId}`);
+        return;
+      }
+      if (res.ok) {
+        const c = (await res.json()) as CommunityComment;
+        setComments((prev) => [...prev, c]);
+        setBody("");
+      }
+    } finally {
+      setPending(false);
+    }
+  }
+
+  return (
+    <section className="space-y-4">
+      <h2 className="text-h3">댓글 {comments.length}</h2>
+
+      <ul className="space-y-3">
+        {comments.length === 0 && (
+          <li className="text-body-sm text-muted-foreground">첫 댓글을 남겨보세요.</li>
+        )}
+        {comments.map((c) => (
+          <li key={c.id} className="rounded-lg border border-border bg-surface p-3.5">
+            <div className="mb-1 flex items-center gap-2 text-caption text-muted-foreground">
+              <span className="font-medium text-foreground">{c.author_handle}</span>
+              <span>·</span>
+              <span>{new Date(c.created_at).toLocaleDateString("ko-KR")}</span>
+            </div>
+            <p className="whitespace-pre-wrap text-body-sm text-foreground">{c.body}</p>
+          </li>
+        ))}
+      </ul>
+
+      {loggedIn ? (
+        <form onSubmit={submit} className="space-y-2 rounded-lg border border-border bg-surface p-3.5">
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={3}
+            placeholder="댓글을 입력하세요"
+            className="w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          <div className="flex items-center justify-between">
+            <label className="flex items-center gap-1.5 text-caption text-muted-foreground">
+              <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} className="h-3.5 w-3.5" />
+              익명
+            </label>
+            <button
+              type="submit"
+              disabled={!body.trim() || pending}
+              className="rounded-md bg-primary px-4 py-2 text-body-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
+            >
+              {pending ? "등록 중…" : "댓글 등록"}
+            </button>
+          </div>
+        </form>
+      ) : (
+        <p className="rounded-lg border border-border bg-surface-2 p-4 text-center text-body-sm text-muted-foreground">
+          <Link href={`/signin?callbackUrl=/community/${postId}`} className="font-medium text-primary hover:underline">
+            로그인
+          </Link>
+          하면 댓글을 남길 수 있어요.
+        </p>
+      )}
+    </section>
+  );
+}
