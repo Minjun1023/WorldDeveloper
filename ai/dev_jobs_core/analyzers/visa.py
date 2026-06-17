@@ -9,6 +9,7 @@
 description 전문을 보고 내리도록 evidence 도 함께 반환한다.
 """
 from __future__ import annotations
+
 import re
 
 # --- 명시적 거부 패턴 (가장 강한 시그널) ---

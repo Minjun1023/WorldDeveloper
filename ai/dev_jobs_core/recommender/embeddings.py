@@ -5,6 +5,7 @@
 - sentence-transformers 미설치 시 graceful fallback (semantic 점수 0)
 """
 from __future__ import annotations
+
 import logging
 import threading
 from functools import lru_cache

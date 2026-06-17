@@ -1,5 +1,6 @@
 """사용자 프로필 데이터 모델과 점수 가중치 정의."""
 from __future__ import annotations
+
 from dataclasses import dataclass, field
 
 
@@ -38,7 +39,7 @@ class ScoringWeights:
     salary: float = 0.10      # 연봉 만족도
     semantic: float = 0.10    # 임베딩 의미 유사도
 
-    def normalize(self) -> "ScoringWeights":
+    def normalize(self) -> ScoringWeights:
         total = self.stack + self.visa + self.location + self.seniority + self.salary + self.semantic
         if total == 0:
             return self

@@ -25,7 +25,9 @@ def test_to_posting_maps_fields():
     assert p.location == "London, United Kingdom"
     assert p.is_remote is False
     assert p.employment_type == "FULLTIME"
-    assert "Build distributed systems" in p.description
+    # description 은 구조 보존(원본 HTML 그대로) — 평문 추출은 transform/ETL 단계 담당.
+    assert "<b>distributed</b>" in p.description
+    assert "Build distributed systems" in wk._strip_html(p.description)
     assert p.posted_at == "2026-05-01"
     assert p.apply_url.endswith("/zego/j/ABC123/apply/")
 

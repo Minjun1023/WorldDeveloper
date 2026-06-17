@@ -4,8 +4,11 @@ RAPIDAPI_KEY 환경변수가 설정된 경우만 활성화된다.
 LinkedIn/Indeed/Glassdoor 등 메이저 사이트 커버.
 """
 from __future__ import annotations
+
 import os
+
 import httpx
+
 from ..models import JobPosting
 
 API_KEY = os.getenv("RAPIDAPI_KEY")

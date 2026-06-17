@@ -6,7 +6,9 @@ https://api.ashbyhq.com/posting-api/job-board/{org}?includeCompensation=true
 Linear, Vercel, Posthog, Ramp, Supabase 등 신생 유니콘 다수가 사용.
 """
 from __future__ import annotations
+
 import httpx
+
 from ..models import JobPosting
 from .greenhouse import _strip_html
 

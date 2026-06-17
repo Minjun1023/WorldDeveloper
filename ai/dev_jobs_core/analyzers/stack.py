@@ -4,6 +4,7 @@
 boundary 단위로 검색한다. 단순하지만 false positive 가 적다.
 """
 from __future__ import annotations
+
 import re
 
 # 자주 등장하는 기술 키워드 (대소문자 무시).

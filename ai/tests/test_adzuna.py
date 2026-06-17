@@ -1,6 +1,5 @@
 from dev_jobs_core.sources import adzuna
 
-
 SAMPLE = {
     "results": [
         {

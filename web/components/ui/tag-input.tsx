@@ -126,6 +126,7 @@ export function TagInput({
             autoComplete="off"
             role="combobox"
             aria-expanded={showMenu}
+            aria-controls={`${id}-listbox`}
             aria-autocomplete="list"
             className="min-w-[6rem] flex-1 bg-transparent px-1 text-body-sm focus-visible:outline-none"
           />
@@ -133,6 +134,7 @@ export function TagInput({
 
         {showMenu && (
           <ul
+            id={`${id}-listbox`}
             className="absolute left-0 right-0 top-[calc(100%+4px)] z-30 max-h-64 overflow-y-auto rounded-md border border-border bg-surface py-1 shadow-md"
             role="listbox"
           >

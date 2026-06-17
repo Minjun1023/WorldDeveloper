@@ -1,6 +1,7 @@
 """모든 데이터 소스가 공통으로 사용하는 데이터 모델."""
 from __future__ import annotations
-from dataclasses import dataclass, field, asdict
+
+from dataclasses import asdict, dataclass, field
 from typing import Any
 
 

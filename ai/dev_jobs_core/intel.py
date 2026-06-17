@@ -7,8 +7,11 @@
 향후 확장 여지: Glassdoor (스크래핑), 회사 엔지니어링 블로그 RSS, levels.fyi 등.
 """
 from __future__ import annotations
+
+from datetime import UTC, datetime, timedelta
+
 import httpx
-from datetime import datetime, timezone, timedelta
+
 from .registry import resolve as resolve_company
 
 HN_API = "https://hn.algolia.com/api/v1/search"
@@ -56,7 +59,7 @@ async def get_company_intel(company: str, months_back: int = 12) -> dict:
 
 async def _fetch_hn_mentions(company: str, months_back: int) -> dict:
     """HN Algolia API 로 최근 언급 조회."""
-    since = datetime.now(timezone.utc) - timedelta(days=months_back * 30)
+    since = datetime.now(UTC) - timedelta(days=months_back * 30)
     since_ts = int(since.timestamp())
 
     params = {
