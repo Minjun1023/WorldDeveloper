@@ -13,6 +13,7 @@ import com.devjobs.scout.dto.JobDtos.SalaryDto;
 import com.devjobs.scout.dto.JobDtos.VisaDto;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -104,10 +105,78 @@ public class JobService {
         new Region("portugal", "포르투갈", "portugal|lisbon|lisboa|porto"),
         new Region("sweden", "스웨덴", "sweden|stockholm|gothenburg|göteborg|malmö|malmo"),
         new Region("denmark", "덴마크", "denmark|copenhagen|københavn|kobenhavn|aarhus"),
-        new Region("italy", "이탈리아", "italy|milan|milano|rome|roma|turin|torino"),
+        new Region("italy", "이탈리아", "italy|milan|milano|rome|\\yroma\\y|turin|torino"),
         new Region("austria", "오스트리아", "austria|vienna|wien|graz"),
         new Region("czech", "체코", "czech|prague|praha|brno"),
         new Region("switzerland", "스위스", "switzerland|zurich|zürich|geneva|lausanne|basel"));
+
+    // 국가 → 주요 도시. key=지역 파라미터 값(URL), regex=location 매칭(원어/현지표기 별칭 포함).
+    // 건수 집계와 도시 선택 검색 모두 같은 regex 를 쓰므로 "표시 건수 == 검색 결과"가 일치한다.
+    // 일본은 현지 표기(東京 등)가 다수라 별칭이 없으면 도쿄가 크게 누락된다(146→361).
+    private record City(String key, String label, String regex) {}
+    private static final Map<String, List<City>> CITIES = Map.ofEntries(
+        Map.entry("us", List.of(
+            new City("san-francisco", "샌프란시스코", "san francisco"), new City("new-york", "뉴욕", "new york"),
+            new City("seattle", "시애틀", "seattle"), new City("austin", "오스틴", "austin"),
+            new City("boston", "보스턴", "boston"), new City("los-angeles", "로스앤젤레스", "los angeles"),
+            new City("palo-alto", "팔로알토", "palo alto"), new City("mountain-view", "마운틴뷰", "mountain view"),
+            new City("san-mateo", "샌머테이오", "san mateo"), new City("chicago", "시카고", "chicago"),
+            new City("denver", "덴버", "denver"))),
+        Map.entry("japan", List.of(
+            new City("tokyo", "도쿄", "tokyo|東京"), new City("osaka", "오사카", "osaka|大阪"),
+            // 京都(교토)는 東京都(도쿄도)의 부분문자열이라 행정구 접미사로 한정(오매칭 방지).
+            new City("kyoto", "교토", "kyoto|京都府|京都市"), new City("fukuoka", "후쿠오카", "fukuoka|福岡"),
+            new City("yokohama", "요코하마", "yokohama|横浜"), new City("nagoya", "나고야", "nagoya|名古屋"))),
+        Map.entry("germany", List.of(
+            new City("berlin", "베를린", "berlin"), new City("munich", "뮌헨", "munich|münchen"),
+            new City("hamburg", "함부르크", "hamburg"), new City("frankfurt", "프랑크푸르트", "frankfurt"),
+            new City("cologne", "쾰른", "cologne|köln"), new City("stuttgart", "슈투트가르트", "stuttgart"),
+            new City("dusseldorf", "뒤셀도르프", "düsseldorf|dusseldorf"))),
+        Map.entry("uk", List.of(
+            new City("london", "런던", "london"), new City("manchester", "맨체스터", "manchester"),
+            new City("edinburgh", "에든버러", "edinburgh"))),
+        Map.entry("netherlands", List.of(
+            new City("amsterdam", "암스테르담", "amsterdam"), new City("rotterdam", "로테르담", "rotterdam"),
+            new City("utrecht", "위트레흐트", "utrecht"), new City("eindhoven", "에인트호번", "eindhoven"))),
+        Map.entry("ireland", List.of(
+            new City("dublin", "더블린", "dublin"), new City("cork", "코크", "cork"))),
+        Map.entry("canada", List.of(
+            new City("toronto", "토론토", "toronto"), new City("vancouver", "밴쿠버", "vancouver"),
+            new City("montreal", "몬트리올", "montreal|montréal"), new City("ottawa", "오타와", "ottawa"),
+            new City("waterloo", "워털루", "waterloo"))),
+        Map.entry("france", List.of(
+            new City("paris", "파리", "paris"), new City("lyon", "리옹", "lyon"),
+            new City("toulouse", "툴루즈", "toulouse"))),
+        Map.entry("spain", List.of(
+            new City("madrid", "마드리드", "madrid"), new City("barcelona", "바르셀로나", "barcelona"),
+            new City("valencia", "발렌시아", "valencia"))),
+        Map.entry("poland", List.of(
+            new City("warsaw", "바르샤바", "warsaw|warszawa"), new City("krakow", "크라쿠프", "kraków|krakow"),
+            new City("wroclaw", "브로츠와프", "wrocław|wroclaw"), new City("gdansk", "그단스크", "gdańsk|gdansk"))),
+        Map.entry("portugal", List.of(
+            new City("lisbon", "리스본", "lisbon|lisboa"), new City("porto", "포르투", "porto"))),
+        Map.entry("sweden", List.of(
+            new City("stockholm", "스톡홀름", "stockholm"), new City("gothenburg", "예테보리", "gothenburg|göteborg"),
+            new City("malmo", "말뫼", "malmö|malmo"))),
+        Map.entry("denmark", List.of(
+            new City("copenhagen", "코펜하겐", "copenhagen|københavn|kobenhavn"),
+            new City("aarhus", "오르후스", "aarhus|århus"))),
+        Map.entry("italy", List.of(
+            // roma 는 Romania 의 부분문자열이라 단어경계(\y)로 한정.
+            new City("milan", "밀라노", "milan|milano"), new City("rome", "로마", "rome|\\yroma\\y"),
+            new City("turin", "토리노", "turin|torino"))),
+        Map.entry("austria", List.of(
+            new City("vienna", "빈", "vienna|wien"), new City("graz", "그라츠", "graz"))),
+        Map.entry("czech", List.of(
+            new City("prague", "프라하", "prague|praha"), new City("brno", "브르노", "brno"))),
+        Map.entry("switzerland", List.of(
+            new City("zurich", "취리히", "zurich|zürich"), new City("geneva", "제네바", "geneva|genève|geneve"),
+            new City("lausanne", "로잔", "lausanne"), new City("basel", "바젤", "basel"))));
+
+    // 도시 key → regex (지역 파라미터에서 도시 선택을 매칭하기 위한 평면 조회).
+    private static final Map<String, String> CITY_REGEX = CITIES.values().stream()
+        .flatMap(List::stream)
+        .collect(java.util.stream.Collectors.toMap(City::key, City::regex, (a, b) -> a));
 
     private final JobRepository repository;
 
@@ -122,6 +191,20 @@ public class JobService {
                 : repository.countActiveByLocationRegex(r.regex());
             return new RegionCount(r.key(), r.label(), count);
         }).toList();
+    }
+
+    // 특정 국가의 도시별 활성 공고 건수 — 건수 0인 도시는 제외(현재 공고에 있는 지역만 노출).
+    // 도시 선택 시 검색은 location 부분일치로 이동하므로 집계도 동일 부분일치로 맞춘다.
+    public List<RegionCount> cityCounts(String countryKey) {
+        List<City> cities = CITIES.get(countryKey);
+        if (cities == null) {
+            return List.of();
+        }
+        return cities.stream()
+            .map(c -> new RegionCount(c.key(), c.label(), repository.countActiveByLocationRegex(c.regex())))
+            .filter(rc -> rc.count() > 0)
+            .sorted(Comparator.comparingLong(RegionCount::count).reversed())
+            .toList();
     }
 
     // 기존 9-arg: 게이트 미적용(includeUnclear=true) 편의 오버로드 — 내부/테스트용.
@@ -153,8 +236,11 @@ public class JobService {
                 if (key.isEmpty()) continue;
                 validKeys++;
                 if ("remote".equals(key)) { hasRemote = true; continue; }
-                REGIONS.stream().filter(x -> x.key().equals(key)).findFirst()
-                    .map(Region::regex).filter(Objects::nonNull).ifPresent(regexes::add);
+                // 국가 key 면 국가 regex, 아니면 도시 key(예: tokyo) → 도시 regex(별칭 포함).
+                String rx = REGIONS.stream().filter(x -> x.key().equals(key)).findFirst()
+                    .map(Region::regex).filter(Objects::nonNull).orElse(null);
+                if (rx == null) rx = CITY_REGEX.get(key);
+                if (rx != null) regexes.add(rx);
             }
             if (!regexes.isEmpty()) {
                 regionRegex = String.join("|", regexes);
