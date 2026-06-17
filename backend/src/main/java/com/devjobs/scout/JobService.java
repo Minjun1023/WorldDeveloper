@@ -193,18 +193,35 @@ public class JobService {
         }).toList();
     }
 
-    // 특정 국가의 도시별 활성 공고 건수 — 건수 0인 도시는 제외(현재 공고에 있는 지역만 노출).
-    // 도시 선택 시 검색은 location 부분일치로 이동하므로 집계도 동일 부분일치로 맞춘다.
+    // 특정 국가의 도시별 활성 공고 건수. 파티션: 공고를 선언 순서(주요 도시 우선)의 첫 매칭 도시
+    // 1곳에만 배정 → 도시 합 + '그 외 지역' = 국가 전체와 정확히 일치(예 "Yokohama; Tokyo"는 도쿄로만).
+    // 어느 도시에도 안 잡히는 공고(국가 단위/원격/소도시)는 '그 외 지역'으로 묶는다. 건수 0은 제외.
     public List<RegionCount> cityCounts(String countryKey) {
         List<City> cities = CITIES.get(countryKey);
-        if (cities == null) {
+        String countryRegex = REGIONS.stream().filter(r -> r.key().equals(countryKey))
+            .findFirst().map(Region::regex).filter(Objects::nonNull).orElse(null);
+        if (cities == null || countryRegex == null) {
             return List.of();
         }
-        return cities.stream()
-            .map(c -> new RegionCount(c.key(), c.label(), repository.countActiveByLocationRegex(c.regex())))
-            .filter(rc -> rc.count() > 0)
-            .sorted(Comparator.comparingLong(RegionCount::count).reversed())
-            .toList();
+        List<RegionCount> rows = new ArrayList<>();
+        List<String> assigned = new ArrayList<>(); // 이미 배정된 상위 도시들 — 다음 도시 집계 시 제외
+        for (City c : cities) {
+            long n = assigned.isEmpty()
+                ? repository.countActiveByLocationRegex(c.regex())
+                : repository.countActiveByLocationRegexExcluding(c.regex(), String.join("|", assigned));
+            if (n > 0) {
+                rows.add(new RegionCount(c.key(), c.label(), n));
+            }
+            assigned.add(c.regex());
+        }
+        rows.sort(Comparator.comparingLong(RegionCount::count).reversed());
+        // '그 외 지역'은 "국가 ∖ 도시"라 단일 location 필터로 정확히 못 잡으므로 value 를 비워
+        // 프런트에서 비클릭 정보 행으로 표시(합계 표시는 하되 오해 소지 있는 이동은 막음).
+        long other = repository.countActiveByLocationRegexExcluding(countryRegex, String.join("|", assigned));
+        if (other > 0) {
+            rows.add(new RegionCount("", "그 외 지역", other));
+        }
+        return rows;
     }
 
     // 기존 9-arg: 게이트 미적용(includeUnclear=true) 편의 오버로드 — 내부/테스트용.

@@ -165,20 +165,31 @@ export function RegionPicker({
                   {loading && !activeCities ? (
                     <li className="px-3 py-3 text-caption text-muted-foreground">불러오는 중…</li>
                   ) : activeCities && activeCities.length > 0 ? (
-                    activeCities.map((ci) => (
-                      <li key={ci.value}>
-                        <button
-                          type="button"
-                          onClick={() => pickCity(ci, activeCountry)}
-                          className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-body-sm text-foreground hover:bg-accent"
+                    activeCities.map((ci) =>
+                      ci.value ? (
+                        <li key={ci.value}>
+                          <button
+                            type="button"
+                            onClick={() => pickCity(ci, activeCountry)}
+                            className="flex w-full items-center justify-between gap-2 px-3 py-1.5 text-body-sm text-foreground hover:bg-accent"
+                          >
+                            <span className="truncate">{ci.label}</span>
+                            <span className="shrink-0 text-caption text-muted-foreground">
+                              {ci.count.toLocaleString()}
+                            </span>
+                          </button>
+                        </li>
+                      ) : (
+                        // '그 외 지역' — 단일 필터로 정확히 못 잡아 비클릭(합계 표시용).
+                        <li
+                          key="__other__"
+                          className="flex items-center justify-between gap-2 px-3 py-1.5 text-caption text-muted-foreground"
                         >
                           <span className="truncate">{ci.label}</span>
-                          <span className="shrink-0 text-caption text-muted-foreground">
-                            {ci.count.toLocaleString()}
-                          </span>
-                        </button>
-                      </li>
-                    ))
+                          <span className="shrink-0">{ci.count.toLocaleString()}</span>
+                        </li>
+                      ),
+                    )
                   ) : (
                     <li className="px-3 py-3 text-caption text-muted-foreground">
                       도시 구분이 없어요. ‘{activeCountry.label} 전체’로 검색하세요.

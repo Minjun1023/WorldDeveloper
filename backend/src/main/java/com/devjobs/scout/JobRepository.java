@@ -231,4 +231,9 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
     @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug) AND location ~* CAST(:regex AS text)",
         nativeQuery = true)
     long countActiveByLocationRegex(@Param("regex") String regex);
+
+    // inc 에 매칭되고 exc 에는 매칭되지 않는 활성 공고 수(도시 파티션: 상위 도시에 이미 배정된 공고 제외).
+    @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug) AND location ~* CAST(:inc AS text) AND location !~* CAST(:exc AS text)",
+        nativeQuery = true)
+    long countActiveByLocationRegexExcluding(@Param("inc") String inc, @Param("exc") String exc);
 }
