@@ -42,6 +42,9 @@ public class UserProfileEntity {
     @Column
     private String bio;
 
+    @Column
+    private String handle;
+
     @Column(name = "updated_at")
     private OffsetDateTime updatedAt;
 
@@ -66,6 +69,8 @@ public class UserProfileEntity {
     public void setDesiredSalaryUsd(Integer v) { this.desiredSalaryUsd = v; }
     public String getBio() { return bio; }
     public void setBio(String v) { this.bio = v; }
+    public String getHandle() { return handle; }
+    public void setHandle(String v) { this.handle = v; }
     public OffsetDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(OffsetDateTime v) { this.updatedAt = v; }
 }
