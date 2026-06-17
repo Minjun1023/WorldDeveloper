@@ -30,6 +30,14 @@ export function postedRelativeLabel(posted_at?: string | null): string | null {
   return `${Math.floor(days / 365)}년 전`;
 }
 
+// 최근 본 공고 열람 시각 표기. postedRelativeLabel 재사용 + 자연스러운 어미.
+// "X 전 봄"은 어색해서 친화적 어미로. 예 "방금 봤어요", "4시간 전에 봤어요", "2일 전에 봤어요".
+export function viewedAgoLabel(ts: number): string {
+  const rel = postedRelativeLabel(new Date(ts).toISOString());
+  if (!rel) return "";
+  return rel === "방금 전" ? "방금 봤어요" : `${rel}에 봤어요`;
+}
+
 export interface DeadlineLabel {
   text: string;
   urgent: boolean;
