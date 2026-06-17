@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
-import { postedRelativeLabel } from "@/lib/jobDates";
+import { viewedAgoLabel } from "@/lib/jobDates";
 import { clearRecentJobs, getRecentJobs, type RecentJob } from "@/lib/recent";
 
 // 최근 본(열람한) 공고 — 상세를 열어본 공고를 기기 로컬(localStorage)에 기록한 목록.
@@ -55,9 +55,7 @@ export default function RecentPage() {
                 <div className="truncate text-body font-bold text-foreground group-hover:text-primary">{j.title}</div>
                 <div className="truncate text-body-sm text-muted-foreground">{j.company}</div>
               </div>
-              <span className="shrink-0 text-caption text-muted-foreground">
-                {postedRelativeLabel(new Date(j.ts).toISOString()) ?? ""} 봄
-              </span>
+              <span className="shrink-0 text-caption text-muted-foreground">{viewedAgoLabel(j.ts)}</span>
             </Link>
           ))}
         </section>
