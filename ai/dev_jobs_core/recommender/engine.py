@@ -1,11 +1,11 @@
 """추천 엔진: 후보 수집 → 점수화 → 정렬 → 다양성 → top_k."""
 from __future__ import annotations
-import asyncio
+
 from typing import Any
 
 from ..models import JobPosting
-from .profile import UserProfile, ScoringWeights, parse_weights
-from .scorer import score_job, apply_diversity, ScoreBreakdown
+from .profile import UserProfile, parse_weights
+from .scorer import ScoreBreakdown, apply_diversity, score_job
 
 
 async def recommend(

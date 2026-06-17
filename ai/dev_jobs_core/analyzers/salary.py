@@ -4,7 +4,9 @@
 중앙값/평균/분포를 계산한다.
 """
 from __future__ import annotations
-from statistics import median, mean
+
+from statistics import mean, median
+
 from ..models import JobPosting
 
 # 환율 (대략적, 실시간이 필요하면 외부 API 호출로 교체)

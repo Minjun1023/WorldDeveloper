@@ -3,7 +3,9 @@
 키 불필요. 첫 항목은 메타데이터이므로 건너뛴다.
 """
 from __future__ import annotations
+
 import httpx
+
 from ..models import JobPosting
 
 API_URL = "https://remoteok.com/api"

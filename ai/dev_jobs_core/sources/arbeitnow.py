@@ -3,7 +3,9 @@
 유럽/원격 개발자 공고 중심. 키 불필요. 페이지네이션 지원.
 """
 from __future__ import annotations
+
 import httpx
+
 from ..models import JobPosting
 
 API_URL = "https://www.arbeitnow.com/api/job-board-api"

@@ -3,15 +3,16 @@
 각 차원별 점수 (0~1) + 가중합 + 패널티 + 설명용 reasons 생성.
 """
 from __future__ import annotations
-from dataclasses import dataclass, asdict
+
+from dataclasses import asdict, dataclass
 from typing import Any
 
-from ..models import JobPosting
 from ..analyzers import stack as stack_analyzer
 from ..analyzers.salary import _to_usd_year
-from .profile import UserProfile, ScoringWeights
-from .seniority import detect_seniority, seniority_fit_score
+from ..models import JobPosting
 from . import embeddings
+from .profile import ScoringWeights, UserProfile
+from .seniority import detect_seniority, seniority_fit_score
 
 
 @dataclass

@@ -1,4 +1,4 @@
-from app.etl.visa_reclassify import match_h1b_register, H1B_EVIDENCE
+from app.etl.visa_reclassify import H1B_EVIDENCE, match_h1b_register
 
 
 def _job(jid, slug, loc, remote=False):

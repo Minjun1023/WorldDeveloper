@@ -4,7 +4,9 @@
 https://api.lever.co/v0/postings/{company}?mode=json
 """
 from __future__ import annotations
+
 import httpx
+
 from ..models import JobPosting
 from .greenhouse import _strip_html
 

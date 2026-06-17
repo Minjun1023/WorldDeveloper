@@ -7,9 +7,12 @@ https://boards-api.greenhouse.io/v1/boards/{company}/jobs?content=true
 회사가 Greenhouse 를 ATS 로 쓰는 경우에만 동작한다.
 """
 from __future__ import annotations
+
 import html as html_lib
 import re
+
 import httpx
+
 from ..models import JobPosting
 
 BASE = "https://boards-api.greenhouse.io/v1/boards"

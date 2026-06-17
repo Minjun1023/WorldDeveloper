@@ -1,5 +1,6 @@
 """공고 제목과 description 에서 시니어리티 레벨 추출."""
 from __future__ import annotations
+
 import re
 
 # 명시적 시니어리티 키워드 (우선순위 순)

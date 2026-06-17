@@ -1,4 +1,4 @@
-from app.etl.visa_reclassify import match_uk_register, UK_EVIDENCE
+from app.etl.visa_reclassify import UK_EVIDENCE, match_uk_register
 
 
 def _job(jid, slug, loc, remote=False):
