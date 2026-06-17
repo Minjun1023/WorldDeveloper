@@ -46,6 +46,12 @@ public class JobController {
         return service.regionCounts();
     }
 
+    // 특정 국가의 도시별 건수(건수>0 만). 지역 선택 팝오버 2단(국가 → 도시)용.
+    @GetMapping("/regions/cities")
+    public List<RegionCount> regionCities(@RequestParam String country) {
+        return service.cityCounts(country);
+    }
+
     // id 는 콜론 포함 ("greenhouse:stripe:7737237") — {id:.+} 로 전체 segment 매칭
     @GetMapping("/{id:.+}")
     public ResponseEntity<JobDetailDto> getOne(@PathVariable String id) {

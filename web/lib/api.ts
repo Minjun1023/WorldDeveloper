@@ -171,6 +171,19 @@ export async function fetchRegions(): Promise<RegionCount[]> {
   }
 }
 
+// 클라이언트 전용: 국가 선택 시 도시별 건수 지연 로드(Next 프록시 경유, 상대 URL).
+export async function fetchRegionCities(country: string): Promise<RegionCount[]> {
+  try {
+    const res = await fetch(`/api/regions/cities?country=${encodeURIComponent(country)}`, {
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return [];
+    return (await res.json()) as RegionCount[];
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchCompanies(tag?: string): Promise<CompanyListResponse | null> {
   const url = new URL(`${BACKEND_URL}/api/v1/companies`);
   if (tag) url.searchParams.set("tag", tag);

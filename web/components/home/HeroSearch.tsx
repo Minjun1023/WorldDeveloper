@@ -5,26 +5,24 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Dropdown } from "@/components/ui/dropdown";
+import { RegionPicker, type RegionPick } from "@/components/home/RegionPicker";
 import type { RegionCount } from "@/lib/api";
 
 // 히어로 단일 검색 바: 키워드 + 지역 → /search(FTS). 추천(맞춤 매칭)은 별도 CTA로 분리해 혼동을 줄였다.
 export function HeroSearch({ regions = [] }: { regions?: RegionCount[] }) {
   const router = useRouter();
   const [q, setQ] = useState("");
-  const [region, setRegion] = useState<string | null>(null);
+  const [pick, setPick] = useState<RegionPick>(null);
 
-  // 원격은 근무형태지 지역(국가)이 아니므로 지역 선택 드롭다운에서 제외.
-  const regionOptions = regions
-    .filter((r) => r.value !== "remote")
-    .map((r) => ({ value: r.value, label: r.label, count: r.count }));
+  // 원격은 근무형태지 지역(국가)이 아니므로 제외. 공고 없는 국가(count 0)도 제외 — 실제 공고 있는 지역만.
+  const countries = regions.filter((r) => r.value !== "remote" && r.count > 0);
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
     const params = new URLSearchParams();
     const query = q.trim();
     if (query) params.set("q", query);
-    if (region) params.set("region", region);
+    if (pick?.region) params.set("region", pick.region);
     const qs = params.toString();
     router.push(qs ? `/search?${qs}` : "/search");
   }
@@ -45,20 +43,15 @@ export function HeroSearch({ regions = [] }: { regions?: RegionCount[] }) {
         />
       </div>
       <div className="flex items-center gap-2">
-        <div className="flex-1 sm:w-44">
-          <Dropdown
-            placeholder="전체 지역"
-            options={regionOptions}
-            value={region}
-            onSelect={setRegion}
-          />
+        <div className="flex-1 sm:w-48">
+          <RegionPicker countries={countries} value={pick} onChange={setPick} />
         </div>
         <Button
           type="submit"
           className="bg-brand-gradient h-11 shrink-0 gap-2 rounded-xl px-5 text-white hover:opacity-95"
         >
           <Search className="h-4 w-4" aria-hidden="true" />
-          공고 검색
+          검색
         </Button>
       </div>
     </form>
