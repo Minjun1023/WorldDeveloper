@@ -9,11 +9,17 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.regex.Pattern;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class ProfileService {
+
+    // 닉네임: 2~20자, 한글/영문/숫자/_/- (공백·특수문자 불가). '익명' 류는 예약어로 금지.
+    private static final Pattern HANDLE_RE = Pattern.compile("^[\\p{L}\\p{N}_-]{2,20}$");
 
     private final UserProfileRepository repo;
 
@@ -24,10 +30,12 @@ public class ProfileService {
     @Transactional(readOnly = true)
     public ProfileDto.ProfileResponse get(UUID userId) {
         Optional<UserProfileEntity> e = repo.findById(userId);
+        String stored = e.map(UserProfileEntity::getHandle).orElse(null);
+        String communityHandle = (stored != null && !stored.isBlank()) ? stored : UserHandle.generate(userId);
         if (e.isEmpty() || e.get().getSkills().isEmpty()) {
-            return new ProfileDto.ProfileResponse(false, null);
+            return new ProfileDto.ProfileResponse(false, null, communityHandle);
         }
-        return new ProfileDto.ProfileResponse(true, toDto(e.get()));
+        return new ProfileDto.ProfileResponse(true, toDto(e.get()), communityHandle);
     }
 
     @Transactional
@@ -40,8 +48,27 @@ public class ProfileService {
         e.setRemotePreference(p.remotePreference());
         e.setDesiredSalaryUsd(p.desiredSalaryUsd());
         e.setBio(p.bio());
+        e.setHandle(normalizeHandle(userId, p.handle()));
         e.setUpdatedAt(OffsetDateTime.now());
         repo.save(e);
+    }
+
+    /** 닉네임 정규화·검증. 빈 값이면 null(자동 닉네임). 형식 오류 400, 중복 409. */
+    private String normalizeHandle(UUID userId, String raw) {
+        if (raw == null) return null;
+        String h = raw.trim();
+        if (h.isEmpty()) return null;
+        if (!HANDLE_RE.matcher(h).matches()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                "닉네임은 2~20자의 한글·영문·숫자·_·- 만 가능해요");
+        }
+        if (h.equalsIgnoreCase("익명") || h.equalsIgnoreCase("anonymous")) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "사용할 수 없는 닉네임이에요");
+        }
+        if (repo.existsByHandleIgnoreCaseAndUserIdNot(h, userId)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "이미 사용 중인 닉네임이에요");
+        }
+        return h;
     }
 
     @Transactional(readOnly = true)
@@ -51,7 +78,7 @@ public class ProfileService {
 
     private ProfileDto.Profile toDto(UserProfileEntity e) {
         return new ProfileDto.Profile(e.getSkills(), e.getSeniority(), e.getYearsExperience(),
-            e.getPreferredLocations(), e.getRemotePreference(), e.getDesiredSalaryUsd(), e.getBio());
+            e.getPreferredLocations(), e.getRemotePreference(), e.getDesiredSalaryUsd(), e.getBio(), e.getHandle());
     }
 
     /** 기본 topK(9) — 기존 호출처/테스트 호환용. */

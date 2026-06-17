@@ -93,6 +93,7 @@ export interface JobListResponse {
 export interface RecommendProfile {
   skills: string[];
   seniority: string;
+  handle?: string | null;
   years_experience?: number;
   bio?: string;
   resume_text?: string;

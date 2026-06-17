@@ -9,7 +9,14 @@ import com.devjobs.community.dto.CommunityDtos.PostListResponse;
 import com.devjobs.community.dto.CommunityDtos.PostSummary;
 import com.devjobs.community.dto.CommunityDtos.ReactionResponse;
 import com.devjobs.community.dto.CommunityDtos.ReportRequest;
+import com.devjobs.profile.UserHandle;
+import com.devjobs.profile.UserProfileEntity;
+import com.devjobs.profile.UserProfileRepository;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.springframework.data.domain.PageRequest;
@@ -29,25 +36,20 @@ public class CommunityService {
     private static final int MAX_BODY = 20000;
     private static final int MAX_COMMENT = 5000;
 
-    // 닉네임 생성용(결정적 익명 핸들). 실명/이메일 노출 없이 글마다 동일 인물=동일 핸들.
-    private static final String[] ADJ = {
-        "성실한", "꼼꼼한", "용감한", "차분한", "느긋한", "단단한", "산뜻한", "다정한", "묵직한", "재빠른"
-    };
-    private static final String[] NOUN = {
-        "펭귄", "여우", "수달", "두더지", "고래", "올빼미", "다람쥐", "너구리", "고슴도치", "물범"
-    };
-
     private final CommunityPostRepository posts;
     private final CommunityCommentRepository comments;
     private final CommunityReactionRepository reactions;
     private final CommunityReportRepository reports;
+    private final UserProfileRepository profiles;
 
     public CommunityService(CommunityPostRepository posts, CommunityCommentRepository comments,
-                            CommunityReactionRepository reactions, CommunityReportRepository reports) {
+                            CommunityReactionRepository reactions, CommunityReportRepository reports,
+                            UserProfileRepository profiles) {
         this.posts = posts;
         this.comments = comments;
         this.reactions = reactions;
         this.reports = reports;
+        this.profiles = profiles;
     }
 
     @Transactional(readOnly = true)
@@ -59,7 +61,8 @@ public class CommunityService {
             : Sort.by(Sort.Direction.DESC, "createdAt");
         List<CommunityPost> rows = posts.search(blankToNull(category), blankToNull(company),
             blankToNull(country), blankToNull(jobId), PageRequest.of(Math.max(page, 0), sz, order));
-        List<PostSummary> items = rows.stream().map(this::toSummary).toList();
+        Map<UUID, String> hmap = handlesFor(rows.stream().map(CommunityPost::getAuthorId).toList());
+        List<PostSummary> items = rows.stream().map(p -> toSummary(p, hmap)).toList();
         return new PostListResponse(items, rows.size() == sz);
     }
 
@@ -68,14 +71,18 @@ public class CommunityService {
         CommunityPost p = posts.findById(uuid(postId))
             .filter(x -> !"removed".equals(x.getStatus()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "글 없음"));
-        List<CommentDto> cs = comments.findByPostIdAndStatusOrderByCreatedAtAsc(p.getId(), "published")
-            .stream()
-            .map(c -> new CommentDto(c.getId().toString(), handle(c.getAuthorId(), c.isAnonymous()),
+        List<CommunityComment> raw = comments.findByPostIdAndStatusOrderByCreatedAtAsc(p.getId(), "published");
+        Set<UUID> authorIds = new HashSet<>();
+        authorIds.add(p.getAuthorId());
+        raw.forEach(c -> authorIds.add(c.getAuthorId()));
+        Map<UUID, String> hmap = handlesFor(authorIds);
+        List<CommentDto> cs = raw.stream()
+            .map(c -> new CommentDto(c.getId().toString(), displayHandle(c.getAuthorId(), c.isAnonymous(), hmap),
                 c.isAnonymous(), c.getBody(), c.getAuthorId().equals(viewer), c.getCreatedAt()))
             .toList();
         boolean reacted = viewer != null && reactions.existsByPostIdAndUserId(p.getId(), viewer);
         return new PostDetail(p.getId().toString(), p.getCategory(), p.getTitle(), p.getBody(),
-            handle(p.getAuthorId(), p.isAnonymous()), p.isAnonymous(), p.getSourceType(), p.getSourceUrl(),
+            displayHandle(p.getAuthorId(), p.isAnonymous(), hmap), p.isAnonymous(), p.getSourceType(), p.getSourceUrl(),
             p.getLinkedCompanySlug(), p.getLinkedJobId(), p.getLinkedCountry(),
             p.getCommentCount(), p.getScore(), reacted, p.getAuthorId().equals(viewer),
             p.getCreatedAt(), cs);
@@ -135,7 +142,7 @@ public class CommunityService {
         comments.save(c);
         p.setCommentCount(p.getCommentCount() + 1);
         posts.save(p);
-        return new CommentDto(c.getId().toString(), handle(userId, c.isAnonymous()),
+        return new CommentDto(c.getId().toString(), displayHandle(userId, c.isAnonymous(), handlesFor(List.of(userId))),
             c.isAnonymous(), c.getBody(), true, c.getCreatedAt());
     }
 
@@ -174,20 +181,31 @@ public class CommunityService {
         return p;
     }
 
-    private PostSummary toSummary(CommunityPost p) {
+    private PostSummary toSummary(CommunityPost p, Map<UUID, String> hmap) {
         String plain = p.getBody().replaceAll("\\s+", " ").trim();
         String excerpt = plain.length() > 140 ? plain.substring(0, 140) + "…" : plain;
         return new PostSummary(p.getId().toString(), p.getCategory(), p.getTitle(), excerpt,
-            handle(p.getAuthorId(), p.isAnonymous()), p.isAnonymous(), p.getSourceType(),
+            displayHandle(p.getAuthorId(), p.isAnonymous(), hmap), p.isAnonymous(), p.getSourceType(),
             p.getLinkedCompanySlug(), p.getLinkedCountry(), p.getLinkedJobId(),
             p.getCommentCount(), p.getScore(), p.getCreatedAt());
     }
 
-    /** 결정적 익명 핸들. anonymous 면 "익명". 아니면 userId 해시로 형용사+동물(동일 인물=동일 핸들). */
-    private String handle(UUID userId, boolean anonymous) {
+    /** 작성자 표시명. anonymous 면 "익명", 설정한 닉네임 있으면 그것, 없으면 자동 닉네임. */
+    private String displayHandle(UUID userId, boolean anonymous, Map<UUID, String> hmap) {
         if (anonymous) return "익명";
-        int h = Math.abs(userId.hashCode());
-        return ADJ[h % ADJ.length] + NOUN[(h / ADJ.length) % NOUN.length] + (h % 90 + 10);
+        String h = hmap.get(userId);
+        return (h != null) ? h : UserHandle.generate(userId);
+    }
+
+    /** userId 집합 → 설정된 닉네임 맵(미설정 사용자는 빠짐). */
+    private Map<UUID, String> handlesFor(Collection<UUID> ids) {
+        if (ids == null || ids.isEmpty()) return Map.of();
+        Map<UUID, String> m = new HashMap<>();
+        for (UserProfileEntity e : profiles.findAllById(new HashSet<>(ids))) {
+            String h = e.getHandle();
+            if (h != null && !h.isBlank()) m.put(e.getUserId(), h);
+        }
+        return m;
     }
 
     private static String trim(String s) { return s == null ? "" : s.trim(); }

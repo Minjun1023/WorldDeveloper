@@ -9,6 +9,7 @@ export const recommendProfileSchema = z.object({
   skills: z.array(z.string()),
   seniority: z.string(),
   bio: z.string().nullish(),
+  handle: z.string().nullish(), // 커뮤니티 닉네임(미설정 시 자동)
   years_experience: z.number().int().min(0).max(80).nullish(),
   preferred_locations: z.array(z.string()).nullish(),
   remote_preference: z.string().nullish(),
@@ -17,10 +18,11 @@ export const recommendProfileSchema = z.object({
 
 export type RecommendProfileData = z.infer<typeof recommendProfileSchema>;
 
-/** GET /api/v1/me/profile 응답: 프로필 없음이면 exists=false 이고 profile 생략. */
+/** GET /api/v1/me/profile 응답: 프로필 없음이면 exists=false 이고 profile 생략. community_handle 은 항상. */
 export const profileResponseSchema = z.object({
   exists: z.boolean(),
   profile: recommendProfileSchema.nullish(),
+  community_handle: z.string().nullish(),
 });
 
 export type ProfileResponseData = z.infer<typeof profileResponseSchema>;
