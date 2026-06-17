@@ -13,10 +13,11 @@ export const metadata = {
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 
-function qs(category?: string, sort?: string): string {
+function qs(category?: string, sort?: string, page?: number): string {
   const p = new URLSearchParams();
   if (category) p.set("category", category);
   if (sort && sort !== "recent") p.set("sort", sort);
+  if (page && page > 1) p.set("page", String(page));
   const s = p.toString();
   return s ? `/community?${s}` : "/community";
 }
@@ -24,31 +25,12 @@ function qs(category?: string, sort?: string): string {
 export default async function CommunityPage({ searchParams }: { searchParams: SearchParams }) {
   const category = typeof searchParams.category === "string" ? searchParams.category : undefined;
   const sort = typeof searchParams.sort === "string" ? searchParams.sort : "recent";
-  const { items } = await fetchCommunityPosts({ category, sort });
+  const page = Math.max(1, Number(typeof searchParams.page === "string" ? searchParams.page : "1") || 1);
+  const { items, has_more } = await fetchCommunityPosts({ category, sort, page: page - 1 });
 
   return (
     <div className="space-y-6">
-      {/* 헤더 */}
-      <section className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <div className="flex items-center gap-2.5">
-            <h1 className="text-h1">해외취업 라운지</h1>
-            <span className="rounded-md bg-primary/10 px-2 py-0.5 text-caption font-semibold text-primary">BETA</span>
-          </div>
-          <p className="mt-1.5 text-body-sm text-muted-foreground">
-            준비하는 사람도, 먼저 간 사람도. 비자·면접·연봉·정착 경험을 나눠요. 추정보다 직접 경험으로.
-          </p>
-        </div>
-        <Link
-          href="/community/new"
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          <PenSquare className="h-4 w-4" aria-hidden="true" />
-          글쓰기
-        </Link>
-      </section>
-
-      {/* 카테고리 탭 + 정렬 */}
+      {/* 카테고리 탭 + 정렬 + 글쓰기 (제목 없는 툴바형 상단) */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
         <nav className="flex flex-wrap gap-1.5">
           <Tab href={qs(undefined, sort)} active={!category}>전체</Tab>
@@ -58,10 +40,19 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
             </Tab>
           ))}
         </nav>
-        <div className="flex gap-1 text-caption">
-          <Link href={qs(category, "recent")} className={cn(sort !== "top" ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground")}>최신</Link>
-          <span className="text-border">·</span>
-          <Link href={qs(category, "top")} className={cn(sort === "top" ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground")}>인기</Link>
+        <div className="flex items-center gap-3">
+          <div className="flex gap-1 text-caption">
+            <Link href={qs(category, "recent")} className={cn(sort !== "top" ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground")}>최신</Link>
+            <span className="text-border">·</span>
+            <Link href={qs(category, "top")} className={cn(sort === "top" ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground")}>인기</Link>
+          </div>
+          <Link
+            href="/community/new"
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            <PenSquare className="h-4 w-4" aria-hidden="true" />
+            글쓰기
+          </Link>
         </div>
       </div>
 
@@ -97,6 +88,27 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
             </li>
           ))}
         </ul>
+      )}
+
+      {/* 페이지네이션 (이전/다음) — 백엔드 has_more 기반 */}
+      {(page > 1 || has_more) && (
+        <nav className="flex items-center justify-center gap-3 pt-2" aria-label="페이지 이동">
+          {page > 1 ? (
+            <Link href={qs(category, sort, page - 1)} className="rounded-lg border border-border px-4 py-2 text-body-sm text-foreground transition-colors hover:bg-accent">
+              ← 이전
+            </Link>
+          ) : (
+            <span className="rounded-lg border border-border px-4 py-2 text-body-sm text-muted-foreground opacity-40">← 이전</span>
+          )}
+          <span className="text-body-sm tabular-nums text-muted-foreground">{page} 페이지</span>
+          {has_more ? (
+            <Link href={qs(category, sort, page + 1)} className="rounded-lg border border-border px-4 py-2 text-body-sm text-foreground transition-colors hover:bg-accent">
+              다음 →
+            </Link>
+          ) : (
+            <span className="rounded-lg border border-border px-4 py-2 text-body-sm text-muted-foreground opacity-40">다음 →</span>
+          )}
+        </nav>
       )}
     </div>
   );
