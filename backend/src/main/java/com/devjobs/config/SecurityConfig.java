@@ -5,6 +5,7 @@ import com.devjobs.auth.OAuthSuccessHandler;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
@@ -43,6 +44,10 @@ public class SecurityConfig {
                 .requestMatchers("/oauth2/**", "/login/oauth2/**").permitAll()
                 .requestMatchers("/api/v1/recommend/me", "/api/v1/recommend/me/**").authenticated()
                 .requestMatchers("/api/v1/applications/**", "/api/v1/me/**").authenticated()
+                // 커뮤니티: 읽기(GET)는 공개, 작성/수정/삭제는 인증.
+                .requestMatchers(HttpMethod.POST, "/api/v1/community/**").authenticated()
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/community/**").authenticated()
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/community/**").authenticated()
                 .anyRequest().permitAll()
             )
             .oauth2Login(oauth -> oauth

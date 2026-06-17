@@ -1,116 +1,117 @@
-import { ArrowRight, Building2, FileText, MessagesSquare, ShieldCheck, Stamp } from "lucide-react";
+import { MessageSquare, PenSquare, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 
-import { Card } from "@/components/ui/card";
+import { CATEGORIES, categoryLabel, fetchCommunityPosts, sourceLabel } from "@/lib/community";
+import { cn } from "@/lib/utils";
+
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "커뮤니티 — WorldDeveloper",
-  description: "먼저 간 개발자들의 해외취업 비자·면접·정착 경험을 나누는 공간(준비 중).",
+  description: "해외취업을 준비하는 개발자들이 비자·면접·연봉·정착 정보를 나누는 공간.",
 };
 
-// 커뮤니티는 '준비 중(베타)' 상태. 정직성 원칙상 가짜 후기/글은 넣지 않는다 — 실제 글·현직 인증·작성
-// 기능이 준비되면 채운다. 그동안은 우리가 가진 진짜 콘텐츠(비자 가이드·회사 정보·방법론)로 연결한다.
-const PLANNED = ["비자·이민", "면접 후기", "연봉·협상", "이주·정착", "회사 후기", "Q&A"];
+type SearchParams = { [key: string]: string | string[] | undefined };
 
-const HELPERS = [
-  {
-    href: "/visa",
-    Icon: Stamp,
-    title: "비자 가이드",
-    desc: "국가별 비자·스폰서십 정보를 공식 출처 기준으로 정리했어요.",
-  },
-  {
-    href: "/companies",
-    Icon: Building2,
-    title: "회사 정보",
-    desc: "명부 검증 회사와 직원 규모·업종 등 회사별 사실 정보를 봐요.",
-  },
-  {
-    href: "/coach",
-    Icon: FileText,
-    title: "이력서 코치",
-    desc: "이 공고에 맞춰 이력서 키워드·강조 포인트를 상담받아요.",
-  },
-];
+function qs(category?: string, sort?: string): string {
+  const p = new URLSearchParams();
+  if (category) p.set("category", category);
+  if (sort && sort !== "recent") p.set("sort", sort);
+  const s = p.toString();
+  return s ? `/community?${s}` : "/community";
+}
 
-export default function CommunityPage() {
+export default async function CommunityPage({ searchParams }: { searchParams: SearchParams }) {
+  const category = typeof searchParams.category === "string" ? searchParams.category : undefined;
+  const sort = typeof searchParams.sort === "string" ? searchParams.sort : "recent";
+  const { items } = await fetchCommunityPosts({ category, sort });
+
   return (
-    <div className="space-y-10">
-      {/* 헤더 — 라운지 이름은 고유 브랜드라 유지(중복 overline 제거, 제목 축소) */}
-      <section>
-        <div className="flex flex-wrap items-center gap-2.5">
-          <h1 className="text-h1">해외취업 라운지</h1>
-          <span className="inline-flex items-center gap-1 rounded-md bg-primary/10 px-2 py-0.5 text-caption font-semibold text-primary">
-            BETA
-          </span>
-        </div>
-        <p className="mt-1.5 max-w-xl text-body-sm text-muted-foreground">
-          먼저 간 개발자들의 비자·면접·연봉·정착 경험을 나누는 공간이에요. 추정 없이, 겪은 사람의
-          이야기로.
-        </p>
-      </section>
-
-      {/* 정직한 준비중 안내 */}
-      <Card className="flex items-start gap-3 rounded-xl border-primary/20 bg-primary/5 p-5">
-        <MessagesSquare className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
-        <div className="space-y-1.5">
-          <h2 className="text-h3">곧 열려요</h2>
-          <p className="text-body-sm text-muted-foreground">
-            가짜 후기 없이, <strong className="font-semibold text-foreground">현직 인증</strong>(회사
-            이메일 확인)과 <strong className="font-semibold text-foreground">출처 표기</strong>를 갖춘
-            검증된 경험만 모으려고 준비 중이에요. 빈 게시판으로 먼저 열기보다, 신뢰할 수 있는 글이
-            쌓일 준비가 되면 공개할게요.
-          </p>
-          <p className="flex items-center gap-1.5 pt-1 text-caption text-muted-foreground">
-            <ShieldCheck className="h-3.5 w-3.5 text-verified" aria-hidden="true" />
-            WorldDeveloper의 원칙: 검증되지 않은 정보는 추정해서 보여주지 않습니다.
-          </p>
-        </div>
-      </Card>
-
-      {/* 다룰 주제 미리보기 */}
-      <section className="space-y-3">
-        <h2 className="text-h3">이런 이야기를 나눠요</h2>
-        <div className="flex flex-wrap gap-2">
-          {PLANNED.map((t) => (
-            <span
-              key={t}
-              className="rounded-full border border-border bg-surface-2 px-3.5 py-1.5 text-body-sm text-muted-foreground"
-            >
-              {t}
-            </span>
-          ))}
-        </div>
-      </section>
-
-      {/* 그동안 도움이 되는 실제 콘텐츠 */}
-      <section className="space-y-4">
+    <div className="space-y-6">
+      {/* 헤더 */}
+      <section className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-h3">그동안 도움이 되는 것</h2>
-          <p className="mt-1 text-body-sm text-muted-foreground">
-            커뮤니티가 열리기 전에도, 이미 검증된 정보로 준비할 수 있어요.
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-h1">해외취업 라운지</h1>
+            <span className="rounded-md bg-primary/10 px-2 py-0.5 text-caption font-semibold text-primary">BETA</span>
+          </div>
+          <p className="mt-1.5 text-body-sm text-muted-foreground">
+            준비하는 사람도, 먼저 간 사람도. 비자·면접·연봉·정착 경험을 나눠요. 추정보다 직접 경험으로.
           </p>
         </div>
-        <div className="grid gap-3 sm:grid-cols-3">
-          {HELPERS.map(({ href, Icon, title, desc }) => (
-            <Link key={href} href={href} className="group block h-full">
-              <Card className="flex h-full flex-col rounded-xl p-5 transition-all hover:border-primary/40 hover:shadow-md">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-2 text-foreground">
-                  <Icon className="h-5 w-5" aria-hidden="true" />
-                </div>
-                <h3 className="mt-3 font-semibold transition-colors group-hover:text-primary">
-                  {title}
-                </h3>
-                <p className="mt-1 flex-1 text-body-sm text-muted-foreground">{desc}</p>
-                <span className="mt-3 inline-flex items-center gap-1 text-body-sm font-medium text-primary">
-                  바로 가기
-                  <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" aria-hidden="true" />
-                </span>
-              </Card>
-            </Link>
-          ))}
-        </div>
+        <Link
+          href="/community/new"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          <PenSquare className="h-4 w-4" aria-hidden="true" />
+          글쓰기
+        </Link>
       </section>
+
+      {/* 카테고리 탭 + 정렬 */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+        <nav className="flex flex-wrap gap-1.5">
+          <Tab href={qs(undefined, sort)} active={!category}>전체</Tab>
+          {CATEGORIES.map((c) => (
+            <Tab key={c.key} href={qs(c.key, sort)} active={category === c.key}>
+              {c.label}
+            </Tab>
+          ))}
+        </nav>
+        <div className="flex gap-1 text-caption">
+          <Link href={qs(category, "recent")} className={cn(sort !== "top" ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground")}>최신</Link>
+          <span className="text-border">·</span>
+          <Link href={qs(category, "top")} className={cn(sort === "top" ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground")}>인기</Link>
+        </div>
+      </div>
+
+      {/* 목록 */}
+      {items.length === 0 ? (
+        <div className="rounded-xl border border-border bg-surface p-12 text-center">
+          <p className="text-body font-medium text-foreground">아직 글이 없어요</p>
+          <p className="mx-auto mt-1.5 max-w-md text-body-sm text-muted-foreground">
+            첫 글을 남겨 라운지를 열어주세요. 작은 경험·질문 하나가 누군가에겐 큰 도움이 돼요.
+          </p>
+          <Link href="/community/new" className="mt-5 inline-flex rounded-lg bg-primary px-5 py-2.5 text-body-sm font-semibold text-primary-foreground hover:opacity-90">
+            첫 글 쓰기
+          </Link>
+        </div>
+      ) : (
+        <ul className="space-y-2.5">
+          {items.map((p) => (
+            <li key={p.id}>
+              <Link href={`/community/${p.id}`} className="group block rounded-xl border border-border bg-surface p-4 transition-all hover:border-primary/40 hover:shadow-sm">
+                <div className="flex items-center gap-2 text-caption text-muted-foreground">
+                  <span className="rounded-full bg-surface-2 px-2 py-0.5 font-medium text-foreground">{categoryLabel(p.category)}</span>
+                  <span className="rounded-full border border-border px-2 py-0.5">{sourceLabel(p.source_type)}</span>
+                </div>
+                <h3 className="mt-2 font-semibold text-foreground transition-colors group-hover:text-primary">{p.title}</h3>
+                <p className="mt-1 line-clamp-2 text-body-sm text-muted-foreground">{p.excerpt}</p>
+                <div className="mt-2.5 flex items-center gap-3 text-caption text-muted-foreground">
+                  <span className="font-medium">{p.author_handle}</span>
+                  <span>{new Date(p.created_at).toLocaleDateString("ko-KR")}</span>
+                  <span className="inline-flex items-center gap-1"><ThumbsUp className="h-3.5 w-3.5" aria-hidden="true" />{p.score}</span>
+                  <span className="inline-flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />{p.comment_count}</span>
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
+  );
+}
+
+function Tab({ href, active, children }: { href: string; active: boolean; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className={cn(
+        "rounded-full px-3 py-1.5 text-body-sm font-medium transition-colors",
+        active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground",
+      )}
+    >
+      {children}
+    </Link>
   );
 }
