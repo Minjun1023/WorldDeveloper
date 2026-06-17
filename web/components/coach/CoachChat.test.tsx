@@ -27,6 +27,7 @@ describe("CoachChat", () => {
     const user = userEvent.setup();
     const send = screen.getByRole("button", { name: /보내기/ });
     expect(send).toBeDisabled();
+    await user.click(screen.getByRole("button", { name: /첨부/ })); // 공고·이력서 트레이 펼치기
     await user.selectOptions(screen.getByRole("combobox"), "greenhouse:acme:1");
     await user.type(screen.getByPlaceholderText(/이력서/), "Go dev 5y");
     await user.type(screen.getByPlaceholderText(/메시지/), "어떻게 고칠까요?");
@@ -38,6 +39,7 @@ describe("CoachChat", () => {
     vi.stubGlobal("fetch", fetchMock);
     render(<CoachChat initialJobs={jobs as never} />);
     const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /첨부/ })); // 공고·이력서 트레이 펼치기
     await user.selectOptions(screen.getByRole("combobox"), "greenhouse:acme:1");
     await user.type(screen.getByPlaceholderText(/이력서/), "Go dev 5y");
     await user.type(screen.getByPlaceholderText(/메시지/), "어떻게?");
@@ -59,6 +61,7 @@ describe("CoachChat", () => {
     }));
     render(<CoachChat initialJobs={jobs as never} />);
     const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /첨부/ })); // 공고·이력서 트레이 펼치기
     await user.selectOptions(screen.getByRole("combobox"), "greenhouse:acme:1");
     await waitFor(() => expect(screen.getByText("이전 조언이에요.")).toBeInTheDocument());
   });
