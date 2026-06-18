@@ -2,6 +2,8 @@
  * 커뮤니티(해외취업 라운지) 서버 페치 + 타입.
  * 읽기는 공개라 BACKEND_URL 직접 호출. 쓰기는 클라이언트가 /api/community/* 프록시로(토큰 전달).
  */
+import { flagFromLocation } from "@/lib/flags";
+
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
 
 export const CATEGORIES = [
@@ -41,6 +43,30 @@ export function categoryStyle(key: string): { chip: string; dot: string } {
   return CATEGORY_STYLE[key] ?? { chip: "bg-surface-2 text-foreground", dot: "bg-muted-foreground" };
 }
 
+// linked_country(=비자 가이드 국가 슬러그) → 한국어 라벨. 국기는 flags.regionFlag 재사용(모르면 "").
+const COUNTRY_LABEL: Record<string, string> = {
+  germany: "독일", netherlands: "네덜란드", uk: "영국", ireland: "아일랜드",
+  japan: "일본", singapore: "싱가포르", usa: "미국", us: "미국", canada: "캐나다",
+  france: "프랑스", spain: "스페인", australia: "호주", sweden: "스웨덴",
+};
+export function countryLabel(slug: string): string {
+  return COUNTRY_LABEL[slug] ?? slug;
+}
+export function countryFlag(slug: string): string {
+  return flagFromLocation(slug);
+}
+
+// 비자 종류로 인정하는 태그 어휘(소문자 매칭). facet 의 태그 중 이 목록에 든 것만 "비자 종류" 카드에 노출.
+export const VISA_TAG_VOCAB = new Set([
+  "blue card", "eu blue card", "ep", "s pass", "skilled worker", "hsm",
+  "h-1b", "h1b", "opt", "cpt", "l-1", "o-1", "tn", "green card", "ica",
+  "critical skills", "hpi", "global talent", "ict", "working holiday",
+  "kennismigrant", "highly skilled migrant", "30% ruling",
+]);
+export function isVisaTag(tag: string): boolean {
+  return VISA_TAG_VOCAB.has(tag.trim().toLowerCase());
+}
+
 export type CommunityComment = {
   id: string;
   author_handle: string;
@@ -61,8 +87,10 @@ export type CommunityPostSummary = {
   linked_company_slug: string | null;
   linked_country: string | null;
   linked_job_id: string | null;
+  tags: string[];
   comment_count: number;
   score: number;
+  view_count: number;
   created_at: string;
 };
 
@@ -78,8 +106,10 @@ export type CommunityPostDetail = {
   linked_company_slug: string | null;
   linked_job_id: string | null;
   linked_country: string | null;
+  tags: string[];
   comment_count: number;
   score: number;
+  view_count: number;
   viewer_reacted: boolean;
   mine: boolean;
   created_at: string;
@@ -88,11 +118,19 @@ export type CommunityPostDetail = {
 
 export type CommunityListResponse = { items: CommunityPostSummary[]; has_more: boolean };
 
+export type CommunityFacetCount = { key: string; count: number };
+export type CommunityFacets = {
+  categories: CommunityFacetCount[];
+  countries: CommunityFacetCount[];
+  tags: CommunityFacetCount[];
+};
+
 export async function fetchCommunityPosts(params: {
   category?: string;
   company?: string;
   country?: string;
   jobId?: string;
+  tag?: string;
   q?: string;
   unanswered?: boolean;
   sort?: string;
@@ -103,6 +141,7 @@ export async function fetchCommunityPosts(params: {
   if (params.company) url.searchParams.set("company", params.company);
   if (params.country) url.searchParams.set("country", params.country);
   if (params.jobId) url.searchParams.set("jobId", params.jobId);
+  if (params.tag) url.searchParams.set("tag", params.tag);
   if (params.q) url.searchParams.set("q", params.q);
   if (params.unanswered) url.searchParams.set("unanswered", "true");
   if (params.sort) url.searchParams.set("sort", params.sort);
@@ -114,6 +153,29 @@ export async function fetchCommunityPosts(params: {
   } catch {
     return { items: [], has_more: false };
   }
+}
+
+export async function fetchCommunityFacets(): Promise<CommunityFacets> {
+  const empty: CommunityFacets = { categories: [], countries: [], tags: [] };
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/community/facets`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return empty;
+    const data = (await res.json()) as Partial<CommunityFacets>;
+    return {
+      categories: data.categories ?? [],
+      countries: data.countries ?? [],
+      tags: data.tags ?? [],
+    };
+  } catch {
+    return empty;
+  }
+}
+
+export function facetCount(list: CommunityFacetCount[], key: string): number {
+  return list.find((c) => c.key === key)?.count ?? 0;
 }
 
 export async function fetchCommunityPost(

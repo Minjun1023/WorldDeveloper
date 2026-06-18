@@ -4,11 +4,15 @@ import com.devjobs.community.dto.CommunityDtos.CommentDto;
 import com.devjobs.community.dto.CommunityDtos.CreateCommentRequest;
 import com.devjobs.community.dto.CommunityDtos.CreatePostRequest;
 import com.devjobs.community.dto.CommunityDtos.EditPostRequest;
+import com.devjobs.community.dto.CommunityDtos.FacetResponse;
 import com.devjobs.community.dto.CommunityDtos.PostDetail;
 import com.devjobs.community.dto.CommunityDtos.PostListResponse;
 import com.devjobs.community.dto.CommunityDtos.ReactionResponse;
 import com.devjobs.community.dto.CommunityDtos.ReportRequest;
 import com.devjobs.strategist.RateLimiter;
+import jakarta.servlet.http.HttpServletRequest;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -44,17 +48,30 @@ public class CommunityController {
             @RequestParam(required = false) String company,
             @RequestParam(required = false) String country,
             @RequestParam(required = false) String jobId,
+            @RequestParam(required = false) String tag,
             @RequestParam(required = false) String q,
             @RequestParam(required = false, defaultValue = "false") boolean unanswered,
             @RequestParam(required = false, defaultValue = "recent") String sort,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "20") int size) {
-        return service.list(category, company, country, jobId, q, unanswered, sort, page, size);
+        return service.list(category, company, country, jobId, tag, q, unanswered, sort, page, size);
+    }
+
+    @GetMapping("/facets")
+    public FacetResponse facets() {
+        return service.facets();
     }
 
     @GetMapping("/posts/{id}")
     public PostDetail get(@AuthenticationPrincipal String principal, @PathVariable String id) {
         return service.get(id, viewer(principal));
+    }
+
+    // 조회 1회 등록(공개) — 비로그인은 IP 해시로 식별, 고유 열람자당 1회만 집계.
+    @PostMapping("/posts/{id}/view")
+    public void view(@AuthenticationPrincipal String principal, @PathVariable String id,
+                     HttpServletRequest request) {
+        service.registerView(id, viewerKey(principal, request));
     }
 
     // --- 쓰기 (인증) ---
@@ -105,6 +122,33 @@ public class CommunityController {
             return UUID.fromString(principal);
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    /** 조회수 dedup 키 — 로그인은 userId, 익명은 클라이언트 IP 해시(원본 IP 미저장). */
+    private String viewerKey(String principal, HttpServletRequest request) {
+        UUID u = viewer(principal);
+        if (u != null) return "u:" + u;
+        return "ip:" + sha256Short(clientIp(request));
+    }
+
+    private static String clientIp(HttpServletRequest request) {
+        String xff = request.getHeader("X-Forwarded-For");
+        if (xff != null && !xff.isBlank()) return xff.split(",")[0].trim();
+        String real = request.getHeader("X-Real-IP");
+        if (real != null && !real.isBlank()) return real.trim();
+        String addr = request.getRemoteAddr();
+        return addr == null ? "" : addr;
+    }
+
+    private static String sha256Short(String s) {
+        try {
+            byte[] d = MessageDigest.getInstance("SHA-256").digest(s.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 8; i++) sb.append(String.format("%02x", d[i]));
+            return sb.toString();
+        } catch (Exception e) {
+            return Integer.toHexString(s.hashCode());
         }
     }
 }

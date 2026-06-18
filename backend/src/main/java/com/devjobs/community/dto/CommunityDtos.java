@@ -18,10 +18,11 @@ public final class CommunityDtos {
         String sourceUrl,
         String linkedCompanySlug,
         String linkedJobId,
-        String linkedCountry
+        String linkedCountry,
+        List<String> tags
     ) {}
 
-    public record EditPostRequest(String title, String body) {}
+    public record EditPostRequest(String title, String body, List<String> tags) {}
 
     public record CreateCommentRequest(String body, boolean anonymous) {}
 
@@ -39,8 +40,10 @@ public final class CommunityDtos {
         String linkedCompanySlug,
         String linkedCountry,
         String linkedJobId,
+        List<String> tags,
         int commentCount,
         int score,
+        int viewCount,
         OffsetDateTime createdAt
     ) {}
 
@@ -65,8 +68,10 @@ public final class CommunityDtos {
         String linkedCompanySlug,
         String linkedJobId,
         String linkedCountry,
+        List<String> tags,
         int commentCount,
         int score,
+        int viewCount,
         boolean viewerReacted,
         boolean mine,
         OffsetDateTime createdAt,
@@ -76,4 +81,13 @@ public final class CommunityDtos {
     public record PostListResponse(List<PostSummary> items, boolean hasMore) {}
 
     public record ReactionResponse(boolean reacted, int score) {}
+
+    // --- facet 집계(사이드바: 카테고리/국가/태그 카운트) ---
+    public record FacetCount(String key, long count) {}
+
+    public record FacetResponse(
+        List<FacetCount> categories,
+        List<FacetCount> countries,
+        List<FacetCount> tags
+    ) {}
 }
