@@ -1,4 +1,4 @@
-import { Building2, FileText, MessageSquare, PenSquare, Stamp, ThumbsUp } from "lucide-react";
+import { Building2, FileText, MessageSquare, PenSquare, Search, Stamp, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 
 import { CATEGORIES, categoryLabel, fetchCommunityPosts, sourceLabel } from "@/lib/community";
@@ -13,7 +13,6 @@ export const metadata = {
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 
-// 빈 보드에서 첫 글을 유도하는 예시(카테고리 프리필).
 const EXAMPLE_PROMPTS = [
   { category: "interview", label: "이 회사 면접 어땠나요?" },
   { category: "visa", label: "비자 발급 후기" },
@@ -22,18 +21,26 @@ const EXAMPLE_PROMPTS = [
   { category: "qna", label: "아무거나 물어보기" },
 ];
 
-// 준비에 도움되는 실데이터 페이지(예전 BETA 안내의 좋은 부분을 사이드바로).
 const GUIDES = [
   { href: "/visa", icon: Stamp, label: "비자 가이드", desc: "국가별 비자·스폰서십" },
   { href: "/companies", icon: Building2, label: "회사 정보", desc: "명부 검증 회사·업종" },
   { href: "/coach", icon: FileText, label: "이력서 코치", desc: "공고 맞춤 1:1 상담" },
 ];
 
-function qs(category?: string, sort?: string, page?: number): string {
+const SORTS = [
+  { key: "recent", label: "최신" },
+  { key: "top", label: "인기" },
+  { key: "comments", label: "댓글순" },
+];
+
+type QsArgs = { category?: string; sort?: string; page?: number; q?: string; unanswered?: boolean };
+function qs(o: QsArgs): string {
   const p = new URLSearchParams();
-  if (category) p.set("category", category);
-  if (sort && sort !== "recent") p.set("sort", sort);
-  if (page && page > 1) p.set("page", String(page));
+  if (o.category) p.set("category", o.category);
+  if (o.sort && o.sort !== "recent") p.set("sort", o.sort);
+  if (o.page && o.page > 1) p.set("page", String(o.page));
+  if (o.q) p.set("q", o.q);
+  if (o.unanswered) p.set("unanswered", "1");
   const s = p.toString();
   return s ? `/community?${s}` : "/community";
 }
@@ -41,63 +48,118 @@ function qs(category?: string, sort?: string, page?: number): string {
 export default async function CommunityPage({ searchParams }: { searchParams: SearchParams }) {
   const category = typeof searchParams.category === "string" ? searchParams.category : undefined;
   const sort = typeof searchParams.sort === "string" ? searchParams.sort : "recent";
+  const q = typeof searchParams.q === "string" && searchParams.q.trim() ? searchParams.q.trim() : undefined;
+  const unanswered = searchParams.unanswered === "1" || searchParams.unanswered === "true";
   const page = Math.max(1, Number(typeof searchParams.page === "string" ? searchParams.page : "1") || 1);
+
   const [{ items, has_more }, popularRes] = await Promise.all([
-    fetchCommunityPosts({ category, sort, page: page - 1 }),
+    fetchCommunityPosts({ category, sort, q, unanswered, page: page - 1 }),
     fetchCommunityPosts({ sort: "top" }),
   ]);
   const popular = popularRes.items.slice(0, 5);
 
   return (
-    <div className="space-y-6">
-      {/* 카테고리 탭 + 정렬 + 글쓰기 (제목 없는 툴바형 상단) */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+    <div className="space-y-4">
+      {/* 1행: 카테고리 탭 + 글쓰기 */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <nav className="flex flex-wrap gap-1.5">
-          <Tab href={qs(undefined, sort)} active={!category}>전체</Tab>
+          <Tab href={qs({ sort, q, unanswered })} active={!category}>전체</Tab>
           {CATEGORIES.map((c) => (
-            <Tab key={c.key} href={qs(c.key, sort)} active={category === c.key}>
+            <Tab key={c.key} href={qs({ category: c.key, sort, q, unanswered })} active={category === c.key}>
               {c.label}
             </Tab>
           ))}
         </nav>
+        <Link
+          href="/community/new"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+        >
+          <PenSquare className="h-4 w-4" aria-hidden="true" />
+          글쓰기
+        </Link>
+      </div>
+
+      {/* 2행: 검색 + 미답변 + 정렬 */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-3">
+        <form action="/community" method="get" className="relative flex-1 sm:max-w-xs">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+          <input
+            type="search"
+            name="q"
+            defaultValue={q ?? ""}
+            placeholder="제목·내용 검색"
+            className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          />
+          {category && <input type="hidden" name="category" value={category} />}
+          {sort !== "recent" && <input type="hidden" name="sort" value={sort} />}
+          {unanswered && <input type="hidden" name="unanswered" value="1" />}
+        </form>
+
         <div className="flex items-center gap-3">
-          <div className="flex gap-1 text-caption">
-            <Link href={qs(category, "recent")} className={cn(sort !== "top" ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground")}>최신</Link>
-            <span className="text-border">·</span>
-            <Link href={qs(category, "top")} className={cn(sort === "top" ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground")}>인기</Link>
-          </div>
           <Link
-            href="/community/new"
-            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+            href={qs({ category, sort, q, unanswered: !unanswered })}
+            className={cn(
+              "rounded-full border px-3 py-1.5 text-caption font-medium transition-colors",
+              unanswered ? "border-primary bg-primary/5 text-primary" : "border-border text-muted-foreground hover:text-foreground",
+            )}
           >
-            <PenSquare className="h-4 w-4" aria-hidden="true" />
-            글쓰기
+            미답변만
           </Link>
+          <div className="flex gap-1 text-caption">
+            {SORTS.map((s, i) => (
+              <span key={s.key} className="flex items-center gap-1">
+                {i > 0 && <span className="text-border">·</span>}
+                <Link
+                  href={qs({ category, sort: s.key, q, unanswered })}
+                  className={cn((sort === s.key || (s.key === "recent" && sort !== "top" && sort !== "comments")) ? "font-semibold text-foreground" : "text-muted-foreground hover:text-foreground")}
+                >
+                  {s.label}
+                </Link>
+              </span>
+            ))}
+          </div>
         </div>
       </div>
 
+      {/* 검색/필터 상태 표시 */}
+      {(q || unanswered) && (
+        <p className="text-caption text-muted-foreground">
+          {q && <>&lsquo;<strong className="text-foreground">{q}</strong>&rsquo; 검색 결과</>}
+          {q && unanswered && " · "}
+          {unanswered && "미답변만"}
+          {" · "}
+          <Link href={qs({ category })} className="text-primary hover:underline">초기화</Link>
+        </p>
+      )}
+
       {/* 2단: 목록 + 사이드바 */}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
+      <div className="grid gap-6 pt-1 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div className="min-w-0 space-y-6">
           {items.length === 0 ? (
             <div className="rounded-xl border border-border bg-surface p-8 text-center sm:p-12">
-              <p className="text-body font-medium text-foreground">아직 글이 없어요</p>
-              <p className="mx-auto mt-1.5 max-w-md text-body-sm text-muted-foreground">
-                첫 글을 남겨 라운지를 열어주세요. 작은 경험·질문 하나가 누군가에겐 큰 도움이 돼요.
+              <p className="text-body font-medium text-foreground">
+                {q || unanswered ? "조건에 맞는 글이 없어요" : "아직 글이 없어요"}
               </p>
-              <div className="mt-5 flex flex-wrap justify-center gap-2">
-                {EXAMPLE_PROMPTS.map((p) => (
-                  <Link
-                    key={p.label}
-                    href={`/community/new?category=${p.category}`}
-                    className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-caption text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-                  >
-                    {p.label}
-                  </Link>
-                ))}
-              </div>
+              <p className="mx-auto mt-1.5 max-w-md text-body-sm text-muted-foreground">
+                {q || unanswered
+                  ? "다른 검색어나 필터로 다시 시도해 보세요."
+                  : "첫 글을 남겨 라운지를 열어주세요. 작은 경험·질문 하나가 누군가에겐 큰 도움이 돼요."}
+              </p>
+              {!q && !unanswered && (
+                <div className="mt-5 flex flex-wrap justify-center gap-2">
+                  {EXAMPLE_PROMPTS.map((p) => (
+                    <Link
+                      key={p.label}
+                      href={`/community/new?category=${p.category}`}
+                      className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-caption text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                    >
+                      {p.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
               <Link href="/community/new" className="mt-6 inline-flex rounded-lg bg-primary px-5 py-2.5 text-body-sm font-semibold text-primary-foreground hover:opacity-90">
-                첫 글 쓰기
+                글쓰기
               </Link>
             </div>
           ) : (
@@ -108,6 +170,9 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
                     <div className="flex items-center gap-2 text-caption text-muted-foreground">
                       <span className="rounded-full bg-surface-2 px-2 py-0.5 font-medium text-foreground">{categoryLabel(p.category)}</span>
                       <span className="rounded-full border border-border px-2 py-0.5">{sourceLabel(p.source_type)}</span>
+                      {p.category === "qna" && p.comment_count === 0 && (
+                        <span className="rounded-full bg-primary/10 px-2 py-0.5 font-semibold text-primary">답변 대기</span>
+                      )}
                     </div>
                     <h3 className="mt-2 font-semibold text-foreground transition-colors group-hover:text-primary">{p.title}</h3>
                     <p className="mt-1 line-clamp-2 text-body-sm text-muted-foreground">{p.excerpt}</p>
@@ -123,17 +188,17 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
             </ul>
           )}
 
-          {/* 페이지네이션 (이전/다음) — 백엔드 has_more 기반 */}
+          {/* 페이지네이션 */}
           {(page > 1 || has_more) && (
             <nav className="flex items-center justify-center gap-3 pt-2" aria-label="페이지 이동">
               {page > 1 ? (
-                <Link href={qs(category, sort, page - 1)} className="rounded-lg border border-border px-4 py-2 text-body-sm text-foreground transition-colors hover:bg-accent">← 이전</Link>
+                <Link href={qs({ category, sort, q, unanswered, page: page - 1 })} className="rounded-lg border border-border px-4 py-2 text-body-sm text-foreground transition-colors hover:bg-accent">← 이전</Link>
               ) : (
                 <span className="rounded-lg border border-border px-4 py-2 text-body-sm text-muted-foreground opacity-40">← 이전</span>
               )}
               <span className="text-body-sm tabular-nums text-muted-foreground">{page} 페이지</span>
               {has_more ? (
-                <Link href={qs(category, sort, page + 1)} className="rounded-lg border border-border px-4 py-2 text-body-sm text-foreground transition-colors hover:bg-accent">다음 →</Link>
+                <Link href={qs({ category, sort, q, unanswered, page: page + 1 })} className="rounded-lg border border-border px-4 py-2 text-body-sm text-foreground transition-colors hover:bg-accent">다음 →</Link>
               ) : (
                 <span className="rounded-lg border border-border px-4 py-2 text-body-sm text-muted-foreground opacity-40">다음 →</span>
               )}

@@ -80,6 +80,8 @@ export async function fetchCommunityPosts(params: {
   company?: string;
   country?: string;
   jobId?: string;
+  q?: string;
+  unanswered?: boolean;
   sort?: string;
   page?: number;
 } = {}): Promise<CommunityListResponse> {
@@ -88,6 +90,8 @@ export async function fetchCommunityPosts(params: {
   if (params.company) url.searchParams.set("company", params.company);
   if (params.country) url.searchParams.set("country", params.country);
   if (params.jobId) url.searchParams.set("jobId", params.jobId);
+  if (params.q) url.searchParams.set("q", params.q);
+  if (params.unanswered) url.searchParams.set("unanswered", "true");
   if (params.sort) url.searchParams.set("sort", params.sort);
   if (params.page) url.searchParams.set("page", String(params.page));
   try {
