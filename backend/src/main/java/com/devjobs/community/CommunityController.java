@@ -44,10 +44,12 @@ public class CommunityController {
             @RequestParam(required = false) String company,
             @RequestParam(required = false) String country,
             @RequestParam(required = false) String jobId,
+            @RequestParam(required = false) String q,
+            @RequestParam(required = false, defaultValue = "false") boolean unanswered,
             @RequestParam(required = false, defaultValue = "recent") String sort,
             @RequestParam(required = false, defaultValue = "0") int page,
             @RequestParam(required = false, defaultValue = "20") int size) {
-        return service.list(category, company, country, jobId, sort, page, size);
+        return service.list(category, company, country, jobId, q, unanswered, sort, page, size);
     }
 
     @GetMapping("/posts/{id}")

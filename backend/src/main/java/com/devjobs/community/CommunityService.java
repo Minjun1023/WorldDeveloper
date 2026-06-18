@@ -54,13 +54,19 @@ public class CommunityService {
 
     @Transactional(readOnly = true)
     public PostListResponse list(String category, String company, String country, String jobId,
-                                 String sort, int page, int size) {
+                                 String q, boolean unanswered, String sort, int page, int size) {
         int sz = Math.min(Math.max(size, 1), 50);
-        Sort order = "top".equals(sort)
-            ? Sort.by(Sort.Direction.DESC, "score").and(Sort.by(Sort.Direction.DESC, "createdAt"))
-            : Sort.by(Sort.Direction.DESC, "createdAt");
+        Sort byCreated = Sort.by(Sort.Direction.DESC, "createdAt");
+        Sort order = switch (sort == null ? "" : sort) {
+            case "top" -> Sort.by(Sort.Direction.DESC, "score").and(byCreated);
+            case "comments" -> Sort.by(Sort.Direction.DESC, "commentCount").and(byCreated);
+            default -> byCreated;
+        };
+        // 검색어는 null 금지(널이면 Postgres 가 lower(?) 의 타입을 bytea 로 추론해 에러) → 빈 문자열=전체 매칭.
+        String qParam = q == null ? "" : q.trim();
         List<CommunityPost> rows = posts.search(blankToNull(category), blankToNull(company),
-            blankToNull(country), blankToNull(jobId), PageRequest.of(Math.max(page, 0), sz, order));
+            blankToNull(country), blankToNull(jobId), qParam, unanswered,
+            PageRequest.of(Math.max(page, 0), sz, order));
         Map<UUID, String> hmap = handlesFor(rows.stream().map(CommunityPost::getAuthorId).toList());
         List<PostSummary> items = rows.stream().map(p -> toSummary(p, hmap)).toList();
         return new PostListResponse(items, rows.size() == sz);

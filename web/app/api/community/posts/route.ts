@@ -8,7 +8,7 @@ const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const qs = new URLSearchParams();
-  for (const k of ["category", "company", "country", "jobId", "sort", "page"]) {
+  for (const k of ["category", "company", "country", "jobId", "q", "unanswered", "sort", "page"]) {
     const v = searchParams.get(k);
     if (v) qs.set(k, v);
   }
