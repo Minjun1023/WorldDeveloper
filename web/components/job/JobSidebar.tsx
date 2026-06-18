@@ -1,6 +1,6 @@
-import { ExternalLink } from "lucide-react";
 import Link from "next/link";
 
+import { ApplyButton } from "@/components/job/ApplyButton";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { MatchScorePanel } from "@/components/job/MatchScorePanel";
 import { SaveJobButton } from "@/components/job/SaveJobButton";
@@ -25,20 +25,13 @@ export function JobSidebar({ job, loggedIn, companyJobCount }: {
       <MatchScorePanel jobId={job.id} />
 
       <div className="rounded-2xl border border-border bg-surface p-4">
-        {job.apply_url ? (
-          <a
-            href={job.apply_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex h-11 w-full items-center justify-center gap-1.5 rounded-[10px] bg-primary px-6 text-body-sm font-bold text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            지원하기 <ExternalLink className="h-4 w-4" aria-hidden="true" />
-          </a>
-        ) : (
-          <div aria-disabled="true" className="flex h-11 w-full items-center justify-center rounded-[10px] bg-surface-2 px-6 text-body-sm font-semibold text-muted-foreground">
-            지원 링크 미제공
-          </div>
-        )}
+        <ApplyButton
+          jobId={job.id}
+          applyUrl={job.apply_url}
+          loggedIn={loggedIn}
+          className="flex h-11 w-full items-center justify-center gap-1.5 rounded-[10px] bg-primary px-6 text-body-sm font-bold text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          disabledClassName="flex h-11 w-full items-center justify-center rounded-[10px] bg-surface-2 px-6 text-body-sm font-semibold text-muted-foreground"
+        />
         <div className="mt-2 flex gap-2">
           <SaveJobButton jobId={job.id} loggedIn={loggedIn} />
           <ShareButton />
