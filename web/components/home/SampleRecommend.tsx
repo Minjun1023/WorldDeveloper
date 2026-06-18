@@ -35,9 +35,8 @@ export function SampleRecommend({ jobs }: { jobs: Job[] }) {
   return (
     <div>
       <SectionHeader
-        overline="맞춤 추천"
-        title="당신을 위한 6차원 매칭 공고"
-        subtitle="프로필을 작성하면 스택·비자·지역·레벨·연봉·의미 6축 점수로 내게 맞는 공고를 추천해드려요."
+        title="맞춤 추천 공고"
+        subtitle="프로필 기반 6축 매칭"
       />
       <div className="relative">
         {/* 잠금된 미리보기 — 카드를 블러 처리한 배경(장식, 상호작용 비활성) */}
@@ -60,7 +59,7 @@ export function SampleRecommend({ jobs }: { jobs: Job[] }) {
             프로필 작성 시 이용 가능
           </Link>
           <p className="text-body-sm font-medium text-foreground">
-            프로필을 작성하면 내 기준 맞춤 추천을 볼 수 있어요.
+            스택·지역·연봉 기준으로 맞춤 추천을 받아보세요
           </p>
         </div>
       </div>

@@ -7,8 +7,8 @@ import type { HomeStats } from "@/components/home/HeroStats";
 import { MemberLandingRecommend } from "@/components/home/MemberLandingRecommend";
 import { SampleRecommend } from "@/components/home/SampleRecommend";
 import { SectionHeader } from "@/components/home/SectionHeader";
-import { SponsorJobCard } from "@/components/home/SponsorJobCard";
 import { StatsBand } from "@/components/home/StatsBand";
+import { JobRow } from "@/components/job/JobRow";
 import { VerifyMethodology } from "@/components/home/VerifyMethodology";
 import { fetchCompanies, fetchJobs, fetchRegions } from "@/lib/api";
 import { getSession } from "@/lib/session-server";
@@ -99,11 +99,9 @@ export default async function HomePage() {
       {countryRegions.length > 0 && (
         <Section muted>
           <SectionHeader
-            overline="국가별"
-            title="진출 가능한 국가"
-            count={countryRegions.length}
+            title="국가별 공고"
             href={countryRegions.length > 10 ? "/regions" : undefined}
-            subtitle="비자 스폰서십이 명시된 공고가 있는 국가만 모았어요."
+            subtitle="비자 스폰서십 검증 공고 기준"
           />
           <CountryTiles regions={countryRegions} limit={10} />
         </Section>
@@ -113,7 +111,6 @@ export default async function HomePage() {
       {spotlight.length > 0 && (
         <Section>
           <SectionHeader
-            overline="기업 스포트라이트"
             title="검증된 기업들"
             href="/companies"
             hrefLabel="모든 기업 보기"
@@ -127,15 +124,14 @@ export default async function HomePage() {
       {sponsorJobs.length > 0 && (
         <Section muted>
           <SectionHeader
-            overline="최신 공고"
-            title="방금 올라온 비자 스폰서십 공고"
+            title="최신 공고"
             href="/search?visa=sponsors&sort=newest"
             hrefLabel="전체 공고 보기"
-            subtitle="비자 스폰서십이 명시·검증된 최신 공고예요."
+            subtitle="검증된 공고만 수록"
           />
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="space-y-3">
             {sponsorJobs.map((job) => (
-              <SponsorJobCard key={job.id} job={job} />
+              <JobRow key={job.id} job={job} />
             ))}
           </div>
         </Section>
@@ -143,11 +139,12 @@ export default async function HomePage() {
 
       {/* 방법론: 어떻게 검증을 신뢰할 수 있나요? (흰색) */}
       <Section id="methodology">
-        <SectionHeader
-          overline="방법론"
-          title="어떻게 ‘검증’을 신뢰할 수 있나요?"
-          subtitle="정부 공식 명부와 채용 공고 원문을 교차 검증해요. 임의 분류 없이 출처와 근거를 함께 보여드려요."
-        />
+        <div className="mb-6 text-center">
+          <h2 className="text-h2">어떻게 검증하나요?</h2>
+          <p className="mx-auto mt-1.5 max-w-xl text-body-sm text-muted-foreground">
+            3단계 교차검증 방법론
+          </p>
+        </div>
         <VerifyMethodology />
       </Section>
 

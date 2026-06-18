@@ -26,7 +26,7 @@ export function CountryTiles({ regions, limit }: { regions: RegionCount[]; limit
               )}
               <div className="min-w-0">
                 <div className="truncate font-semibold leading-tight">{c.label}</div>
-                <div className="mt-0.5 text-caption text-muted-foreground">공고 {c.count}</div>
+                <div className="mt-0.5 text-caption tabular-nums text-muted-foreground">{c.count.toLocaleString()}개</div>
               </div>
             </div>
           </Link>

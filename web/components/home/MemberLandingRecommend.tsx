@@ -31,9 +31,8 @@ export function MemberLandingRecommend() {
   return (
     <section>
       <SectionHeader
-        overline="맞춤 추천 미리보기"
-        title="당신을 위한 6차원 매칭 공고"
-        subtitle="프로필 기반으로 스택·비자·지역·레벨·연봉·의미 6축 점수를 계산했어요."
+        title="맞춤 추천 공고"
+        subtitle="프로필 기반 6축 매칭"
         href="/recommend"
         hrefLabel="추천 전체 보기"
       />
