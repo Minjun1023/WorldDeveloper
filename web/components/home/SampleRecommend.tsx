@@ -35,7 +35,7 @@ export function SampleRecommend({ jobs }: { jobs: Job[] }) {
   return (
     <div>
       <SectionHeader
-        overline="AI 맞춤 추천"
+        overline="맞춤 추천"
         title="당신을 위한 6차원 매칭 공고"
         subtitle="프로필을 작성하면 스택·비자·지역·레벨·연봉·의미 6축 점수로 내게 맞는 공고를 추천해드려요."
       />
