@@ -49,7 +49,7 @@ export default async function SearchPage({
       <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
         <FilterSidebar regions={regions} />
 
-        <section className="space-y-4">
+        <section className="min-w-0 space-y-4">
           <div className="flex flex-wrap items-baseline justify-between gap-3">
             {result.ok ? (
               <p className="text-body-sm text-muted-foreground">
