@@ -4,6 +4,8 @@ import com.devjobs.community.dto.CommunityDtos.CommentDto;
 import com.devjobs.community.dto.CommunityDtos.CreateCommentRequest;
 import com.devjobs.community.dto.CommunityDtos.CreatePostRequest;
 import com.devjobs.community.dto.CommunityDtos.EditPostRequest;
+import com.devjobs.community.dto.CommunityDtos.FacetCount;
+import com.devjobs.community.dto.CommunityDtos.FacetResponse;
 import com.devjobs.community.dto.CommunityDtos.PostDetail;
 import com.devjobs.community.dto.CommunityDtos.PostListResponse;
 import com.devjobs.community.dto.CommunityDtos.PostSummary;
@@ -12,9 +14,11 @@ import com.devjobs.community.dto.CommunityDtos.ReportRequest;
 import com.devjobs.profile.UserHandle;
 import com.devjobs.profile.UserProfileEntity;
 import com.devjobs.profile.UserProfileRepository;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -54,7 +58,7 @@ public class CommunityService {
 
     @Transactional(readOnly = true)
     public PostListResponse list(String category, String company, String country, String jobId,
-                                 String q, boolean unanswered, String sort, int page, int size) {
+                                 String tag, String q, boolean unanswered, String sort, int page, int size) {
         int sz = Math.min(Math.max(size, 1), 50);
         Sort byCreated = Sort.by(Sort.Direction.DESC, "createdAt");
         Sort order = switch (sort == null ? "" : sort) {
@@ -65,11 +69,30 @@ public class CommunityService {
         // 검색어는 null 금지(널이면 Postgres 가 lower(?) 의 타입을 bytea 로 추론해 에러) → 빈 문자열=전체 매칭.
         String qParam = q == null ? "" : q.trim();
         List<CommunityPost> rows = posts.search(blankToNull(category), blankToNull(company),
-            blankToNull(country), blankToNull(jobId), qParam, unanswered,
+            blankToNull(country), blankToNull(jobId), blankToNull(tag), qParam, unanswered,
             PageRequest.of(Math.max(page, 0), sz, order));
         Map<UUID, String> hmap = handlesFor(rows.stream().map(CommunityPost::getAuthorId).toList());
         List<PostSummary> items = rows.stream().map(p -> toSummary(p, hmap)).toList();
         return new PostListResponse(items, rows.size() == sz);
+    }
+
+    @Transactional(readOnly = true)
+    public FacetResponse facets() {
+        return new FacetResponse(
+            toFacetCounts(posts.countByCategory()),
+            toFacetCounts(posts.countByCountry()),
+            toFacetCounts(posts.countByTag(PageRequest.of(0, 30))));
+    }
+
+    /** 글 조회 1회 등록 — 고유 열람자(로그인=userId, 익명=IP 해시)당 최초 1회만 카운트 증가. */
+    @Transactional
+    public void registerView(String postId, String viewerKey) {
+        if (viewerKey == null || viewerKey.isBlank()) return;
+        UUID pid = uuid(postId);
+        if (!posts.existsById(pid)) return;
+        if (posts.recordView(pid, viewerKey) > 0) {
+            posts.incrementViewCount(pid);
+        }
     }
 
     @Transactional(readOnly = true)
@@ -89,8 +112,8 @@ public class CommunityService {
         boolean reacted = viewer != null && reactions.existsByPostIdAndUserId(p.getId(), viewer);
         return new PostDetail(p.getId().toString(), p.getCategory(), p.getTitle(), p.getBody(),
             displayHandle(p.getAuthorId(), p.isAnonymous(), hmap), p.isAnonymous(), p.getSourceType(), p.getSourceUrl(),
-            p.getLinkedCompanySlug(), p.getLinkedJobId(), p.getLinkedCountry(),
-            p.getCommentCount(), p.getScore(), reacted, p.getAuthorId().equals(viewer),
+            p.getLinkedCompanySlug(), p.getLinkedJobId(), p.getLinkedCountry(), List.copyOf(p.getTags()),
+            p.getCommentCount(), p.getScore(), p.getViewCount(), reacted, p.getAuthorId().equals(viewer),
             p.getCreatedAt(), cs);
     }
 
@@ -111,7 +134,7 @@ public class CommunityService {
         String sourceType = SOURCE_TYPES.contains(req.sourceType()) ? req.sourceType() : "experience";
         CommunityPost p = new CommunityPost(userId, category, title, body, req.anonymous(),
             sourceType, blankToNull(req.sourceUrl()), blankToNull(req.linkedCompanySlug()),
-            blankToNull(req.linkedJobId()), blankToNull(req.linkedCountry()));
+            blankToNull(req.linkedJobId()), blankToNull(req.linkedCountry()), normalizeTags(req.tags()));
         posts.save(p);
         return get(p.getId().toString(), userId);
     }
@@ -124,7 +147,7 @@ public class CommunityService {
         if (title.isEmpty() || title.length() > MAX_TITLE || body.isEmpty() || body.length() > MAX_BODY) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "제목/본문을 확인해주세요");
         }
-        p.edit(title, body);
+        p.edit(title, body, normalizeTags(req.tags()));
         posts.save(p);
         return get(postId, userId);
     }
@@ -192,8 +215,33 @@ public class CommunityService {
         String excerpt = plain.length() > 140 ? plain.substring(0, 140) + "…" : plain;
         return new PostSummary(p.getId().toString(), p.getCategory(), p.getTitle(), excerpt,
             displayHandle(p.getAuthorId(), p.isAnonymous(), hmap), p.isAnonymous(), p.getSourceType(),
-            p.getLinkedCompanySlug(), p.getLinkedCountry(), p.getLinkedJobId(),
-            p.getCommentCount(), p.getScore(), p.getCreatedAt());
+            p.getLinkedCompanySlug(), p.getLinkedCountry(), p.getLinkedJobId(), List.copyOf(p.getTags()),
+            p.getCommentCount(), p.getScore(), p.getViewCount(), p.getCreatedAt());
+    }
+
+    /** 태그 정규화: # 제거·트림·30자 제한·대소문자 무시 중복제거·최대 5개. */
+    private static List<String> normalizeTags(List<String> raw) {
+        if (raw == null || raw.isEmpty()) return List.of();
+        LinkedHashMap<String, String> seen = new LinkedHashMap<>();
+        for (String t : raw) {
+            if (t == null) continue;
+            String s = t.trim();
+            while (s.startsWith("#")) s = s.substring(1).trim();
+            if (s.isEmpty() || s.length() > 30) continue;
+            seen.putIfAbsent(s.toLowerCase(), s);
+            if (seen.size() >= 5) break;
+        }
+        return new ArrayList<>(seen.values());
+    }
+
+    /** Object[]{key, count} 행 → FacetCount(키 null 제외). */
+    private static List<FacetCount> toFacetCounts(List<Object[]> rows) {
+        List<FacetCount> out = new ArrayList<>();
+        for (Object[] r : rows) {
+            if (r[0] == null) continue;
+            out.add(new FacetCount(r[0].toString(), ((Number) r[1]).longValue()));
+        }
+        return out;
     }
 
     /** 작성자 표시명. anonymous 면 "익명", 설정한 닉네임 있으면 그것, 없으면 자동 닉네임. */

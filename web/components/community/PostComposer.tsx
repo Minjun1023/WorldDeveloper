@@ -24,11 +24,31 @@ export function PostComposer({
   const [body, setBody] = useState("");
   const [sourceType, setSourceType] = useState("experience");
   const [sourceUrl, setSourceUrl] = useState("");
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
   const [anonymous, setAnonymous] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const canSubmit = title.trim().length > 0 && body.trim().length > 0 && !pending;
+
+  function addTag(raw: string) {
+    const t = raw.trim().replace(/^#+/, "").trim();
+    if (!t || t.length > 30) return;
+    setTags((prev) => {
+      if (prev.length >= 5 || prev.some((x) => x.toLowerCase() === t.toLowerCase())) return prev;
+      return [...prev, t];
+    });
+    setTagInput("");
+  }
+  function onTagKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
+    if (e.key === "Enter" || e.key === ",") {
+      e.preventDefault();
+      addTag(tagInput);
+    } else if (e.key === "Backspace" && !tagInput && tags.length) {
+      setTags((prev) => prev.slice(0, -1));
+    }
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -46,6 +66,7 @@ export function PostComposer({
           anonymous,
           source_type: sourceType,
           source_url: sourceUrl.trim() || null,
+          tags,
           linked_company_slug: linkedCompanySlug ?? null,
           linked_job_id: linkedJobId ?? null,
           linked_country: linkedCountry ?? null,
@@ -140,6 +161,34 @@ export function PostComposer({
             className="mt-1.5 h-10 w-full rounded-lg border border-input bg-background px-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
         )}
+      </div>
+
+      {/* 태그 (선택) */}
+      <div className="space-y-1.5">
+        <label className="text-body-sm font-medium">
+          태그 <span className="font-normal text-muted-foreground">(선택 · 최대 5개 — 비자종류·도시·회사 등)</span>
+        </label>
+        <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-input bg-background px-2 py-2">
+          {tags.map((t) => (
+            <span key={t} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-caption font-medium text-primary">
+              #{t}
+              <button type="button" onClick={() => setTags((prev) => prev.filter((x) => x !== t))} className="text-primary/60 hover:text-primary" aria-label={`${t} 태그 삭제`}>
+                ×
+              </button>
+            </span>
+          ))}
+          {tags.length < 5 && (
+            <input
+              value={tagInput}
+              onChange={(e) => setTagInput(e.target.value)}
+              onKeyDown={onTagKeyDown}
+              onBlur={() => addTag(tagInput)}
+              maxLength={30}
+              placeholder={tags.length ? "추가…" : "예: BlueCard, Berlin (Enter 로 추가)"}
+              className="min-w-[8rem] flex-1 bg-transparent px-1 text-body-sm focus-visible:outline-none"
+            />
+          )}
+        </div>
       </div>
 
       <label className="flex items-center gap-2 text-body-sm">
