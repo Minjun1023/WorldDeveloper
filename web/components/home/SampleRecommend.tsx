@@ -53,7 +53,7 @@ export function SampleRecommend({ jobs }: { jobs: Job[] }) {
         {/* 중앙 CTA 오버레이 */}
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-surface/40 px-4 text-center">
           <Link
-            href="/signup"
+            href="/signin?callbackUrl=/recommend"
             className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-body-sm font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <Lock className="h-4 w-4" aria-hidden="true" />
