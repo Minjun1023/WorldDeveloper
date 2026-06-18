@@ -20,7 +20,7 @@ export function Hero({
   loggedIn?: boolean;
 }) {
   return (
-    <section className="relative border-b border-border">
+    <section className="section-muted relative border-b border-border">
       <div className="relative mx-auto max-w-container px-4 py-12 sm:py-16">
         <div className="grid items-center gap-10 lg:grid-cols-[1fr_360px]">
           {/* 좌: 콘텐츠 */}
@@ -52,13 +52,13 @@ export function Hero({
                 href={loggedIn ? "/recommend" : "/signup"}
                 className="inline-flex items-center justify-center rounded-md bg-primary px-5 py-3 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
-                프로필 작성하러가기
+                프로필 작성하기
               </Link>
               <Link
                 href="/search"
                 className="inline-flex items-center justify-center rounded-md border border-border bg-surface px-5 py-3 text-body-sm font-medium text-foreground transition-colors hover:bg-accent"
               >
-                공고 둘러보기
+                공고 찾기
               </Link>
             </div>
             <p className="mt-2.5 text-caption text-muted-foreground">
