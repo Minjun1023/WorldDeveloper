@@ -67,8 +67,24 @@ export function FilterSidebar({ regions }: { regions: RegionCount[] }) {
   const remote = sp.get("remote") === "true";
   const complete = sp.get("complete") === "true";
 
+  const hasFilter = !!(sp.get("region") || visa || verifiedOnly || discipline || remote || complete);
+  const reset = () =>
+    update({ region: null, visa: null, verified_only: null, discipline: null, remote: null, complete: null });
+
   return (
     <aside className="h-fit rounded-2xl border border-border bg-surface p-4 lg:sticky lg:top-4">
+      <div className="mb-3 flex items-center justify-between border-b border-border pb-3">
+        <span className="text-body-sm font-bold text-foreground">필터</span>
+        {hasFilter && (
+          <button
+            type="button"
+            onClick={reset}
+            className="text-caption font-medium text-primary transition-colors hover:underline"
+          >
+            초기화
+          </button>
+        )}
+      </div>
       {countries.length > 0 && (
         <Group title="국가">
           {countries.map((c) => (
