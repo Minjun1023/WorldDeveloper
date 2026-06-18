@@ -28,6 +28,19 @@ export function sourceLabel(key: string): string {
   return SOURCE_TYPES.find((s) => s.key === key)?.label ?? key;
 }
 
+// 카테고리별 색상(스캔성). chip=칩 배경+글자, dot=점. 다크 대응.
+export const CATEGORY_STYLE: Record<string, { chip: string; dot: string }> = {
+  visa: { chip: "bg-blue-500/10 text-blue-700 dark:text-blue-300", dot: "bg-blue-500" },
+  interview: { chip: "bg-violet-500/10 text-violet-700 dark:text-violet-300", dot: "bg-violet-500" },
+  salary: { chip: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300", dot: "bg-emerald-500" },
+  settle: { chip: "bg-teal-500/10 text-teal-700 dark:text-teal-300", dot: "bg-teal-500" },
+  company: { chip: "bg-amber-500/10 text-amber-700 dark:text-amber-300", dot: "bg-amber-500" },
+  qna: { chip: "bg-slate-500/10 text-slate-700 dark:text-slate-300", dot: "bg-slate-500" },
+};
+export function categoryStyle(key: string): { chip: string; dot: string } {
+  return CATEGORY_STYLE[key] ?? { chip: "bg-surface-2 text-foreground", dot: "bg-muted-foreground" };
+}
+
 export type CommunityComment = {
   id: string;
   author_handle: string;

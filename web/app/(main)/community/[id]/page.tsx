@@ -3,8 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { CommentSection } from "@/components/community/CommentSection";
+import { CommunityAvatar } from "@/components/community/CommunityAvatar";
 import { PostInteractions } from "@/components/community/PostInteractions";
-import { categoryLabel, fetchCommunityPost, sourceLabel } from "@/lib/community";
+import { categoryLabel, categoryStyle, fetchCommunityPost, sourceLabel } from "@/lib/community";
+import { cn } from "@/lib/utils";
 import { getSession, getSessionToken } from "@/lib/session-server";
 
 export const dynamic = "force-dynamic";
@@ -24,13 +26,19 @@ export default async function CommunityPostPage({ params }: { params: { id: stri
 
       <header className="space-y-3">
         <div className="flex flex-wrap items-center gap-2 text-caption text-muted-foreground">
-          <span className="rounded-full bg-surface-2 px-2 py-0.5 font-medium text-foreground">{categoryLabel(post.category)}</span>
+          <span className={cn("rounded-full px-2 py-0.5 font-medium", categoryStyle(post.category).chip)}>{categoryLabel(post.category)}</span>
           <span className="rounded-full border border-border px-2 py-0.5">{sourceLabel(post.source_type)}</span>
-          <span className="font-medium text-foreground">{post.author_handle}</span>
-          <span>·</span>
-          <span>{new Date(post.created_at).toLocaleDateString("ko-KR")}</span>
+          {post.category === "qna" && post.comment_count === 0 && (
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 font-semibold text-primary">답변 대기</span>
+          )}
         </div>
         <h1 className="text-h2 text-foreground">{post.title}</h1>
+        <div className="flex items-center gap-2 text-caption text-muted-foreground">
+          <CommunityAvatar name={post.author_handle} size={24} />
+          <span className="font-medium text-foreground">{post.author_handle}</span>
+          <span aria-hidden>·</span>
+          <span>{new Date(post.created_at).toLocaleDateString("ko-KR")}</span>
+        </div>
 
         {/* 결합: 회사/국가/공고 연결 칩 */}
         {(post.linked_company_slug || post.linked_country || post.linked_job_id) && (

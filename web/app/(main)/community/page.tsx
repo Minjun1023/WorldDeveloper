@@ -1,7 +1,8 @@
 import { Building2, FileText, MessageSquare, PenSquare, Search, Stamp, ThumbsUp } from "lucide-react";
 import Link from "next/link";
 
-import { CATEGORIES, categoryLabel, fetchCommunityPosts, sourceLabel } from "@/lib/community";
+import { CommunityAvatar } from "@/components/community/CommunityAvatar";
+import { CATEGORIES, categoryLabel, categoryStyle, fetchCommunityPosts, sourceLabel } from "@/lib/community";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -168,7 +169,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
                 <li key={p.id}>
                   <Link href={`/community/${p.id}`} className="group block rounded-xl border border-border bg-surface p-4 transition-all hover:border-primary/40 hover:shadow-sm">
                     <div className="flex items-center gap-2 text-caption text-muted-foreground">
-                      <span className="rounded-full bg-surface-2 px-2 py-0.5 font-medium text-foreground">{categoryLabel(p.category)}</span>
+                      <span className={cn("rounded-full px-2 py-0.5 font-medium", categoryStyle(p.category).chip)}>{categoryLabel(p.category)}</span>
                       <span className="rounded-full border border-border px-2 py-0.5">{sourceLabel(p.source_type)}</span>
                       {p.category === "qna" && p.comment_count === 0 && (
                         <span className="rounded-full bg-primary/10 px-2 py-0.5 font-semibold text-primary">답변 대기</span>
@@ -176,11 +177,15 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
                     </div>
                     <h3 className="mt-2 font-semibold text-foreground transition-colors group-hover:text-primary">{p.title}</h3>
                     <p className="mt-1 line-clamp-2 text-body-sm text-muted-foreground">{p.excerpt}</p>
-                    <div className="mt-2.5 flex items-center gap-3 text-caption text-muted-foreground">
-                      <span className="font-medium">{p.author_handle}</span>
+                    <div className="mt-3 flex items-center gap-2 text-caption text-muted-foreground">
+                      <CommunityAvatar name={p.author_handle} size={20} />
+                      <span className="font-medium text-foreground">{p.author_handle}</span>
+                      <span aria-hidden>·</span>
                       <span>{new Date(p.created_at).toLocaleDateString("ko-KR")}</span>
-                      <span className="inline-flex items-center gap-1"><ThumbsUp className="h-3.5 w-3.5" aria-hidden="true" />{p.score}</span>
-                      <span className="inline-flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />{p.comment_count}</span>
+                      <span className="ml-auto flex items-center gap-3">
+                        <span className="inline-flex items-center gap-1"><ThumbsUp className="h-3.5 w-3.5" aria-hidden="true" />{p.score}</span>
+                        <span className="inline-flex items-center gap-1"><MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />{p.comment_count}</span>
+                      </span>
                     </div>
                   </Link>
                 </li>

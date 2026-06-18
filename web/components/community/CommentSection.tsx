@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { CommunityAvatar } from "@/components/community/CommunityAvatar";
 import type { CommunityComment } from "@/lib/community";
+import { cn } from "@/lib/utils";
 
 export function CommentSection({
   postId,
@@ -54,10 +56,15 @@ export function CommentSection({
           <li className="text-body-sm text-muted-foreground">첫 댓글을 남겨보세요.</li>
         )}
         {comments.map((c) => (
-          <li key={c.id} className="rounded-lg border border-border bg-surface p-3.5">
-            <div className="mb-1 flex items-center gap-2 text-caption text-muted-foreground">
+          <li
+            key={c.id}
+            className={cn("rounded-lg border p-3.5", c.mine ? "border-primary/30 bg-primary/5" : "border-border bg-surface")}
+          >
+            <div className="mb-1.5 flex items-center gap-2 text-caption text-muted-foreground">
+              <CommunityAvatar name={c.author_handle} size={20} />
               <span className="font-medium text-foreground">{c.author_handle}</span>
-              <span>·</span>
+              {c.mine && <span className="rounded bg-primary/10 px-1.5 py-0.5 font-medium text-primary">내 댓글</span>}
+              <span aria-hidden>·</span>
               <span>{new Date(c.created_at).toLocaleDateString("ko-KR")}</span>
             </div>
             <p className="whitespace-pre-wrap text-body-sm text-foreground">{c.body}</p>
