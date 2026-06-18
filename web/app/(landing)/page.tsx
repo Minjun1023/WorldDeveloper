@@ -107,22 +107,9 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {/* 검증된 기업들 (흰색) */}
-      {spotlight.length > 0 && (
-        <Section>
-          <SectionHeader
-            title="검증된 기업들"
-            href="/companies"
-            hrefLabel="모든 기업 보기"
-            subtitle="정부 명부 검증을 통과한 해외 테크 기업들이에요."
-          />
-          <CompanySpotlight companies={spotlight} />
-        </Section>
-      )}
-
-      {/* 방금 올라온 비자 스폰서십 공고 (연회색) */}
+      {/* 최신 공고 (흰색) */}
       {sponsorJobs.length > 0 && (
-        <Section muted>
+        <Section>
           <SectionHeader
             title="최신 공고"
             href="/search?visa=sponsors&sort=newest"
@@ -137,8 +124,8 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {/* 방법론: 어떻게 검증을 신뢰할 수 있나요? (흰색) */}
-      <Section id="methodology">
+      {/* 방법론: 어떻게 검증하나요? (연회색) */}
+      <Section muted id="methodology">
         <div className="mb-6 text-center">
           <h2 className="text-h2">어떻게 검증하나요?</h2>
           <p className="mx-auto mt-1.5 max-w-xl text-body-sm text-muted-foreground">
@@ -147,6 +134,19 @@ export default async function HomePage() {
         </div>
         <VerifyMethodology />
       </Section>
+
+      {/* 검증된 기업들 (흰색) */}
+      {spotlight.length > 0 && (
+        <Section>
+          <SectionHeader
+            title="검증된 기업들"
+            href="/companies"
+            hrefLabel="모든 기업 보기"
+            subtitle="정부 명부 검증을 통과한 해외 테크 기업들이에요."
+          />
+          <CompanySpotlight companies={spotlight} />
+        </Section>
+      )}
 
       {/* FAQ (연회색) */}
       <Section muted id="faq">
