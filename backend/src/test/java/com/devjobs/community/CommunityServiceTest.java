@@ -1,10 +1,13 @@
 package com.devjobs.community;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.devjobs.community.dto.CommunityDtos.CreatePostRequest;
 import com.devjobs.community.dto.CommunityDtos.FacetCount;
 import com.devjobs.community.dto.CommunityDtos.PostDetail;
+import com.devjobs.community.dto.CommunityDtos.ReportRequest;
+import com.devjobs.community.dto.CommunityDtos.ReportResult;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.server.ResponseStatusException;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -35,6 +39,7 @@ class CommunityServiceTest {
     @BeforeEach
     void clean() {
         jdbc.update("DELETE FROM community_posts");
+        jdbc.update("DELETE FROM community_reports"); // posts 와 FK 없음 → 별도 정리
     }
 
     private UUID insertUser() {
@@ -110,5 +115,37 @@ class CommunityServiceTest {
 
         service.registerView(d.id(), "ip:xyz");    // 다른 열람자 — +1
         assertThat(service.get(d.id(), null).viewCount()).isEqualTo(2);
+    }
+
+    @Test
+    void reportDedupesSameReporter() {
+        UUID author = insertUser();
+        UUID reporter = insertUser();
+        PostDetail d = create(author, "qna", "신고 중복 확인", null, List.of());
+
+        ReportResult r1 = service.report(reporter, new ReportRequest("post", d.id(), "스팸"));
+        ReportResult r2 = service.report(reporter, new ReportRequest("post", d.id(), "또 신고"));
+        assertThat(r1.alreadyReported()).isFalse();
+        assertThat(r2.alreadyReported()).isTrue();   // 두 번째는 중복 무시
+        Long rows = jdbc.queryForObject(
+            "SELECT count(*) FROM community_reports WHERE target_id = ?::uuid", Long.class, d.id());
+        assertThat(rows).isEqualTo(1);               // 행은 1개만
+    }
+
+    @Test
+    void autoHidesPostAfterThreeDistinctReporters() {
+        UUID author = insertUser();
+        PostDetail d = create(author, "qna", "자동 숨김 확인", null, List.of());
+        UUID r1 = insertUser(), r2 = insertUser(), r3 = insertUser();
+
+        assertThat(service.report(r1, new ReportRequest("post", d.id(), null)).autoHidden()).isFalse();
+        assertThat(service.report(r2, new ReportRequest("post", d.id(), null)).autoHidden()).isFalse();
+        assertThat(service.report(r3, new ReportRequest("post", d.id(), null)).autoHidden()).isTrue();
+
+        // 목록에서 사라지고, 비작성자는 상세 404, 작성자는 여전히 열람 가능.
+        var listed = service.list(null, null, null, null, null, null, false, "recent", 0, 20).items();
+        assertThat(listed).noneMatch(p -> p.id().equals(d.id()));
+        assertThatThrownBy(() -> service.get(d.id(), r1)).isInstanceOf(ResponseStatusException.class);
+        assertThat(service.get(d.id(), author).id()).isEqualTo(d.id());
     }
 }

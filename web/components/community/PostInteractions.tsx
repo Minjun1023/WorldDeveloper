@@ -4,6 +4,7 @@ import { Flag, ThumbsUp, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { ReportDialog } from "@/components/community/ReportDialog";
 import { cn } from "@/lib/utils";
 
 // 글 하단 액션: 추천 토글 / 신고 / (작성자) 삭제.
@@ -24,6 +25,7 @@ export function PostInteractions({
   const [reacted, setReacted] = useState(initialReacted);
   const [score, setScore] = useState(initialScore);
   const [busy, setBusy] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   async function toggle() {
     if (!loggedIn) {
@@ -44,19 +46,12 @@ export function PostInteractions({
     }
   }
 
-  async function report() {
+  function report() {
     if (!loggedIn) {
       router.push(`/signin?callbackUrl=/community/${postId}`);
       return;
     }
-    const reason = window.prompt("신고 사유(선택)를 입력해주세요.");
-    if (reason === null) return;
-    await fetch("/api/community/reports", {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ target_type: "post", target_id: postId, reason }),
-    });
-    window.alert("신고가 접수됐어요. 검토 후 조치할게요.");
+    setReportOpen(true);
   }
 
   async function remove() {
@@ -66,6 +61,7 @@ export function PostInteractions({
   }
 
   return (
+    <>
     <div className="flex items-center gap-2">
       <button
         type="button"
@@ -100,5 +96,13 @@ export function PostInteractions({
         </button>
       )}
     </div>
+    <ReportDialog
+      open={reportOpen}
+      onClose={() => setReportOpen(false)}
+      targetType="post"
+      targetId={postId}
+      onHidden={() => router.push("/community")}
+    />
+    </>
   );
 }

@@ -11,6 +11,7 @@ import com.devjobs.community.dto.CommunityDtos.PostListResponse;
 import com.devjobs.community.dto.CommunityDtos.PostSummary;
 import com.devjobs.community.dto.CommunityDtos.ReactionResponse;
 import com.devjobs.community.dto.CommunityDtos.ReportRequest;
+import com.devjobs.community.dto.CommunityDtos.ReportResult;
 import com.devjobs.profile.UserHandle;
 import com.devjobs.profile.UserProfileEntity;
 import com.devjobs.profile.UserProfileRepository;
@@ -36,6 +37,7 @@ public class CommunityService {
     private static final Set<String> CATEGORIES =
         Set.of("visa", "interview", "salary", "settle", "company", "qna");
     private static final Set<String> SOURCE_TYPES = Set.of("experience", "secondhand", "question");
+    private static final int AUTO_HIDE_REPORTS = 3; // 고유 신고자 N명 누적 시 자동 숨김(status='flagged')
     private static final int MAX_TITLE = 150;
     private static final int MAX_BODY = 20000;
     private static final int MAX_COMMENT = 5000;
@@ -98,8 +100,12 @@ public class CommunityService {
     @Transactional(readOnly = true)
     public PostDetail get(String postId, UUID viewer) {
         CommunityPost p = posts.findById(uuid(postId))
-            .filter(x -> !"removed".equals(x.getStatus()))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "글 없음"));
+        // 미게시(신고 누적 flagged / removed) 글은 작성자만 열람 가능, 그 외엔 숨김(404).
+        boolean isAuthor = viewer != null && p.getAuthorId().equals(viewer);
+        if (!"published".equals(p.getStatus()) && !isAuthor) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "글 없음");
+        }
         List<CommunityComment> raw = comments.findByPostIdAndStatusOrderByCreatedAtAsc(p.getId(), "published");
         Set<UUID> authorIds = new HashSet<>();
         authorIds.add(p.getAuthorId());
@@ -194,9 +200,34 @@ public class CommunityService {
     }
 
     @Transactional
-    public void report(UUID userId, ReportRequest req) {
+    public ReportResult report(UUID userId, ReportRequest req) {
         String type = "comment".equals(req.targetType()) ? "comment" : "post";
-        reports.save(new CommunityReport(type, uuid(req.targetId()), userId, trim(req.reason())));
+        UUID targetId = uuid(req.targetId());
+        // 같은 신고자가 같은 대상을 또 신고하면 행을 만들지 않음(중복 무시, idempotent).
+        if (reports.existsByTargetIdAndReporterId(targetId, userId)) {
+            return new ReportResult(true, false);
+        }
+        reports.save(new CommunityReport(type, targetId, userId, trim(req.reason())));
+        // 고유 신고자 임계치 도달 → 사람 개입 없이 자동 숨김(status='flagged', 되돌릴 수 있음).
+        boolean hidden = false;
+        if (reports.countByTargetId(targetId) >= AUTO_HIDE_REPORTS) {
+            hidden = autoHide(type, targetId);
+        }
+        return new ReportResult(false, hidden);
+    }
+
+    /** 신고 누적 대상 자동 숨김 — 게시중인 것만 flagged 로. 숨김 발생 시 true. */
+    private boolean autoHide(String type, UUID targetId) {
+        if ("comment".equals(type)) {
+            return comments.findById(targetId)
+                .filter(c -> "published".equals(c.getStatus()))
+                .map(c -> { c.setStatus("flagged"); comments.save(c); return true; })
+                .orElse(false);
+        }
+        return posts.findById(targetId)
+            .filter(p -> "published".equals(p.getStatus()))
+            .map(p -> { p.setStatus("flagged"); posts.save(p); return true; })
+            .orElse(false);
     }
 
     // --- helpers ---

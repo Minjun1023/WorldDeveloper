@@ -82,6 +82,9 @@ public final class CommunityDtos {
 
     public record ReactionResponse(boolean reacted, int score) {}
 
+    // 신고 결과 — alreadyReported(이미 신고함, 중복) / autoHidden(누적 임계치 도달로 자동 숨김).
+    public record ReportResult(boolean alreadyReported, boolean autoHidden) {}
+
     // --- facet 집계(사이드바: 카테고리/국가/태그 카운트) ---
     public record FacetCount(String key, long count) {}
 
