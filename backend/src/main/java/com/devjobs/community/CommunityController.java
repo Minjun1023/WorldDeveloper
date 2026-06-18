@@ -9,6 +9,7 @@ import com.devjobs.community.dto.CommunityDtos.PostDetail;
 import com.devjobs.community.dto.CommunityDtos.PostListResponse;
 import com.devjobs.community.dto.CommunityDtos.ReactionResponse;
 import com.devjobs.community.dto.CommunityDtos.ReportRequest;
+import com.devjobs.community.dto.CommunityDtos.ReportResult;
 import com.devjobs.strategist.RateLimiter;
 import jakarta.servlet.http.HttpServletRequest;
 import java.nio.charset.StandardCharsets;
@@ -105,8 +106,9 @@ public class CommunityController {
     }
 
     @PostMapping("/reports")
-    public void report(@AuthenticationPrincipal String userId, @RequestBody ReportRequest req) {
-        service.report(UUID.fromString(userId), req);
+    public ReportResult report(@AuthenticationPrincipal String userId, @RequestBody ReportRequest req) {
+        throttle(userId);
+        return service.report(UUID.fromString(userId), req);
     }
 
     private void throttle(String userId) {

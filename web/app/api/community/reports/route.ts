@@ -14,7 +14,9 @@ export async function POST(req: Request) {
       body: await req.text(),
       cache: "no-store",
     });
-    return NextResponse.json({ ok: res.ok }, { status: res.status });
+    // 백엔드 결과(already_reported/auto_hidden)를 그대로 전달 → 모달이 정직한 문구 표시.
+    const data = await res.json().catch(() => ({}));
+    return NextResponse.json(data, { status: res.status });
   } catch {
     return NextResponse.json({ error: "실패" }, { status: 502 });
   }
