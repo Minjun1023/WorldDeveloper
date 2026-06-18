@@ -44,8 +44,8 @@ export function JobRow({ job }: { job: Job }) {
         {job.title_ko && (
           <div className="truncate text-caption text-muted-foreground">{job.title}</div>
         )}
-        <div className="mt-0.5 flex items-center gap-1 text-body-sm text-muted-foreground">
-          <span className="truncate">
+        <div className="mt-0.5 flex min-w-0 items-center gap-1 text-body-sm text-muted-foreground">
+          <span className="min-w-0 truncate">
             {job.company.display_name}
             {loc ? ` · ${loc}` : ""}
             {level ? ` · ${level}` : ""}
