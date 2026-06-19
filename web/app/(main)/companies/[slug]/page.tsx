@@ -10,6 +10,7 @@ import { JobCard } from "@/components/job/JobCard";
 import { RegisterVerifiedBadge } from "@/components/job/RegisterVerifiedBadge";
 import { Badge } from "@/components/ui/badge";
 import { fetchCompany } from "@/lib/api";
+import { COMPANY_LOCATIONS } from "@/lib/company-locations";
 import { getSession } from "@/lib/session-server";
 
 export const dynamic = "force-dynamic";
@@ -73,7 +74,11 @@ export default async function CompanyDetailPage({ params }: { params: { slug: st
       </header>
 
       {/* 회사 정보 (한 줄 소개 + Wikidata 보강 사실) */}
-      <CompanyInfo slug={company.slug} />
+      <CompanyInfo
+        slug={company.slug}
+        tags={company.tags}
+        location={COMPANY_LOCATIONS[company.slug]?.location}
+      />
 
       {/* 통계 행 (공고 목록에서 계산) */}
       <CompanyStats jobs={jobs} jobCount={company.job_count} />

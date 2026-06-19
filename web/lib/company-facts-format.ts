@@ -21,10 +21,24 @@ const INDUSTRY_KO: Record<string, string> = {
   "health care": "헬스케어",
   "transport": "운송",
   "retail": "리테일",
+  "enterprise software": "엔터프라이즈 소프트웨어",
+  "human resource management": "인사관리(HR)",
+  "clothing industry": "의류",
+  "fintech": "핀테크",
+  "information technology": "IT",
+  "software development": "소프트웨어 개발",
+  "cloud storage": "클라우드 스토리지",
+  "analytics": "데이터 분석",
+  "automotive industry": "자동차",
 };
 
+/** 매핑된 한국어 업종만 반환. 미매핑이면 undefined (조립 문장에서 영문 누수 방지). */
+export function industryKo(industry: string): string | undefined {
+  return INDUSTRY_KO[industry.toLowerCase()];
+}
+
 export function industryLabel(industry: string): string {
-  return INDUSTRY_KO[industry.toLowerCase()] ?? industry;
+  return industryKo(industry) ?? industry;
 }
 
 /** 직원 수를 정직한 어림수로. 1000명 이상은 천 단위로 '내림'하고 '+'(이상)를 붙인다. */
