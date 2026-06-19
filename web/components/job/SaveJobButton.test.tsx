@@ -1,7 +1,11 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SaveJobButton } from "@/components/job/SaveJobButton";
+import { resetSavedStore } from "@/lib/saved-jobs";
+
+// 저장 상태는 모듈 싱글톤 스토어를 공유하므로 테스트마다 초기화.
+beforeEach(() => resetSavedStore());
 
 function mockFetch(savedIds: string[]) {
   return vi.fn((url: string, init?: RequestInit) => {
