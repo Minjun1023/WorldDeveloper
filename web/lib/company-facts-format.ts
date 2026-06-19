@@ -21,6 +21,9 @@ const INDUSTRY_KO: Record<string, string> = {
   "health care": "헬스케어",
   "transport": "운송",
   "retail": "리테일",
+  "enterprise software": "엔터프라이즈 소프트웨어",
+  "human resource management": "인사관리(HR)",
+  "clothing industry": "의류",
 };
 
 /** 매핑된 한국어 업종만 반환. 미매핑이면 undefined (조립 문장에서 영문 누수 방지). */
