@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { flagFromLocation } from "@/lib/flags";
 import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
 import { formatSalary } from "@/lib/salary";
+import { fallbackMetaChip } from "@/lib/jobMeta";
 import { filterTechTags } from "@/lib/techTags";
 import type { Job } from "@/lib/types";
 
@@ -28,6 +29,7 @@ export function JobCard({
   const posted = postedRelativeLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
   const techTags = filterTechTags(job.tags, job.company);
+  const metaChip = techTags.length === 0 ? fallbackMetaChip(job) : null;
   const flag = flagFromLocation(job.location);
   const locText = (job.location_ko ?? job.location) || (job.is_remote ? "원격" : null);
   // VisaBadge 가 실제로 렌더하는 상태만 true(sponsors 는 null 이라 제외). unclear 는 중립
@@ -107,6 +109,15 @@ export function JobCard({
             {techTags.length > 4 && (
               <span className="text-caption text-muted-foreground">+{techTags.length - 4}</span>
             )}
+          </div>
+        )}
+
+        {/* 기술 태그가 없을 때: 레벨/고용형태 중립 칩으로 레이아웃 유지 */}
+        {metaChip && (
+          <div className="mt-3 flex flex-wrap items-center gap-1.5">
+            <span className="rounded-md bg-surface-2 px-2 py-0.5 text-caption text-muted-foreground">
+              {metaChip}
+            </span>
           </div>
         )}
 
