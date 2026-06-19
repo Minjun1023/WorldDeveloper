@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
@@ -7,27 +7,26 @@ vi.mock("@/components/theme-toggle", () => ({ ThemeToggle: () => null }));
 
 import { SiteNav } from "@/components/SiteNav";
 
-describe("SiteNav 채용 드롭다운", () => {
-  it("채용 트리거를 누르면 검색·추천·기업이 나타난다", () => {
+describe("SiteNav", () => {
+  it("Figma 내비 항목을 평면 상위 링크로 노출한다", () => {
     render(<SiteNav loggedIn={false} />);
-
-    // 닫힌 상태에서는 하위 항목이 아직 렌더되지 않는다
-    expect(screen.queryByRole("menuitem", { name: "검색" })).toBeNull();
-
-    const trigger = screen.getByRole("button", { name: /채용/ });
-    expect(trigger).toHaveAttribute("aria-expanded", "false");
-
-    fireEvent.click(trigger);
-
-    expect(trigger).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("menuitem", { name: "검색" })).toHaveAttribute("href", "/search");
-    expect(screen.getByRole("menuitem", { name: "추천" })).toHaveAttribute("href", "/recommend");
-    expect(screen.getByRole("menuitem", { name: "기업" })).toHaveAttribute("href", "/companies");
+    const links: Array<[string, string]> = [
+      ["홈", "/"],
+      ["공고 검색", "/search"],
+      ["맞춤 추천", "/recommend"],
+      ["북마크", "/bookmarks"],
+      ["커뮤니티", "/community"],
+      ["기업", "/companies"],
+      ["이력서 코치", "/coach"],
+    ];
+    for (const [name, href] of links) {
+      expect(screen.getByRole("link", { name })).toHaveAttribute("href", href);
+    }
   });
 
-  it("커뮤니티·이력서 코치는 최상위 링크로 항상 보인다", () => {
+  it("비로그인 시 로그인·회원가입 CTA 를 보여준다", () => {
     render(<SiteNav loggedIn={false} />);
-    expect(screen.getByRole("link", { name: "커뮤니티" })).toHaveAttribute("href", "/community");
-    expect(screen.getByRole("link", { name: "이력서 코치" })).toHaveAttribute("href", "/coach");
+    expect(screen.getByRole("link", { name: "로그인" })).toHaveAttribute("href", "/signin");
+    expect(screen.getByRole("link", { name: "회원가입" })).toHaveAttribute("href", "/signup");
   });
 });
