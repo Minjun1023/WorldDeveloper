@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { RecommendationCard } from "@/components/recommend/RecommendationCard";
 import { recordEvent } from "@/lib/feedback";
+import { setSavedLocal } from "@/lib/saved-jobs";
 import type { RecommendationItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -36,12 +37,14 @@ export function InteractiveJobCard({
   async function toggleSave() {
     const next = !saved;
     setSaved(next);
+    setSavedLocal(jobId, next); // 공유 스토어 동기화(검색·상세 하트 반영)
     onSaveChange(jobId, next);
     try {
       const res = await fetch(`/api/me/saved/${encodeURIComponent(jobId)}`, { method: next ? "PUT" : "DELETE" });
       if (!res.ok) throw new Error();
     } catch {
       setSaved(!next);
+      setSavedLocal(jobId, !next); // 롤백
       onSaveChange(jobId, !next);
     }
   }
