@@ -42,7 +42,8 @@ export function PostComposer({
     setTagInput("");
   }
   function onTagKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter" || e.key === ",") {
+    if ((e.key === "Enter" || e.key === ",") && !e.nativeEvent.isComposing) {
+      // IME 조합 중 Enter 는 조합 확정용 — 태그 추가하지 않는다(끝글자 잔류 방지).
       e.preventDefault();
       addTag(tagInput);
     } else if (e.key === "Backspace" && !tagInput && tags.length) {
