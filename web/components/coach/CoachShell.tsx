@@ -1,33 +1,43 @@
 "use client";
 
-import { Coins, Info, LayoutGrid, Lock, MessageSquare, Sparkles } from "lucide-react";
+import { Coins, Info, Sparkles, Wrench } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
 import { CoachChat } from "@/components/coach/CoachChat";
 import { cn } from "@/lib/utils";
 
-// 이력서 코치 = 직행 "커리어AI" 식 앱셸: 좌측 사이드바(도구·소개·크레딧) + 메인이 화면을 채움.
-// 전역 navbar 는 두지 않음(/coach 는 (main) 그룹 밖) — 브랜드를 누르면 홈으로 돌아간다.
+// 이력서 코치 = 직행 "커리어AI" 식 앱셸: 좌측 사이드바(브랜드 + 도구·소개·크레딧) + 메인 히어로.
+// 전역 navbar(SiteNav)는 페이지에서 얹고, 여기는 그 아래를 채운다.
 type View = "tools" | "about" | "credits";
 
-const NAV: { key: View; label: string; icon: typeof LayoutGrid }[] = [
-  { key: "tools", label: "도구", icon: LayoutGrid },
+const NAV: { key: View; label: string; icon: typeof Wrench }[] = [
+  { key: "tools", label: "도구", icon: Wrench },
   { key: "about", label: "소개", icon: Info },
-  { key: "credits", label: "크레딧", icon: Coins },
+  { key: "credits", label: "크레딧", icon: Sparkles },
 ];
 
 export function CoachShell({ loggedIn }: { loggedIn: boolean }) {
   const [view, setView] = useState<View>("tools");
 
   // 전역 navbar(SiteNav) 높이 ≈ 61px — 사이드바를 그 아래에 고정하고 영역을 그만큼 줄인다.
-  // navbar 와 같은 max-w-container/px-4 컨테이너에 맞춰 좌측 경계를 정렬한다(풀블리드 시 선이 어긋나 보임).
   return (
     <div className="mx-auto flex min-h-[calc(100vh-61px)] w-full max-w-container flex-col px-4 lg:flex-row">
       {/* 사이드바 */}
       <aside className="flex shrink-0 flex-col border-b border-border bg-surface lg:sticky lg:top-[61px] lg:min-h-[calc(100vh-61px)] lg:w-64 lg:self-start lg:border-b-0 lg:border-r">
-        {/* 내비 (모바일=가로, 데스크톱=세로) — 항목 아이콘을 전역 navbar 로고 시작점에 정렬(-ml-3) */}
-        <nav className="-ml-3 flex gap-1 overflow-x-auto py-3 lg:mt-3 lg:flex-col lg:overflow-visible lg:py-0">
+        {/* 브랜드 헤더: 아바타 + 이력서 코치 / by WorldDev (데스크톱) */}
+        <Link href="/" className="hidden items-center gap-2.5 py-4 lg:flex">
+          <span className="bg-brand-gradient flex h-9 w-9 items-center justify-center rounded-full text-body-sm font-bold text-white shadow-sm">
+            W
+          </span>
+          <span className="min-w-0">
+            <span className="block text-body-sm font-bold leading-tight text-foreground">이력서 코치</span>
+            <span className="block text-caption text-muted-foreground">by WorldDev</span>
+          </span>
+        </Link>
+
+        {/* 내비 (모바일=가로, 데스크톱=세로) */}
+        <nav className="-ml-3 flex gap-1 overflow-x-auto py-3 lg:ml-0 lg:flex-col lg:overflow-visible lg:py-0">
           {NAV.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -37,7 +47,7 @@ export function CoachShell({ loggedIn }: { loggedIn: boolean }) {
               className={cn(
                 "flex shrink-0 items-center gap-2.5 rounded-lg px-3 py-2 text-body-sm font-medium transition-colors",
                 view === key
-                  ? "bg-surface-2 text-foreground"
+                  ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground",
               )}
             >
@@ -47,73 +57,37 @@ export function CoachShell({ loggedIn }: { loggedIn: boolean }) {
           ))}
         </nav>
 
-        {/* 로그아웃 시 로그인 유도 카드 (Figma) — 데스크톱만(모바일은 메인 잠금 화면이 안내) */}
+        {/* 로그아웃 시 로그인 유도 카드 (대화 기록 저장 안내) — 데스크톱만 */}
         {!loggedIn && (
-          <div className="mx-3 mt-4 hidden rounded-xl bg-surface-2 p-4 lg:block">
-            <p className="text-body-sm font-medium leading-snug text-foreground">
-              로그인하고
-              <br />
-              대화 기록을 확인해보세요!
-            </p>
+          <div className="mt-4 hidden rounded-xl bg-surface-2 p-4 lg:block">
+            <p className="text-body-sm font-semibold text-foreground">대화 기록을 저장하려면</p>
+            <p className="mt-1 text-caption leading-snug text-muted-foreground">로그인하면 대화를 90일간 보관해 드려요.</p>
             <Link
               href="/signin?callbackUrl=/coach"
-              className="mt-3 inline-flex rounded-lg bg-primary px-4 py-2 text-caption font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              className="mt-3 block rounded-lg bg-primary px-4 py-2 text-center text-caption font-semibold text-primary-foreground transition-opacity hover:opacity-90"
             >
               로그인
             </Link>
           </div>
         )}
 
-        {/* 하단 피드백 (데스크톱만) — 메뉴와 같은 좌측 정렬 */}
-        <div className="-ml-3 hidden pb-3 pr-3 lg:mt-auto lg:block">
+        {/* 하단: 의견·문의 (데스크톱만) */}
+        <div className="hidden pb-4 lg:mt-auto lg:block">
           <Link
             href="/contact"
-            className="flex items-center gap-2 rounded-lg px-3 py-2 text-body-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="text-caption text-muted-foreground transition-colors hover:text-foreground"
           >
-            <MessageSquare className="h-4 w-4" aria-hidden="true" />
-            피드백
+            의견·문의 보내기
           </Link>
         </div>
       </aside>
 
       {/* 메인 — 남은 영역을 채우고 히어로를 세로 가운데로 */}
       <main className="flex flex-1 flex-col justify-center py-8 lg:py-12 lg:pl-8">
-        {view === "tools" && (loggedIn ? <CoachChat /> : <CoachLocked />)}
+        {view === "tools" && <CoachChat loggedIn={loggedIn} />}
         {view === "about" && <AboutView onStart={() => setView("tools")} />}
         {view === "credits" && <CreditsView onStart={() => setView("tools")} />}
       </main>
-    </div>
-  );
-}
-
-// 로그아웃 상태의 도구 화면 — 히어로는 보여주되 사용은 로그인 후.
-function CoachLocked() {
-  return (
-    <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-7 text-center">
-      <div className="flex flex-col items-center">
-        <p className="text-body text-muted-foreground">이 공고, 내 이력서로 통할까?</p>
-        <h1 className="mt-2 text-[clamp(1.6rem,3.5vw,2.4rem)] font-bold leading-tight tracking-tight text-foreground">
-          막연한 불안 대신, 바로 물어보세요
-        </h1>
-        <span className="mt-5 inline-flex items-center gap-1.5 rounded-full bg-surface-2 px-3.5 py-1.5 text-caption text-muted-foreground">
-          <Sparkles className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-          선택한 공고의 요건에 맞춰 이력서를 봐드려요
-        </span>
-      </div>
-
-      <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-8 shadow-sm">
-        <span className="bg-brand-gradient mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-sm">
-          <Lock className="h-6 w-6" aria-hidden="true" />
-        </span>
-        <p className="text-body font-medium text-foreground">로그인하면 이력서 코치를 이용할 수 있어요</p>
-        <p className="mt-1.5 text-body-sm text-muted-foreground">대화 기록도 저장돼 다음에 이어볼 수 있어요.</p>
-        <Link
-          href="/signin?callbackUrl=/coach"
-          className="bg-brand-gradient mt-5 inline-flex rounded-xl px-6 py-2.5 text-body-sm font-semibold text-white transition-opacity hover:opacity-90"
-        >
-          로그인하고 시작하기
-        </Link>
-      </div>
     </div>
   );
 }
