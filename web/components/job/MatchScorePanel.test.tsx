@@ -44,7 +44,8 @@ describe("MatchScorePanel", () => {
     });
     render(<MatchScorePanel jobId="x" />);
     expect(screen.getByText("78")).toBeInTheDocument();
-    expect(screen.getByText("스택")).toBeInTheDocument();
+    // "스택"은 육각형 레이더 라벨 + 축 값 리스트 양쪽에 나타남
+    expect(screen.getAllByText("스택").length).toBeGreaterThan(0);
   });
 
   it("error → 안내 + 다시 시도 버튼", () => {
