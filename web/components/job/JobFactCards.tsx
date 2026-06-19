@@ -1,4 +1,4 @@
-import { Briefcase, Check, DollarSign, MapPin } from "lucide-react";
+import { Briefcase, MapPin } from "lucide-react";
 import type { ComponentType } from "react";
 
 import { flagFromLocation } from "@/lib/flags";
@@ -27,7 +27,6 @@ function employmentLabel(raw?: string | null): string {
 const SENIORITY_KO: Record<string, string> = {
   Principal: "프린시플", Staff: "스태프", Lead: "리드", Senior: "시니어", Junior: "주니어", Intern: "인턴", Entry: "신입",
 };
-const VISA_LABEL: Record<string, string> = { sponsors: "지원 가능", no_sponsor: "스폰서 불가" };
 
 function levelText(years?: number | null, seniority?: string | null): string | null {
   if (seniority === "Entry" || years === 0) return "신입";
@@ -39,26 +38,24 @@ function levelText(years?: number | null, seniority?: string | null): string | n
 type Chip = {
   icon?: ComponentType<{ className?: string }>;
   text: string;
-  tone?: "visa" | "salary";
+  tone?: "salary";
   flex?: boolean; // 공간 부족 시 줄어들며 말줄임(긴 위치 칩 전용) — 나머지는 고정.
 };
 
-// 핵심 정보(비자·위치·레벨·고용형태·연봉)를 제목 아래 pill 칩으로 한 줄에. (Figma 상세 헤더)
-// 비자=초록 + 체크, 연봉=파랑 + $, 위치=국기 동반. 길면 위치만 말줄임.
+// 핵심 정보(위치·레벨·고용형태·연봉)를 제목 아래 pill 칩으로 한 줄에. (Figma 상세 헤더)
+// 연봉=파랑, 위치=국기 동반, 길면 위치만 말줄임. 비자는 뷰어블 게이트로 노출 공고가 전부
+// 지원 가능이라 칩을 생략한다.
 export function JobFactCards({ job }: { job: JobDetail }) {
-  const visaText = job.visa?.status ? (VISA_LABEL[job.visa.status] ?? "정보 불충분") : "정보 불충분";
-  const isSponsor = job.visa?.status === "sponsors";
   const salaryText = formatSalary(job.salary);
   const flag = flagFromLocation(job.location);
   const locText = compactLocation(job) || "위치 미표기";
   const level = levelText(job.experience_years, job.seniority);
 
   const chips: Chip[] = [
-    { icon: isSponsor ? Check : undefined, text: `비자 ${visaText}`, tone: isSponsor ? "visa" : undefined },
     { icon: MapPin, text: flag ? `${locText} ${flag}` : locText, flex: true },
     ...(level ? [{ icon: Briefcase, text: level }] : []),
     { text: employmentLabel(job.employment_type) },
-    ...(salaryText ? [{ icon: DollarSign, text: salaryText, tone: "salary" as const }] : []),
+    ...(salaryText ? [{ text: salaryText, tone: "salary" as const }] : []),
   ];
 
   return (
@@ -70,19 +67,11 @@ export function JobFactCards({ job }: { job: JobDetail }) {
           className={cn(
             "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-body-sm font-semibold",
             c.flex ? "min-w-0" : "shrink-0 whitespace-nowrap",
-            c.tone === "visa" && "border-success/40 bg-success/5 text-success",
             c.tone === "salary" && "border-primary/30 bg-primary/5 text-primary",
             !c.tone && "border-border bg-surface-2 text-foreground",
           )}
         >
-          {c.icon && (
-            <c.icon
-              className={cn(
-                "h-4 w-4 shrink-0",
-                c.tone === "visa" ? "text-success" : c.tone === "salary" ? "text-primary" : "text-muted-foreground",
-              )}
-            />
-          )}
+          {c.icon && <c.icon className="h-4 w-4 shrink-0 text-muted-foreground" />}
           {c.flex ? <span className="truncate">{c.text}</span> : c.text}
         </span>
       ))}

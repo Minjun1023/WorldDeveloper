@@ -11,7 +11,6 @@ import { JobSummary } from "@/components/job/JobSummary";
 import { MobileApplyBar } from "@/components/job/MobileApplyBar";
 import { RecordRecentJob } from "@/components/job/RecordRecentJob";
 import { TechStackMatch } from "@/components/job/TechStackMatch";
-import { VisaEvidence } from "@/components/job/VisaEvidence";
 import {
   fetchCachedSummary,
   fetchCachedTranslation,
@@ -89,7 +88,6 @@ export default async function JobDetailPage({ params }: { params: { id: string }
               </div>
 
               <JobFactCards job={job} />
-              <VisaEvidence visa={job.visa} />
             </header>
 
             {job.description && <JobSummary jobId={job.id} initialData={initialSummary} />}
