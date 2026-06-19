@@ -41,14 +41,35 @@ describe("CoachChat", () => {
     expect(await screen.findByText(/무엇이 궁금하신가요/)).toBeInTheDocument();
   });
 
-  it("메시지만 입력하고 전송하면 공고·이력서 첨부 안내를 응답한다", async () => {
-    vi.stubGlobal("fetch", mockFetch({ convStatus: 204 }));
+  it("메시지만 입력해도 실제 답변을 받는다 (공고·이력서 없이)", async () => {
+    const fetchMock = mockFetch({ reply: "일반 조언입니다." });
+    vi.stubGlobal("fetch", fetchMock);
     render(<CoachChat initialJobs={jobs as never} />);
     const user = userEvent.setup();
     await user.type(screen.getByPlaceholderText(/메시지/), "이 회사 어때요?");
     await user.click(screen.getByRole("button", { name: /보내기/ }));
     expect(await screen.findByText("이 회사 어때요?")).toBeInTheDocument(); // 내 메시지
-    expect(await screen.findByText(/상담할 공고 · 이력서가 필요해요/)).toBeInTheDocument(); // 안내
+    expect(await screen.findByText("일반 조언입니다.")).toBeInTheDocument(); // 실제 답변
+    const postCall = fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach");
+    const body = JSON.parse((postCall![1] as RequestInit).body as string);
+    expect(body.job_id).toBe(""); // 공고 없이 전송
+    expect(body.messages.at(-1)).toEqual({ role: "user", content: "이 회사 어때요?" });
+  });
+
+  it("첨부만 하고 메시지 없이 보내면 기본 질문으로 실제 답변을 받는다", async () => {
+    const fetchMock = mockFetch({ convStatus: 204, reply: "이력서 평가입니다." });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<CoachChat initialJobs={jobs as never} />);
+    const user = userEvent.setup();
+    await attach(user); // 공고 + 이력서 첨부, 메시지는 비움
+    await user.click(screen.getByRole("button", { name: /보내기/ }));
+    expect(await screen.findByText("이력서 평가입니다.")).toBeInTheDocument();
+    const postCall = fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach");
+    const body = JSON.parse((postCall![1] as RequestInit).body as string);
+    expect(body.job_id).toBe("greenhouse:acme:1");
+    // 메시지 없이 보냈으므로 기본 질문이 user 메시지로 자동 주입된다.
+    expect(body.messages.at(-1).role).toBe("user");
+    expect(body.messages.at(-1).content).toMatch(/이력서/);
   });
 
   it("posts and appends assistant reply", async () => {

@@ -150,6 +150,31 @@ class CoachChatControllerTest {
     }
 
     @Test
+    void noJobReturnsOkAndDoesNotPersist() throws Exception {
+        // 공고를 비우면 일반 이력서/커리어 코칭 — 404 없이 200, 대화는 저장하지 않는다.
+        when(rateLimiter.tryAcquire(anyString())).thenReturn(true);
+        when(profileService.load(any())).thenReturn(Optional.empty());
+        when(aiClient.coachChat(anyString(), anyString(), anyList()))
+            .thenReturn(new CoachChatResult("일반 코칭 답변", "gpt-4o-mini"));
+
+        UUID userId = insertUser();
+        String token = "Bearer " + jwtService.issue(userId.toString());
+        var body = Map.of(
+            "job_id", "",
+            "resume", "",
+            "messages", List.of(Map.of("role", "user", "content", "이력서 잘 쓰는 법 알려줘")));
+
+        mvc.perform(post("/api/v1/me/coach")
+                .header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(body)))
+            .andExpect(status().isOk());
+
+        // 공고 없는 대화는 저장 키(job_id)가 없으므로 저장되지 않는다.
+        assertThat(conversationRepo.findByUserIdAndJobId(userId, "")).isEmpty();
+    }
+
+    @Test
     void successfulCoachPersistsConversation() throws Exception {
         when(rateLimiter.tryAcquire(anyString())).thenReturn(true);
         when(jobService.findById(anyString())).thenReturn(Optional.of(minimalJob("job-persist")));

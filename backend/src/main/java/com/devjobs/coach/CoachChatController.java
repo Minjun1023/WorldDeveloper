@@ -87,12 +87,18 @@ public class CoachChatController {
         if (!rateLimiter.tryAcquire("chat:" + userId)) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "요청이 많아요. 잠시 후 다시.");
         }
-        var jobOpt = jobService.findById(req.job_id());
-        if (jobOpt.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "공고 없음");
+        // 공고는 선택사항: 비워두면 일반 이력서/커리어 코칭. job_id 가 주어졌는데 없으면 그대로 404.
+        boolean hasJob = req.job_id() != null && !req.job_id().isBlank();
+        JobDetailDto job = null;
+        if (hasJob) {
+            var jobOpt = jobService.findById(req.job_id());
+            if (jobOpt.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "공고 없음");
+            }
+            job = jobOpt.get();
         }
 
-        String context = buildContext(jobOpt.get(), req.job_id(), req.resume(), UUID.fromString(userId));
+        String context = buildContext(job, hasJob ? req.job_id() : null, req.resume(), UUID.fromString(userId));
         var msgs = req.messages();
         if (msgs.size() > MAX_MESSAGES) {
             // 오래된 턴을 잘라 전달 페이로드를 묶음(ai 도 동일하게 최근 30턴만 사용). 마지막 user 메시지는 보존됨.
@@ -104,13 +110,15 @@ public class CoachChatController {
         if (result == null) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "상담 기능을 사용할 수 없어요.");
         }
-        // 대화 저장(best-effort) — 실패해도 채팅 응답엔 영향 주지 않는다. 이력서는 저장하지 않는다.
-        try {
-            var thread = new ArrayList<>(req.messages());
-            thread.add(new ChatMessage("assistant", result.reply()));
-            conversationService.save(UUID.fromString(userId), req.job_id(), thread);
-        } catch (Exception e) {
-            log.warn("coach 대화 저장 실패(무시): {}", e.toString());
+        // 대화 저장(best-effort) — 공고 단위로만 저장한다(스키마 PK=user+job). 공고 없는 일반 코칭은 저장하지 않는다.
+        if (hasJob) {
+            try {
+                var thread = new ArrayList<>(req.messages());
+                thread.add(new ChatMessage("assistant", result.reply()));
+                conversationService.save(UUID.fromString(userId), req.job_id(), thread);
+            } catch (Exception e) {
+                log.warn("coach 대화 저장 실패(무시): {}", e.toString());
+            }
         }
         return ResponseEntity.ok(new CoachReply(result.reply()));
     }
@@ -134,37 +142,40 @@ public class CoachChatController {
     private String buildContext(JobDetailDto job, String jobId, String resume, UUID userId) {
         StringBuilder sb = new StringBuilder();
 
-        String company = job.company() != null ? job.company().displayName() : null;
-        String location = job.location();
-        sb.append("공고: ").append(nz(job.title()));
-        if (company != null && !company.isBlank()) {
-            sb.append(" @ ").append(company);
-        }
-        if (location != null && !location.isBlank()) {
-            sb.append(" (").append(location).append(")");
-        }
-        sb.append("\n");
+        // 공고가 있으면 JD·회사 인텔·키워드 갭으로 그라운딩. 없으면(일반 코칭) 생략하고 프로필만 첨부.
+        if (job != null) {
+            String company = job.company() != null ? job.company().displayName() : null;
+            String location = job.location();
+            sb.append("공고: ").append(nz(job.title()));
+            if (company != null && !company.isBlank()) {
+                sb.append(" @ ").append(company);
+            }
+            if (location != null && !location.isBlank()) {
+                sb.append(" (").append(location).append(")");
+            }
+            sb.append("\n");
 
-        if (job.description() != null && !job.description().isBlank()) {
-            sb.append("JD:\n").append(truncate(job.description(), MAX_JD)).append("\n");
-        }
+            if (job.description() != null && !job.description().isBlank()) {
+                sb.append("JD:\n").append(truncate(job.description(), MAX_JD)).append("\n");
+            }
 
-        // 회사 인텔: CompanyDetail 에 별도 요약 필드가 없어 ats(채용 플랫폼)+tags 를 1줄로 압축.
-        if (job.company() != null && job.company().slug() != null) {
-            companyService.detail(job.company().slug()).ifPresent(c -> {
-                String intel = companyIntel(c);
-                if (!intel.isBlank()) {
-                    sb.append("회사 정보: ").append(intel).append("\n");
-                }
-            });
-        }
+            // 회사 인텔: CompanyDetail 에 별도 요약 필드가 없어 ats(채용 플랫폼)+tags 를 1줄로 압축.
+            if (job.company() != null && job.company().slug() != null) {
+                companyService.detail(job.company().slug()).ifPresent(c -> {
+                    String intel = companyIntel(c);
+                    if (!intel.isBlank()) {
+                        sb.append("회사 정보: ").append(intel).append("\n");
+                    }
+                });
+            }
 
-        // 키워드 갭: 이력서가 있을 때만 의미 있음. resumeOptimize 는 비활성/없는 공고면 empty.
-        if (resume != null && !resume.isBlank()) {
-            coachService.resumeOptimize(jobId, resume).ifPresent(opt -> {
-                sb.append("보유 스킬: ").append(joinOrNone(opt.presentKeywords()))
-                  .append(" / 공고 요구 중 미보유: ").append(joinOrNone(opt.missingKeywords())).append("\n");
-            });
+            // 키워드 갭: 이력서가 있을 때만 의미 있음. resumeOptimize 는 비활성/없는 공고면 empty.
+            if (resume != null && !resume.isBlank()) {
+                coachService.resumeOptimize(jobId, resume).ifPresent(opt -> {
+                    sb.append("보유 스킬: ").append(joinOrNone(opt.presentKeywords()))
+                      .append(" / 공고 요구 중 미보유: ").append(joinOrNone(opt.missingKeywords())).append("\n");
+                });
+            }
         }
 
         // 지원자 프로필: 등록돼 있으면 톤/맞춤 답변용 메타로 첨부.
