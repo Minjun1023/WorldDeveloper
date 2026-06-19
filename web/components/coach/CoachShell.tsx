@@ -4,6 +4,7 @@ import { Coins, Info, Sparkles, Wrench } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { CoachChat } from "@/components/coach/CoachChat";
 import { cn } from "@/lib/utils";
 
@@ -22,22 +23,12 @@ export function CoachShell({ loggedIn }: { loggedIn: boolean }) {
 
   // 전역 navbar(SiteNav) 높이 ≈ 61px — 사이드바를 그 아래에 고정하고 영역을 그만큼 줄인다.
   return (
-    <div className="mx-auto flex min-h-[calc(100vh-61px)] w-full max-w-container flex-col px-4 lg:flex-row">
-      {/* 사이드바 */}
-      <aside className="flex shrink-0 flex-col border-b border-border bg-surface lg:sticky lg:top-[61px] lg:min-h-[calc(100vh-61px)] lg:w-64 lg:self-start lg:border-b-0 lg:border-r">
-        {/* 브랜드 헤더: 아바타 + 이력서 코치 / by WorldDev (데스크톱) */}
-        <Link href="/" className="hidden items-center gap-2.5 py-4 lg:flex">
-          <span className="bg-brand-gradient flex h-9 w-9 items-center justify-center rounded-full text-body-sm font-bold text-white shadow-sm">
-            W
-          </span>
-          <span className="min-w-0">
-            <span className="block text-body-sm font-bold leading-tight text-foreground">이력서 코치</span>
-            <span className="block text-caption text-muted-foreground">by WorldDev</span>
-          </span>
-        </Link>
-
+    <div className="flex min-h-[calc(100vh-61px)] w-full flex-col lg:flex-row">
+      {/* 사이드바 — 화면 왼쪽 가장자리까지 채움(풀블리드). 다크모드에서 좌측에 본문 배경이
+          비쳐 깨져 보이던 문제를 해소하고, 메뉴를 왼쪽 가장자리로 이동. */}
+      <aside className="flex shrink-0 flex-col border-b border-border bg-surface px-4 lg:sticky lg:top-[61px] lg:min-h-[calc(100vh-61px)] lg:w-64 lg:self-start lg:border-b-0 lg:border-r lg:py-4">
         {/* 내비 (모바일=가로, 데스크톱=세로) */}
-        <nav className="-ml-3 flex gap-1 overflow-x-auto py-3 lg:ml-0 lg:flex-col lg:overflow-visible lg:py-0">
+        <nav className="flex gap-1 overflow-x-auto py-3 lg:flex-col lg:overflow-visible lg:py-0">
           {NAV.map(({ key, label, icon: Icon }) => (
             <button
               key={key}
@@ -82,11 +73,16 @@ export function CoachShell({ loggedIn }: { loggedIn: boolean }) {
         </div>
       </aside>
 
-      {/* 메인 — 남은 영역을 채우고 히어로를 세로 가운데로 */}
-      <main className="flex flex-1 flex-col justify-center py-8 lg:py-12 lg:pl-8">
-        {view === "tools" && <CoachChat loggedIn={loggedIn} />}
-        {view === "about" && <AboutView onStart={() => setView("tools")} />}
-        {view === "credits" && <CreditsView onStart={() => setView("tools")} />}
+      {/* 메인 — 상단 브레드크럼(홈 > 이력서 코치) + 히어로(세로 가운데) */}
+      <main className="flex flex-1 flex-col px-4 lg:px-8">
+        <div className="pt-6 lg:pt-8">
+          <Breadcrumb />
+        </div>
+        <div className="flex flex-1 flex-col justify-center py-4 lg:py-8">
+          {view === "tools" && <CoachChat loggedIn={loggedIn} />}
+          {view === "about" && <AboutView onStart={() => setView("tools")} />}
+          {view === "credits" && <CreditsView onStart={() => setView("tools")} />}
+        </div>
       </main>
     </div>
   );

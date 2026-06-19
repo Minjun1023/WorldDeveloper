@@ -31,15 +31,24 @@ async function attach(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("CoachChat", () => {
-  it("disables send until job + resume attached and message typed", async () => {
+  it("보내기 버튼은 항상 활성 — 미완성 전송 시 안내로 응답한다", async () => {
     vi.stubGlobal("fetch", mockFetch({ convStatus: 204 }));
     render(<CoachChat initialJobs={jobs as never} />);
     const user = userEvent.setup();
     const send = screen.getByRole("button", { name: /보내기/ });
-    expect(send).toBeDisabled();
-    await attach(user);
-    await user.type(screen.getByPlaceholderText(/메시지/), "어떻게 고칠까요?");
-    expect(send).toBeEnabled();
+    expect(send).toBeEnabled(); // 어느 상황에서도 활성
+    await user.click(send); // 공고·이력서·메시지 모두 없이 전송 → 안내
+    expect(await screen.findByText(/무엇이 궁금하신가요/)).toBeInTheDocument();
+  });
+
+  it("메시지만 입력하고 전송하면 공고·이력서 첨부 안내를 응답한다", async () => {
+    vi.stubGlobal("fetch", mockFetch({ convStatus: 204 }));
+    render(<CoachChat initialJobs={jobs as never} />);
+    const user = userEvent.setup();
+    await user.type(screen.getByPlaceholderText(/메시지/), "이 회사 어때요?");
+    await user.click(screen.getByRole("button", { name: /보내기/ }));
+    expect(await screen.findByText("이 회사 어때요?")).toBeInTheDocument(); // 내 메시지
+    expect(await screen.findByText(/상담할 공고 · 이력서가 필요해요/)).toBeInTheDocument(); // 안내
   });
 
   it("posts and appends assistant reply", async () => {
