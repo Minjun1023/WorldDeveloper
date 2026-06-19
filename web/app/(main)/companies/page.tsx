@@ -5,6 +5,7 @@ import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { Pagination } from "@/components/search/Pagination";
 import { fetchCompanies } from "@/lib/api";
 import { COMPANY_LOCATIONS } from "@/lib/company-locations";
+import { companyBlurb } from "@/lib/company-blurb";
 import { companyProfile, flagEmoji } from "@/lib/company-profiles";
 import { isoFromLocation } from "@/lib/flags";
 
@@ -40,8 +41,8 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
     const flag = iso ? flagEmoji(iso) : "";
     const countryCode = profile?.countryLabel ?? iso?.toUpperCase();
     const bare = !location && !hasTags && !description && c.job_count <= 1;
-    // 행에 표시할 한 줄 소개는 큐레이션 설명만(태그 기반 폴백은 분야 컬럼과 중복이라 제외).
-    const blurb = profile?.description ?? null;
+    // 행 한 줄 소개: 수기 설명 → (없으면) 한국어 업종. 태그/위치는 전용 컬럼이 있어 넘기지 않음.
+    const blurb = companyBlurb(c.slug);
     return { c, location, flag, countryCode, bare, blurb };
   });
   const allVisible = enriched.filter((e) => !e.bare);
