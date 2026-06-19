@@ -56,14 +56,6 @@ export function AccountMenu({ loggedIn }: { loggedIn: boolean }) {
           >
             내 프로필
           </Link>
-          <Link
-            href="/me/applications"
-            role="menuitem"
-            onClick={() => setOpen(false)}
-            className="block rounded-md px-3 py-2 text-body-sm hover:bg-muted"
-          >
-            내 지원
-          </Link>
           <form action="/api/auth/logout" method="post">
             <button
               type="submit"

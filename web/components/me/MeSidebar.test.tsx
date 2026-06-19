@@ -6,16 +6,15 @@ vi.mock("next/navigation", () => ({ usePathname: () => "/me/profile" }));
 import { MeSidebar } from "@/components/me/MeSidebar";
 
 describe("MeSidebar", () => {
-  it("renders 2 items and marks the active route", () => {
+  it("프로필 링크만 렌더하고 활성 표시한다", () => {
     render(<MeSidebar />);
-    expect(screen.getAllByRole("link")).toHaveLength(2);
+    const links = screen.getAllByRole("link");
+    expect(links).toHaveLength(1);
     expect(screen.getByRole("link", { name: /프로필/ })).toHaveAttribute("aria-current", "page");
-    expect(screen.getByRole("link", { name: /지원 현황/ })).not.toHaveAttribute("aria-current");
   });
 
-  it("프로필 → 지원 현황 순서", () => {
+  it("지원 현황 링크는 노출하지 않는다", () => {
     render(<MeSidebar />);
-    const hrefs = screen.getAllByRole("link").map((a) => a.getAttribute("href"));
-    expect(hrefs).toEqual(["/me/profile", "/me/applications"]);
+    expect(screen.queryByRole("link", { name: /지원/ })).toBeNull();
   });
 });

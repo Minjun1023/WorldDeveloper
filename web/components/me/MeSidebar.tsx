@@ -1,16 +1,15 @@
 "use client";
 
-import { ListChecks, User } from "lucide-react";
+import { User } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
-// 내 페이지: 프로필 → 지원 현황.
-// (저장한 공고·관심 기업·최근 본 공고는 헤더 북마크 드롭다운으로, 이력서 코치는 /coach 로 분리됨)
+// 내 페이지: 프로필.
+// (지원 현황은 /bookmarks 공고관리 칸반으로 일원화, 저장·관심·최근 본 공고도 헤더 북마크로 분리됨)
 const ITEMS = [
   { href: "/me/profile", label: "프로필", icon: User },
-  { href: "/me/applications", label: "지원 현황", icon: ListChecks },
 ];
 
 export function MeSidebar() {

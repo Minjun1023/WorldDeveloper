@@ -1,3 +1,4 @@
+import { Breadcrumb } from "@/components/Breadcrumb";
 import { SiteNav } from "@/components/SiteNav";
 import { getSession } from "@/lib/session-server";
 
@@ -12,7 +13,10 @@ export default async function MainLayout({
   return (
     <>
       <SiteNav loggedIn={!!session} />
-      <main className="mx-auto max-w-container px-4 py-8">{children}</main>
+      <main className="mx-auto max-w-container px-4 py-8">
+        <Breadcrumb />
+        {children}
+      </main>
       <footer className="mx-auto mt-12 max-w-container border-t border-border px-4 py-8 text-caption text-muted-foreground">
         Beta — for personal use only. © WorldDeveloper.
       </footer>
