@@ -3,37 +3,10 @@ import type { ComponentType } from "react";
 
 import { flagFromLocation } from "@/lib/flags";
 import { compactLocation } from "@/lib/jobLocation";
+import { employmentLabel, levelText } from "@/lib/jobMeta";
 import { formatSalary } from "@/lib/salary";
 import type { JobDetail } from "@/lib/types";
 import { cn } from "@/lib/utils";
-
-// 키는 정규화형(대문자·영문자만). 소스마다 "Full-time"/"FULL_TIME"/"fulltime" 등 표기가 달라
-// employmentLabel 에서 비영문자를 제거해 매칭한다.
-const EMP_LABEL: Record<string, string> = {
-  FULLTIME: "정규직",
-  PARTTIME: "파트타임",
-  CONTRACT: "계약직", CONTRACTOR: "계약직", CONTRACTTOHIRE: "계약직",
-  TEMPORARY: "임시직", TEMP: "임시직",
-  INTERN: "인턴", INTERNSHIP: "인턴",
-  FREELANCE: "프리랜서",
-};
-
-// 고용형태 라벨 — 표기 차이를 흡수(영문자만 남겨 대문자 매칭). 미매칭이면 원문 유지.
-function employmentLabel(raw?: string | null): string {
-  if (!raw) return "고용형태 미표기";
-  return EMP_LABEL[raw.toUpperCase().replace(/[^A-Z]/g, "")] ?? raw;
-}
-
-const SENIORITY_KO: Record<string, string> = {
-  Principal: "프린시플", Staff: "스태프", Lead: "리드", Senior: "시니어", Junior: "주니어", Intern: "인턴", Entry: "신입",
-};
-
-function levelText(years?: number | null, seniority?: string | null): string | null {
-  if (seniority === "Entry" || years === 0) return "신입";
-  if (seniority) return SENIORITY_KO[seniority] ?? seniority;
-  if (years != null) return `${years}년+`;
-  return null;
-}
 
 type Chip = {
   icon?: ComponentType<{ className?: string }>;
