@@ -63,14 +63,39 @@
 }
 
 @layer base {
+  /* color-scheme 을 테마에 고정 — UA 위젯(스크롤바·폼 컨트롤)이 라이트로 그려지는 것 방지. */
+  :root {
+    color-scheme: light;
+  }
+  .dark {
+    color-scheme: dark;
+  }
   /* html 까지 배경을 깔아야 다크모드에서 오버스크롤/가장자리에 흰색이 비치지 않는다. */
   html {
     background-color: var(--background);
+    /* macOS '스크롤바 항상 표시' 시 어두운 배경 대비 밝은 띠로 보이는 것 방지 (Firefox/모던 Chrome). */
+    scrollbar-color: var(--border) transparent;
   }
   body {
     background-color: var(--background);
     color: var(--foreground);
     font-feature-settings: "ss01", "tnum";
+  }
+  /* WebKit 스크롤바도 테마색에 맞춤 — 트랙은 페이지 배경, 썸은 보더색. */
+  ::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--border);
+    border-radius: 9999px;
+    border: 3px solid var(--background);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--muted-foreground);
   }
 }
 
