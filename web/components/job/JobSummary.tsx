@@ -97,16 +97,19 @@ export function JobSummary({ jobId, initialData }: { jobId: string; initialData?
       )}
 
       {data && hasBody && !collapsed && (
-        <div className="mt-4 space-y-3">
+        // Figma 형식: 섹션마다 작은 대문자 라벨(위) + 내용(아래) 스택. 좌측 라벨 카드 제거.
+        <div className="mt-4 space-y-4">
           {nonEmpty.map((s) => (
-            <div
-              key={s.key}
-              className="rounded-lg border border-primary/10 bg-surface p-3.5 sm:flex sm:gap-5"
-            >
-              <h3 className="shrink-0 text-body-sm font-semibold sm:w-24 sm:pt-0.5">{s.label}</h3>
-              <ul className="mt-1.5 flex-1 space-y-1 text-body-sm text-muted-foreground sm:mt-0">
+            <div key={s.key}>
+              <p className="mb-1.5 text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+                {s.label}
+              </p>
+              <ul className="space-y-1.5 text-body-sm leading-relaxed text-foreground">
                 {(data[s.key] as string[]).map((item, i) => (
-                  <li key={i}>· {item}</li>
+                  <li key={i} className="flex gap-2">
+                    <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-primary" aria-hidden="true" />
+                    <span>{item}</span>
+                  </li>
                 ))}
               </ul>
             </div>
