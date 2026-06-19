@@ -7,8 +7,16 @@ describe("filterTechTags", () => {
     expect(filterTechTags(["spring", "linux", "react"])).toEqual(["spring", "linux", "react"]);
   });
 
-  it("개념/방법론 태그는 제거한다", () => {
+  it("운영 실천/방법론 태그는 제거한다", () => {
     expect(filterTechTags(["spring", "observability", "devops", "sre"])).toEqual(["spring"]);
+  });
+
+  it("AI/도메인 전문 분야 태그는 기술 스택으로 유지한다", () => {
+    expect(filterTechTags(["machine learning", "observability"])).toEqual(["machine learning"]);
+    expect(filterTechTags(["computer vision", "deep learning"])).toEqual([
+      "computer vision",
+      "deep learning",
+    ]);
   });
 
   it("공고 회사명/슬러그와 같은 태그는 제거한다", () => {

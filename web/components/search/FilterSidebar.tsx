@@ -1,5 +1,6 @@
 "use client";
 
+import { RotateCcw } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
 import type { RegionCount } from "@/lib/api";
@@ -61,29 +62,27 @@ export function FilterSidebar({ regions }: { regions: RegionCount[] }) {
     update({ region: csv || null });
   };
 
-  const visa = sp.get("visa");
-  const verifiedOnly = sp.get("verified_only") === "true";
   const discipline = sp.get("discipline");
   const remote = sp.get("remote") === "true";
   const complete = sp.get("complete") === "true";
 
-  const hasFilter = !!(sp.get("region") || visa || verifiedOnly || discipline || remote || complete);
-  const reset = () =>
-    update({ region: null, visa: null, verified_only: null, discipline: null, remote: null, complete: null });
+  // 모든 필터를 비워 기본 목록으로 되돌린다(선택이 없어도 무해). 버튼은 항상 노출.
+  const reset = () => update({ region: null, discipline: null, remote: null, complete: null });
 
   return (
     <aside className="h-fit rounded-2xl border border-border bg-surface p-4 lg:sticky lg:top-4">
       <div className="mb-3 flex items-center justify-between border-b border-border pb-3">
         <span className="text-body-sm font-bold text-foreground">필터</span>
-        {hasFilter && (
-          <button
-            type="button"
-            onClick={reset}
-            className="text-caption font-medium text-primary transition-colors hover:underline"
-          >
-            초기화
-          </button>
-        )}
+        <button
+          type="button"
+          onClick={reset}
+          aria-label="필터 갱신"
+          title="필터 갱신"
+          className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-caption font-medium text-primary transition-colors hover:bg-primary/5"
+        >
+          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+          갱신
+        </button>
       </div>
       {countries.length > 0 && (
         <Group title="국가">
@@ -98,19 +97,6 @@ export function FilterSidebar({ regions }: { regions: RegionCount[] }) {
           ))}
         </Group>
       )}
-
-      <Group title="비자">
-        <CheckRow
-          checked={visa === "sponsors"}
-          onToggle={() => update({ visa: visa === "sponsors" ? null : "sponsors" })}
-          label="스폰서십 명시"
-        />
-        <CheckRow
-          checked={verifiedOnly}
-          onToggle={() => update({ verified_only: verifiedOnly ? null : "true" })}
-          label="정부 명부 검증"
-        />
-      </Group>
 
       <Group title="직무">
         {DISCIPLINES.map((d) => (
