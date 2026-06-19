@@ -1,21 +1,20 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 
 import { CoachShell } from "@/components/coach/CoachShell";
 
 describe("CoachShell", () => {
-  it("gates the tool behind login when logged out", () => {
+  it("renders the sidebar menu and the coach hero when logged out", () => {
     render(<CoachShell loggedIn={false} />);
     // 사이드바 메뉴
     expect(screen.getByRole("button", { name: "도구" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "소개" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "크레딧" })).toBeInTheDocument();
-    // 로그아웃 상태: 도구는 잠김 + 로그인 유도
-    expect(screen.getByText("로그인하면 이력서 코치를 이용할 수 있어요")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "로그인하고 시작하기" })).toBeInTheDocument();
-    // 채팅 입력(combobox)은 노출되지 않음
-    expect(screen.queryByRole("combobox")).not.toBeInTheDocument();
+    // 비로그인도 히어로를 보여준다(실제 사용은 전송 시 로그인 유도)
+    expect(screen.getByRole("heading", { name: "이 공고, 내 이력서로 통할까?" })).toBeInTheDocument();
   });
 
   it("switches to about and credits views", async () => {

@@ -2,6 +2,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
+
 import { CoachChat } from "@/components/coach/CoachChat";
 
 const jobs = [{ id: "greenhouse:acme:1", title: "Backend Engineer", company: { slug: "acme", display_name: "Acme" } }];
@@ -20,16 +22,22 @@ function mockFetch(opts: { conversation?: unknown; convStatus?: number; reply?: 
   });
 }
 
+// 모달에서 공고 선택 + 이력서 붙여넣기 → '첨부 완료'로 커밋.
+async function attach(user: ReturnType<typeof userEvent.setup>) {
+  await user.click(screen.getByRole("button", { name: /첨부/ })); // 모달 열기
+  await user.selectOptions(screen.getByRole("combobox"), "greenhouse:acme:1");
+  await user.type(screen.getByPlaceholderText(/이력서 전문/), "Go dev 5y");
+  await user.click(screen.getByRole("button", { name: "첨부 완료" }));
+}
+
 describe("CoachChat", () => {
-  it("disables send until job + resume + input all present", async () => {
+  it("disables send until job + resume attached and message typed", async () => {
     vi.stubGlobal("fetch", mockFetch({ convStatus: 204 }));
     render(<CoachChat initialJobs={jobs as never} />);
     const user = userEvent.setup();
     const send = screen.getByRole("button", { name: /보내기/ });
     expect(send).toBeDisabled();
-    await user.click(screen.getByRole("button", { name: /첨부/ })); // 공고·이력서 트레이 펼치기
-    await user.selectOptions(screen.getByRole("combobox"), "greenhouse:acme:1");
-    await user.type(screen.getByPlaceholderText(/이력서/), "Go dev 5y");
+    await attach(user);
     await user.type(screen.getByPlaceholderText(/메시지/), "어떻게 고칠까요?");
     expect(send).toBeEnabled();
   });
@@ -39,9 +47,7 @@ describe("CoachChat", () => {
     vi.stubGlobal("fetch", fetchMock);
     render(<CoachChat initialJobs={jobs as never} />);
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: /첨부/ })); // 공고·이력서 트레이 펼치기
-    await user.selectOptions(screen.getByRole("combobox"), "greenhouse:acme:1");
-    await user.type(screen.getByPlaceholderText(/이력서/), "Go dev 5y");
+    await attach(user);
     await user.type(screen.getByPlaceholderText(/메시지/), "어떻게?");
     await user.click(screen.getByRole("button", { name: /보내기/ }));
     expect(await screen.findByText("Go 경험을 위로 올리세요.")).toBeInTheDocument();
@@ -51,7 +57,7 @@ describe("CoachChat", () => {
     expect(body.messages.at(-1)).toEqual({ role: "user", content: "어떻게?" });
   });
 
-  it("restores a saved conversation when a job is selected", async () => {
+  it("restores a saved conversation after attaching the job", async () => {
     vi.stubGlobal("fetch", mockFetch({
       conversation: {
         jobId: "greenhouse:acme:1",
@@ -61,8 +67,7 @@ describe("CoachChat", () => {
     }));
     render(<CoachChat initialJobs={jobs as never} />);
     const user = userEvent.setup();
-    await user.click(screen.getByRole("button", { name: /첨부/ })); // 공고·이력서 트레이 펼치기
-    await user.selectOptions(screen.getByRole("combobox"), "greenhouse:acme:1");
+    await attach(user);
     await waitFor(() => expect(screen.getByText("이전 조언이에요.")).toBeInTheDocument());
   });
 });
