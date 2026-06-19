@@ -118,7 +118,7 @@ export default async function HomePage() {
           />
           <div className="space-y-3">
             {sponsorJobs.map((job) => (
-              <JobRow key={job.id} job={job} />
+              <JobRow key={job.id} job={job} loggedIn={!!session} />
             ))}
           </div>
         </Section>
@@ -152,9 +152,6 @@ export default async function HomePage() {
       <Section muted id="faq">
         <div className="mb-6 text-center">
           <h2 className="text-h2">자주 묻는 질문</h2>
-          <p className="mx-auto mt-1.5 max-w-xl text-body-sm text-muted-foreground">
-            비자 분류 기준과 6차원 점수에 대한 궁금증을 풀어드려요.
-          </p>
         </div>
         <FaqSection />
       </Section>

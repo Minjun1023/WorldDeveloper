@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown, MapPin, Search } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { fetchRegionCities, type RegionCount } from "@/lib/api";
@@ -90,7 +90,10 @@ export function RegionPicker({
           value ? "text-foreground" : "text-muted-foreground",
         )}
       >
-        <span className="truncate">{value ? value.label : "지역을 선택해주세요"}</span>
+        <span className="flex min-w-0 items-center gap-1.5">
+          <MapPin className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <span className="truncate">{value ? value.label : "지역 선택"}</span>
+        </span>
         <ChevronDown className="h-4 w-4 shrink-0" />
       </button>
 

@@ -2,12 +2,14 @@ import { Clock } from "lucide-react";
 import Link from "next/link";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { SaveHeartButton } from "@/components/job/SaveHeartButton";
 import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
 import { locationDisplayParts } from "@/lib/jobLocation";
 import type { Job } from "@/lib/types";
 
 // 검색 결과 행: 한 화면 스캔량 우선. 신호 배지 최대 1(명부검증 > 스폰서불가) + 마감임박, 태그 최대 3(sm+).
-export function JobRow({ job }: { job: Job }) {
+// 전체 행 클릭=상세 이동(stretched link), 우측 하트=관심 저장(별도 클릭).
+export function JobRow({ job, loggedIn = false }: { job: Job; loggedIn?: boolean }) {
   const posted = postedRelativeLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
   const loc = locationDisplayParts(job).join(" · ");
@@ -15,10 +17,12 @@ export function JobRow({ job }: { job: Job }) {
   const level = job.seniority ? job.seniority.charAt(0).toUpperCase() + job.seniority.slice(1) : null;
 
   return (
-    <Link
-      href={`/jobs/${encodeURIComponent(job.id)}`}
-      className="group flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-4 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-    >
+    <div className="group relative flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-4 transition-colors hover:border-primary/40">
+      <Link
+        href={`/jobs/${encodeURIComponent(job.id)}`}
+        aria-label={job.title_ko ?? job.title}
+        className="absolute inset-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      />
       <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={40} />
 
       <div className="min-w-0 flex-1">
@@ -63,11 +67,12 @@ export function JobRow({ job }: { job: Job }) {
       </div>
 
       {posted && (
-        <div className="flex shrink-0 items-center justify-end gap-1 text-caption text-muted-foreground">
+        <div className="relative flex shrink-0 items-center justify-end gap-1 text-caption text-muted-foreground">
           <Clock className="h-3 w-3" aria-hidden="true" />
           {posted}
         </div>
       )}
-    </Link>
+      <SaveHeartButton jobId={job.id} loggedIn={loggedIn} />
+    </div>
   );
 }

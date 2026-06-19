@@ -1,42 +1,55 @@
-import { ScanText, ShieldCheck, Sparkles } from "lucide-react";
+import { BarChart3, FileText, Shield } from "lucide-react";
+import type { ComponentType } from "react";
 
-// "어떻게 검증을 신뢰할 수 있나요?" 방법론 3단계. 문구는 실제 동작에 맞춰 정직하게.
-// (정부 명부 대조 → 공고 원문 분류 → 6차원 점수) — 임의 분류 없이 출처/근거를 보여준다.
-const STEPS = [
+// "어떻게 검증하나요?" 3단계 교차검증. 문구는 실제 동작에 맞춰 정직하게.
+const STEPS: {
+  step: string;
+  title: string;
+  desc: string;
+  icon: ComponentType<{ className?: string }>;
+  color: string;
+  bg: string;
+}[] = [
   {
-    n: "01",
-    icon: ShieldCheck,
-    title: "정부 명부 교차 검증",
-    desc: "미국 USCIS H-1B 고용주 명부, 영국 Home Office 스폰서 명부, 네덜란드 IND 인정 스폰서 명부와 회사명을 대조해, 확인된 회사를 ‘명부 검증’으로 표시해요.",
+    step: "01",
+    title: "정부 명부 교차검증",
+    desc: "미국 USCIS, 영국 Home Office, 네덜란드 IND 등 각국 정부의 공식 비자 스폰서 명부와 기업명을 매일 자동 교차검증합니다.",
+    icon: Shield,
+    color: "#4338ca",
+    bg: "#eef2ff",
   },
   {
-    n: "02",
-    icon: ScanText,
+    step: "02",
     title: "공고 원문 분류",
-    desc: "공고 원문을 영어·일본어·독일어·네덜란드어 등 언어 패턴으로 분석해, 스폰서십이 명시된 문장만 추출해요. 단순 토글이 아니라 매칭된 원문 문장을 근거로 함께 보여드려요.",
+    desc: "채용 공고 원문에서 비자 스폰서십 관련 문구를 추출·분류합니다. 모호한 표현은 ‘불충분’으로 표기하며 절대 추측하지 않습니다.",
+    icon: FileText,
+    color: "#2b6cf0",
+    bg: "#eef3fe",
   },
   {
-    n: "03",
-    icon: Sparkles,
-    title: "6차원 점수 계산",
-    desc: "스택·비자·지역·레벨·연봉·의미 6개 축을 0~100으로 계산해, 내 프로필에 맞는 공고를 정렬해드려요.",
+    step: "03",
+    title: "6차원 점수 산출",
+    desc: "스택·비자·지역·레벨·연봉·의미 6개 축으로 프로필과 공고의 매칭 점수를 계산합니다. 각 근거는 투명하게 공개됩니다.",
+    icon: BarChart3,
+    color: "#0d9488",
+    bg: "#f0fdfa",
   },
 ];
 
 export function VerifyMethodology() {
   return (
-    <div className="grid gap-4 sm:grid-cols-3">
+    <div className="grid gap-5 md:grid-cols-3">
       {STEPS.map((s) => (
-        <div key={s.n} className="flex flex-col rounded-lg border border-border bg-surface p-6">
-          <div className="flex items-center justify-between">
+        <div key={s.step} className="rounded-xl border border-border bg-surface p-6">
+          <div className="flex items-center gap-3">
             <span
-              className="flex h-10 w-10 items-center justify-center rounded-xl text-primary"
-              style={{ backgroundColor: "color-mix(in srgb, var(--primary) 12%, transparent)" }}
+              className="flex h-10 w-10 items-center justify-center rounded-xl"
+              style={{ backgroundColor: s.bg, color: s.color }}
             >
-              <s.icon className="h-5 w-5" aria-hidden="true" />
+              <s.icon className="h-[18px] w-[18px]" aria-hidden="true" />
             </span>
-            <span className="font-mono text-caption font-semibold tracking-wide text-muted-foreground">
-              STEP {s.n}
+            <span className="text-3xl font-extrabold leading-none tabular-nums text-[#e5e7eb] dark:text-[#2d3748]">
+              {s.step}
             </span>
           </div>
           <h3 className="mt-4 text-body font-bold text-foreground">{s.title}</h3>
