@@ -1,64 +1,57 @@
-import { Clock } from "lucide-react";
+import { Building2, MapPin } from "lucide-react";
 import Link from "next/link";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { SaveHeartButton } from "@/components/job/SaveHeartButton";
-import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
+import { postedRelativeLabel } from "@/lib/jobDates";
 import { locationDisplayParts } from "@/lib/jobLocation";
+import { formatSalary } from "@/lib/salary";
 import type { Job } from "@/lib/types";
 
-// 검색 결과 행: 한 화면 스캔량 우선. 신호 배지 최대 1(명부검증 > 스폰서불가) + 마감임박, 태그 최대 3(sm+).
-// 전체 행 클릭=상세 이동(stretched link), 우측 하트=관심 저장(별도 클릭).
+// 검색/최신 공고 행 — Figma 카드: 아바타 + 한글제목·영문 + 🏢회사·📍위치·연봉 + 기술칩 + 우측 게시일·하트.
+// 전체 행 클릭 = 상세 이동(stretched link), 우측 하트 = 관심 저장.
 export function JobRow({ job, loggedIn = false }: { job: Job; loggedIn?: boolean }) {
   const posted = postedRelativeLabel(job.posted_at);
-  const deadline = deadlineLabel(job.closes_at);
   const loc = locationDisplayParts(job).join(" · ");
-  // 레벨(시니어리티): "senior" → "Senior". 검색 결과에서 한눈에 직급 파악.
-  const level = job.seniority ? job.seniority.charAt(0).toUpperCase() + job.seniority.slice(1) : null;
+  const salary = formatSalary(job.salary);
 
   return (
-    <div className="group relative flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-4 transition-colors hover:border-primary/40">
+    <div className="group relative flex items-start gap-4 rounded-xl border border-border bg-surface p-4 transition-all hover:border-primary/40 hover:shadow-sm">
       <Link
         href={`/jobs/${encodeURIComponent(job.id)}`}
         aria-label={job.title_ko ?? job.title}
-        className="absolute inset-0 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="absolute inset-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
-      <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={40} />
+      <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={44} />
 
       <div className="min-w-0 flex-1">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span className="truncate text-body font-bold text-foreground group-hover:text-primary">{job.title_ko ?? job.title}</span>
-          {job.visa?.status === "no_sponsor" && (
-            <span
-              className="shrink-0 rounded-lg px-1.5 py-0.5 text-caption font-semibold text-destructive"
-              style={{ backgroundColor: "color-mix(in srgb, var(--destructive) 10%, transparent)" }}
-            >
-              스폰서 불가
-            </span>
-          )}
-          {deadline.urgent && (
-            <span
-              className="shrink-0 rounded-lg px-1.5 py-0.5 text-caption font-semibold text-warning"
-              style={{ backgroundColor: "color-mix(in srgb, var(--warning) 14%, transparent)" }}
-            >
-              마감 임박
-            </span>
-          )}
-        </div>
-        {job.title_ko && (
-          <div className="truncate text-caption text-muted-foreground">{job.title}</div>
-        )}
-        <div className="mt-0.5 flex min-w-0 items-center gap-1 text-body-sm text-muted-foreground">
-          <span className="min-w-0 truncate">
+        <h3 className="truncate text-body-sm font-bold text-foreground group-hover:text-primary">
+          {job.title_ko ?? job.title}
+        </h3>
+        {job.title_ko && <p className="truncate text-caption text-muted-foreground">{job.title}</p>}
+
+        {/* 회사·위치·연봉 한 줄 고정: 줄바꿈 없이, 길면 위치만 말줄임. */}
+        <div className="mt-2 flex min-w-0 items-center gap-x-3 text-caption text-muted-foreground">
+          <span className="flex shrink-0 items-center gap-1">
+            <Building2 className="h-3 w-3 shrink-0" aria-hidden="true" />
             {job.company.display_name}
-            {loc ? ` · ${loc}` : ""}
-            {level ? ` · ${level}` : ""}
           </span>
+          {loc && (
+            <span className="flex min-w-0 items-center gap-1">
+              <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
+              <span className="truncate">{loc}</span>
+            </span>
+          )}
+          {salary && <span className="shrink-0 font-bold tabular-nums text-primary">{salary}</span>}
         </div>
+
         {job.tags && job.tags.length > 0 && (
-          <div className="mt-1.5 hidden flex-wrap gap-1.5 sm:flex">
-            {job.tags.slice(0, 3).map((t) => (
-              <span key={t} className="rounded-md bg-surface-2 px-2 py-0.5 font-mono text-caption lowercase text-muted-foreground">
+          <div className="mt-2 flex flex-wrap gap-1">
+            {job.tags.slice(0, 4).map((t) => (
+              <span
+                key={t}
+                className="rounded-md bg-surface-2 px-2 py-0.5 font-mono text-caption lowercase text-muted-foreground"
+              >
                 {t}
               </span>
             ))}
@@ -66,13 +59,10 @@ export function JobRow({ job, loggedIn = false }: { job: Job; loggedIn?: boolean
         )}
       </div>
 
-      {posted && (
-        <div className="relative flex shrink-0 items-center justify-end gap-1 text-caption text-muted-foreground">
-          <Clock className="h-3 w-3" aria-hidden="true" />
-          {posted}
-        </div>
-      )}
-      <SaveHeartButton jobId={job.id} loggedIn={loggedIn} />
+      <div className="flex shrink-0 flex-col items-end gap-2">
+        {posted && <span className="whitespace-nowrap text-caption text-muted-foreground">{posted}</span>}
+        <SaveHeartButton jobId={job.id} loggedIn={loggedIn} />
+      </div>
     </div>
   );
 }
