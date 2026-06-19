@@ -184,6 +184,22 @@ export async function fetchRegionCities(country: string): Promise<RegionCount[]>
   }
 }
 
+// 서버 컴포넌트용: 로그인 사용자의 저장(관심) 공고 ID 집합. 목록 하트 초기 상태 표시에 사용.
+export async function fetchSavedJobIds(token: string): Promise<Set<string>> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/me/interactions`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return new Set();
+    const data = (await res.json()) as { saved?: string[] };
+    return new Set(Array.isArray(data.saved) ? data.saved : []);
+  } catch {
+    return new Set();
+  }
+}
+
 export async function fetchCompanies(tag?: string): Promise<CompanyListResponse | null> {
   const url = new URL(`${BACKEND_URL}/api/v1/companies`);
   if (tag) url.searchParams.set("tag", tag);

@@ -12,8 +12,16 @@ import { cn } from "@/lib/utils";
 const BTN =
   "relative z-10 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
-export function SaveHeartButton({ jobId, loggedIn }: { jobId: string; loggedIn: boolean }) {
-  const [saved, setSaved] = useState(false);
+export function SaveHeartButton({
+  jobId,
+  loggedIn,
+  initialSaved = false,
+}: {
+  jobId: string;
+  loggedIn: boolean;
+  initialSaved?: boolean;
+}) {
+  const [saved, setSaved] = useState(initialSaved);
 
   if (!loggedIn) {
     return (

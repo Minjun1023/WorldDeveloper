@@ -65,7 +65,6 @@ export function JobSummary({ jobId, initialData }: { jobId: string; initialData?
         </div>
 
         <div className="flex items-center gap-2.5">
-          <span className="hidden text-caption text-muted-foreground sm:inline">원문에서 핵심만 추출</span>
           {!data && (
             <button
               type="button"

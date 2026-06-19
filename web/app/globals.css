@@ -63,6 +63,10 @@
 }
 
 @layer base {
+  /* html 까지 배경을 깔아야 다크모드에서 오버스크롤/가장자리에 흰색이 비치지 않는다. */
+  html {
+    background-color: var(--background);
+  }
   body {
     background-color: var(--background);
     color: var(--foreground);
