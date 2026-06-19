@@ -2,7 +2,6 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
-import { RelatedCommunity } from "@/components/community/RelatedCommunity";
 import { InterviewPrepSection } from "@/components/job/InterviewPrepSection";
 import { JobCard } from "@/components/job/JobCard";
 import { JobDescription } from "@/components/job/JobDescription";
@@ -21,6 +20,7 @@ import {
   fetchJob,
 } from "@/lib/api";
 import { getSession } from "@/lib/session-server";
+import { filterTechTags } from "@/lib/techTags";
 
 export const dynamic = "force-dynamic";
 
@@ -52,6 +52,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
   const job = result.data;
   const companyData = await fetchCompany(job.company.slug);
   const otherJobs = (companyData?.jobs ?? []).filter((j) => j.id !== job.id).slice(0, 4);
+  const techTags = filterTechTags(job.tags, job.company);
 
   return (
     <>
@@ -95,7 +96,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
             {job.description && (
               <JobDescription jobId={job.id} original={job.description} initialKo={initialKo} />
             )}
-            {job.tags && job.tags.length > 0 && <TechStackMatch tags={job.tags} />}
+            {techTags.length > 0 && <TechStackMatch tags={techTags} />}
             {prep && <InterviewPrepSection prep={prep} />}
 
             {otherJobs.length > 0 && (
@@ -108,14 +109,6 @@ export default async function JobDetailPage({ params }: { params: { id: string }
                 </div>
               </section>
             )}
-
-            {/* 라운지 역노출 — 이 회사/공고 관련 글 */}
-            <RelatedCommunity
-              filter={{ company: job.company.slug }}
-              writeParams={{ jobId: job.id, company: job.company.slug, category: "interview" }}
-              title="이 회사 관련 라운지 글"
-              writeLabel="면접·후기 쓰기"
-            />
           </article>
 
           <aside className="mt-6 lg:mt-0">

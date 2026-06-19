@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { flagFromLocation } from "@/lib/flags";
 import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
 import { formatSalary } from "@/lib/salary";
+import { filterTechTags } from "@/lib/techTags";
 import type { Job } from "@/lib/types";
 
 import { RemoteBadge } from "./RemoteBadge";
@@ -17,6 +18,7 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
   const salary = formatSalary(job.salary);
   const posted = postedRelativeLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
+  const techTags = filterTechTags(job.tags, job.company);
   const flag = flagFromLocation(job.location);
   const locText = (job.location_ko ?? job.location) || (job.is_remote ? "원격" : null);
   // VisaBadge 가 실제로 렌더하는 상태만 true(sponsors 는 null 이라 제외). unclear 는 중립
@@ -75,9 +77,9 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
         )}
 
         {/* 기술 태그 */}
-        {job.tags && job.tags.length > 0 && (
+        {techTags.length > 0 && (
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
-            {job.tags.slice(0, 4).map((t) => (
+            {techTags.slice(0, 4).map((t) => (
               <span
                 key={t}
                 className="rounded-md bg-surface-2 px-2 py-0.5 font-mono text-caption lowercase text-muted-foreground"
@@ -85,8 +87,8 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
                 {t}
               </span>
             ))}
-            {job.tags.length > 4 && (
-              <span className="text-caption text-muted-foreground">+{job.tags.length - 4}</span>
+            {techTags.length > 4 && (
+              <span className="text-caption text-muted-foreground">+{techTags.length - 4}</span>
             )}
           </div>
         )}

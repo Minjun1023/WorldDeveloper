@@ -6,6 +6,7 @@ import { SaveHeartButton } from "@/components/job/SaveHeartButton";
 import { postedRelativeLabel } from "@/lib/jobDates";
 import { locationDisplayParts } from "@/lib/jobLocation";
 import { formatSalary } from "@/lib/salary";
+import { filterTechTags } from "@/lib/techTags";
 import type { Job } from "@/lib/types";
 
 // 검색/최신 공고 행 — Figma 카드: 아바타 + 한글제목·영문 + 🏢회사·📍위치·연봉 + 기술칩 + 우측 게시일·하트.
@@ -14,6 +15,7 @@ export function JobRow({ job, loggedIn = false, saved = false }: { job: Job; log
   const posted = postedRelativeLabel(job.posted_at);
   const loc = locationDisplayParts(job).join(" · ");
   const salary = formatSalary(job.salary);
+  const techTags = filterTechTags(job.tags, job.company);
 
   return (
     <div className="group relative flex items-start gap-4 rounded-xl border border-border bg-surface p-4 transition-all hover:border-primary/40 hover:shadow-sm">
@@ -45,9 +47,9 @@ export function JobRow({ job, loggedIn = false, saved = false }: { job: Job; log
           {salary && <span className="shrink-0 font-bold tabular-nums text-primary">{salary}</span>}
         </div>
 
-        {job.tags && job.tags.length > 0 && (
+        {techTags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1">
-            {job.tags.slice(0, 4).map((t) => (
+            {techTags.slice(0, 4).map((t) => (
               <span
                 key={t}
                 className="rounded-md bg-surface-2 px-2 py-0.5 font-mono text-caption lowercase text-muted-foreground"
