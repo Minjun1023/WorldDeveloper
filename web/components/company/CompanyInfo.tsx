@@ -60,21 +60,6 @@ export function CompanyInfo({ slug }: { slug: string }) {
           </Row>
         )}
       </dl>
-
-      {facts?.wikidataId && (
-        <p className="mt-4 text-caption text-muted-foreground">
-          회사 규모·업종·설립 정보 출처:{" "}
-          <a
-            href={`https://www.wikidata.org/wiki/${facts.wikidataId}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline"
-          >
-            Wikidata
-          </a>{" "}
-          (시점에 따라 실제와 다를 수 있어요)
-        </p>
-      )}
     </section>
   );
 }
