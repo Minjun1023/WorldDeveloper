@@ -73,17 +73,18 @@ export default async function JobDetailPage({ params }: { params: { id: string }
           <article className="min-w-0 space-y-5">
             {/* 헤더 카드: 회사 → 제목 → '한눈에' 칩 → 비자 근거 한 줄 */}
             <header className="space-y-4 rounded-2xl border border-border bg-surface p-6">
-              <Link
-                href={`/companies/${job.company.slug}`}
-                className="inline-flex items-center gap-2 rounded-md text-body-sm font-semibold text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={28} />
-                {job.company.display_name}
-              </Link>
-
-              <div className="space-y-1.5">
-                <h1 className="text-h2 font-extrabold leading-tight tracking-tight">{job.title_ko ?? job.title}</h1>
-                {job.title_ko && <p className="text-body-sm text-muted-foreground">{job.title}</p>}
+              <div className="flex items-start gap-4">
+                <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={48} />
+                <div className="min-w-0 flex-1 space-y-1">
+                  <Link
+                    href={`/companies/${job.company.slug}`}
+                    className="rounded-md text-body-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {job.company.display_name}
+                  </Link>
+                  <h1 className="text-h2 font-extrabold leading-tight tracking-tight">{job.title_ko ?? job.title}</h1>
+                  {job.title_ko && <p className="text-body-sm text-muted-foreground">{job.title}</p>}
+                </div>
               </div>
 
               <JobFactCards job={job} />

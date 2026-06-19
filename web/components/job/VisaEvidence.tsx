@@ -41,26 +41,32 @@ export function VisaEvidence({ visa }: { visa?: JobVisa }) {
   const verified = !!visa?.register_verified;
   if (evidence.length === 0 && !verified) return null;
   return (
+    // Figma 검증 박스: 인디고 박스 + 방패 + 근거 문장 + 우측 '정부 명부 검증' 배지.
     <div
       className={cn(
-        "flex flex-wrap items-center gap-x-2 gap-y-1 rounded-lg border px-3 py-2 text-body-sm",
-        verified ? "border-verified/25 bg-verified/10" : "border-border bg-surface-2",
+        "flex items-start justify-between gap-3 rounded-xl border p-3.5 text-body-sm",
+        verified
+          ? "border-[#c7d2fe] bg-[#eef2ff] dark:border-[#4338ca]/40 dark:bg-[#1e1b4b]/30"
+          : "border-border bg-surface-2",
       )}
     >
-      <span
-        className={cn(
-          "inline-flex shrink-0 items-center gap-1.5 font-semibold",
-          verified ? "text-verified" : "text-muted-foreground",
-        )}
-      >
-        <ShieldCheck className="h-4 w-4 shrink-0" aria-hidden="true" />
-        {verified ? "정부 명부 검증" : "비자 근거"}
-      </span>
-      {evidence.length > 0 && (
-        <>
-          <span className="text-muted-foreground" aria-hidden="true">—</span>
-          <span className="text-foreground/80">{evidence.join(" · ")}</span>
-        </>
+      <div className="flex min-w-0 items-start gap-2.5">
+        <ShieldCheck
+          className={cn(
+            "mt-0.5 h-4 w-4 shrink-0",
+            verified ? "text-[#4338ca] dark:text-[#a5b4fc]" : "text-muted-foreground",
+          )}
+          aria-hidden="true"
+        />
+        <p className={cn(verified ? "font-semibold text-[#4338ca] dark:text-[#a5b4fc]" : "text-foreground/80")}>
+          {evidence.length > 0 ? evidence.join(" · ") : "정부 명부에서 스폰서 이력이 확인됐어요."}
+        </p>
+      </div>
+      {verified && (
+        <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-[#c7d2fe] px-2 py-0.5 text-caption font-semibold text-[#4338ca] dark:border-[#4338ca]/40 dark:text-[#a5b4fc]">
+          <ShieldCheck className="h-3 w-3" aria-hidden="true" />
+          정부 명부 검증
+        </span>
       )}
     </div>
   );
