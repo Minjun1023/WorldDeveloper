@@ -38,20 +38,18 @@ describe("Pagination", () => {
     expect(mockUpdate).toHaveBeenCalledWith({ page: "3" });
   });
 
-  it("1페이지로 가면 page 파라미터 제거(null)", async () => {
+  it("이전 화살표로 1페이지 가면 page 파라미터 제거(null)", async () => {
     render(<Pagination {...props(2)} />);
-    await userEvent.click(screen.getByRole("button", { name: "이전" }));
+    await userEvent.click(screen.getByRole("button", { name: "이전 페이지" }));
     expect(mockUpdate).toHaveBeenCalledWith({ page: null });
   });
 
-  it("처음/이전은 1페이지에서 비활성, 마지막/다음은 끝페이지에서 비활성", () => {
+  it("이전은 1페이지에서, 다음은 끝페이지에서 비활성", () => {
     const { unmount } = render(<Pagination {...props(1)} />);
-    expect(screen.getByRole("button", { name: "첫 페이지" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "이전" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "이전 페이지" })).toBeDisabled();
     unmount();
     render(<Pagination {...props(30)} />);
-    expect(screen.getByRole("button", { name: "마지막 페이지" })).toBeDisabled();
-    expect(screen.getByRole("button", { name: "다음" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "다음 페이지" })).toBeDisabled();
   });
 
   it("페이지 입력 점프 + 범위 초과는 마지막으로 클램프", async () => {

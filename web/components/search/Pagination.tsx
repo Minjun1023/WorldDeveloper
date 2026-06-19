@@ -1,11 +1,15 @@
 "use client";
 
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { type FormEvent, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { useUpdateQuery } from "@/lib/use-update-query";
 
 const BLOCK = 5; // 페이지 번호 버튼 묶음 단위(5개씩 노출)
+
+const ARROW =
+  "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40";
 
 export function Pagination({
   page,
@@ -43,37 +47,43 @@ export function Pagination({
 
   return (
     <div className="flex flex-col items-center gap-3 pt-2 sm:flex-row sm:justify-center sm:gap-6">
-      <div className="flex flex-wrap items-center justify-center gap-1.5">
-        <Button variant="outline" size="sm" disabled={current <= 1} onClick={() => goTo(1)} aria-label="첫 페이지">
-          «
-        </Button>
-        <Button variant="outline" size="sm" disabled={current <= 1} onClick={() => goTo(current - 1)}>
-          이전
-        </Button>
+      <div className="flex items-center justify-center gap-1.5">
+        <button
+          type="button"
+          disabled={current <= 1}
+          onClick={() => goTo(current - 1)}
+          aria-label="이전 페이지"
+          className={ARROW}
+        >
+          <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+        </button>
+
         {pages.map((p) => (
-          <Button
+          <button
             key={p}
-            variant={p === current ? "primary" : "outline"}
-            size="sm"
+            type="button"
             aria-current={p === current ? "page" : undefined}
             onClick={() => goTo(p)}
-            className="min-w-[2.25rem] px-2 tabular-nums"
+            className={cn(
+              "h-9 w-9 rounded-lg border text-body-sm font-medium tabular-nums transition-colors",
+              p === current
+                ? "border-primary bg-primary text-primary-foreground"
+                : "border-border text-foreground hover:bg-accent",
+            )}
           >
             {p}
-          </Button>
+          </button>
         ))}
-        <Button variant="outline" size="sm" disabled={current >= totalPages} onClick={() => goTo(current + 1)}>
-          다음
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
+
+        <button
+          type="button"
           disabled={current >= totalPages}
-          onClick={() => goTo(totalPages)}
-          aria-label="마지막 페이지"
+          onClick={() => goTo(current + 1)}
+          aria-label="다음 페이지"
+          className={ARROW}
         >
-          »
-        </Button>
+          <ChevronRight className="h-4 w-4" aria-hidden="true" />
+        </button>
       </div>
 
       <form onSubmit={onJump} className="flex items-center gap-1.5 text-body-sm text-muted-foreground">
@@ -84,12 +94,16 @@ export function Pagination({
           value={input}
           onChange={(e) => setInput(e.target.value.replace(/[^0-9]/g, ""))}
           aria-label="이동할 페이지 번호"
-          className="h-8 w-16 rounded-md border border-input bg-surface px-2 text-center tabular-nums text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          placeholder="페이지"
+          className="h-9 w-16 rounded-lg border border-input bg-surface px-2 text-center tabular-nums text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
         <span className="tabular-nums">/ {totalPages}</span>
-        <Button type="submit" variant="outline" size="sm">
+        <button
+          type="submit"
+          className="inline-flex h-9 items-center justify-center rounded-lg border border-border px-3 font-medium text-foreground transition-colors hover:bg-accent"
+        >
           이동
-        </Button>
+        </button>
       </form>
     </div>
   );

@@ -13,8 +13,8 @@ import { useUpdateQuery } from "@/lib/use-update-query";
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="border-b border-border py-3.5 first:pt-0 last:border-b-0 last:pb-0">
-      <h3 className="mb-2 text-caption font-semibold uppercase tracking-wide text-muted-foreground">{title}</h3>
-      <div className="space-y-1.5">{children}</div>
+      <h3 className="mb-3 text-[11px] font-bold uppercase tracking-widest text-foreground">{title}</h3>
+      <div className="space-y-2.5">{children}</div>
     </div>
   );
 }
