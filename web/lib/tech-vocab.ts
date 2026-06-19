@@ -23,4 +23,6 @@ export const TECH_VOCAB: string[] = [
   "Kafka Streams", "RabbitMQ", "Serverless", "Microservices",
   // misc
   "Git", "Bash", "WebSockets", "OAuth", "CI/CD", "Datadog", "Sentry",
+  // enterprise / platforms / gamedev / design (백엔드 추출 vocab과 정합)
+  "Salesforce", "ServiceNow", "SAP", "ABAP", "Shopify", "Figma", "Unity", "Unreal Engine",
 ];
