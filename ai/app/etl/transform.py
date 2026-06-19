@@ -62,6 +62,12 @@ _BOILERPLATE = re.compile(
     r"|applicant and candidate|apply for this job|click here to apply)",
     re.I,
 )
+# 고아 헤딩 정리용 — 텍스트가 ':' 로 끝나는 짧은 라벨 헤딩(굵게 가능)과 빈 문단.
+_LABEL_HEADING = (
+    r"<(p|h[1-4])>\s*(?:<(?:strong|b|em|i)>)?\s*[^<>]{0,79}:"
+    r"(?:\s|&nbsp;)*(?:</(?:strong|b|em|i)>)?\s*</\1>"
+)
+_EMPTY_PARA = r"<p>(?:\s|&nbsp;|<br\s*/?>)*</p>"
 
 
 def clean_structured_html(html: str) -> str:
@@ -77,6 +83,16 @@ def clean_structured_html(html: str) -> str:
     h = re.sub(r"(?is)<p>(.*?)</p>",
                lambda m: "" if _BOILERPLATE.search(re.sub(r"<[^>]+>", "", m.group(1))) else m.group(0), h)  # 보일러플레이트 문단
     h = re.sub(r"(?i)<(p|li|ul|ol)>\s*</\1>", "", h)                        # 빈 요소 제거
+    # 보일러플레이트 문단 제거 후 '제목:'만 남은 고아 헤딩 제거 — 본문이 잘린 듯 보이거나(끝)
+    # 엉뚱한 다음 문단을 가리키는 문제(중간). (예: 개인정보 안내 문단이 제거되며
+    # 'Privacy and AI Guidelines:' 제목만 남는 경우)
+    for _ in range(4):
+        before = h
+        h = re.sub(rf"(?is){_LABEL_HEADING}\s*(?={_EMPTY_PARA})", "", h)  # (a) 빈 문단 앞 고아 헤딩
+        h = re.sub(rf"(?is)\s*{_EMPTY_PARA}\s*", "\n", h)                 # (b) 빈 문단 정리
+        h = re.sub(rf"(?is)\s*{_LABEL_HEADING}\s*$", "", h)              # (c) 끝의 고아 헤딩
+        if h == before:
+            break
     h = re.sub(r"[ \t]*\n[ \t]*", "\n", h)
     h = re.sub(r"\n{3,}", "\n\n", h)
     return h.strip()

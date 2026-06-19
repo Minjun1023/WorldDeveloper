@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { stripOrphanHeadings } from "@/lib/descHtml";
 import { cn } from "@/lib/utils";
 import type { Translation } from "@/lib/types";
 
@@ -71,7 +72,8 @@ export function JobDescription({ jobId, original, initialKo }: {
     setSafeHtml(null);
     import("dompurify").then((mod) => {
       const purified = mod.default.sanitize(text, { USE_PROFILES: { html: true } });
-      if (alive) setSafeHtml(purified);
+      // 보일러플레이트 제거로 남은 고아 제목(예: "개인정보 및 AI 가이드라인:")을 다듬는다.
+      if (alive) setSafeHtml(stripOrphanHeadings(purified));
     });
     return () => {
       alive = false;
