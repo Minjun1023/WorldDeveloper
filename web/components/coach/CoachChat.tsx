@@ -22,16 +22,16 @@ const QUICK_PROMPTS = [
 
 const SIGNIN = "/signin?callbackUrl=/coach";
 
-// 공고·이력서·메시지가 다 갖춰지지 않은 채 보내기를 눌렀을 때, 무엇이 빠졌는지에 맞춘 안내.
-function guidanceText(hasJob: boolean, hasResume: boolean, hasMessage: boolean): string {
-  if (!hasJob && !hasResume && !hasMessage) {
-    return "무엇이 궁금하신가요? 질문을 입력하고, 아래 ‘공고·이력서’로 공고와 이력서를 첨부하면 그 공고에 맞춰 답해드려요.";
-  }
-  const need: string[] = [];
-  if (!hasMessage) need.push("질문(메시지)");
-  if (!hasJob) need.push("상담할 공고");
-  if (!hasResume) need.push("이력서");
-  return `아직 ${need.join(" · ")}가 필요해요. 공고·이력서를 첨부하고 질문을 입력하면 이 공고에 맞춰 구체적으로 봐드릴게요.`;
+// 질문·공고·이력서가 하나도 없이 보내기를 눌렀을 때만 띄우는 안내.
+const EMPTY_GUIDANCE =
+  "무엇이 궁금하신가요? 질문을 입력하거나, 아래 ‘공고·이력서’로 공고·이력서를 첨부해 보세요. 하나만 있어도 답해드려요.";
+
+// 메시지 없이 첨부만 보낼 때 자동으로 채울 기본 질문(첨부 구성에 맞춰).
+function defaultQuestion(hasJob: boolean, hasResume: boolean): string {
+  if (hasResume && hasJob) return "이 공고 기준으로 제 이력서를 평가하고 보완점을 알려주세요.";
+  if (hasResume) return "제 이력서를 검토하고 개선점을 알려주세요.";
+  if (hasJob) return "이 공고에 지원하려면 무엇을 준비하면 좋을까요?";
+  return "이력서 작성에 대해 조언해 주세요.";
 }
 
 // initialJobs 미제공 시(서버 블로킹 회피) picker 공고를 클라이언트에서 로드한다.
@@ -62,7 +62,6 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
   const started = messages.length > 0;
   const hasResume = resume.trim().length > 0;
   const hasMessage = input.trim().length > 0;
-  const complete = !!jobId && hasResume && hasMessage; // 셋 다 있을 때만 실제 AI 호출
   const attachmentCount = (jobId ? 1 : 0) + (hasResume ? 1 : 0);
   const needsAttach = !jobId || !hasResume;
   const canCommit = !!draftJobId && draftResume.trim().length > 0;
@@ -225,18 +224,14 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
       return;
     }
     if (pending) return;
-    const msg = input.trim();
-    // 버튼은 어느 상황에서도 활성. 공고·이력서·메시지가 다 갖춰지지 않았으면
-    // 무엇이 빠졌는지에 맞춰 안내 메시지로 응답한다(실제 AI 호출 없음).
-    if (!complete) {
-      setMessages((m) => [
-        ...m,
-        ...(msg ? [{ role: "user" as const, content: msg }] : []),
-        { role: "assistant" as const, content: guidanceText(!!jobId, hasResume, msg.length > 0) },
-      ]);
-      if (msg) setInput("");
+    const typed = input.trim();
+    // 질문·공고·이력서 중 하나라도 있으면 실제 AI 호출. 셋 다 없을 때만 안내(호출 없음).
+    if (!typed && !jobId && !hasResume) {
+      setMessages((m) => [...m, { role: "assistant" as const, content: EMPTY_GUIDANCE }]);
       return;
     }
+    // 메시지 없이 첨부만 보낼 땐 첨부 구성에 맞춘 기본 질문을 자동으로 채운다.
+    const msg = typed || defaultQuestion(!!jobId, hasResume);
     const next: Msg[] = [...messages, { role: "user", content: msg }];
     setMessages(next);
     setInput("");
