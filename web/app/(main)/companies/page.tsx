@@ -2,12 +2,15 @@ import Link from "next/link";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { CompanyTagFilter } from "@/components/company/CompanyTagFilter";
+import { Pagination } from "@/components/search/Pagination";
 import { fetchCompanies } from "@/lib/api";
 import { COMPANY_LOCATIONS } from "@/lib/company-locations";
 import { companyProfile, flagEmoji } from "@/lib/company-profiles";
 import { isoFromLocation } from "@/lib/flags";
 
 export const dynamic = "force-dynamic";
+
+const PAGE_SIZE = 20; // 20개 기업 단위로 페이지네이션
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 
@@ -53,6 +56,11 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
 
   // 선택된 분야로 좁히기(정확 일치).
   const visible = tag ? allVisible.filter((e) => (e.c.tags ?? []).includes(tag)) : allVisible;
+
+  // 20개 단위 페이지네이션. 분야 변경 시엔 CompanyTagFilter 가 page 없는 URL 로 이동하므로 자동 리셋.
+  const totalPages = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+  const page = Math.min(Math.max(1, Number(searchParams.page) || 1), totalPages);
+  const pageItems = visible.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   return (
     <div className="space-y-4">
@@ -104,7 +112,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
               <span className="w-20 shrink-0 whitespace-nowrap text-right">채용중 공고</span>
             </div>
 
-            {visible.map((e, i) => {
+            {pageItems.map((e, i) => {
               const { c, location, flag, countryCode, blurb } = e;
               return (
                 <Link
@@ -161,6 +169,8 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
               );
             })}
           </div>
+
+          <Pagination page={page} pageSize={PAGE_SIZE} total={visible.length} />
         </>
       )}
     </div>
