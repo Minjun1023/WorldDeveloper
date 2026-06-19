@@ -11,7 +11,7 @@ export function NoTechStackNote() {
         <h2 className="text-h3">기술 스택</h2>
       </div>
       <p className="mt-1.5 text-body-sm text-muted-foreground">
-        이 공고는 기술 스택을 별도로 명시하지 않았어요. 자세한 내용은 아래 공고 설명을 확인해 주세요.
+        이 공고는 기술 스택을 별도로 명시하지 않았어요.
       </p>
     </section>
   );
