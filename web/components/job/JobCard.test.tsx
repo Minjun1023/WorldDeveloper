@@ -24,4 +24,13 @@ describe("JobCard", () => {
     render(<JobCard job={{ ...base, tags: [] }} />);
     expect(screen.getByText("시니어")).toBeInTheDocument();
   });
+
+  it("기술 태그도 레벨/고용형태도 없으면 폴백 칩을 보여주지 않는다", () => {
+    const { container } = render(
+      <JobCard job={{ ...base, tags: [], seniority: null, employment_type: undefined }} />,
+    );
+    expect(screen.queryByText("시니어")).not.toBeInTheDocument();
+    expect(screen.queryByText("정규직")).not.toBeInTheDocument();
+    expect(container.querySelector('[class*="bg-surface-2"]')).toBeNull();
+  });
 });

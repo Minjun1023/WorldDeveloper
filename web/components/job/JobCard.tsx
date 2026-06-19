@@ -5,8 +5,8 @@ import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { Card } from "@/components/ui/card";
 import { flagFromLocation } from "@/lib/flags";
 import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
-import { formatSalary } from "@/lib/salary";
 import { fallbackMetaChip } from "@/lib/jobMeta";
+import { formatSalary } from "@/lib/salary";
 import { filterTechTags } from "@/lib/techTags";
 import type { Job } from "@/lib/types";
 
