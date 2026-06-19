@@ -42,8 +42,8 @@ export default async function CompanyDetailPage({ params }: { params: { slug: st
               {registerVerified && <RegisterVerifiedBadge />}
             </div>
 
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-body-sm text-muted-foreground">
-              {company.website_url && (
+            {company.website_url && (
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-body-sm text-muted-foreground">
                 <a
                   href={company.website_url}
                   target="_blank"
@@ -52,10 +52,8 @@ export default async function CompanyDetailPage({ params }: { params: { slug: st
                 >
                   {cleanUrl(company.website_url)}
                 </a>
-              )}
-              {company.website_url && company.ats && <span aria-hidden>·</span>}
-              {company.ats && <span className="font-mono text-caption">{company.ats}</span>}
-            </div>
+              </div>
+            )}
 
             {company.tags && company.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
@@ -93,7 +91,7 @@ export default async function CompanyDetailPage({ params }: { params: { slug: st
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {jobs.map((job) => (
-              <JobCard key={job.id} job={job} />
+              <JobCard key={job.id} job={job} showRestrictedRemote />
             ))}
           </div>
         )}

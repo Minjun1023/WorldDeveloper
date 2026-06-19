@@ -14,7 +14,16 @@ import { VisaBadge } from "./VisaBadge";
 
 // 카드 전체가 상세 페이지(/jobs/[id]) 링크. 외부 "지원" 버튼은 상세 페이지에만 둔다.
 // hideVisaBadge: 이미 전부 스폰서인 맥락(홈 "비자 스폰서십" 섹션)에선 중복이라 비자 배지를 숨긴다.
-export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadge?: boolean }) {
+export function JobCard({
+  job,
+  hideVisaBadge = false,
+  showRestrictedRemote = false,
+}: {
+  job: Job;
+  hideVisaBadge?: boolean;
+  // 회사 페이지 등에서 '원격 가능 공고'를 모두 표기하고 싶을 때 지역 제한 원격도 배지로 노출.
+  showRestrictedRemote?: boolean;
+}) {
   const salary = formatSalary(job.salary);
   const posted = postedRelativeLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
@@ -27,7 +36,11 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
     !hideVisaBadge && (job.visa?.status === "no_sponsor" || job.visa?.status === "unclear");
   const showRemote =
     job.remote?.eligibility === "worldwide" || job.remote?.eligibility === "apac_ok";
-  const hasBadges = showVisa || showRemote;
+  const showRestricted =
+    showRestrictedRemote &&
+    !showRemote &&
+    (job.remote?.eligibility === "region_restricted" || job.is_remote === true);
+  const hasBadges = showVisa || showRemote || showRestricted;
 
   return (
     <Link href={`/jobs/${encodeURIComponent(job.id)}`} className="group block h-full">
@@ -72,7 +85,11 @@ export function JobCard({ job, hideVisaBadge = false }: { job: Job; hideVisaBadg
         {hasBadges && (
           <div className="mt-3 flex flex-wrap gap-1.5">
             {showVisa && <VisaBadge status={job.visa?.status} />}
-            <RemoteBadge eligibility={job.remote?.eligibility} />
+            <RemoteBadge
+              eligibility={job.remote?.eligibility}
+              isRemote={job.is_remote}
+              includeRestricted={showRestrictedRemote}
+            />
           </div>
         )}
 
