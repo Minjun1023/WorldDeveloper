@@ -3,6 +3,8 @@
 import {
   DndContext,
   type DragEndEvent,
+  DragOverlay,
+  type DragStartEvent,
   PointerSensor,
   useDraggable,
   useDroppable,
@@ -51,6 +53,8 @@ function columnKeyForStatus(status: string | null | undefined): string {
 export function JobTrackerBoard() {
   const [jobs, setJobs] = useState<Job[] | null>(null);
   const [statusByJob, setStatusByJob] = useState<Record<string, string | null>>({});
+  // 드래그 중인 공고 id — DragOverlay(포털)로 떠 있는 카드를 그린다. overflow 클리핑을 벗어나기 위함.
+  const [activeId, setActiveId] = useState<string | null>(null);
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
 
   useEffect(() => {
@@ -72,6 +76,7 @@ export function JobTrackerBoard() {
   }, []);
 
   function handleDragEnd(e: DragEndEvent) {
+    setActiveId(null);
     const jobId = String(e.active.id);
     const overKey = e.over ? String(e.over.id) : null;
     if (!overKey || overKey === POOL) return; // 풀로 되돌리기(언트랙)는 v1 미지원
@@ -99,9 +104,15 @@ export function JobTrackerBoard() {
   if (jobs === null) return <p className="text-body-sm text-muted-foreground">불러오는 중…</p>;
 
   const poolJobs = jobs.filter((j) => columnKeyForStatus(statusByJob[j.id]) === POOL);
+  const activeJob = activeId ? (jobs.find((j) => j.id === activeId) ?? null) : null;
 
   return (
-    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+    <DndContext
+      sensors={sensors}
+      onDragStart={(e: DragStartEvent) => setActiveId(String(e.active.id))}
+      onDragEnd={handleDragEnd}
+      onDragCancel={() => setActiveId(null)}
+    >
       {/* 뷰포트 높이를 채우고(전체 크기), 가로는 항상 맞춰(슬라이드 없음) 카드만 컬럼 내부 스크롤. */}
       <div className="flex h-[calc(100vh-17rem)] gap-2 overflow-x-auto overflow-y-hidden sm:gap-3 md:overflow-x-hidden">
         {/* 북마크 공고 풀 (드래그 소스) */}
@@ -131,6 +142,11 @@ export function JobTrackerBoard() {
           />
         ))}
       </div>
+
+      {/* 드래그 중 카드는 포털로 body 레벨에 떠서 그려진다 — 컬럼/보드의 overflow 클리핑을 벗어난다. */}
+      <DragOverlay dropAnimation={null}>
+        {activeJob ? <CardSurface job={activeJob} dragging /> : null}
+      </DragOverlay>
     </DndContext>
   );
 }
@@ -167,20 +183,42 @@ function ColumnDrop({
   );
 }
 
+// 카드 외곽 공통 스타일 — 제자리 카드(JobChip)와 드래그 오버레이(CardSurface)가 동일하게 쓴다.
+const CARD_CHROME = "rounded-lg border border-border bg-surface p-3";
+
+function CardContent({ job }: { job: Job }) {
+  return (
+    <div className="flex items-center gap-2 pr-5">
+      <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={28} />
+      <div className="min-w-0">
+        <div className="truncate text-body-sm font-semibold text-foreground">{job.title_ko ?? job.title}</div>
+        <div className="truncate text-caption text-muted-foreground">{job.company.display_name}</div>
+      </div>
+    </div>
+  );
+}
+
+// DragOverlay(포털)에 떠서 그려지는 카드. dnd-kit 이 원본 노드 크기에 맞춰 래퍼 폭을 잡아준다.
+function CardSurface({ job, dragging }: { job: Job; dragging?: boolean }) {
+  return (
+    <div className={cn(CARD_CHROME, dragging && "cursor-grabbing shadow-lg ring-2 ring-primary")}>
+      <CardContent job={job} />
+    </div>
+  );
+}
+
 function JobChip({ job, onRemove }: { job: Job; onRemove: (jobId: string) => void }) {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id: job.id });
-  const style = transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 50 }
-    : undefined;
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: job.id });
   return (
     <div
       ref={setNodeRef}
-      style={style}
       {...listeners}
       {...attributes}
       className={cn(
-        "group relative cursor-grab touch-none rounded-lg border border-border bg-surface p-3 active:cursor-grabbing",
-        isDragging && "opacity-60 shadow-lg ring-2 ring-primary",
+        "group relative cursor-grab touch-none active:cursor-grabbing",
+        CARD_CHROME,
+        // 원본은 흐리게만 — 실제 움직이는 카드는 DragOverlay 가 그린다(overflow 클리핑 회피).
+        isDragging && "opacity-40",
       )}
     >
       <button
@@ -196,13 +234,7 @@ function JobChip({ job, onRemove }: { job: Job; onRemove: (jobId: string) => voi
       >
         <X className="h-3.5 w-3.5" aria-hidden="true" />
       </button>
-      <div className="flex items-center gap-2 pr-5">
-        <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={28} />
-        <div className="min-w-0">
-          <div className="truncate text-body-sm font-semibold text-foreground">{job.title_ko ?? job.title}</div>
-          <div className="truncate text-caption text-muted-foreground">{job.company.display_name}</div>
-        </div>
-      </div>
+      <CardContent job={job} />
     </div>
   );
 }
