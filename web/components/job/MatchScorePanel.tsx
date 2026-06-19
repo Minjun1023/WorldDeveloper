@@ -1,7 +1,9 @@
 "use client";
 
+import { Check } from "lucide-react";
 import Link from "next/link";
 
+import { ScoreRadar } from "@/components/recommend/ScoreRadar";
 import { useMatchScore } from "@/lib/use-match-score";
 import type { ScoreBreakdown } from "@/lib/types";
 
@@ -82,32 +84,34 @@ export function MatchScorePanel({ jobId }: { jobId: string }) {
 
   // state === "ready"
   const s = score as ScoreBreakdown;
+  const total = pct(s.final_score);
+  const quality =
+    total >= 85 ? "매우 높은 일치도" : total >= 70 ? "높은 일치도" : total >= 50 ? "보통 일치도" : "일치도 낮음";
+
   return (
     <div className="rounded-2xl border border-border bg-surface p-5">
-      <div className="text-caption text-muted-foreground">매칭 점수</div>
-      <div className="mt-1 text-5xl font-extrabold leading-none">
-        {pct(s.final_score)}
-        <span className="text-base font-semibold text-muted-foreground">/100</span>
+      <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">내 프로필과 매칭도</p>
+      <div className="mt-3 flex items-end gap-2">
+        <span className="text-4xl font-extrabold leading-none tabular-nums text-foreground">{total}</span>
+        <span className="pb-0.5 text-body-sm font-semibold text-muted-foreground">/ 100점</span>
       </div>
-      <dl className="mt-4 space-y-2">
-        {AXES.map((a) => {
-          const v = pct(s[a.key] as number);
-          return (
-            <div key={a.key} className="flex items-center gap-2 text-caption">
-              <dt className="w-8 shrink-0 text-muted-foreground">{a.label}</dt>
-              <dd className="h-2 flex-1 overflow-hidden rounded-full bg-surface-2">
-                <div
-                  className="h-full rounded-full bg-primary"
-                  style={{ width: `${v}%` }}
-                />
-              </dd>
-              <span className="w-7 shrink-0 text-right tabular-nums text-muted-foreground">
-                {v}
-              </span>
-            </div>
-          );
-        })}
-      </dl>
+      <p className="mt-2 flex items-center gap-1 text-caption font-bold text-success">
+        <Check className="h-3.5 w-3.5" aria-hidden="true" />
+        {quality}
+      </p>
+
+      <div className="mt-4 flex justify-center">
+        <ScoreRadar score={s} size={220} />
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2">
+        {AXES.map((a) => (
+          <div key={a.key} className="flex items-center justify-between text-caption">
+            <span className="text-muted-foreground">{a.label}</span>
+            <span className="font-bold tabular-nums text-foreground">{pct(s[a.key] as number)}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

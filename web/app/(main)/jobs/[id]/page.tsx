@@ -82,8 +82,8 @@ export default async function JobDetailPage({ params }: { params: { id: string }
               </Link>
 
               <div className="space-y-1.5">
-                <h1 className="text-display leading-tight">{job.title_ko ?? job.title}</h1>
-                {job.title_ko && <p className="text-body text-muted-foreground">{job.title}</p>}
+                <h1 className="text-h2 font-extrabold leading-tight tracking-tight">{job.title_ko ?? job.title}</h1>
+                {job.title_ko && <p className="text-body-sm text-muted-foreground">{job.title}</p>}
               </div>
 
               <JobFactCards job={job} />
