@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -70,6 +70,23 @@ describe("CoachChat", () => {
     // 메시지 없이 보냈으므로 기본 질문이 user 메시지로 자동 주입된다.
     expect(body.messages.at(-1).role).toBe("user");
     expect(body.messages.at(-1).content).toMatch(/이력서/);
+  });
+
+  it("한글 IME 조합 중 Enter 는 전송하지 않고, 조합이 끝난 Enter 로 전송한다", async () => {
+    const fetchMock = mockFetch({ reply: "ok" });
+    vi.stubGlobal("fetch", fetchMock);
+    render(<CoachChat initialJobs={jobs as never} />);
+    const user = userEvent.setup();
+    const box = screen.getByPlaceholderText(/메시지/);
+    await user.type(box, "안녕");
+    // 조합 중(IME) Enter → 전송 안 함(끝글자 잔류 방지)
+    fireEvent.keyDown(box, { key: "Enter", isComposing: true });
+    expect(fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach")).toBeUndefined();
+    // 조합 확정 후 Enter → 전송
+    fireEvent.keyDown(box, { key: "Enter" });
+    await waitFor(() =>
+      expect(fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach")).toBeTruthy(),
+    );
   });
 
   it("posts and appends assistant reply", async () => {

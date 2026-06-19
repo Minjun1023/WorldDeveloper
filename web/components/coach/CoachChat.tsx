@@ -262,7 +262,8 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
+            // 한글 등 IME 조합 중 Enter 는 조합 확정용 — 전송하지 않는다(끝글자 잔류 버그 방지).
+            if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
               e.preventDefault();
               send();
             }
