@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest";
 
-import { employeesLabel, headquartersLabel, industryLabel } from "./company-facts-format";
+import { employeesLabel, headquartersLabel, industryKo, industryLabel } from "./company-facts-format";
+
+describe("industryKo", () => {
+  it("매핑된 업종은 한국어 반환", () => {
+    expect(industryKo("software industry")).toBe("소프트웨어");
+    expect(industryKo("Financial Services")).toBe("금융 서비스");
+  });
+  it("매핑 없으면 undefined (조립 문장에서 제외용)", () => {
+    expect(industryKo("quantum widgets")).toBeUndefined();
+  });
+});
 
 describe("industryLabel", () => {
   it("알려진 영문 업종을 한국어로", () => {
