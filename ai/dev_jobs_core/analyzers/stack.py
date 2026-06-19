@@ -61,6 +61,9 @@ TECH_KEYWORDS = [
     "netlify", "heroku", "gitops", "kafka streams",
     # 기타 (추가)
     "websocket", "oauth", "jwt", "webassembly", "wasm", "opengl",
+    # 엔터프라이즈/플랫폼/게임/디자인 (빈-태그 공고 복구용; 단어경계 매칭으로 오탐 없음)
+    "salesforce", "servicenow", "sap", "abap", "shopify", "figma",
+    "firmware", "unity", "unreal engine",
 ]
 
 

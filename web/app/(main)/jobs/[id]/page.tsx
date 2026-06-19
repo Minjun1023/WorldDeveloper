@@ -9,6 +9,7 @@ import { JobFactCards } from "@/components/job/JobFactCards";
 import { JobSidebar } from "@/components/job/JobSidebar";
 import { JobSummary } from "@/components/job/JobSummary";
 import { MobileApplyBar } from "@/components/job/MobileApplyBar";
+import { NoTechStackNote } from "@/components/job/NoTechStackNote";
 import { RecordRecentJob } from "@/components/job/RecordRecentJob";
 import { TechStackMatch } from "@/components/job/TechStackMatch";
 import {
@@ -94,7 +95,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
             {job.description && (
               <JobDescription jobId={job.id} original={job.description} initialKo={initialKo} />
             )}
-            {techTags.length > 0 && <TechStackMatch tags={techTags} />}
+            {techTags.length > 0 ? <TechStackMatch tags={techTags} /> : <NoTechStackNote />}
             {prep && <InterviewPrepSection prep={prep} />}
 
             {otherJobs.length > 0 && (
