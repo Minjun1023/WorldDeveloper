@@ -10,7 +10,7 @@ import type { Job } from "@/lib/types";
 
 // 검색/최신 공고 행 — Figma 카드: 아바타 + 한글제목·영문 + 🏢회사·📍위치·연봉 + 기술칩 + 우측 게시일·하트.
 // 전체 행 클릭 = 상세 이동(stretched link), 우측 하트 = 관심 저장.
-export function JobRow({ job, loggedIn = false }: { job: Job; loggedIn?: boolean }) {
+export function JobRow({ job, loggedIn = false, saved = false }: { job: Job; loggedIn?: boolean; saved?: boolean }) {
   const posted = postedRelativeLabel(job.posted_at);
   const loc = locationDisplayParts(job).join(" · ");
   const salary = formatSalary(job.salary);
@@ -61,7 +61,7 @@ export function JobRow({ job, loggedIn = false }: { job: Job; loggedIn?: boolean
 
       <div className="flex shrink-0 flex-col items-end gap-2">
         {posted && <span className="whitespace-nowrap text-caption text-muted-foreground">{posted}</span>}
-        <SaveHeartButton jobId={job.id} loggedIn={loggedIn} />
+        <SaveHeartButton jobId={job.id} loggedIn={loggedIn} initialSaved={saved} />
       </div>
     </div>
   );

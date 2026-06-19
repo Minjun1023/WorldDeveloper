@@ -4,8 +4,8 @@ import { Pagination } from "@/components/search/Pagination";
 import { RecentSearches } from "@/components/search/RecentSearches";
 import { SearchBar } from "@/components/search/SearchBar";
 import { SortToggle } from "@/components/search/SortToggle";
-import { fetchJobs, fetchRegions } from "@/lib/api";
-import { getSession } from "@/lib/session-server";
+import { fetchJobs, fetchRegions, fetchSavedJobIds } from "@/lib/api";
+import { getSession, getSessionToken } from "@/lib/session-server";
 
 export const dynamic = "force-dynamic";
 
@@ -35,12 +35,15 @@ export default async function SearchPage({
   const minSalary = Number(searchParams.min_salary) || undefined;
   const complete = searchParams.complete === "true";
 
-  const [result, regions, session] = await Promise.all([
+  const [result, regions, session, token] = await Promise.all([
     fetchJobs({ q, visa, location, region, remote, sort, discipline, track, verifiedOnly, minSalary, complete, page, pageSize: PAGE_SIZE }),
     fetchRegions(),
     getSession(),
+    getSessionToken(),
   ]);
   const loggedIn = !!session;
+  // 재접속 시에도 관심(저장) 공고 하트가 채워져 보이도록 — 저장 ID 집합을 서버에서 1회 조회.
+  const savedIds = token ? await fetchSavedJobIds(token) : new Set<string>();
 
   return (
     <div className="space-y-6">
@@ -79,7 +82,7 @@ export default async function SearchPage({
             <>
               <div className="space-y-3">
                 {result.data.items.map((job) => (
-                  <JobRow key={job.id} job={job} loggedIn={loggedIn} />
+                  <JobRow key={job.id} job={job} loggedIn={loggedIn} saved={savedIds.has(job.id)} />
                 ))}
               </div>
               <Pagination
