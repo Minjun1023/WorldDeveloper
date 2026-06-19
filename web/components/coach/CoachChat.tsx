@@ -22,6 +22,18 @@ const QUICK_PROMPTS = [
 
 const SIGNIN = "/signin?callbackUrl=/coach";
 
+// 공고·이력서·메시지가 다 갖춰지지 않은 채 보내기를 눌렀을 때, 무엇이 빠졌는지에 맞춘 안내.
+function guidanceText(hasJob: boolean, hasResume: boolean, hasMessage: boolean): string {
+  if (!hasJob && !hasResume && !hasMessage) {
+    return "무엇이 궁금하신가요? 질문을 입력하고, 아래 ‘공고·이력서’로 공고와 이력서를 첨부하면 그 공고에 맞춰 답해드려요.";
+  }
+  const need: string[] = [];
+  if (!hasMessage) need.push("질문(메시지)");
+  if (!hasJob) need.push("상담할 공고");
+  if (!hasResume) need.push("이력서");
+  return `아직 ${need.join(" · ")}가 필요해요. 공고·이력서를 첨부하고 질문을 입력하면 이 공고에 맞춰 구체적으로 봐드릴게요.`;
+}
+
 // initialJobs 미제공 시(서버 블로킹 회피) picker 공고를 클라이언트에서 로드한다.
 export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: PickJob[]; loggedIn?: boolean }) {
   const router = useRouter();
@@ -46,10 +58,11 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
   const modalRef = useRef<HTMLDialogElement>(null);
   const modalTitleId = useId();
 
-  const canSend = !!jobId && resume.trim().length > 0 && input.trim().length > 0 && !pending;
   const selectedJob = jobs.find((j) => j.id === jobId);
   const started = messages.length > 0;
   const hasResume = resume.trim().length > 0;
+  const hasMessage = input.trim().length > 0;
+  const complete = !!jobId && hasResume && hasMessage; // 셋 다 있을 때만 실제 AI 호출
   const attachmentCount = (jobId ? 1 : 0) + (hasResume ? 1 : 0);
   const needsAttach = !jobId || !hasResume;
   const canCommit = !!draftJobId && draftResume.trim().length > 0;
@@ -211,11 +224,20 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
       router.push(SIGNIN);
       return;
     }
-    if (!canSend) {
-      if (needsAttach) openAttach(); // 필수 첨부가 빠졌으면 모달을 열어 안내
+    if (pending) return;
+    const msg = input.trim();
+    // 버튼은 어느 상황에서도 활성. 공고·이력서·메시지가 다 갖춰지지 않았으면
+    // 무엇이 빠졌는지에 맞춰 안내 메시지로 응답한다(실제 AI 호출 없음).
+    if (!complete) {
+      setMessages((m) => [
+        ...m,
+        ...(msg ? [{ role: "user" as const, content: msg }] : []),
+        { role: "assistant" as const, content: guidanceText(!!jobId, hasResume, msg.length > 0) },
+      ]);
+      if (msg) setInput("");
       return;
     }
-    const next: Msg[] = [...messages, { role: "user", content: input.trim() }];
+    const next: Msg[] = [...messages, { role: "user", content: msg }];
     setMessages(next);
     setInput("");
     setPending(true);
@@ -276,11 +298,11 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
           <button
             type="button"
             onClick={send}
-            disabled={loggedIn && !canSend}
+            disabled={pending}
             aria-label="보내기"
             className={cn(
               "flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-opacity",
-              !loggedIn || canSend ? "bg-brand-gradient text-white hover:opacity-90" : "bg-surface-2 text-muted-foreground",
+              pending ? "bg-surface-2 text-muted-foreground" : "bg-brand-gradient text-white hover:opacity-90",
             )}
           >
             <ArrowUp className="h-5 w-5" aria-hidden="true" />
@@ -436,9 +458,6 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
         // 진입(빈) 상태 — 중앙 히어로 (Figma)
         <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6 pt-2 sm:pt-6">
           <div className="flex flex-col items-center text-center">
-            <span className="bg-brand-gradient mb-5 flex h-16 w-16 items-center justify-center rounded-full text-h3 font-bold text-white shadow-sm">
-              W
-            </span>
             <h1 className="text-[clamp(1.5rem,3.5vw,2.1rem)] font-bold leading-tight tracking-tight text-foreground">
               이 공고, 내 이력서로 통할까?
             </h1>
