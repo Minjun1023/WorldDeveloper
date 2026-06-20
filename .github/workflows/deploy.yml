@@ -1,0 +1,57 @@
+name: Deploy
+
+# main 에 push → CI(워크플로명 "CI") 가 성공하면 자동 배포.
+# 러너가 체크아웃을 OCI 서버로 rsync 한 뒤 원격에서 docker compose 재빌드(= update.sh 와 동일 방식).
+# 수동 배포는 Actions 탭에서 "Run workflow"(workflow_dispatch).
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+# 배포는 한 번에 하나만. 진행 중인 배포는 죽이지 않고 큐잉.
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    # CI 성공(workflow_run) 또는 수동(dispatch)에서만 실행.
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # CI 가 검증한 바로 그 커밋을 배포(수동 실행 시엔 현재 HEAD).
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: SSH 키 준비
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H "${{ secrets.DEPLOY_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null
+
+      - name: 소스 동기화 (rsync)
+        # .env 제외 → 서버 deploy/.env(시크릿) 보존. postgres 볼륨은 건드리지 않음.
+        run: |
+          rsync -az --delete \
+            --exclude '.git' --exclude 'node_modules' --exclude '.venv' \
+            --exclude 'build' --exclude '.next' --exclude 'dist' --exclude '.gradle' \
+            --exclude '__pycache__' --exclude '*.pyc' \
+            --exclude '.env' --exclude '.DS_Store' \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            ./ "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:~/WorldDeveloper/"
+
+      - name: 재빌드·재기동 (docker compose up -d --build)
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd ~/WorldDeveloper/deploy && sudo docker compose -f docker-compose.prod.yml up -d --build"
+
+      - name: 상태 확인
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "sudo docker compose -f ~/WorldDeveloper/deploy/docker-compose.prod.yml ps --format 'table {{.Service}}\t{{.Status}}'"
