@@ -16,8 +16,9 @@ describe("CoachShell", () => {
     expect(screen.getByRole("button", { name: "도구" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "소개" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "크레딧" })).toBeInTheDocument();
-    // 비로그인도 히어로를 보여준다(실제 사용은 전송 시 로그인 유도)
-    expect(screen.getByRole("heading", { name: "이 공고, 내 이력서로 통할까?" })).toBeInTheDocument();
+    // 비로그인도 히어로를 보여준다(실제 사용은 전송 시 로그인 유도).
+    // 공고 미첨부(로그아웃 = 공고 없음) 상태의 히어로 카피.
+    expect(screen.getByRole("heading", { name: "이력서, 더 잘 보이게 코치할게요" })).toBeInTheDocument();
   });
 
   it("switches to about and credits views", async () => {
