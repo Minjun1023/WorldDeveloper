@@ -1,0 +1,22 @@
+# 단일 도메인 리버스 프록시 + 자동 HTTPS(Let's Encrypt).
+# - DOMAIN 환경변수로 호스트 지정(docker-compose 가 주입).
+# - 80/443 이 외부에서 열려 있어야 ACME HTTP 챌린지가 동작(OCI 보안목록 + VM 방화벽).
+# - 인증서 만료 알림 이메일을 받으려면 아래 전역 블록 주석을 풀고 이메일을 넣으세요.
+
+# {
+#     email you@example.com
+# }
+
+{$DOMAIN} {
+    encode zstd gzip
+
+    # OAuth 만 백엔드로(브라우저가 직접 호출하는 경로). 나머지는 전부 web 으로.
+    @oauth path /oauth2/* /login/oauth2/*
+    handle @oauth {
+        reverse_proxy backend:8080
+    }
+
+    handle {
+        reverse_proxy web:3000
+    }
+}
