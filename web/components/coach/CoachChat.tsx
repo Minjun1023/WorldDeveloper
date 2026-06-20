@@ -12,12 +12,13 @@ import { cn } from "@/lib/utils";
 type PickJob = { id: string; title: string; company: { display_name: string } };
 type Msg = { role: "user" | "assistant"; content: string };
 
-// 진입 히어로의 빠른 프롬프트 (Figma)
-const QUICK_PROMPTS = [
-  "이 공고에 맞는 키워드는?",
-  "내 이력서에서 부족한 점은?",
-  "면접 예상 질문 뽑아줘",
-  "자기소개 문단 다듬어줘",
+// 진입 히어로의 빠른 프롬프트 (Figma). jobSpecific=true 는 공고가 있어야 의미 있는 질문 —
+// 공고 미첨부 시 누르면 입력 대신 첨부 모달을 열어, 공고 없이 공고 맞춤 답을 요구하는 경로를 막는다.
+const QUICK_PROMPTS: { text: string; jobSpecific: boolean }[] = [
+  { text: "이 공고에 맞는 키워드는?", jobSpecific: true },
+  { text: "내 이력서에서 부족한 점은?", jobSpecific: false },
+  { text: "면접 예상 질문 뽑아줘", jobSpecific: true },
+  { text: "자기소개 문단 다듬어줘", jobSpecific: false },
 ];
 
 const SIGNIN = "/signin?callbackUrl=/coach";
@@ -268,7 +269,11 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
             }
           }}
           rows={2}
-          placeholder="메시지를 입력하세요 — 이 공고에 맞춰 답해드려요 (Enter 전송, Shift+Enter 줄바꿈)"
+          placeholder={
+            jobId
+              ? "메시지를 입력하세요 — 이 공고에 맞춰 답해드려요 (Enter 전송, Shift+Enter 줄바꿈)"
+              : "메시지를 입력하세요 — 이력서 전반을 코치해드려요. 공고를 붙이면 맞춤 분석 (Enter 전송, Shift+Enter 줄바꿈)"
+          }
           className="block max-h-44 min-h-[4rem] w-full resize-none bg-transparent px-4 pt-4 text-body-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
 
@@ -329,24 +334,24 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
             <button type="button" onClick={openAttach} className="font-medium text-primary hover:underline">
               공고·이력서
             </button>
-            를 첨부하면 그 공고에 맞춰 답해드려요.
+            를 첨부하면 더 정확하게 답해드려요. 공고는 선택이에요.
           </p>
         )
       )}
     </div>
   );
 
-  // 빠른 질문 칩
+  // 빠른 질문 칩. 공고 전용 질문인데 공고가 없으면 입력 대신 첨부 모달을 연다.
   const pills = (
     <div className="flex flex-wrap justify-center gap-2">
       {QUICK_PROMPTS.map((p) => (
         <button
-          key={p}
+          key={p.text}
           type="button"
-          onClick={() => setInput(p)}
+          onClick={() => (p.jobSpecific && !jobId ? openAttach() : setInput(p.text))}
           className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-caption text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
         >
-          {p}
+          {p.text}
         </button>
       ))}
     </div>
@@ -454,9 +459,13 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
         <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6 pt-2 sm:pt-6">
           <div className="flex flex-col items-center text-center">
             <h1 className="text-[clamp(1.5rem,3.5vw,2.1rem)] font-bold leading-tight tracking-tight text-foreground">
-              이 공고, 내 이력서로 통할까?
+              {jobId ? "이 공고, 내 이력서로 통할까?" : "이력서, 더 잘 보이게 코치할게요"}
             </h1>
-            <p className="mt-2 text-body text-muted-foreground">선택한 공고의 요건에 맞춰 이력서를 봐드려요.</p>
+            <p className="mt-2 text-body text-muted-foreground">
+              {jobId
+                ? "선택한 공고의 요건에 맞춰 이력서를 봐드려요."
+                : "공고를 붙이면 그 공고에 맞춰, 없으면 이력서 전반을 코치해드려요."}
+            </p>
           </div>
 
           {pills}
@@ -464,7 +473,7 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
 
           <p className="flex max-w-md items-start justify-center gap-1.5 text-center text-caption text-muted-foreground">
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            선택한 공고와 붙여넣은 이력서만 보고 답해요. 대화는 90일간 저장되고, 이력서는 저장되지 않아요.
+            붙여넣은 공고·이력서만 보고 답해요. 공고를 첨부한 대화는 90일간 저장되고, 이력서는 저장되지 않아요.
           </p>
         </div>
       )}
