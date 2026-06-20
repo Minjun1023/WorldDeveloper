@@ -1,0 +1,139 @@
+# 프로덕션(단일 VM) 구성 — Oracle Cloud A1 등 상시 서버에 전체 스택을 올린다.
+# 사용:  cd deploy && cp .env.example .env && (값 채우기) && docker compose -f docker-compose.prod.yml up -d --build
+# 모든 서비스 restart: unless-stopped → 재부팅/크래시 시 자동 복구 = 자정 ETL cron 이 안정적으로 실행.
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: devjobs
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: devjobs
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devjobs -d devjobs"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+
+  libretranslate:
+    image: libretranslate/libretranslate:latest
+    restart: unless-stopped
+    environment:
+      LT_LOAD_ONLY: "en,ko,ja"
+
+  ai:
+    build:
+      context: ../ai
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://devjobs:${POSTGRES_PASSWORD}@postgres:5432/devjobs
+      LIBRETRANSLATE_URL: http://libretranslate:5000
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ETL_ENABLED: "false"         # 웹은 서빙 전용 — 수집 스케줄러는 etl-worker 가 전담
+      PORT: "8001"
+
+  # 수집 전담 워커: 웹(ai)과 분리된 프로세스에서 스케줄러만 돌린다.
+  # 자정 수집이 도는 동안에도 ai 웹(embed/coach/추천)이 멈추지 않도록 CPU·블로킹을 격리.
+  etl-worker:
+    build:
+      context: ../ai
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://devjobs:${POSTGRES_PASSWORD}@postgres:5432/devjobs
+      LIBRETRANSLATE_URL: http://libretranslate:5000
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ETL_ENABLED: "true"          # 스케줄러 on
+      ETL_TIMEZONE: Asia/Seoul     # 매일 00:00 KST
+      # 부트스트랩: 새 환경을 첫 자정 기다리지 않고 바로 채우려면 .env 에 ETL_RUN_ON_START=1
+      ETL_RUN_ON_START: "${ETL_RUN_ON_START:-false}"
+    command: ["/app/.venv/bin/python", "-m", "app.etl.worker"]
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai:
+        condition: service_started
+    environment:
+      DATABASE_URL: jdbc:postgresql://postgres:5432/devjobs
+      DATABASE_USER: devjobs
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      AI_BASE_URL: http://ai:8001
+      JWT_SECRET: ${JWT_SECRET}
+      INTERNAL_AUTH_SECRET: ${INTERNAL_AUTH_SECRET}
+      APP_BASE_URL: https://${DOMAIN}
+      # Caddy(TLS 종단) 뒤에 있으므로 X-Forwarded-* 를 신뢰해 https redirect URI 를 생성.
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+      # OAuth (선택 — 없으면 소셜 로그인 버튼만 동작 안 함, 이메일 로그인은 정상)
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      # 메일(선택 — 이메일 인증 발송). 미설정 시 인증 링크가 backend 로그로 출력.
+      MAIL_HOST: ${MAIL_HOST:-}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_SMTP_AUTH: ${MAIL_SMTP_AUTH:-true}
+      MAIL_SMTP_STARTTLS: ${MAIL_SMTP_STARTTLS:-true}
+      MAIL_FROM: ${MAIL_FROM:-no-reply@${DOMAIN}}
+      PORT: "8080"
+
+  web:
+    build:
+      context: ../web
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_LOGODEV_TOKEN: ${NEXT_PUBLIC_LOGODEV_TOKEN:-}
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+    environment:
+      BACKEND_URL: http://backend:8080            # 서버사이드(SSR/route handler) 내부 호출
+      BACKEND_PUBLIC_URL: https://${DOMAIN}        # 브라우저가 OAuth(/oauth2/*) 로 직접 가는 공개 URL
+      APP_BASE_URL: https://${DOMAIN}
+      JWT_SECRET: ${JWT_SECRET}                    # backend 와 동일 값(세션 쿠키 검증)
+      INTERNAL_AUTH_SECRET: ${INTERNAL_AUTH_SECRET}
+      NODE_ENV: production
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on:
+      web:
+        condition: service_started
+      backend:
+        condition: service_started
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+
+volumes:
+  postgres-data:
+  caddy-data:
+  caddy-config:
