@@ -7,7 +7,7 @@ public final class AuthDtos {
     public record RegisterRequest(String email, String password, String displayName,
                                   com.devjobs.profile.dto.ProfileDto.Profile profile) {}
     public record LoginRequest(String email, String password) {}
-    public record VerifyRequest(String token) {}
+    public record VerifyRequest(String email, String code) {}
     public record ResendRequest(String email) {}
     public record ExchangeRequest(String code) {}
 

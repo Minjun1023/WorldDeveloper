@@ -50,8 +50,8 @@ class AuthServiceTest {
         assertNotNull(u.getPasswordHash());
         assertTrue(u.getPasswordHash().startsWith("$2"), "BCrypt 해시");
         assertNull(u.getEmailVerifiedAt(), "가입 직후 미인증");
-        verify(mailService, times(1)).sendVerification(org.mockito.ArgumentMatchers.eq("new@example.com"),
-            org.mockito.ArgumentMatchers.contains("/verify-email?token="));
+        verify(mailService, times(1)).sendVerificationCode(org.mockito.ArgumentMatchers.eq("new@example.com"),
+            org.mockito.ArgumentMatchers.matches("\\d{6}"));
     }
 
     @Test
@@ -68,22 +68,23 @@ class AuthServiceTest {
     @Test
     void verifyEmailMarksUserVerifiedAndConsumesToken() {
         authService.register("verify@example.com", "Password123", "V");
-        // register 가 만든 토큰의 원문은 메일로만 나가므로, 테스트는 새 토큰을 직접 발급해 검증 경로를 탄다
+        // register 가 만든 코드의 원문은 메일로만 나가므로, 테스트는 새 코드를 직접 발급해 검증 경로를 탄다
         UserEntity u = userRepo.findByEmail("verify@example.com").orElseThrow();
-        String raw = TokenHasher.randomToken();
+        String code = "123456";
         tokenRepo.save(new EmailVerificationTokenEntity(
-            u.getId(), TokenHasher.sha256Hex(raw), java.time.OffsetDateTime.now().plusHours(1)));
+            u.getId(), TokenHasher.sha256Hex(code), java.time.OffsetDateTime.now().plusMinutes(10)));
 
-        authService.verifyEmail(raw);
+        authService.verifyEmail("verify@example.com", code);
 
         assertNotNull(userRepo.findByEmail("verify@example.com").orElseThrow().getEmailVerifiedAt());
-        // 단회용: 같은 토큰 재사용 시 실패
-        assertThrows(ResponseStatusException.class, () -> authService.verifyEmail(raw));
+        // 단회용: 같은 코드 재사용 시 실패(소비됨)
+        assertThrows(ResponseStatusException.class, () -> authService.verifyEmail("verify@example.com", code));
     }
 
     @Test
-    void verifyEmailRejectsUnknownToken() {
-        assertThrows(ResponseStatusException.class, () -> authService.verifyEmail("deadbeef"));
+    void verifyEmailRejectsUnknownCode() {
+        assertThrows(ResponseStatusException.class,
+            () -> authService.verifyEmail("ghost@example.com", "000000"));
     }
 
     @Test
@@ -91,9 +92,9 @@ class AuthServiceTest {
         authService.register("resend@example.com", "Password123", "R");
         org.mockito.Mockito.reset(mailService);
         authService.resendVerification("resend@example.com");
-        verify(mailService, times(1)).sendVerification(
+        verify(mailService, times(1)).sendVerificationCode(
             org.mockito.ArgumentMatchers.eq("resend@example.com"),
-            org.mockito.ArgumentMatchers.contains("/verify-email?token="));
+            org.mockito.ArgumentMatchers.matches("\\d{6}"));
     }
 
     @Test

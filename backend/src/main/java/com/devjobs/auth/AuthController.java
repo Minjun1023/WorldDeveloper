@@ -69,8 +69,9 @@ public class AuthController {
     }
 
     @PostMapping("/verify-email")
-    public ResponseEntity<Void> verify(@RequestBody VerifyRequest r) {
-        auth.verifyEmail(r.token());
+    public ResponseEntity<Void> verify(@RequestBody VerifyRequest r, HttpServletRequest req) {
+        rateLimit("verify", req); // 6자리 코드 무차별 대입 방지(IP 고정창 한도)
+        auth.verifyEmail(r.email(), r.code());
         return ResponseEntity.ok().build();
     }
 

@@ -81,11 +81,11 @@ public class AuthService {
     public record EmailAvailability(boolean valid, boolean available) {}
 
     private void issueAndSendVerification(UserEntity u) {
-        String raw = TokenHasher.randomToken();
+        String code = TokenHasher.randomCode();
         EmailVerificationTokenEntity t = new EmailVerificationTokenEntity(
-            u.getId(), TokenHasher.sha256Hex(raw), OffsetDateTime.now().plusHours(24));
+            u.getId(), TokenHasher.sha256Hex(code), OffsetDateTime.now().plusMinutes(10));
         tokenRepo.save(t);
-        mailService.sendVerification(u.getEmail(), appBaseUrl + "/verify-email?token=" + raw);
+        mailService.sendVerificationCode(u.getEmail(), code);
     }
 
     @Transactional
@@ -99,15 +99,17 @@ public class AuthService {
         issueAndSendVerification(u);
     }
 
+    /** 이메일 + 6자리 인증번호로 검증. 코드 단위 단회용(소비 시 재사용 불가). */
     @Transactional
-    public void verifyEmail(String rawToken) {
-        EmailVerificationTokenEntity t = tokenRepo.findByTokenHash(TokenHasher.sha256Hex(rawToken))
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_token"));
+    public void verifyEmail(String email, String rawCode) {
+        UserEntity u = userRepo.findByEmail(normalize(email))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code"));
+        EmailVerificationTokenEntity t = tokenRepo
+            .findByUserIdAndTokenHash(u.getId(), TokenHasher.sha256Hex(rawCode))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code"));
         if (t.getConsumedAt() != null || t.getExpiresAt().isBefore(OffsetDateTime.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_token");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code");
         }
-        UserEntity u = userRepo.findById(t.getUserId())
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_token"));
         u.markEmailVerified(OffsetDateTime.now());
         t.consume(OffsetDateTime.now());
     }
