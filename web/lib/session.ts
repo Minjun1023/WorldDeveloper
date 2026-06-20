@@ -17,7 +17,9 @@ export async function verifySessionToken(
 ): Promise<Session | null> {
   if (!token) return null;
   try {
-    const { payload } = await jwtVerify(token, key(), { algorithms: ["HS256"] });
+    // Spring(jjwt)은 시크릿 길이에 따라 HS256/384/512 를 자동 선택한다(64바이트 시크릿=HS512).
+    // 검증은 HMAC-SHA 전 변형을 허용해야 환경별 시크릿 길이와 무관하게 동작한다(키는 동일).
+    const { payload } = await jwtVerify(token, key(), { algorithms: ["HS256", "HS384", "HS512"] });
     if (!payload.sub) return null;
     return { userId: String(payload.sub) };
   } catch {
