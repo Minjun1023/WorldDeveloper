@@ -2,7 +2,7 @@ import { ArrowDown, MessagesSquare, Pencil, Target } from "lucide-react";
 
 // 코치 진입(비-대화) 랜딩 — 가치 제안 + before/after 예시 + 기능/단계 안내.
 // 미배포라 '코칭한 이력서 N건·통과율 N배' 같은 측정 통계는 넣지 않는다(만들어낸 수치 금지).
-// CTA 는 onStart 로 연결 — 로그인 상태면 공고·이력서 첨부 모달, 비로그인이면 로그인 유도(호출부에서 처리).
+// 실제 시작(입력·첨부)은 아래 입력창에서 하므로 히어로에 별도 CTA 버튼은 두지 않는다.
 
 const FEATURES = [
   { icon: Target, title: "공고 키워드 매칭", desc: "공고에서 핵심 역량을 뽑아 내 이력서에 빠진 키워드를 짚어줘요." },
@@ -16,7 +16,7 @@ const STEPS = [
   { n: "03", title: "문장별 피드백", desc: "바로 고쳐쓰기" },
 ];
 
-export function CoachLanding({ loggedIn, onStart }: { loggedIn: boolean; onStart: () => void }) {
+export function CoachLanding() {
   return (
     <div className="w-full space-y-10">
       {/* 히어로 + 실시간 코칭 예시 */}
@@ -30,18 +30,6 @@ export function CoachLanding({ loggedIn, onStart }: { loggedIn: boolean; onStart
           <p className="mt-3 max-w-md text-body text-muted-foreground">
             공고를 붙이면 그 회사가 원하는 키워드로, 문장 하나하나를 성과와 숫자 중심으로 다시 써드려요.
           </p>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              onClick={onStart}
-              className="bg-brand-gradient rounded-xl px-5 py-3 text-body-sm font-semibold text-white transition-opacity hover:opacity-90"
-            >
-              내 이력서 코칭받기
-            </button>
-            <span className="text-caption text-muted-foreground">
-              {loggedIn ? "베타 기간 무료" : "로그인하고 무료로 시작"}
-            </span>
-          </div>
         </div>
 
         {/* before → after 예시 (측정 통계 아님, 답변 예시) */}

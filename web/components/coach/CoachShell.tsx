@@ -4,7 +4,6 @@ import { Coins, Info, Sparkles, Wrench } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 
-import { Breadcrumb } from "@/components/Breadcrumb";
 import { CoachChat } from "@/components/coach/CoachChat";
 import { cn } from "@/lib/utils";
 
@@ -73,12 +72,9 @@ export function CoachShell({ loggedIn }: { loggedIn: boolean }) {
         </div>
       </aside>
 
-      {/* 메인 — 상단 브레드크럼(홈 > 이력서 코치) + 히어로(세로 가운데) */}
+      {/* 메인 — 히어로(세로 가운데) */}
       <main className="flex flex-1 flex-col px-4 lg:px-8">
-        <div className="pt-6 lg:pt-8">
-          <Breadcrumb />
-        </div>
-        <div className="flex flex-1 flex-col justify-center py-4 lg:py-8">
+        <div className="flex flex-1 flex-col justify-center py-6 lg:py-10">
           {view === "tools" && <CoachChat loggedIn={loggedIn} />}
           {view === "about" && <AboutView onStart={() => setView("tools")} />}
           {view === "credits" && <CreditsView onStart={() => setView("tools")} />}
