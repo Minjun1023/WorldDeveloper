@@ -34,7 +34,7 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
 ];
 
 const SOCIALS = [
-  { label: "이메일", href: "mailto:hello@worlddeveloper.dev", Icon: MailMark },
+  { label: "이메일", href: "mailto:worlddev61@gmail.com", Icon: MailMark },
 ];
 
 export function SiteFooter() {

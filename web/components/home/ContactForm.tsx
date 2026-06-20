@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 // 푸터 메일과 동일한 문의 주소.
-export const CONTACT_EMAIL = "hello@worlddeveloper.dev";
+export const CONTACT_EMAIL = "worlddev61@gmail.com";
 
 // 입력값으로 mailto 링크를 구성. 백엔드 메일 발송 인프라가 아직 없어(런칭 시점 연기),
 // 사용자의 메일 앱에서 문의 메일을 바로 작성하도록 mailto로 처리한다.
