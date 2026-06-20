@@ -1,0 +1,98 @@
+import { ArrowDown, MessagesSquare, Pencil, Target } from "lucide-react";
+
+// 코치 진입(비-대화) 랜딩 — 가치 제안 + before/after 예시 + 기능/단계 안내.
+// 미배포라 '코칭한 이력서 N건·통과율 N배' 같은 측정 통계는 넣지 않는다(만들어낸 수치 금지).
+// CTA 는 onStart 로 연결 — 로그인 상태면 공고·이력서 첨부 모달, 비로그인이면 로그인 유도(호출부에서 처리).
+
+const FEATURES = [
+  { icon: Target, title: "공고 키워드 매칭", desc: "공고에서 핵심 역량을 뽑아 내 이력서에 빠진 키워드를 짚어줘요." },
+  { icon: Pencil, title: "문장 다시쓰기", desc: "두루뭉술한 문장을 성과·숫자 중심으로 바꿔줘요." },
+  { icon: MessagesSquare, title: "예상 면접 질문", desc: "이력서 기반으로 나올 법한 질문을 미리 뽑아줘요." },
+];
+
+const STEPS = [
+  { n: "01", title: "이력서 붙여넣기", desc: "파일 또는 텍스트로" },
+  { n: "02", title: "공고 선택 (선택)", desc: "붙이면 맞춤 분석" },
+  { n: "03", title: "문장별 피드백", desc: "바로 고쳐쓰기" },
+];
+
+export function CoachLanding({ loggedIn, onStart }: { loggedIn: boolean; onStart: () => void }) {
+  return (
+    <div className="w-full space-y-10">
+      {/* 히어로 + 실시간 코칭 예시 */}
+      <div className="grid gap-8 lg:grid-cols-2 lg:items-center">
+        <div>
+          <h1 className="text-[clamp(1.6rem,3.6vw,2.4rem)] font-bold leading-tight tracking-tight text-foreground">
+            약한 이력서 문장을,
+            <br />
+            합격하는 문장으로
+          </h1>
+          <p className="mt-3 max-w-md text-body text-muted-foreground">
+            공고를 붙이면 그 회사가 원하는 키워드로, 문장 하나하나를 성과와 숫자 중심으로 다시 써드려요.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={onStart}
+              className="bg-brand-gradient rounded-xl px-5 py-3 text-body-sm font-semibold text-white transition-opacity hover:opacity-90"
+            >
+              내 이력서 코칭받기
+            </button>
+            <span className="text-caption text-muted-foreground">
+              {loggedIn ? "베타 기간 무료" : "로그인하고 무료로 시작"}
+            </span>
+          </div>
+        </div>
+
+        {/* before → after 예시 (측정 통계 아님, 답변 예시) */}
+        <div className="rounded-2xl border border-border bg-surface-2 p-5">
+          <p className="text-caption font-medium text-muted-foreground">실시간 코칭 예시</p>
+          <div className="mt-3 rounded-xl border border-destructive/20 bg-destructive/5 p-3.5">
+            <p className="text-caption font-semibold text-destructive">현재</p>
+            <p className="mt-1 text-body-sm text-foreground">백엔드 API를 담당했습니다</p>
+          </div>
+          <div className="flex justify-center py-1.5 text-muted-foreground" aria-hidden="true">
+            <ArrowDown className="h-4 w-4" />
+          </div>
+          <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5">
+            <p className="text-caption font-semibold text-primary">제안</p>
+            <p className="mt-1 text-body-sm text-foreground">
+              REST API 12종을 설계해 응답시간을 820ms→210ms로 단축했습니다
+            </p>
+          </div>
+          <p className="mt-2 text-caption text-muted-foreground">* 실제 답변 형태를 보여주는 예시예요.</p>
+        </div>
+      </div>
+
+      {/* 기능 카드 */}
+      <section>
+        <h2 className="text-body-sm font-medium text-muted-foreground">이력서 코치가 하는 일</h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          {FEATURES.map((f) => (
+            <div key={f.title} className="rounded-2xl border border-border bg-surface p-5">
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <f.icon className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <h3 className="mt-3 text-body font-semibold text-foreground">{f.title}</h3>
+              <p className="mt-1 text-body-sm text-muted-foreground">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 3단계 */}
+      <section className="rounded-2xl bg-surface-2 p-6">
+        <h2 className="text-body-sm font-medium text-muted-foreground">3단계면 끝나요</h2>
+        <div className="mt-4 grid gap-5 sm:grid-cols-3">
+          {STEPS.map((s) => (
+            <div key={s.n}>
+              <p className="text-body font-bold text-primary">{s.n}</p>
+              <p className="mt-1 text-body font-semibold text-foreground">{s.title}</p>
+              <p className="text-body-sm text-muted-foreground">{s.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
+}

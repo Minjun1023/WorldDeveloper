@@ -9,6 +9,8 @@ import { getRecentJobs } from "@/lib/recent";
 import { readRecommendCache } from "@/lib/recommend-cache";
 import { cn } from "@/lib/utils";
 
+import { CoachLanding } from "./CoachLanding";
+
 type PickJob = { id: string; title: string; company: { display_name: string } };
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -456,26 +458,18 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
           {pills}
         </div>
       ) : (
-        // 진입(빈) 상태 — 중앙 히어로 (Figma)
-        <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6 pt-2 sm:pt-6">
-          <div className="flex flex-col items-center text-center">
-            <h1 className="text-[clamp(1.5rem,3.5vw,2.1rem)] font-bold leading-tight tracking-tight text-foreground">
-              {jobId ? "이 공고, 내 이력서로 통할까?" : "이력서, 더 잘 보이게 코치할게요"}
-            </h1>
-            <p className="mt-2 text-body text-muted-foreground">
-              {jobId
-                ? "선택한 공고의 요건에 맞춰 이력서를 봐드려요."
-                : "공고를 붙이면 그 공고에 맞춰, 없으면 이력서 전반을 코치해드려요."}
+        // 진입(빈) 상태 — 랜딩(가치 제안) + 바로 시작 입력창
+        <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 pt-2 sm:pt-6">
+          <CoachLanding loggedIn={loggedIn} onStart={openAttach} />
+
+          <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4">
+            {pills}
+            {composer}
+            <p className="flex max-w-md items-start justify-center gap-1.5 text-center text-caption text-muted-foreground">
+              <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+              붙여넣은 공고·이력서만 보고 답해요. 공고를 첨부한 대화는 90일간 저장되고, 이력서는 저장되지 않아요.
             </p>
           </div>
-
-          {pills}
-          {composer}
-
-          <p className="flex max-w-md items-start justify-center gap-1.5 text-center text-caption text-muted-foreground">
-            <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-            붙여넣은 공고·이력서만 보고 답해요. 공고를 첨부한 대화는 90일간 저장되고, 이력서는 저장되지 않아요.
-          </p>
         </div>
       )}
 
