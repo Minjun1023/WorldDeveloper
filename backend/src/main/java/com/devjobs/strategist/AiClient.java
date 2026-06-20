@@ -2,13 +2,17 @@ package com.devjobs.strategist;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -178,6 +182,45 @@ public class AiClient {
             return mapper.readValue(resp.body(), CoachChatResult.class);
         } catch (Exception e) {
             log.warn("ai coach-chat 실패: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * AI /internal/coach-chat-stream 호출 — 응답을 평문 청크로 받아 onChunk 로 흘리고 누적 전체를 반환.
+     * 실패(키 미설정/업스트림 오류/IO 포함) 시 null. UTF-8 멀티바이트 경계는 InputStreamReader 가 처리.
+     */
+    public String coachChatStream(String context, String resume, List<CoachChatMessage> messages,
+                                  Consumer<String> onChunk) {
+        try {
+            String json = mapper.writeValueAsString(Map.of(
+                "context", context == null ? "" : context,
+                "resume", resume == null ? "" : resume,
+                "messages", messages == null ? List.of() : messages));
+            HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/internal/coach-chat-stream"))
+                .header("content-type", "application/json")
+                .timeout(Duration.ofSeconds(120))
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+            HttpResponse<InputStream> resp = http.send(req, HttpResponse.BodyHandlers.ofInputStream());
+            if (resp.statusCode() != 200) {
+                log.warn("ai coach-chat-stream HTTP {}", resp.statusCode());
+                return null;
+            }
+            StringBuilder full = new StringBuilder();
+            try (InputStreamReader reader = new InputStreamReader(resp.body(), StandardCharsets.UTF_8)) {
+                char[] cbuf = new char[1024];
+                int n;
+                while ((n = reader.read(cbuf)) != -1) {
+                    String chunk = new String(cbuf, 0, n);
+                    full.append(chunk);
+                    onChunk.accept(chunk);
+                }
+            }
+            return full.toString();
+        } catch (Exception e) {
+            log.warn("ai coach-chat-stream 실패: {}", e.getMessage());
             return null;
         }
     }

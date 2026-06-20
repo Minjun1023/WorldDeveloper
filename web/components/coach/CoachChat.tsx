@@ -266,15 +266,34 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
     setPending(true);
     setError(null);
     try {
-      const res = await fetch("/api/me/coach", {
+      const res = await fetch("/api/me/coach/stream", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ job_id: jobId, resume, messages: next }),
       });
       if (res.status === 503) throw new Error("상담 기능이 아직 설정되지 않았어요.");
-      if (!res.ok) throw new Error(`오류 (HTTP ${res.status})`);
-      const data = (await res.json()) as { reply: string };
-      setMessages((m) => [...m, { role: "assistant", content: data.reply }]);
+      if (!res.ok || !res.body) throw new Error(`오류 (HTTP ${res.status})`);
+      // 응답을 청크 단위로 받아 어시스턴트 말풍선을 실시간으로 채운다(체감 지연 개선).
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let acc = "";
+      let started = false;
+      for (;;) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        acc += decoder.decode(value, { stream: true });
+        if (!started) {
+          started = true;
+          setMessages((m) => [...m, { role: "assistant", content: acc }]);
+        } else {
+          setMessages((m) => {
+            const copy = m.slice();
+            copy[copy.length - 1] = { role: "assistant", content: acc };
+            return copy;
+          });
+        }
+      }
+      if (!started) throw new Error("답변을 받지 못했어요. 잠시 후 다시 시도해 주세요.");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -458,7 +477,7 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
               ),
             )}
 
-            {pending && (
+            {pending && messages[messages.length - 1]?.role === "user" && (
               <div className="flex justify-start gap-2.5">
                 <CoachAvatar />
                 <span className="inline-flex items-center gap-1 rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-3">

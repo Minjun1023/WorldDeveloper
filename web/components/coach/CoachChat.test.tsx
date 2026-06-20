@@ -9,11 +9,35 @@ import { CoachChat } from "@/components/coach/CoachChat";
 const jobs = [{ id: "greenhouse:acme:1", title: "Backend Engineer", company: { slug: "acme", display_name: "Acme" } }];
 
 // 공고 선택 시 GET /api/me/coach/conversation 발생 → URL로 분기.
+// 스트리밍 응답 목 — body.getReader() 로 한 청크에 전체 텍스트를 흘린다.
+function streamResponse(text: string) {
+  const enc = new TextEncoder();
+  let sent = false;
+  return {
+    ok: true,
+    status: 200,
+    body: {
+      getReader() {
+        return {
+          read: async () => {
+            if (sent) return { done: true, value: undefined };
+            sent = true;
+            return { done: false, value: enc.encode(text) };
+          },
+        };
+      },
+    },
+  };
+}
+
 function mockFetch(opts: { conversation?: unknown; convStatus?: number; reply?: string; extractText?: string }) {
   return vi.fn((url: string, init?: RequestInit) => {
     const u = String(url);
     if (u.includes("/api/me/coach/resume-extract")) {
       return Promise.resolve({ ok: true, status: 200, json: async () => ({ text: opts.extractText ?? "추출된 이력서" }) });
+    }
+    if (u.includes("/api/me/coach/stream")) {
+      return Promise.resolve(streamResponse(opts.reply ?? "ok"));
     }
     if (u.includes("/api/me/coach/conversation")) {
       if (init?.method === "DELETE") return Promise.resolve({ ok: true, status: 200, json: async () => ({ ok: true }) });
@@ -53,7 +77,7 @@ describe("CoachChat", () => {
     await user.click(screen.getByRole("button", { name: /보내기/ }));
     expect(await screen.findByText("이 회사 어때요?")).toBeInTheDocument(); // 내 메시지
     expect(await screen.findByText("일반 조언입니다.")).toBeInTheDocument(); // 실제 답변
-    const postCall = fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach");
+    const postCall = fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach/stream");
     const body = JSON.parse((postCall![1] as RequestInit).body as string);
     expect(body.job_id).toBe(""); // 공고 없이 전송
     expect(body.messages.at(-1)).toEqual({ role: "user", content: "이 회사 어때요?" });
@@ -67,7 +91,7 @@ describe("CoachChat", () => {
     await attach(user); // 공고 + 이력서 첨부, 메시지는 비움
     await user.click(screen.getByRole("button", { name: /보내기/ }));
     expect(await screen.findByText("이력서 평가입니다.")).toBeInTheDocument();
-    const postCall = fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach");
+    const postCall = fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach/stream");
     const body = JSON.parse((postCall![1] as RequestInit).body as string);
     expect(body.job_id).toBe("greenhouse:acme:1");
     // 메시지 없이 보냈으므로 기본 질문이 user 메시지로 자동 주입된다.
@@ -84,11 +108,11 @@ describe("CoachChat", () => {
     await user.type(box, "안녕");
     // 조합 중(IME) Enter → 전송 안 함(끝글자 잔류 방지)
     fireEvent.keyDown(box, { key: "Enter", isComposing: true });
-    expect(fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach")).toBeUndefined();
+    expect(fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach/stream")).toBeUndefined();
     // 조합 확정 후 Enter → 전송
     fireEvent.keyDown(box, { key: "Enter" });
     await waitFor(() =>
-      expect(fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach")).toBeTruthy(),
+      expect(fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach/stream")).toBeTruthy(),
     );
   });
 
@@ -101,7 +125,7 @@ describe("CoachChat", () => {
     await user.type(screen.getByPlaceholderText(/메시지/), "어떻게?");
     await user.click(screen.getByRole("button", { name: /보내기/ }));
     expect(await screen.findByText("Go 경험을 위로 올리세요.")).toBeInTheDocument();
-    const postCall = fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach");
+    const postCall = fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach/stream");
     const body = JSON.parse((postCall![1] as RequestInit).body as string);
     expect(body.job_id).toBe("greenhouse:acme:1");
     expect(body.messages.at(-1)).toEqual({ role: "user", content: "어떻게?" });
