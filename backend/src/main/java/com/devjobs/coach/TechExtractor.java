@@ -41,10 +41,13 @@ final class TechExtractor {
 
     // 점(.)이나 숫자가 섞인 토큰(next.js, k8s)은 단어 경계 정규식이 까다로워 substring 으로,
     // 일반 단어는 \bword\b 로 검사한다.
-    private static boolean containsToken(String body, String kw) {
-        if (kw.contains(".") || kw.matches(".*\\d.*")) {
-            return body.contains(kw);
+    // package-private: ResumeOptimizer 의 보유/매칭 판정도 동일 로직을 재사용한다.
+    // 순수 알파벳 단어(go, java)는 \bword\b 로 오탐 방지(go∈google, ai∈trained).
+    // 특수문자/숫자/공백 포함(next.js, k8s, c++, "distributed systems")은 substring.
+    static boolean containsToken(String body, String kw) {
+        if (kw.matches("[a-z]+")) {
+            return Pattern.compile("\\b" + Pattern.quote(kw) + "\\b").matcher(body).find();
         }
-        return Pattern.compile("\\b" + Pattern.quote(kw) + "\\b").matcher(body).find();
+        return body.contains(kw);
     }
 }

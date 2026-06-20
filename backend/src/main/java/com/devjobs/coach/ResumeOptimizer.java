@@ -34,7 +34,8 @@ final class ResumeOptimizer {
         String lower = text.toLowerCase();
         Set<String> present = new TreeSet<>();
         for (String k : jobKw) {
-            if (lower.contains(k)) present.add(k);
+            // 단어경계 매칭 — substring 이면 "go"가 "google"에, "ai"가 "trained"에 오탐돼 보유스킬/점수가 부풀려진다.
+            if (TechExtractor.containsToken(lower, k)) present.add(k);
         }
         List<String> missing = jobKw.stream()
             .filter(k -> !present.contains(k))
@@ -98,7 +99,7 @@ final class ResumeOptimizer {
 
     private static List<String> lineMatches(String line, Set<String> keywords) {
         String lower = line.toLowerCase();
-        return keywords.stream().filter(lower::contains).sorted().collect(Collectors.toList());
+        return keywords.stream().filter(k -> TechExtractor.containsToken(lower, k)).sorted().collect(Collectors.toList());
     }
 
     private static List<String> buildSuggestions(
