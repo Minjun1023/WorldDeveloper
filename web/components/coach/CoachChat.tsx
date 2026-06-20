@@ -58,6 +58,8 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
   const [draftJobId, setDraftJobId] = useState("");
   const [draftResume, setDraftResume] = useState("");
   const [draftFileName, setDraftFileName] = useState<string | null>(null);
+  const [extracting, setExtracting] = useState(false); // PDF 텍스트 추출 중
+  const [extractError, setExtractError] = useState<string | null>(null);
   const modalRef = useRef<HTMLDialogElement>(null);
   const modalTitleId = useId();
 
@@ -211,8 +213,31 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
     setModalOpen(false);
   }
 
-  function readResumeFile(file: File | undefined) {
+  // .txt/.md 는 브라우저에서 즉시 읽고, .pdf 는 서버(/resume-extract, Node)에서 텍스트만 추출한다.
+  async function readResumeFile(file: File | undefined) {
     if (!file) return;
+    setExtractError(null);
+    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+    if (isPdf) {
+      setExtracting(true);
+      try {
+        const fd = new FormData();
+        fd.append("file", file);
+        const res = await fetch("/api/me/coach/resume-extract", { method: "POST", body: fd });
+        const data = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
+        if (res.ok && data.text) {
+          setDraftResume(data.text);
+          setDraftFileName(file.name);
+        } else {
+          setExtractError(data.error ?? "PDF를 읽지 못했어요.");
+        }
+      } catch {
+        setExtractError("PDF 업로드에 실패했어요.");
+      } finally {
+        setExtracting(false);
+      }
+      return;
+    }
     const reader = new FileReader();
     reader.onload = () => {
       setDraftResume(typeof reader.result === "string" ? reader.result : "");
@@ -555,7 +580,7 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
               >
                 <Upload className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
                 <span className="text-body-sm font-semibold text-foreground">파일을 드래그하거나 클릭해서 선택</span>
-                <span className="text-caption text-muted-foreground">.txt .md 지원</span>
+                <span className="text-caption text-muted-foreground">.pdf .txt .md 지원</span>
                 <span className="mt-1 inline-flex rounded-lg border border-border px-4 py-2 text-caption font-medium text-foreground">
                   파일 선택
                 </span>
@@ -565,10 +590,16 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
                     {draftFileName}
                   </span>
                 )}
-                <span className="mt-1 text-caption text-muted-foreground">PDF는 텍스트를 복사해 붙여넣어 주세요.</span>
+                <span className={cn("mt-1 text-caption", extractError ? "text-destructive" : "text-muted-foreground")}>
+                  {extracting
+                    ? "PDF에서 텍스트 추출 중…"
+                    : extractError
+                      ? extractError
+                      : "PDF는 텍스트만 추출돼요(스캔/이미지 PDF는 제외)."}
+                </span>
                 <input
                   type="file"
-                  accept=".txt,.md,.markdown,.text,text/plain"
+                  accept=".pdf,application/pdf,.txt,.md,.markdown,.text,text/plain"
                   className="sr-only"
                   onChange={(e) => {
                     readResumeFile(e.target.files?.[0]);

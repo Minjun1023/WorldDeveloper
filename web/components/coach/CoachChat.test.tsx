@@ -9,9 +9,12 @@ import { CoachChat } from "@/components/coach/CoachChat";
 const jobs = [{ id: "greenhouse:acme:1", title: "Backend Engineer", company: { slug: "acme", display_name: "Acme" } }];
 
 // 공고 선택 시 GET /api/me/coach/conversation 발생 → URL로 분기.
-function mockFetch(opts: { conversation?: unknown; convStatus?: number; reply?: string }) {
+function mockFetch(opts: { conversation?: unknown; convStatus?: number; reply?: string; extractText?: string }) {
   return vi.fn((url: string, init?: RequestInit) => {
     const u = String(url);
+    if (u.includes("/api/me/coach/resume-extract")) {
+      return Promise.resolve({ ok: true, status: 200, json: async () => ({ text: opts.extractText ?? "추출된 이력서" }) });
+    }
     if (u.includes("/api/me/coach/conversation")) {
       if (init?.method === "DELETE") return Promise.resolve({ ok: true, status: 200, json: async () => ({ ok: true }) });
       const status = opts.convStatus ?? (opts.conversation ? 200 : 204);
@@ -133,5 +136,23 @@ describe("CoachChat", () => {
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: "이 공고에 맞는 키워드는?" }));
     expect(screen.getByPlaceholderText(/메시지/)).toHaveValue(""); // setInput 대신 openAttach 분기
+  });
+
+  it("PDF 첨부 시 서버 추출(/resume-extract)을 호출하고 파일명을 표시한다", async () => {
+    const fetchMock = mockFetch({ convStatus: 204, extractText: "추출된 이력서 텍스트" });
+    vi.stubGlobal("fetch", fetchMock);
+    const { container } = render(<CoachChat initialJobs={jobs as never} />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: /첨부/ }));
+    await user.click(screen.getByRole("button", { name: "파일로 첨부" }));
+    const input = container.querySelector('input[type="file"]') as HTMLInputElement;
+    const pdf = new File([new Uint8Array([37, 80, 68, 70])], "resume.pdf", { type: "application/pdf" });
+    await user.upload(input, pdf);
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some((c) => String(c[0]).includes("/api/me/coach/resume-extract")),
+      ).toBe(true),
+    );
+    expect(await screen.findByText("resume.pdf")).toBeInTheDocument();
   });
 });
