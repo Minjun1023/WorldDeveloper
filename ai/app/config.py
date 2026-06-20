@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     # 시각 기준 타임존(ETL_TIMEZONE). 기본 한국 자정(Asia/Seoul). 컨테이너 TZ 와 무관하게 해당 TZ 자정에 실행.
     etl_cron: str = "0 0 * * *"
     etl_timezone: str = "Asia/Seoul"
+    # 워커(app.etl.worker) 부팅 시 1회 즉시 수집 여부. 기본 off — 재시작마다 전량 재수집되지 않도록.
+    # 새 환경 부트스트랩용: ETL_RUN_ON_START=1 로 켜면 첫 자정을 기다리지 않고 바로 채운다.
+    etl_run_on_start: bool = False
     # 정기/수동 ETL 사이클에서 비자 LLM 재분류(OpenAI 호출)를 할지. 기본 off = 무비용.
     # 수집·정리(전부 로컬)와 유료 LLM 단계를 분리 — 재분류는 /etl/reclassify-visa 로 옵트인.
     etl_reclassify: bool = False
