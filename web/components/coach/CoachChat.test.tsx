@@ -117,4 +117,21 @@ describe("CoachChat", () => {
     await attach(user);
     await waitFor(() => expect(screen.getByText("이전 조언이에요.")).toBeInTheDocument());
   });
+
+  it("일반 퀵 질문 칩은 입력창을 채운다", async () => {
+    vi.stubGlobal("fetch", mockFetch({ convStatus: 204 }));
+    render(<CoachChat initialJobs={jobs as never} />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "내 이력서에서 부족한 점은?" }));
+    expect(screen.getByPlaceholderText(/메시지/)).toHaveValue("내 이력서에서 부족한 점은?");
+  });
+
+  it("공고 전용 퀵 질문 칩은 공고 미첨부 시 입력창을 채우지 않는다 (첨부 모달 경로)", async () => {
+    // 회귀: 공고 없이 '이 공고에 맞는 키워드는?'을 그대로 보내 환각을 유발하던 경로 차단.
+    vi.stubGlobal("fetch", mockFetch({ convStatus: 204 }));
+    render(<CoachChat initialJobs={jobs as never} />);
+    const user = userEvent.setup();
+    await user.click(screen.getByRole("button", { name: "이 공고에 맞는 키워드는?" }));
+    expect(screen.getByPlaceholderText(/메시지/)).toHaveValue(""); // setInput 대신 openAttach 분기
+  });
 });

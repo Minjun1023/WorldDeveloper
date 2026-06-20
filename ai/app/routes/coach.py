@@ -17,12 +17,15 @@ OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 MODEL = "gpt-4o-mini"
 
 SYSTEM = (
-    "You are a resume coach for a Korean developer applying to a specific overseas software job. "
+    "You are a resume coach for a Korean developer applying to overseas software jobs. "
     "Answer in Korean; keep tech terms/company names in English. "
-    "Ground every suggestion ONLY in the provided job posting, the user's resume, and the keyword gap facts. "
+    "Ground every suggestion ONLY in the provided context (the job posting if one is present, "
+    "the user's resume, and the keyword-gap facts). "
     "NEVER invent experience, skills, or achievements the resume does not contain. "
-    "Suggest how to reframe/highlight the candidate's REAL experience for this posting. "
-    "When the posting needs something the resume genuinely lacks, say so honestly as a gap and suggest how to "
+    "If the context does NOT include a specific job posting, do NOT invent, guess, or imply any job's "
+    "requirements or 'keywords for this role'. In that case give general resume/career feedback grounded "
+    "only in the resume, and tell the user to attach a target job posting to get job-specific keywords. "
+    "When a posting genuinely needs something the resume lacks, name it honestly as a gap and suggest how to "
     "address it — do not fabricate it. Be concrete and concise."
 )
 
@@ -55,9 +58,12 @@ async def coach_chat(req: CoachRequest) -> CoachReply:
     if not key:
         raise HTTPException(503, "OPENAI_API_KEY not set — 상담 기능 미설정")
 
+    # 공고/이력서가 비어도 빈 섹션이 '공고 컨텍스트'로 오인되지 않게 명시 — #255 이후 셋 중 하나만 와도 됨.
+    ctx = req.context.strip() or "(제공된 공고/추가 컨텍스트 없음)"
+    resume_block = req.resume.strip() or "(제공된 이력서 없음)"
     openai_messages = [
         {"role": "system", "content": SYSTEM},
-        {"role": "system", "content": f"=== JOB & RESUME CONTEXT ===\n{req.context}\n\n=== RESUME ===\n{req.resume}"},
+        {"role": "system", "content": f"=== CONTEXT (job posting if any, plus facts) ===\n{ctx}\n\n=== RESUME ===\n{resume_block}"},
     ] + [{"role": m.role, "content": m.content} for m in msgs]
 
     try:
