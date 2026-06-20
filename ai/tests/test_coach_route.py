@@ -50,6 +50,20 @@ def test_valid_returns_reply(monkeypatch):
     assert any(m["content"] == "이 공고에 맞게 어떻게 고칠까요?" for m in sent)
 
 
+def test_model_is_configurable_via_settings(monkeypatch):
+    # #4: 모델을 코드 상수 대신 settings.openai_model 로 — env(OPENAI_MODEL)로 교체 가능.
+    monkeypatch.setattr(settings, "openai_api_key", "k")
+    monkeypatch.setattr(settings, "openai_model", "gpt-4o")
+    mock_post = AsyncMock(return_value=_mock_openai("ok"))
+    with patch("httpx.AsyncClient.post", mock_post):
+        r = client.post("/internal/coach-chat", json={
+            "context": "", "resume": "r", "messages": [{"role": "user", "content": "hi"}],
+        })
+    assert r.status_code == 200
+    assert mock_post.call_args.kwargs["json"]["model"] == "gpt-4o"
+    assert r.json()["engine"] == "gpt-4o"
+
+
 def test_no_job_context_system_prompt_forbids_inventing_keywords(monkeypatch):
     # 회귀: 공고 미첨부(#255 이후 가능)인데 모델이 '공고 맞춤 키워드'를 지어내던 환각.
     # 시스템 프롬프트가 '공고 없으면 추측 금지 + 공고 첨부 안내'를 담아야 하고,

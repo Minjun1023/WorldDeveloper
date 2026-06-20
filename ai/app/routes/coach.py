@@ -14,7 +14,6 @@ log = logging.getLogger(__name__)
 router = APIRouter()
 
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
-MODEL = "gpt-4o-mini"
 
 SYSTEM = (
     "You are a resume coach for a Korean developer applying to overseas software jobs. "
@@ -71,13 +70,13 @@ async def coach_chat(req: CoachRequest) -> CoachReply:
             resp = await client.post(
                 OPENAI_URL,
                 headers={"Authorization": f"Bearer {key}", "content-type": "application/json"},
-                json={"model": MODEL, "max_tokens": 1024, "temperature": 0.3, "messages": openai_messages},
+                json={"model": settings.openai_model, "max_tokens": 1024, "temperature": 0.3, "messages": openai_messages},
             )
         if resp.status_code != 200:
             log.warning("openai coach HTTP %s: %s", resp.status_code, resp.text[:300])
             raise HTTPException(502, f"coach upstream error ({resp.status_code})")
         reply = resp.json()["choices"][0]["message"]["content"] or ""
-        return CoachReply(reply=reply, engine=MODEL)
+        return CoachReply(reply=reply, engine=settings.openai_model)
     except (httpx.HTTPError, KeyError, IndexError, ValueError, AttributeError) as e:
         log.warning("openai coach 실패: %s", e)
         raise HTTPException(502, f"coach request failed: {e}") from e
