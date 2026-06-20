@@ -15,7 +15,7 @@ class MailServiceTest {
     void sendsWhenSenderPresentAndHostConfigured() {
         JavaMailSender sender = Mockito.mock(JavaMailSender.class);
         MailService svc = new MailService(sender, "no-reply@x.dev", "localhost");
-        svc.sendVerification("u@x.dev", "http://app/verify-email?token=abc");
+        svc.sendVerificationCode("u@x.dev", "123456");
         ArgumentCaptor<SimpleMailMessage> cap = ArgumentCaptor.forClass(SimpleMailMessage.class);
         verify(sender).send(cap.capture());
     }
@@ -23,14 +23,14 @@ class MailServiceTest {
     @Test
     void logsAndSkipsWhenSenderNull() {
         MailService svc = new MailService(null, "no-reply@x.dev", "");
-        svc.sendVerification("u@x.dev", "http://app/verify-email?token=abc"); // 예외 없음
+        svc.sendVerificationCode("u@x.dev", "123456"); // 예외 없음
     }
 
     @Test
     void logsAndSkipsWhenHostBlankEvenIfSenderPresent() {
         JavaMailSender sender = Mockito.mock(JavaMailSender.class);
         MailService svc = new MailService(sender, "no-reply@x.dev", "  ");
-        svc.sendVerification("u@x.dev", "http://app/verify-email?token=abc");
+        svc.sendVerificationCode("u@x.dev", "123456");
         verifyNoInteractions(sender);
     }
 }

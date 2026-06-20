@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface EmailVerificationTokenRepository
         extends JpaRepository<EmailVerificationTokenEntity, Long> {
-    Optional<EmailVerificationTokenEntity> findByTokenHash(String tokenHash);
+    Optional<EmailVerificationTokenEntity> findByUserIdAndTokenHash(UUID userId, String tokenHash);
     void deleteByUserId(UUID userId);
 }

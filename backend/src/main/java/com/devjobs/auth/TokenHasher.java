@@ -19,6 +19,11 @@ public final class TokenHasher {
         return HexFormat.of().formatHex(b);
     }
 
+    /** 이메일 인증용 6자리 숫자 코드(000000~999999). */
+    public static String randomCode() {
+        return String.format("%06d", RANDOM.nextInt(1_000_000));
+    }
+
     public static String sha256Hex(String raw) {
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");

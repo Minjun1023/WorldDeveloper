@@ -31,6 +31,11 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
   const [termsOk, setTermsOk] = useState(false);
   const [remember, setRemember] = useState(true);
   const [regStep, setRegStep] = useState<"account" | "profile">("account");
+  // 이메일 인증번호(코드) 입력 단계
+  const [code, setCode] = useState("");
+  const [verifyPending, setVerifyPending] = useState(false);
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [resent, setResent] = useState(false);
 
   // 이름 실시간 확인 (register, debounce 500ms)
   useEffect(() => {
@@ -143,7 +148,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ email, password, remember }),
       });
-      if (res.status === 403) throw new Error("이메일 인증이 필요해요. 받은 인증 메일의 링크를 눌러주세요.");
+      if (res.status === 403) throw new Error("이메일 인증이 필요해요. 회원가입 시 받은 인증번호로 인증해 주세요.");
       if (!res.ok) throw new Error("이메일 또는 비밀번호가 올바르지 않아요.");
       router.push(callbackUrl);
       router.refresh();
@@ -155,22 +160,80 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
   }
 
   async function resend() {
-    setError(null);
+    setVerifyError(null);
+    setResent(false);
+    setCode("");
     await fetch("/api/auth/resend-verification", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ email }),
     });
+    setResent(true);
+  }
+
+  // 인증번호 확인 → 성공 시 입력한 자격으로 자동 로그인하여 바로 입장.
+  async function verifyCode() {
+    setVerifyError(null);
+    setVerifyPending(true);
+    try {
+      const res = await fetch("/api/auth/verify-email", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, code: code.trim() }),
+      });
+      if (res.status === 429) throw new Error("시도가 너무 많아요. 잠시 후 다시 시도해 주세요.");
+      if (!res.ok) throw new Error("인증번호가 올바르지 않거나 만료됐어요.");
+      const login = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ email, password, remember: true }),
+      });
+      if (!login.ok) {
+        router.push("/signin"); // 자동 로그인 실패 시 로그인 화면으로
+        return;
+      }
+      router.push(callbackUrl);
+      router.refresh();
+    } catch (err) {
+      setVerifyError(err instanceof Error ? err.message : "오류가 발생했어요.");
+    } finally {
+      setVerifyPending(false);
+    }
   }
 
   if (mode === "register" && registered) {
     return (
-      <div className="space-y-3 text-body-sm">
-        <p>
-          <strong>{email}</strong> 로 인증 메일을 보냈어요. 메일의 링크를 눌러 이메일을 인증한 뒤 로그인하세요.
+      <div className="space-y-4">
+        <p className="text-body-sm">
+          <strong>{email}</strong> 로 6자리 인증번호를 보냈어요. 메일을 확인하고 아래에 입력해 주세요. (10분 이내 유효)
         </p>
-        <button type="button" onClick={resend} className="text-primary underline">
-          인증 메일 다시 보내기
+        <div className="space-y-1.5">
+          <label htmlFor="verify-code" className="text-body-sm font-medium">인증번호</label>
+          <Input
+            id="verify-code"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            maxLength={6}
+            placeholder="6자리 숫자"
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            className="h-11 text-center text-lg tracking-[0.4em]"
+          />
+        </div>
+        {verifyError && <p className="text-destructive text-body-sm">{verifyError}</p>}
+        {resent && !verifyError && (
+          <p className="text-caption text-success">인증번호를 다시 보냈어요.</p>
+        )}
+        <Button
+          type="button"
+          onClick={verifyCode}
+          disabled={verifyPending || code.length !== 6}
+          className="h-11 w-full"
+        >
+          {verifyPending ? "확인 중…" : "인증하고 시작하기"}
+        </Button>
+        <button type="button" onClick={resend} className="text-body-sm text-primary underline">
+          인증번호 다시 보내기
         </button>
       </div>
     );
