@@ -12,12 +12,16 @@ import com.devjobs.scout.JobService;
 import com.devjobs.scout.dto.JobDtos.JobDetailDto;
 import com.devjobs.strategist.AiClient;
 import com.devjobs.strategist.RateLimiter;
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 /**
  * 이력서 코치 챗봇 — 공고 JD + 회사 인텔 + 키워드 갭 + 지원자 프로필을 grounding 으로 묶어
@@ -67,23 +72,7 @@ public class CoachChatController {
 
     @PostMapping
     public ResponseEntity<CoachReply> coach(@AuthenticationPrincipal String userId, @RequestBody CoachRequest req) {
-        if (req.messages() == null || req.messages().isEmpty()
-                || !"user".equals(req.messages().get(req.messages().size() - 1).role())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "messages 비어있음/마지막 user 아님");
-        }
-        var lastMsg = req.messages().get(req.messages().size() - 1);
-        if (lastMsg.content() == null || lastMsg.content().isBlank()) {
-            // ai 는 빈 메시지를 필터해 마지막 user 가 사라지면 400 → 503 으로 전파되므로 여기서 명확히 거절.
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "메시지 내용이 비어있어요");
-        }
-        for (var m : req.messages()) {
-            if (m.content() != null && m.content().length() > MAX_MESSAGE_CONTENT) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "메시지가 너무 길어요");
-            }
-        }
-        if (req.resume() != null && req.resume().length() > MAX_RESUME) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "resume 너무 김");
-        }
+        validate(req);
         if (!rateLimiter.tryAcquire("chat:" + userId)) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "요청이 많아요. 잠시 후 다시.");
         }
@@ -121,6 +110,81 @@ public class CoachChatController {
             }
         }
         return ResponseEntity.ok(new CoachReply(result.reply()));
+    }
+
+    /** 스트리밍 코치 — 답변을 평문 청크로 흘려 체감 지연을 줄인다. 비-스트림 coach() 와 동일 grounding/검증. */
+    @PostMapping("/stream")
+    public ResponseEntity<StreamingResponseBody> coachStream(
+            @AuthenticationPrincipal String userId, @RequestBody CoachRequest req) {
+        validate(req);
+        if (!rateLimiter.tryAcquire("chat:" + userId)) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "요청이 많아요. 잠시 후 다시.");
+        }
+        boolean hasJob = req.job_id() != null && !req.job_id().isBlank();
+        JobDetailDto job = null;
+        if (hasJob) {
+            var jobOpt = jobService.findById(req.job_id());
+            if (jobOpt.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "공고 없음");
+            }
+            job = jobOpt.get();
+        }
+        String context = buildContext(job, hasJob ? req.job_id() : null, req.resume(), UUID.fromString(userId));
+        var msgs = req.messages();
+        if (msgs.size() > MAX_MESSAGES) {
+            msgs = msgs.subList(msgs.size() - MAX_MESSAGES, msgs.size());
+        }
+        var aiMsgs = msgs.stream()
+            .map(m -> new AiClient.CoachChatMessage(m.role(), m.content())).toList();
+        String resume = req.resume() == null ? "" : req.resume();
+        UUID uid = UUID.fromString(userId);
+        boolean persist = hasJob;
+        String jobId = req.job_id();
+        List<ChatMessage> thread0 = req.messages();
+
+        StreamingResponseBody body = out -> {
+            String full = aiClient.coachChatStream(context, resume, aiMsgs, chunk -> {
+                try {
+                    out.write(chunk.getBytes(StandardCharsets.UTF_8));
+                    out.flush();
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
+                }
+            });
+            // 공고 단위로만 저장(PK=user+job). 스트림 완료 후 누적 전체를 저장한다(best-effort).
+            if (persist && full != null && !full.isBlank()) {
+                try {
+                    var thread = new ArrayList<>(thread0);
+                    thread.add(new ChatMessage("assistant", full));
+                    conversationService.save(uid, jobId, thread);
+                } catch (Exception e) {
+                    log.warn("coach 스트림 대화 저장 실패(무시): {}", e.toString());
+                }
+            }
+        };
+        return ResponseEntity.ok()
+            .contentType(new MediaType(MediaType.TEXT_PLAIN, StandardCharsets.UTF_8))
+            .body(body);
+    }
+
+    private void validate(CoachRequest req) {
+        if (req.messages() == null || req.messages().isEmpty()
+                || !"user".equals(req.messages().get(req.messages().size() - 1).role())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "messages 비어있음/마지막 user 아님");
+        }
+        var lastMsg = req.messages().get(req.messages().size() - 1);
+        // ai 는 빈 메시지를 필터해 마지막 user 가 사라지면 400 → 503 으로 전파되므로 여기서 명확히 거절.
+        if (lastMsg.content() == null || lastMsg.content().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "메시지 내용이 비어있어요");
+        }
+        for (var m : req.messages()) {
+            if (m.content() != null && m.content().length() > MAX_MESSAGE_CONTENT) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "메시지가 너무 길어요");
+            }
+        }
+        if (req.resume() != null && req.resume().length() > MAX_RESUME) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "resume 너무 김");
+        }
     }
 
     @GetMapping("/conversation")

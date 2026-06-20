@@ -6,10 +6,13 @@ import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.devjobs.coach.dto.CoachDtos.ChatMessage;
@@ -28,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Consumer;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -225,6 +229,41 @@ class CoachChatControllerTest {
         assertThat(saved.getMessages()).hasSize(2); // 요청 user 메시지 + assistant 응답
         assertThat(saved.getMessages().get(1).role()).isEqualTo("assistant");
         assertThat(saved.getMessages().get(1).content()).isEqualTo("이력서 조언입니다.");
+    }
+
+    @Test
+    void streamRelaysChunksAndPersistsWhenJobPresent() throws Exception {
+        when(rateLimiter.tryAcquire(anyString())).thenReturn(true);
+        when(jobService.findById(anyString())).thenReturn(Optional.of(minimalJob("job-stream")));
+        when(coachService.resumeOptimize(anyString(), anyString())).thenReturn(Optional.empty());
+        when(profileService.load(any())).thenReturn(Optional.empty());
+        when(aiClient.coachChatStream(anyString(), anyString(), anyList(), any())).thenAnswer(inv -> {
+            Consumer<String> cb = inv.getArgument(3);
+            cb.accept("안녕");
+            cb.accept("하세요");
+            return "안녕하세요";
+        });
+
+        UUID userId = insertUser();
+        String token = "Bearer " + jwtService.issue(userId.toString());
+        var body = Map.of("job_id", "job-stream", "resume", "Go dev",
+            "messages", List.of(Map.of("role", "user", "content", "인사")));
+
+        var mvcResult = mvc.perform(post("/api/v1/me/coach/stream")
+                .header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(body)))
+            .andExpect(request().asyncStarted())
+            .andReturn();
+
+        mvc.perform(asyncDispatch(mvcResult))
+            .andExpect(status().isOk())
+            .andExpect(content().string("안녕하세요")); // 청크가 합쳐져 전체 답변
+
+        // 스트림 완료 후 누적 전체가 저장된다(공고 있을 때만).
+        var saved = conversationRepo.findByUserIdAndJobId(userId, "job-stream").orElseThrow();
+        assertThat(saved.getMessages()).hasSize(2);
+        assertThat(saved.getMessages().get(1).content()).isEqualTo("안녕하세요");
     }
 
     @Test

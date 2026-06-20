@@ -82,3 +82,48 @@ def test_no_job_context_system_prompt_forbids_inventing_keywords(monkeypatch):
     assert "does NOT include a specific job posting" in system_prompt
     assert "attach a target job posting" in system_prompt
     assert "공고/추가 컨텍스트 없음" in sent[1]["content"]
+
+
+def test_stream_endpoint_yields_content_deltas(monkeypatch):
+    # 스트리밍: OpenAI SSE 델타를 평문 청크로 흘려 합치면 전체 답변이 된다.
+    monkeypatch.setattr(settings, "openai_api_key", "k")
+
+    class _FakeStream:
+        status_code = 200
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *a):
+            return False
+
+        async def aiter_lines(self):
+            for chunk in ["안녕", "하세요"]:
+                yield "data: " + json.dumps({"choices": [{"delta": {"content": chunk}}]})
+            yield "data: [DONE]"
+
+        async def aread(self):
+            return b""
+
+    def _fake_stream(self, method, url, **kwargs):
+        return _FakeStream()
+
+    monkeypatch.setattr("httpx.AsyncClient.stream", _fake_stream)
+    with client.stream(
+        "POST",
+        "/internal/coach-chat-stream",
+        json={"context": "", "resume": "r", "messages": [{"role": "user", "content": "hi"}]},
+    ) as r:
+        assert r.status_code == 200
+        body = "".join(part for part in r.iter_text())
+    assert body == "안녕하세요"
+
+
+def test_stream_endpoint_no_key_returns_503(monkeypatch):
+    monkeypatch.setattr(settings, "openai_api_key", "")
+    monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    r = client.post(
+        "/internal/coach-chat-stream",
+        json={"context": "", "resume": "r", "messages": [{"role": "user", "content": "hi"}]},
+    )
+    assert r.status_code == 503
