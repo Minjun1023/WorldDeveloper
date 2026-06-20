@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -29,6 +30,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -172,6 +174,31 @@ class CoachChatControllerTest {
 
         // 공고 없는 대화는 저장 키(job_id)가 없으므로 저장되지 않는다.
         assertThat(conversationRepo.findByUserIdAndJobId(userId, "")).isEmpty();
+    }
+
+    @Test
+    void noJobContextTellsAiNotToGuessJobKeywords() throws Exception {
+        // 회귀(#255): 공고 없이 보내면 모델이 '공고 맞춤 키워드'를 지어내던 환각.
+        // 백엔드가 grounding 컨텍스트에 '첨부된 공고가 없습니다'를 명시해 추측을 막는다.
+        when(rateLimiter.tryAcquire(anyString())).thenReturn(true);
+        when(profileService.load(any())).thenReturn(Optional.empty());
+        when(aiClient.coachChat(anyString(), anyString(), anyList()))
+            .thenReturn(new CoachChatResult("일반 코칭 답변", "gpt-4o-mini"));
+
+        UUID userId = insertUser();
+        String token = "Bearer " + jwtService.issue(userId.toString());
+        var body = Map.of("job_id", "", "resume", "",
+            "messages", List.of(Map.of("role", "user", "content", "이 공고에 맞는 키워드 뭐야")));
+
+        mvc.perform(post("/api/v1/me/coach")
+                .header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(body)))
+            .andExpect(status().isOk());
+
+        ArgumentCaptor<String> ctx = ArgumentCaptor.forClass(String.class);
+        verify(aiClient).coachChat(ctx.capture(), anyString(), anyList());
+        assertThat(ctx.getValue()).contains("첨부된 공고가 없습니다");
     }
 
     @Test
