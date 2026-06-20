@@ -460,7 +460,7 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
       ) : (
         // 진입(빈) 상태 — 랜딩(가치 제안) + 바로 시작 입력창
         <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 pt-2 sm:pt-6">
-          <CoachLanding loggedIn={loggedIn} onStart={openAttach} />
+          <CoachLanding />
 
           <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4">
             {pills}
