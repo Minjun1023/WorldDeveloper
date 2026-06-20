@@ -8,7 +8,7 @@ import { DISCIPLINES } from "@/lib/disciplines";
 import { useUpdateQuery } from "@/lib/use-update-query";
 
 // 검색 좌측 facet 사이드바. 기존 쿼리 파라미터(region·visa·verified_only·discipline·
-// remote·complete·include_unclear)를 그룹 체크박스로 제어(백엔드 변경 없음).
+// remote·include_unclear)를 그룹 체크박스로 제어(백엔드 변경 없음).
 // 국가는 다중 선택(콤마 join), 직무는 단일 선택(체크박스 모양). 원격은 근무형태라 국가에서 제외.
 
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
@@ -64,10 +64,9 @@ export function FilterSidebar({ regions }: { regions: RegionCount[] }) {
 
   const discipline = sp.get("discipline");
   const remote = sp.get("remote") === "true";
-  const complete = sp.get("complete") === "true";
 
   // 모든 필터를 비워 기본 목록으로 되돌린다(선택이 없어도 무해). 버튼은 항상 노출.
-  const reset = () => update({ region: null, discipline: null, remote: null, complete: null });
+  const reset = () => update({ region: null, discipline: null, remote: null });
 
   return (
     <aside className="h-fit rounded-2xl border border-border bg-surface p-4 lg:sticky lg:top-4">
@@ -111,7 +110,6 @@ export function FilterSidebar({ regions }: { regions: RegionCount[] }) {
 
       <Group title="기타">
         <CheckRow checked={remote} onToggle={() => update({ remote: remote ? null : "true" })} label="원격 가능" />
-        <CheckRow checked={complete} onToggle={() => update({ complete: complete ? null : "true" })} label="정보 충실만" />
       </Group>
     </aside>
   );
