@@ -24,6 +24,17 @@ log = logging.getLogger(__name__)
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # 임베딩 모델 워밍업 — 콜드스타트 시 첫 추론이 느려, 매칭 점수(/score)·추천의 첫 요청이
+    # web 15s 타임아웃을 넘겨 점수가 안 뜨고(2~3회 새로고침 필요) 추천 semantic 이 0 으로 떨어졌다.
+    # 기동 시 더미 1회 추론으로 모델을 미리 로드해 첫 요청부터 정상 동작하게 한다.
+    try:
+        from dev_jobs_core.recommender import embeddings as core_emb
+        if core_emb.is_available():
+            core_emb._embed_cached("warmup")
+            log.info("embedding model warmed up")
+    except Exception:  # noqa: BLE001 — 워밍업 실패가 기동을 막지 않도록
+        log.warning("embedding warmup skipped", exc_info=True)
+
     if settings.etl_enabled:
         log.info("Starting ETL scheduler (cron='%s' tz=%s)", settings.etl_cron, settings.etl_timezone)
         start_scheduler()
