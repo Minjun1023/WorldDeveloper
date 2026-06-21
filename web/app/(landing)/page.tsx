@@ -1,10 +1,10 @@
 import { CompanySpotlight } from "@/components/home/CompanySpotlight";
-import { CountryTiles } from "@/components/home/CountryTiles";
 import { CtaSection } from "@/components/home/CtaSection";
 import { FaqSection } from "@/components/home/FaqSection";
 import { Hero } from "@/components/home/Hero";
 import type { HomeStats } from "@/components/home/HeroStats";
 import { MemberLandingRecommend } from "@/components/home/MemberLandingRecommend";
+import { PopularJobs } from "@/components/home/PopularJobs";
 import { SampleRecommend } from "@/components/home/SampleRecommend";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { StatsBand } from "@/components/home/StatsBand";
@@ -95,17 +95,15 @@ export default async function HomePage() {
         )
       )}
 
-      {/* 진출 가능한 국가 (연회색) */}
-      {countryRegions.length > 0 && (
-        <Section muted>
-          <SectionHeader
-            title="국가별 공고"
-            href={countryRegions.length > 10 ? "/regions" : undefined}
-            subtitle="비자 스폰서십 검증 공고 기준"
-          />
-          <CountryTiles regions={countryRegions} limit={10} />
-        </Section>
-      )}
+      {/* 인기 TOP 공고 (연회색) — 지역·직무 드롭다운별 인기(최근 7일 조회수) 정렬. 데이터 적으면 최신순 fallback. */}
+      <Section muted>
+        <SectionHeader
+          title="인기 TOP 공고"
+          href="/search?visa=sponsors&sort=newest"
+          subtitle="지역·직무별로 지금 많이 보는 공고"
+        />
+        <PopularJobs />
+      </Section>
 
       {/* 최신 공고 (흰색) */}
       {sponsorJobs.length > 0 && (

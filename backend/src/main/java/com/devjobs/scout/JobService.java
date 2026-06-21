@@ -110,6 +110,12 @@ public class JobService {
         new Region("czech", "체코", "czech|prague|praha|brno"),
         new Region("switzerland", "스위스", "switzerland|zurich|zürich|geneva|lausanne|basel"));
 
+    /** 지역 key → location 매칭 regex. 'remote'(또는 미정의 key)는 null. 인기 공고 필터 등에서 재사용. */
+    public String regionRegex(String key) {
+        if (key == null || key.isBlank()) return null;
+        return REGIONS.stream().filter(r -> r.key().equals(key)).map(Region::regex).findFirst().orElse(null);
+    }
+
     // 국가 → 주요 도시. key=지역 파라미터 값(URL), regex=location 매칭(원어/현지표기 별칭 포함).
     // 건수 집계와 도시 선택 검색 모두 같은 regex 를 쓰므로 "표시 건수 == 검색 결과"가 일치한다.
     // 일본은 현지 표기(東京 등)가 다수라 별칭이 없으면 도쿄가 크게 누락된다(146→361).
