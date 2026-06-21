@@ -82,6 +82,8 @@ services:
       APP_BASE_URL: https://${DOMAIN}
       # Caddy(TLS 종단) 뒤에 있으므로 X-Forwarded-* 를 신뢰해 https redirect URI 를 생성.
       SERVER_FORWARD_HEADERS_STRATEGY: framework
+      # 분석 요약(/admin/analytics) 접근 허용 이메일(쉼표 구분). 미설정 시 아무도 못 봄.
+      ADMIN_EMAILS: ${ADMIN_EMAILS:-}
       # OAuth (선택 — 없으면 소셜 로그인 버튼만 동작 안 함, 이메일 로그인은 정상)
       GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID:-}
       GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET:-}

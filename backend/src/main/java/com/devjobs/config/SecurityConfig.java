@@ -47,6 +47,9 @@ public class SecurityConfig {
                 // 커뮤니티: 읽기(GET)는 공개, 작성/수정/삭제는 인증.
                 // 조회 1회 등록(view)은 비로그인도 가능 → 인증 매처보다 먼저 permitAll.
                 .requestMatchers(HttpMethod.POST, "/api/v1/community/posts/*/view").permitAll()
+                // 분석: 조회 기록(view)은 비로그인 허용, 요약(summary)은 인증(컨트롤러서 admin 화이트리스트).
+                .requestMatchers(HttpMethod.POST, "/api/v1/analytics/view/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/analytics/summary").authenticated()
                 .requestMatchers(HttpMethod.POST, "/api/v1/community/**").authenticated()
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/community/**").authenticated()
                 .requestMatchers(HttpMethod.DELETE, "/api/v1/community/**").authenticated()
