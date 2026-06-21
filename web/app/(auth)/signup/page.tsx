@@ -5,9 +5,12 @@ import { BackToHomeLink } from "@/components/auth/BackToHomeLink";
 import { CredentialsForm } from "@/components/auth/CredentialsForm";
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
 
-const BACKEND_PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? "http://localhost:8080";
+// OAuth 버튼은 브라우저가 직접 가는 공개 백엔드 URL 이 필요하다. 정적 프리렌더되면
+// 빌드 타임 env(미설정)로 localhost 가 박히므로, 동적 렌더 + 함수 내부에서 런타임 env 로 읽는다.
+export const dynamic = "force-dynamic";
 
 export default function SignUpPage() {
+  const BACKEND_PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? "http://localhost:8080";
   return (
     <div className="grid min-h-screen md:grid-cols-2">
       <AuthBrandPanel
