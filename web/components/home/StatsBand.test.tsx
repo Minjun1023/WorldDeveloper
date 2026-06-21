@@ -8,17 +8,17 @@ vi.mock("@/components/home/CountUp", () => ({ CountUp: ({ value }: { value: numb
 
 describe("StatsBand", () => {
   it("4개 통계 라벨을 렌더한다", () => {
-    render(<StatsBand stats={{ sponsors: 4349, total: 5191, companies: 254, countries: 17 }} />);
-    for (const label of ["스폰서십 명시 공고", "전체 공고", "검증된 회사", "진출 국가"]) {
+    render(<StatsBand stats={{ sponsors: 4349, verified: 3120, companies: 254, countries: 17 }} />);
+    for (const label of ["스폰서십 명시 공고", "정부 명부 검증 공고", "검증된 회사", "진출 국가"]) {
       expect(screen.getByText(label)).toBeInTheDocument();
     }
   });
 
   it("값이 0인 항목은 제외한다", () => {
-    render(<StatsBand stats={{ sponsors: 100, total: 0, companies: 0, countries: 5 }} />);
+    render(<StatsBand stats={{ sponsors: 100, verified: 0, companies: 0, countries: 5 }} />);
     expect(screen.getByText("스폰서십 명시 공고")).toBeInTheDocument();
     expect(screen.getByText("진출 국가")).toBeInTheDocument();
-    expect(screen.queryByText("전체 공고")).not.toBeInTheDocument();
+    expect(screen.queryByText("정부 명부 검증 공고")).not.toBeInTheDocument();
     expect(screen.queryByText("검증된 회사")).not.toBeInTheDocument();
   });
 });

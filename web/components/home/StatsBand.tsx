@@ -1,11 +1,11 @@
 import { CountUp } from "@/components/home/CountUp";
 import type { HomeStats } from "@/components/home/HeroStats";
 
-// 히어로 바로 아래 전폭 통계 띠(스폰서십 명시 공고 · 전체 공고 · 검증된 회사 · 진출 국가).
+// 히어로 바로 아래 전폭 통계 띠(스폰서십 명시 공고 · 정부 명부 검증 공고 · 검증된 회사 · 진출 국가).
 export function StatsBand({ stats }: { stats: HomeStats }) {
   const items = [
     { value: stats.sponsors, label: "스폰서십 명시 공고" },
-    { value: stats.total, label: "전체 공고" },
+    { value: stats.verified, label: "정부 명부 검증 공고" },
     { value: stats.companies, label: "검증된 회사" },
     { value: stats.countries, label: "진출 국가" },
   ].filter((i) => i.value > 0);
