@@ -33,7 +33,8 @@ public class AnalyticsController {
     public ResponseEntity<Void> recordView(@AuthenticationPrincipal String userId,
                                            @PathVariable String jobId,
                                            @RequestBody(required = false) ViewRequest body) {
-        UUID uid = userId != null ? UUID.fromString(userId) : null;
+        // permitAll 익명 요청은 principal 이 null 이 아니라 "anonymousUser" 문자열로 온다.
+        UUID uid = (userId != null && !"anonymousUser".equals(userId)) ? UUID.fromString(userId) : null;
         String anon = body != null && body.anonKey() != null ? body.anonKey().trim() : "";
         if (uid == null && anon.isEmpty()) return ResponseEntity.noContent().build();
         String viewerKey = uid != null ? "u:" + uid : "a:" + anon;
@@ -48,7 +49,9 @@ public class AnalyticsController {
     /** 분석 퍼널 요약(운영자 전용 — app.admin-emails 화이트리스트). */
     @GetMapping("/summary")
     public ResponseEntity<?> summary(@AuthenticationPrincipal String userId) {
-        if (userId == null) return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
+        if (userId == null || "anonymousUser".equals(userId)) {
+            return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
+        }
         String email = userRepo.findById(UUID.fromString(userId)).map(UserEntity::getEmail).orElse(null);
         if (!analytics.isAdmin(email)) return ResponseEntity.status(403).body(Map.of("error", "forbidden"));
         return ResponseEntity.ok(analytics.summary());

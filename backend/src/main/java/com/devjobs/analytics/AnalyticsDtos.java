@@ -9,13 +9,15 @@ public final class AnalyticsDtos {
 
     public record TopJob(String jobId, String title, long views) {}
 
+    // 필드명에 숫자가 letter 와 붙으면(7d) Jackson SNAKE_CASE 가 언더스코어를 안 넣는다
+    // (signups7d → signups7d). 깔끔한 키를 위해 'Week'(최근 7일) 로 명명.
     public record Summary(
         long signupsTotal,
-        long signups7d,
+        long signupsWeek,
         long viewsTotal,
-        long views7d,
-        long uniqueViewers7d,
+        long viewsWeek,
+        long uniqueViewersWeek,
         long returningViewers,
-        List<TopJob> topJobs7d
+        List<TopJob> topJobsWeek
     ) {}
 }

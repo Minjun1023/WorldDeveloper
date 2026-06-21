@@ -10,12 +10,12 @@ const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
 type TopJob = { job_id: string; title: string; views: number };
 type Summary = {
   signups_total: number;
-  signups_7d: number;
+  signups_week: number;
   views_total: number;
-  views_7d: number;
-  unique_viewers_7d: number;
+  views_week: number;
+  unique_viewers_week: number;
   returning_viewers: number;
-  top_jobs_7d: TopJob[];
+  top_jobs_week: TopJob[];
 };
 
 function Stat({ label, value, sub }: { label: string; value: number; sub?: string }) {
@@ -65,7 +65,7 @@ export default async function AdminAnalyticsPage() {
         <h2 className="mb-3 text-h3">가입</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           <Stat label="누적 가입" value={d.signups_total} />
-          <Stat label="최근 7일 가입" value={d.signups_7d} />
+          <Stat label="최근 7일 가입" value={d.signups_week} />
         </div>
       </section>
 
@@ -73,19 +73,19 @@ export default async function AdminAnalyticsPage() {
         <h2 className="mb-3 text-h3">조회 · 재방문</h2>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <Stat label="누적 조회" value={d.views_total} />
-          <Stat label="최근 7일 조회" value={d.views_7d} />
-          <Stat label="고유 열람자(7일)" value={d.unique_viewers_7d} />
+          <Stat label="최근 7일 조회" value={d.views_week} />
+          <Stat label="고유 열람자(7일)" value={d.unique_viewers_week} />
           <Stat label="재방문자" value={d.returning_viewers} sub="2일 이상 방문" />
         </div>
       </section>
 
       <section>
         <h2 className="mb-3 text-h3">인기 공고 (최근 7일)</h2>
-        {d.top_jobs_7d.length === 0 ? (
+        {d.top_jobs_week.length === 0 ? (
           <p className="text-body-sm text-muted-foreground">아직 조회 데이터가 없어요.</p>
         ) : (
           <ol className="divide-y divide-border rounded-xl border border-border bg-surface">
-            {d.top_jobs_7d.map((j, i) => (
+            {d.top_jobs_week.map((j, i) => (
               <li key={j.job_id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <span className="flex min-w-0 items-center gap-3">
                   <span className="w-5 shrink-0 text-caption text-muted-foreground tabular-nums">{i + 1}</span>
