@@ -1,5 +1,6 @@
 "use client";
 
+import { ChevronDown } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { JobCard } from "@/components/job/JobCard";
@@ -41,8 +42,46 @@ const FUNCTIONS: { key: string; label: string }[] = [
 
 type PopularItem = { job: Job; view_count: number };
 
-const selectCls =
-  "h-9 rounded-lg border border-border bg-background px-3 text-body-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+// 커스텀 드롭다운: 네이티브 OS 화살표 숨기고(appearance-none) chevron 을 직접 얹는다.
+function Dropdown({
+  value,
+  onChange,
+  options,
+  ariaLabel,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: { key: string; label: string }[];
+  ariaLabel: string;
+}) {
+  const active = value !== "";
+  return (
+    <div className="relative">
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={ariaLabel}
+        className={`h-10 cursor-pointer appearance-none rounded-full border bg-surface py-0 pl-4 pr-9 text-body-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
+          active
+            ? "border-primary text-primary"
+            : "border-border text-foreground hover:border-primary/40 hover:bg-accent"
+        }`}
+      >
+        {options.map((o) => (
+          <option key={o.key} value={o.key}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+      <ChevronDown
+        className={`pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 ${
+          active ? "text-primary" : "text-muted-foreground"
+        }`}
+        aria-hidden="true"
+      />
+    </div>
+  );
+}
 
 export function PopularJobs() {
   const [region, setRegion] = useState("");
@@ -66,17 +105,9 @@ export function PopularJobs() {
 
   return (
     <div>
-      <div className="mb-4 flex flex-wrap items-center gap-2">
-        <select value={region} onChange={(e) => setRegion(e.target.value)} className={selectCls} aria-label="지역 선택">
-          {REGIONS.map((r) => (
-            <option key={r.key} value={r.key}>{r.label}</option>
-          ))}
-        </select>
-        <select value={fn} onChange={(e) => setFn(e.target.value)} className={selectCls} aria-label="직무 선택">
-          {FUNCTIONS.map((f) => (
-            <option key={f.key} value={f.key}>{f.label}</option>
-          ))}
-        </select>
+      <div className="mb-5 flex flex-wrap items-center gap-2.5">
+        <Dropdown value={region} onChange={setRegion} options={REGIONS} ariaLabel="지역 선택" />
+        <Dropdown value={fn} onChange={setFn} options={FUNCTIONS} ariaLabel="직무 선택" />
       </div>
 
       {loading ? (
