@@ -30,12 +30,12 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
   const [emailAvail, setEmailAvail] = useState<Avail>("idle");
   const [termsOk, setTermsOk] = useState(false);
   const [remember, setRemember] = useState(true);
-  const [regStep, setRegStep] = useState<"account" | "profile">("account");
-  // 이메일 인증번호(코드) 입력 단계
+  // 이메일 인증번호(코드) 입력 단계 → 인증 완료 시 프로필 단계
   const [code, setCode] = useState("");
   const [verifyPending, setVerifyPending] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [resent, setResent] = useState(false);
+  const [verified, setVerified] = useState(false);
 
   // 이름 실시간 확인 (register, debounce 500ms)
   useEffect(() => {
@@ -109,7 +109,8 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
     !pending &&
     (mode === "login" || (namePass && emailPass && pwValid && pwMatch && termsOk));
 
-  async function doRegister(profile?: RecommendProfile) {
+  // 계정 정보만으로 가입 → 인증번호 발송. 프로필은 인증 완료 후 별도 단계에서 저장한다.
+  async function doRegister() {
     setError(null);
     setPending(true);
     try {
@@ -120,7 +121,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
           email,
           password,
           display_name: displayName.trim(),
-          profile: profile ?? null,
+          profile: null,
         }),
       });
       if (!res.ok) throw new Error("가입에 실패했어요. 입력을 확인해 주세요.");
@@ -136,9 +137,8 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
     e.preventDefault();
     setError(null);
     if (mode === "register") {
-      // 계정 필드 검증은 canSubmit 게이트(이름/이메일/비번/확인/약관)를 통과해야 여기 도달.
-      // 네트워크 호출 대신 프로필 단계로 진행한다.
-      setRegStep("profile");
+      // 계정 필드 검증(canSubmit) 통과 → 가입 + 인증번호 발송. 인증 후 프로필 단계로 이어진다.
+      void doRegister();
       return;
     }
     setPending(true);
@@ -192,8 +192,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
         router.push("/signin"); // 자동 로그인 실패 시 로그인 화면으로
         return;
       }
-      router.push(callbackUrl);
-      router.refresh();
+      setVerified(true); // 인증·자동로그인 완료 → 프로필 작성 단계로
     } catch (err) {
       setVerifyError(err instanceof Error ? err.message : "오류가 발생했어요.");
     } finally {
@@ -201,7 +200,28 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
     }
   }
 
-  if (mode === "register" && registered) {
+  // 인증·로그인 완료 후 프로필 저장(선택) → 입장. 실패해도 로그인은 됐으므로 그냥 입장시킨다.
+  async function saveProfileAndFinish(profile?: RecommendProfile) {
+    setError(null);
+    setPending(true);
+    try {
+      if (profile) {
+        await fetch("/api/me/profile", {
+          method: "PUT",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(profile),
+        });
+      }
+    } catch {
+      // 무시 — 아래에서 입장 처리
+    } finally {
+      setPending(false);
+    }
+    router.push(callbackUrl);
+    router.refresh();
+  }
+
+  if (mode === "register" && registered && !verified) {
     return (
       <div className="space-y-4">
         <p className="text-body-sm">
@@ -230,7 +250,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
           disabled={verifyPending || code.length !== 6}
           className="h-11 w-full"
         >
-          {verifyPending ? "확인 중…" : "인증하고 시작하기"}
+          {verifyPending ? "확인 중…" : "인증하기"}
         </Button>
         <button type="button" onClick={resend} className="text-body-sm text-primary underline">
           인증번호 다시 보내기
@@ -315,18 +335,20 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
     );
   }
 
-  if (mode === "register" && regStep === "profile") {
+  if (mode === "register" && verified) {
     return (
       <div className="space-y-3">
-        <p className="text-body-sm text-muted-foreground">맞춤 공고 추천을 위한 프로필 (선택 — 건너뛰어도 가입돼요)</p>
+        <p className="text-body-sm text-muted-foreground">
+          이메일 인증 완료! 맞춤 공고 추천을 위한 프로필을 작성해 주세요 (선택 — 건너뛰어도 시작할 수 있어요).
+        </p>
         <ProfileForm
           loading={pending}
-          submitLabel="가입 완료"
-          onSubmit={(profile) => doRegister(profile)}
+          submitLabel="프로필 저장하고 시작하기"
+          onSubmit={(profile) => saveProfileAndFinish(profile)}
           secondaryAction={
             <button
               type="button"
-              onClick={() => doRegister(undefined)}
+              onClick={() => saveProfileAndFinish(undefined)}
               className="text-body-sm text-muted-foreground hover:text-foreground"
             >
               건너뛰기
@@ -427,7 +449,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
       {error && <p className="text-destructive text-body-sm">{error}</p>}
 
       <Button type="submit" disabled={!canSubmit} className="h-11 w-full">
-        {pending ? "처리 중…" : "다음"}
+        {pending ? "처리 중…" : "인증번호 받기"}
       </Button>
     </form>
   );

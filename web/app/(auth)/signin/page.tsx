@@ -5,13 +5,15 @@ import { BackToHomeLink } from "@/components/auth/BackToHomeLink";
 import { CredentialsForm } from "@/components/auth/CredentialsForm";
 import { OAuthButtons } from "@/components/auth/OAuthButtons";
 
-const BACKEND_PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? "http://localhost:8080";
+// OAuth 버튼 공개 URL 을 빌드 타임이 아닌 런타임 env 로 읽도록 동적 렌더 + 함수 내부 읽기.
+export const dynamic = "force-dynamic";
 
 export default function SignInPage({
   searchParams,
 }: {
   searchParams: { callbackUrl?: string; error?: string };
 }) {
+  const BACKEND_PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? "http://localhost:8080";
   const callbackUrl = searchParams.callbackUrl ?? "/";
   return (
     <div className="grid min-h-screen md:grid-cols-2">
