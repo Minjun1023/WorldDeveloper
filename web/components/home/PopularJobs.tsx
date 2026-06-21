@@ -26,7 +26,7 @@ const REGIONS: { key: string; label: string }[] = [
   { key: "austria", label: "오스트리아" },
   { key: "czech", label: "체코" },
   { key: "switzerland", label: "스위스" },
-  { key: "remote", label: "원격" },
+  // '원격'은 지역이 아니라 근무 형태라 지역 드롭다운에서 제외(원격 공고는 location 매칭으로 각 국가에 노출).
 ];
 
 // 백엔드 JobFunction 키와 일치.
