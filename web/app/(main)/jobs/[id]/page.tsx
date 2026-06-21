@@ -10,6 +10,7 @@ import { JobSidebar } from "@/components/job/JobSidebar";
 import { JobSummary } from "@/components/job/JobSummary";
 import { MobileApplyBar } from "@/components/job/MobileApplyBar";
 import { NoTechStackNote } from "@/components/job/NoTechStackNote";
+import { RecordJobView } from "@/components/job/RecordJobView";
 import { RecordRecentJob } from "@/components/job/RecordRecentJob";
 import { TechStackMatch } from "@/components/job/TechStackMatch";
 import {
@@ -63,6 +64,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
           company={job.company.display_name}
           slug={job.company.slug}
         />
+        <RecordJobView jobId={job.id} />
         <Link
           href="/search"
           className="mb-4 inline-block text-body-sm text-muted-foreground hover:text-foreground"
