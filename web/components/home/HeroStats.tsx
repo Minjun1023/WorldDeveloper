@@ -2,7 +2,7 @@ import { CountUp } from "@/components/home/CountUp";
 
 export interface HomeStats {
   sponsors: number;
-  total: number;
+  verified: number;
   companies: number;
   countries: number;
 }
@@ -10,7 +10,7 @@ export interface HomeStats {
 export function HeroStats({ stats, compact = false }: { stats: HomeStats; compact?: boolean }) {
   const items = [
     { value: stats.sponsors, label: "스폰서십 명시 공고" },
-    { value: stats.total, label: "전체 공고" },
+    { value: stats.verified, label: "정부 명부 검증 공고" },
     { value: stats.companies, label: "검증된 회사" },
     { value: stats.countries, label: "진출 국가" },
   ].filter((i) => i.value > 0);

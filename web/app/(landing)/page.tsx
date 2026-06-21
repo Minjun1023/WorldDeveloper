@@ -35,17 +35,17 @@ function Section({
 
 export default async function HomePage() {
   const session = await getSession();
-  const [sponsorRes, allRes, companies, regions] = await Promise.all([
-    // 최신 비자 스폰서십 공고(근거 문장 포함) + 통계(스폰서 총수) + 히어로 미리보기 공고에 함께 사용.
+  const [sponsorRes, verifiedRes, companies, regions] = await Promise.all([
+    // 최신 비자 스폰서십 공고(근거 문장 포함) + 통계(스폰서·명부검증 총수) + 히어로 미리보기 공고에 함께 사용.
     fetchJobs({ visa: "sponsors", pageSize: 6, sort: "newest" }),
-    fetchJobs({ pageSize: 1 }),
+    fetchJobs({ verifiedOnly: true, pageSize: 1 }), // 정부 명부 검증 공고 총수(통계 띠)
     fetchCompanies(),
     fetchRegions(),
   ]);
 
   const sponsorJobs = sponsorRes.ok ? sponsorRes.data.items : [];
   const visaTotal = sponsorRes.ok ? sponsorRes.data.total : 0;
-  const allTotal = allRes.ok ? allRes.data.total : 0;
+  const verifiedTotal = verifiedRes.ok ? verifiedRes.data.total : 0;
 
   // 비로그인 홈의 "당신을 위한 6차원 매칭 공고" 예시 섹션용(로그인 시엔 실제 추천을 부른다).
   // page:2 로 위 최신 공고(page:1)와 겹치지 않게 한다.
@@ -65,7 +65,7 @@ export default async function HomePage() {
 
   const stats: HomeStats = {
     sponsors: visaTotal,
-    total: allTotal,
+    verified: verifiedTotal,
     companies: companies?.total ?? 0,
     countries: countryRegions.length,
   };
