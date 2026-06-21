@@ -41,7 +41,9 @@ public class PopularJobService {
             + "LEFT JOIN (SELECT job_id, count(*) cnt FROM job_views "
             + "  WHERE created_at > now() - interval '7 days' GROUP BY job_id) v ON v.job_id = j.id "
             + "WHERE j.is_active = true AND (j.closes_at IS NULL OR j.closes_at > now()) "
-            + "  AND NOT is_agency(j.company_slug) ");
+            + "  AND NOT is_agency(j.company_slug) "
+            // 인기 섹션은 비자 스폰서십 검증 공고만 노출(제품 핵심). unclear/no_sponsor 제외.
+            + "  AND j.visa_status = 'sponsors' ");
         if (regionRx != null) sql.append("AND j.location ~* :regionRx ");
         if (fn != null) sql.append("AND (j.title ~* :titleRx OR j.tags && CAST(:tagArr AS text[])) ");
         sql.append("ORDER BY vc DESC, j.posted_at DESC NULLS LAST LIMIT :lim");
