@@ -118,14 +118,37 @@ export function JobDescription({ jobId, original, initialKo }: {
         <p className="text-caption text-muted-foreground">기계 번역 — 오역이 있을 수 있습니다.</p>
       )}
       {view === "ko" && !ko && !failed && (
-        <p className="text-caption text-muted-foreground">번역 중… (원문 표시 중)</p>
+        <p className="text-caption text-muted-foreground">한국어로 번역 중…</p>
       )}
 
-      {safeHtml === null ? (
+      {view === "ko" && !ko && !failed ? (
+        // 번역 로딩 중엔 원문(영문)을 바로 노출하지 않고 스켈레톤으로 한국어 우선 경험을 유지.
+        <DescSkeleton />
+      ) : safeHtml === null ? (
         <div className="job-desc whitespace-pre-line text-body text-foreground/90">{stripTags(text)}</div>
       ) : (
         <div className="job-desc text-body text-foreground/90" dangerouslySetInnerHTML={{ __html: safeHtml }} />
       )}
     </section>
+  );
+}
+
+// 번역 대기 동안 보여줄 문단 스켈레톤(영문 벽 즉시 노출 방지).
+function DescSkeleton() {
+  const lines = [100, 94, 88, 0, 98, 90, 84, 0, 96, 80];
+  return (
+    <div className="space-y-2.5 pt-1" aria-hidden="true">
+      {lines.map((w, i) =>
+        w === 0 ? (
+          <div key={i} className="h-2" />
+        ) : (
+          <div
+            key={i}
+            className="h-3.5 animate-pulse rounded bg-surface-2"
+            style={{ width: `${w}%` }}
+          />
+        ),
+      )}
+    </div>
   );
 }
