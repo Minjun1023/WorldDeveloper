@@ -6,22 +6,21 @@ import java.util.List;
  * 인기 공고 직무 분류. title(주 신호) ~* titleRegex 또는 tags 배열 겹침(보조)으로 매칭.
  * Postgres ~* 는 대소문자 무시 regex, \y 는 단어 경계(ml 이 html 안에 매칭되지 않도록).
  */
+// title(주 신호)을 우선하고, tags 는 그 직무 '고유' 프레임워크/도구만 보조로 쓴다.
+// java/aws/typescript/docker 같이 여러 직무가 공유하는 태그는 제외(노이즈 방지).
 public enum JobFunction {
     BACKEND("backend", "back[ -]?end|server[ -]?side|백엔드",
-        List.of("java", "kotlin", "spring", "django", "flask", "fastapi", "go", "node.js",
-            "express", "nestjs", "ruby", "rails", "php", "laravel", "scala", "backend")),
+        List.of("spring", "spring-boot", "django", "flask", "fastapi", "nestjs", "rails", "laravel")),
     FRONTEND("frontend", "front[ -]?end|프론트",
-        List.of("react", "vue", "angular", "svelte", "next.js", "typescript", "javascript",
-            "frontend", "tailwind")),
+        List.of("react", "vue", "angular", "svelte", "next.js", "tailwind")),
     FULLSTACK("fullstack", "full[ -]?stack|풀스택",
         List.of("fullstack", "full-stack")),
-    MOBILE("mobile", "\\yios\\y|android|mobile|모바일|react native|flutter|swift",
-        List.of("ios", "android", "swift", "flutter", "react-native", "swiftui")),
-    DATA_ML("data_ml", "machine learning|\\yml\\y|\\yai\\y|data scien|data engineer|deep learning|데이터|ml engineer",
-        List.of("machine-learning", "ml", "pytorch", "tensorflow", "nlp", "llm", "spark",
-            "pandas", "data-science", "ai")),
-    DEVOPS("devops", "devops|\\ysre\\y|site reliability|infrastructure|platform engineer|cloud engineer|인프라|kubernetes",
-        List.of("devops", "kubernetes", "terraform", "docker", "aws", "gcp", "azure", "ansible", "sre"));
+    MOBILE("mobile", "\\yios\\y|android|mobile|모바일|react native|flutter",
+        List.of("swift", "flutter", "swiftui", "react-native")),
+    DATA_ML("data_ml", "machine learning|ml engineer|data scien|data engineer|deep learning|\\ynlp\\y|\\yllm\\y|데이터",
+        List.of("pytorch", "tensorflow", "machine-learning", "nlp", "llm", "huggingface")),
+    DEVOPS("devops", "devops|\\ysre\\y|site reliability|platform engineer|infrastructure engineer|cloud engineer|인프라",
+        List.of("kubernetes", "terraform", "ansible", "argocd"));
 
     public final String key;
     public final String titleRegex;
