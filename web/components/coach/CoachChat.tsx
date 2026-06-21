@@ -418,8 +418,8 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
           <NoJobs />
         </div>
       ) : started ? (
-        // 대화 진행
-        <div className="mx-auto flex w-full max-w-2xl flex-col gap-4">
+        // 대화 진행 — 넓은 폭으로 화면을 활용(메시지·입력 모두). 가독성 위해 5xl 로 캡.
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
           <div className="flex items-center justify-between gap-3">
             {selectedJob ? (
               <span
