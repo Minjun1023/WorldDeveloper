@@ -67,6 +67,7 @@ huggingface/
 !web/public/**/*.png
 !web/public/**/*.jpg
 !web/public/**/*.jpeg
+!docs/screenshots/v2/*.png
 
 # TS incremental build cache
 *.tsbuildinfo
@@ -77,7 +78,11 @@ huggingface/
 # 브레인스토밍 비주얼 컴패니언 산출물
 .superpowers/
 
-# docs 폴더는 커밋하지 않음 (개인 메모·설계 노트·스크린샷)
-# 현재 HEAD에 추적되는 docs 파일 없음(upstream에서 제거됨) — 로컬 전용 폴더로 유지.
-docs/
+# docs 폴더는 기본적으로 커밋하지 않음 (개인 메모·설계 노트).
+# 단, README 가 참조하는 포트폴리오 스크린샷(docs/screenshots/v2)은 예외로 추적.
+# 디렉터리 자체(docs/)를 막으면 하위 재포함(!)이 안 먹으므로 docs/* 로 내용만 막는다.
+docs/*
+!docs/screenshots/
+docs/screenshots/*
+!docs/screenshots/v2/
 .gstack/
