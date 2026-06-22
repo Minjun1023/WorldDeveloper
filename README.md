@@ -4,6 +4,8 @@
 
 **Live:** https://152.67.215.221.sslip.io · Next.js + Spring Boot + FastAPI 폴리글랏 모노레포 · OCI 단일 VM에 Docker Compose 배포(GitHub Actions CD).
 
+![홈](docs/screenshots/v2/home.png)
+
 ---
 
 ## 무엇을, 왜
@@ -71,6 +73,16 @@ WorldDeveloper는 이 지점을 공략한다:
 - **인증** — 이메일(6자리 코드 인증) + GitHub/Google OAuth, JWT 세션
 - **지원 관리** — 북마크, 칸반 지원 트래커, 커뮤니티, 회사 디렉터리
 - **분석** — 조회/가입/재방문 퍼널(운영자 대시보드), 고유 열람자 기준 중복 제거
+
+### 화면
+
+| 맞춤 추천 (6축 레이더) | AI 이력서 코치 |
+|---|---|
+| ![추천](docs/screenshots/v2/recommend.png) | ![코치](docs/screenshots/v2/coach.png) |
+
+| 공고 검색·필터 | 공고 상세 (매칭도·AI 요약) |
+|---|---|
+| ![검색](docs/screenshots/v2/search.png) | ![공고 상세](docs/screenshots/v2/job-detail.png) |
 
 ---
 
