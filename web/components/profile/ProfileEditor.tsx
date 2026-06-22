@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { ProfileFields } from "@/components/profile/ProfileFields";
 import { ProfilePreview } from "@/components/profile/ProfilePreview";
+import { WithdrawSection } from "@/components/profile/WithdrawSection";
 import { Button } from "@/components/ui/button";
 import { DIM_TOTAL, reflectedCount } from "@/lib/profile-dimensions";
 import { clearRecommendCache } from "@/lib/recommend-cache";
@@ -145,6 +146,7 @@ export function ProfileEditor() {
             {error && <p className="text-center text-body-sm text-destructive">{error}</p>}
           </div>
           </div>
+          <WithdrawSection />
         </>
       )}
     </div>

@@ -2,6 +2,9 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
+// WithdrawSection 이 useRouter 를 쓰므로 mock (앱 라우터 미마운트 에러 방지).
+vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: vi.fn() }) }));
+
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
 
 function routeFetch() {

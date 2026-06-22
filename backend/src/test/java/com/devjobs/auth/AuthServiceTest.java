@@ -72,7 +72,7 @@ class AuthServiceTest {
         UserEntity u = userRepo.findByEmail("verify@example.com").orElseThrow();
         String code = "123456";
         tokenRepo.save(new EmailVerificationTokenEntity(
-            u.getId(), TokenHasher.sha256Hex(code), java.time.OffsetDateTime.now().plusMinutes(10)));
+            u.getId(), TokenHasher.sha256Hex(code), "verify", java.time.OffsetDateTime.now().plusMinutes(10)));
 
         authService.verifyEmail("verify@example.com", code);
 
