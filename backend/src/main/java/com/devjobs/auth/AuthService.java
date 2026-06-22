@@ -80,10 +80,13 @@ public class AuthService {
 
     public record EmailAvailability(boolean valid, boolean available) {}
 
+    private static final String P_VERIFY = "verify";
+    private static final String P_RESET = "reset";
+
     private void issueAndSendVerification(UserEntity u) {
         String code = TokenHasher.randomCode();
         EmailVerificationTokenEntity t = new EmailVerificationTokenEntity(
-            u.getId(), TokenHasher.sha256Hex(code), OffsetDateTime.now().plusMinutes(10));
+            u.getId(), TokenHasher.sha256Hex(code), P_VERIFY, OffsetDateTime.now().plusMinutes(10));
         tokenRepo.save(t);
         mailService.sendVerificationCode(u.getEmail(), code);
     }
@@ -95,7 +98,7 @@ public class AuthService {
         UserEntity u = ou.get();
         if (u.getEmailVerifiedAt() != null) return;     // 이미 인증됨
         if (u.getPasswordHash() == null) return;         // OAuth 전용 계정 — 해당 없음
-        tokenRepo.deleteByUserId(u.getId());             // 이전 토큰 정리
+        tokenRepo.deleteByUserIdAndPurpose(u.getId(), P_VERIFY);  // 이전 verify 토큰만 정리
         issueAndSendVerification(u);
     }
 
@@ -105,13 +108,64 @@ public class AuthService {
         UserEntity u = userRepo.findByEmail(normalize(email))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code"));
         EmailVerificationTokenEntity t = tokenRepo
-            .findByUserIdAndTokenHash(u.getId(), TokenHasher.sha256Hex(rawCode))
+            .findByUserIdAndTokenHashAndPurpose(u.getId(), TokenHasher.sha256Hex(rawCode), P_VERIFY)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code"));
         if (t.getConsumedAt() != null || t.getExpiresAt().isBefore(OffsetDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code");
         }
         u.markEmailVerified(OffsetDateTime.now());
         t.consume(OffsetDateTime.now());
+    }
+
+    /** 비밀번호 재설정 코드 발송. 계정 열거 방지를 위해 미존재·OAuth전용이어도 조용히 성공 처리. */
+    @Transactional
+    public void requestPasswordReset(String email) {
+        Optional<UserEntity> ou = userRepo.findByEmail(normalize(email));
+        if (ou.isEmpty()) return;                       // 열거 방지
+        UserEntity u = ou.get();
+        if (u.getPasswordHash() == null) return;         // OAuth 전용 계정 — 비번 없음
+        tokenRepo.deleteByUserIdAndPurpose(u.getId(), P_RESET);
+        String code = TokenHasher.randomCode();
+        tokenRepo.save(new EmailVerificationTokenEntity(
+            u.getId(), TokenHasher.sha256Hex(code), P_RESET, OffsetDateTime.now().plusMinutes(10)));
+        mailService.sendPasswordResetCode(u.getEmail(), code);
+    }
+
+    /** 이메일+6자리 코드로 비밀번호 재설정. 코드 단회용. 성공 시 해당 사용자의 reset 토큰 정리. */
+    @Transactional
+    public void resetPassword(String email, String rawCode, String newPassword) {
+        PasswordPolicy.validate(newPassword);
+        UserEntity u = userRepo.findByEmail(normalize(email))
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code"));
+        EmailVerificationTokenEntity t = tokenRepo
+            .findByUserIdAndTokenHashAndPurpose(u.getId(), TokenHasher.sha256Hex(rawCode), P_RESET)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code"));
+        if (t.getConsumedAt() != null || t.getExpiresAt().isBefore(OffsetDateTime.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code");
+        }
+        u.setPasswordHash(passwordEncoder.encode(newPassword));
+        u.markEmailVerified(OffsetDateTime.now()); // 코드로 이메일 소유를 증명했으니 미인증이면 함께 인증 처리
+        t.consume(OffsetDateTime.now());
+    }
+
+    /**
+     * 회원탈퇴. 비번 계정은 현재 비번 재확인, OAuth 전용 계정은 'DELETE' 확인 문자열을 요구한다.
+     * users 행만 삭제하면 연관 데이터는 FK ON DELETE CASCADE 로 정리된다(job_views 는 SET NULL).
+     */
+    @Transactional
+    public void withdraw(UUID userId, String confirmPassword, String confirmText) {
+        UserEntity u = userRepo.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user_not_found"));
+        if (u.getPasswordHash() != null) {
+            if (confirmPassword == null || !passwordEncoder.matches(confirmPassword, u.getPasswordHash())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "invalid_password");
+            }
+        } else {
+            if (!"DELETE".equals(confirmText)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "confirm_required");
+            }
+        }
+        userRepo.delete(u);
     }
 
     @Transactional(readOnly = true)

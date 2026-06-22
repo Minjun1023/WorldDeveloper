@@ -4,7 +4,9 @@ import com.devjobs.auth.dto.AuthDtos.AuthResult;
 import com.devjobs.auth.dto.AuthDtos.ExchangeRequest;
 import com.devjobs.auth.dto.AuthDtos.LoginRequest;
 import com.devjobs.auth.dto.AuthDtos.RegisterRequest;
+import com.devjobs.auth.dto.AuthDtos.ForgotPasswordRequest;
 import com.devjobs.auth.dto.AuthDtos.ResendRequest;
+import com.devjobs.auth.dto.AuthDtos.ResetPasswordRequest;
 import com.devjobs.auth.dto.AuthDtos.VerifyRequest;
 import com.devjobs.profile.ProfileService;
 import com.devjobs.strategist.RateLimiter;
@@ -79,6 +81,22 @@ public class AuthController {
     public ResponseEntity<Void> resend(@RequestBody ResendRequest r, HttpServletRequest req) {
         rateLimit("resend", req);
         auth.resendVerification(r.email());
+        return ResponseEntity.ok().build();
+    }
+
+    /** 비밀번호 재설정 코드 발송. 계정 열거 방지를 위해 항상 200(존재 여부 비노출). */
+    @PostMapping("/forgot-password")
+    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordRequest r, HttpServletRequest req) {
+        rateLimit("forgot", req);
+        auth.requestPasswordReset(r.email());
+        return ResponseEntity.ok().build();
+    }
+
+    /** 이메일+6자리 코드로 비밀번호 재설정. */
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody ResetPasswordRequest r, HttpServletRequest req) {
+        rateLimit("reset", req); // 코드 무차별 대입 방지
+        auth.resetPassword(r.email(), r.code(), r.newPassword());
         return ResponseEntity.ok().build();
     }
 

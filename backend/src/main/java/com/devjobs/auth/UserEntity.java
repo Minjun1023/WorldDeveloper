@@ -47,4 +47,7 @@ public class UserEntity {
     public String getDisplayName() { return displayName; }
 
     public void markEmailVerified(OffsetDateTime at) { this.emailVerifiedAt = at; }
+
+    /** 비밀번호 재설정용. 호출부에서 PasswordEncoder 로 인코딩한 해시를 넘긴다. */
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
 }

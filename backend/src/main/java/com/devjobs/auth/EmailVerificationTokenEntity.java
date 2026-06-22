@@ -23,6 +23,9 @@ public class EmailVerificationTokenEntity {
     @Column(name = "token_hash", nullable = false)
     private String tokenHash;
 
+    @Column(name = "purpose", nullable = false)
+    private String purpose;
+
     @Column(name = "expires_at", nullable = false)
     private OffsetDateTime expiresAt;
 
@@ -34,14 +37,16 @@ public class EmailVerificationTokenEntity {
 
     protected EmailVerificationTokenEntity() {}
 
-    public EmailVerificationTokenEntity(UUID userId, String tokenHash, OffsetDateTime expiresAt) {
+    public EmailVerificationTokenEntity(UUID userId, String tokenHash, String purpose, OffsetDateTime expiresAt) {
         this.userId = userId;
         this.tokenHash = tokenHash;
+        this.purpose = purpose;
         this.expiresAt = expiresAt;
         this.createdAt = OffsetDateTime.now();
     }
 
     public UUID getUserId() { return userId; }
+    public String getPurpose() { return purpose; }
     public OffsetDateTime getExpiresAt() { return expiresAt; }
     public OffsetDateTime getConsumedAt() { return consumedAt; }
 
