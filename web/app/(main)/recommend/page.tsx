@@ -9,7 +9,15 @@ export default async function RecommendPage() {
   const session = await getSession();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-h1">맞춤 추천</h1>
+        <p className="mt-2 max-w-2xl text-body text-muted-foreground">
+          내 프로필을{" "}
+          <strong className="font-semibold text-foreground">5축(스택·지역·레벨·연봉·의미)</strong>으로
+          매칭해 승인 가능성이 높은 비자 스폰서 공고부터 보여드립니다.
+        </p>
+      </div>
       {session ? (
         <MemberRecommend />
       ) : (

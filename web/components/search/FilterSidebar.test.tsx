@@ -44,6 +44,7 @@ describe("FilterSidebar", () => {
       region: null,
       discipline: null,
       remote: null,
+      rc: null,
     });
   });
 

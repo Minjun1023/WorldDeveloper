@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart } from "lucide-react";
+import { Bookmark } from "lucide-react";
 import Link from "next/link";
 
 import { useSaveJob } from "@/lib/saved-jobs";
@@ -31,7 +31,7 @@ export function SaveHeartButton({
         onClick={(e) => e.stopPropagation()}
         className={cn(BTN, "text-muted-foreground hover:text-primary")}
       >
-        <Heart className="h-[18px] w-[18px]" aria-hidden="true" />
+        <Bookmark className="h-[18px] w-[18px]" aria-hidden="true" />
       </Link>
     );
   }
@@ -49,7 +49,7 @@ export function SaveHeartButton({
       title={saved ? "저장됨 (클릭해 해제)" : "관심 공고로 저장"}
       className={cn(BTN, saved ? "text-primary" : "text-muted-foreground hover:text-primary")}
     >
-      <Heart className={cn("h-[18px] w-[18px]", saved && "fill-current")} aria-hidden="true" />
+      <Bookmark className={cn("h-[18px] w-[18px]", saved && "fill-current")} aria-hidden="true" />
     </button>
   );
 }

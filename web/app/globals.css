@@ -8,57 +8,65 @@
  */
 @layer base {
   :root {
+    /* DESIGN.md (Toss풍 Global Talent System) — primary #0064FF, 흰 배경, Toss 그레이 */
     --background: #ffffff;
     --surface: #ffffff;
-    --surface-2: #f3f4f6;
-    --foreground: #111827;
-    --muted-foreground: #6b7280;
-    --border: #e5e7eb;
-    --input: #e5e7eb;
-    --primary: #2b6cf0;
+    --surface-2: #f2f4f6;
+    --foreground: #191f28;
+    --muted-foreground: #4e5968;
+    --hint: #8b95a1;
+    --border: #e5e8eb;
+    --input: #e5e8eb;
+    --primary: #0064ff;
     --primary-foreground: #ffffff;
-    --ring: #2b6cf0;
-    --accent: #f3f4f6;
-    --success: #16a34a;
+    --primary-tint: #eef4ff;
+    --logo: #c2c6d8;
+    --ring: #0064ff;
+    --accent: #f2f4f6;
+    --success: #15a35a;
     --warning: #d97706;
-    --destructive: #dc2626;
+    --destructive: #e0301e;
     --verified: #ca8a04;
     --verified-foreground: #ffffff;
 
-    /* score 6차원 (recharts) */
-    --score-stack: #6366f1;
-    --score-visa: #10b981;
+    /* score 5축 매칭 (recharts) — 비자는 매칭 축이 아니라 기본 필터/검증 배지 */
+    --score-stack: #0064ff;
     --score-location: #0ea5e9;
     --score-seniority: #8b5cf6;
     --score-salary: #f59e0b;
     --score-semantic: #f43f5e;
+    /* 하위호환: 일부 컴포넌트가 아직 참조할 수 있어 유지(미사용) */
+    --score-visa: #10b981;
 
-    /* 랜딩 전폭 섹션 교차 배경(흰색/연회색). 라이트 = Readdy #f4f4f8. */
-    --section-muted: #f7f8fa;
+    /* 랜딩 전폭 섹션 교차 배경(흰색/연회색). */
+    --section-muted: #f9fafb;
 
-    --radius: 0.5rem;
+    --radius: 1rem;
   }
 
   .dark {
-    --background: #111418;
-    --surface: #1a1f26;
-    --surface-2: #232a33;
-    --foreground: #f5f7fa;
-    --muted-foreground: #9aa4b2;
-    --border: #2a313b;
-    --input: #2a313b;
-    --primary: #5b8df5;
+    --background: #16191f;
+    --surface: #1c2026;
+    --surface-2: #262b33;
+    --foreground: #f2f4f6;
+    --muted-foreground: #9aa3af;
+    --hint: #6b7480;
+    --border: #2c323b;
+    --input: #2c323b;
+    --primary: #3d83ff;
     --primary-foreground: #ffffff;
-    --ring: #5b8df5;
-    --accent: #232a33;
-    --success: #22c55e;
+    --primary-tint: rgba(61, 131, 255, 0.16);
+    --logo: #3a4150;
+    --ring: #3d83ff;
+    --accent: #262b33;
+    --success: #2bb673;
     --warning: #f59e0b;
     --destructive: #ef4444;
     --verified: #eab308;
     --verified-foreground: #09090b;
 
     /* 다크 모드 교차 섹션은 표면색으로 살짝 띄운다. */
-    --section-muted: #161b21;
+    --section-muted: #1a1e24;
   }
 }
 
@@ -165,4 +173,26 @@
   margin: 1.25em 0;
   border: 0;
   border-top: 1px solid var(--border);
+}
+
+/* 회사 로고 마퀴(연속 스크롤) — 통계 띠 아래 '디렉터리에 수록된 비자 스폰서 기업'. */
+@keyframes wd-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.wd-marquee {
+  animation: wd-marquee 45s linear infinite;
+}
+.wd-marquee-track:hover .wd-marquee {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .wd-marquee { animation: none; }
+}
+.wd-logo-name {
+  color: var(--logo);
+  transition: color 0.2s ease-out;
+}
+.wd-logo-name:hover {
+  color: var(--foreground);
 }

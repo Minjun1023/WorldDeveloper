@@ -21,7 +21,7 @@ const SAMPLE_SCORES = [
   },
 ];
 
-// 비로그인 홈: "당신을 위한 6차원 매칭 공고"를 블러 처리한 잠금 미리보기로 노출.
+// 비로그인 홈: "당신을 위한 5축 매칭 공고"를 블러 처리한 잠금 미리보기로 노출.
 // 카드는 장식용 배경(블러·비활성)이고, 중앙 CTA로 프로필 작성을 유도한다.
 // 로그인 시엔 page.tsx 가 <MemberLandingRecommend/>(실제 추천)로 교체한다.
 export function SampleRecommend({ jobs }: { jobs: Job[] }) {
@@ -36,7 +36,7 @@ export function SampleRecommend({ jobs }: { jobs: Job[] }) {
     <div>
       <SectionHeader
         title="맞춤 추천 공고"
-        subtitle="프로필 기반 6축 매칭"
+        subtitle="프로필 기반 5축 매칭"
       />
       <div className="relative">
         {/* 잠금된 미리보기 — 카드를 블러 처리한 배경(장식, 상호작용 비활성) */}

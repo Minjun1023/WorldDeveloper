@@ -2,6 +2,7 @@ import { Clock } from "lucide-react";
 import Link from "next/link";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { SaveHeartButton } from "@/components/job/SaveHeartButton";
 import { Card } from "@/components/ui/card";
 import { flagFromLocation } from "@/lib/flags";
 import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
@@ -19,11 +20,16 @@ export function JobCard({
   job,
   hideVisaBadge = false,
   showRestrictedRemote = false,
+  showSave = false,
+  loggedIn = false,
 }: {
   job: Job;
   hideVisaBadge?: boolean;
   // 회사 페이지 등에서 '원격 가능 공고'를 모두 표기하고 싶을 때 지역 제한 원격도 배지로 노출.
   showRestrictedRemote?: boolean;
+  // 우상단 북마크(저장) 노출 — 인기 TOP 공고 등 opt-in.
+  showSave?: boolean;
+  loggedIn?: boolean;
 }) {
   const salary = formatSalary(job.salary);
   const posted = postedRelativeLabel(job.posted_at);
@@ -45,10 +51,17 @@ export function JobCard({
   const hasBadges = showVisa || showRemote || showRestricted;
 
   return (
-    <Link href={`/jobs/${encodeURIComponent(job.id)}`} className="group block h-full">
-      <Card className="flex h-full flex-col rounded-lg p-5 transition-colors hover:border-primary/40">
+    <div className="group relative h-full">
+      {/* 북마크는 카드 링크의 형제로 절대배치 — a 안에 button 중첩(무효 HTML)과 네비 충돌 방지. */}
+      {showSave && (
+        <div className="absolute right-2.5 top-2.5 z-10">
+          <SaveHeartButton jobId={job.id} loggedIn={loggedIn} />
+        </div>
+      )}
+      <Link href={`/jobs/${encodeURIComponent(job.id)}`} className="block h-full">
+        <Card className="flex h-full flex-col rounded-lg p-5 transition-colors hover:border-primary/40">
         {/* 헤더: 로고 + 제목/회사·지역 + (마감 임박) */}
-        <div className="flex items-start gap-3">
+        <div className={`flex items-start gap-3 ${showSave ? "pr-8" : ""}`}>
           <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={40} />
           <div className="min-w-0 flex-1">
             {/* 제목은 2줄 높이를 고정 — 1줄/2줄 제목이 섞여도 아래 회사·배지·태그 줄이 카드 간 정렬되게. */}
@@ -143,6 +156,7 @@ export function JobCard({
           )}
         </div>
       </Card>
-    </Link>
+      </Link>
+    </div>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart, Trash2 } from "lucide-react";
+import { Bookmark, Trash2 } from "lucide-react";
 import { useState } from "react";
 
 import { RecommendationCard } from "@/components/recommend/RecommendationCard";
@@ -72,7 +72,7 @@ export function InteractiveJobCard({
           saved ? "text-primary" : "text-muted-foreground hover:text-foreground hover:bg-accent",
         )}
       >
-        <Heart className="h-4 w-4" fill={saved ? "currentColor" : "none"} aria-hidden="true" />
+        <Bookmark className="h-4 w-4" fill={saved ? "currentColor" : "none"} aria-hidden="true" />
       </button>
       {showDislike && (
         <button

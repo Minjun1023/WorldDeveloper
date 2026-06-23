@@ -171,6 +171,21 @@ export async function fetchRegions(): Promise<RegionCount[]> {
   }
 }
 
+// 서버 컴포넌트용: 최근 7일 인기 검색어(실측). 데이터 부족 시 빈 배열 → 호출부에서 큐레이션 fallback.
+export async function fetchPopularSearches(limit = 8): Promise<string[]> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/search/popular?limit=${limit}`, {
+      next: { revalidate: 300 }, // 5분 캐시 — 인기 검색어는 실시간일 필요 없음
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return [];
+    const data = (await res.json()) as unknown;
+    return Array.isArray(data) ? data.filter((t): t is string => typeof t === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
 // 클라이언트 전용: 국가 선택 시 도시별 건수 지연 로드(Next 프록시 경유, 상대 URL).
 export async function fetchRegionCities(country: string): Promise<RegionCount[]> {
   try {

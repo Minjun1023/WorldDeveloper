@@ -82,7 +82,7 @@ export function ProfileEditor() {
         <div>
           <h1 className="text-display">프로필</h1>
           <p className="mt-2 text-muted-foreground">
-            채울수록 <strong className="font-semibold text-foreground">6차원 매칭</strong>이 정확해져요.
+            채울수록 <strong className="font-semibold text-foreground">5축 매칭</strong>이 정확해져요.
             비자 스폰서십은 기본 포함이에요.
           </p>
         </div>
