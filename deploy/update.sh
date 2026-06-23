@@ -3,7 +3,8 @@
 #   사용:  ./deploy/update.sh        (repo 어디서 실행해도 됨)
 # 동작:
 #   1) 소스만 rsync (node_modules/.venv/.git/.env 등 제외 — 서버 deploy/.env 는 보존)
-#   2) docker compose up -d --build  (바뀐 서비스만 재빌드, DB 볼륨은 유지)
+#   2) docker compose up -d --build --remove-orphans  (바뀐 서비스만 재빌드, DB 볼륨 유지,
+#      compose 에서 빠진 서비스의 컨테이너는 정리 — 예: 번역 제거 후 libretranslate orphan)
 set -euo pipefail
 
 # ── 설정 (환경에 맞게 수정 가능) ──────────────────────────────
@@ -27,9 +28,9 @@ rsync -az --delete \
   -e "ssh ${SSH_OPTS[*]}" \
   "$REPO_ROOT/" "$SERVER:$REMOTE_DIR/"
 
-echo "[2/3] 재빌드·재기동 (docker compose up -d --build) ..."
+echo "[2/3] 재빌드·재기동 (docker compose up -d --build --remove-orphans) ..."
 ssh "${SSH_OPTS[@]}" "$SERVER" \
-  "cd $REMOTE_DIR/deploy && sudo docker compose -f docker-compose.prod.yml up -d --build"
+  "cd $REMOTE_DIR/deploy && sudo docker compose -f docker-compose.prod.yml up -d --build --remove-orphans"
 
 echo "[3/3] 상태 확인 ..."
 ssh "${SSH_OPTS[@]}" "$SERVER" \
