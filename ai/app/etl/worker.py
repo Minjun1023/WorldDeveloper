@@ -29,6 +29,17 @@ async def _run() -> None:
         except Exception:  # noqa: BLE001 — 부팅 수집 실패가 스케줄러 기동을 막지 않도록
             log.exception("부팅 수집 실패 — 스케줄러는 계속 기동한다")
 
+    # 번역 캐시 워밍: 수집 없이 미번역 공고만 번역(부팅 1회). 배포 직후 자정을 안 기다리고 즉시 적용.
+    if settings.translate_backfill_on_start:
+        log.info("TRANSLATE_BACKFILL_ON_START: 번역 사전캐시 백필 시작")
+        try:
+            from .backfill_translations import backfill_translations
+
+            stats = await backfill_translations()
+            log.info("번역 백필 완료: %s", stats)
+        except Exception:  # noqa: BLE001 — 백필 실패가 스케줄러 기동을 막지 않도록
+            log.exception("번역 백필 실패 — 스케줄러는 계속 기동한다")
+
     start_scheduler()  # AsyncIOScheduler 가 현재 이벤트 루프에 붙는다
     log.info("ETL worker up; 스케줄러 대기 중 (cron=%s tz=%s)", settings.etl_cron, settings.etl_timezone)
 
