@@ -183,16 +183,6 @@ export interface InterviewPrep {
 }
 
 
-// 번역 (translate: GET /jobs/{id}/translation?lang=ko)
-export interface Translation {
-  job_id: string;
-  lang: string;
-  title: string;
-  description: string;
-  engine: string;
-  cached: boolean;
-}
-
 // 공고 요약 (summarize: GET /jobs/{id}/summary?lang=ko)
 export interface JobSummary {
   job_id: string;

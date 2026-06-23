@@ -15,7 +15,6 @@ import { RecordRecentJob } from "@/components/job/RecordRecentJob";
 import { TechStackMatch } from "@/components/job/TechStackMatch";
 import {
   fetchCachedSummary,
-  fetchCachedTranslation,
   fetchCompany,
   fetchInterviewPrep,
   fetchJob,
@@ -26,11 +25,10 @@ import { filterTechTags } from "@/lib/techTags";
 export const dynamic = "force-dynamic";
 
 export default async function JobDetailPage({ params }: { params: { id: string } }) {
-  const [result, prep, session, initialKo, initialSummary] = await Promise.all([
+  const [result, prep, session, initialSummary] = await Promise.all([
     fetchJob(params.id),
     fetchInterviewPrep(params.id),
     getSession(),
-    fetchCachedTranslation(params.id, "ko"), // 캐시된 번역만(즉시표시), 미스면 null → 클라 번역
     fetchCachedSummary(params.id, "ko"), // 캐시된 요약만(즉시 펼침), 미스면 null → 클라 생성
   ]);
 
@@ -88,9 +86,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
             </header>
 
             {job.description && <JobSummary jobId={job.id} initialData={initialSummary} />}
-            {job.description && (
-              <JobDescription jobId={job.id} original={job.description} initialKo={initialKo} />
-            )}
+            {job.description && <JobDescription original={job.description} />}
             {techTags.length > 0 ? <TechStackMatch tags={techTags} /> : <NoTechStackNote />}
             {prep && <InterviewPrepSection prep={prep} />}
 

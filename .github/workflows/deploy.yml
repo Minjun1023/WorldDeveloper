@@ -44,11 +44,11 @@ jobs:
             -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
             ./ "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:~/WorldDeveloper/"
 
-      - name: 재빌드·재기동 (docker compose up -d --build)
+      - name: 재빌드·재기동 (docker compose up -d --build --remove-orphans)
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            "cd ~/WorldDeveloper/deploy && sudo docker compose -f docker-compose.prod.yml up -d --build"
+            "cd ~/WorldDeveloper/deploy && sudo docker compose -f docker-compose.prod.yml up -d --build --remove-orphans"
 
       - name: 상태 확인
         run: |

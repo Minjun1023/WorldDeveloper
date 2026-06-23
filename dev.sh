@@ -5,7 +5,7 @@
 #   ./dev.sh            DB + Mailhog + AI + 백엔드 + 프론트 모두 실행
 #   ./dev.sh --stop     실행 중인 앱 프로세스 + DB 컨테이너 정리
 #
-# 순서: Postgres(5433) + Mailhog(1025/8025) + LibreTranslate(5050) → AI(8001) → 백엔드(8080) → 프론트(3000)
+# 순서: Postgres(5433) + Mailhog(1025/8025) → AI(8001) → 백엔드(8080) → 프론트(3000)
 # 기본 포트를 쓰면 web→backend, backend→ai 연결이 환경변수 없이 맞물립니다.
 # OAuth 키/시크릿은 루트 .env 에 두면 자동 로드됩니다 (.env.example 참고, .gitignore 처리됨).
 #
@@ -65,7 +65,7 @@ stop_all() {
   for port in "$AI_PORT" "$BACKEND_PORT" "$WEB_PORT"; do
     lsof -ti "tcp:$port" 2>/dev/null | xargs kill -9 2>/dev/null || true
   done
-  docker stop "$DB_CONTAINER" dev-jobs-mailhog dev-jobs-libretranslate 2>/dev/null || true
+  docker stop "$DB_CONTAINER" dev-jobs-mailhog 2>/dev/null || true
   log "완료."
 }
 
@@ -74,13 +74,12 @@ if [ "${1:-}" = "--stop" ]; then
   exit 0
 fi
 
-# --- 0. DB + Mailhog + LibreTranslate(번역) ---
-log "Postgres($DB_CONTAINER) + Mailhog + LibreTranslate 시작..."
+# --- 0. DB + Mailhog ---
+log "Postgres($DB_CONTAINER) + Mailhog 시작..."
 if docker ps -a --format '{{.Names}}' | grep -qx "$DB_CONTAINER"; then
   docker start "$DB_CONTAINER" >/dev/null
 fi
-# postgres + mailhog + libretranslate 모두 보장 (idempotent)
-# LibreTranslate 는 첫 기동 시 en/ko 모델을 받느라 수 분 걸릴 수 있음(번역은 그 전까지 502/대기).
+# postgres + mailhog 모두 보장 (idempotent)
 (cd "$ROOT" && docker compose up -d) >/dev/null
 
 log "DB 헬스체크 대기..."
@@ -142,7 +141,6 @@ log "  프론트   http://localhost:$WEB_PORT"
 log "  백엔드   http://localhost:$BACKEND_PORT/api/v1/jobs"
 log "  AI       http://localhost:$AI_PORT/docs"
 log "  메일함   http://localhost:8025  (Mailhog — 인증 메일 확인)"
-log "  번역     http://localhost:5050  (LibreTranslate — 첫 기동 시 모델 다운로드)"
 [ -z "$GITHUB_CLIENT_ID" ] && warn "GITHUB_CLIENT_ID 미설정 — GitHub 로그인 비활성 (.env 에 키 입력)"
 [ -z "$GOOGLE_CLIENT_ID" ] && warn "GOOGLE_CLIENT_ID 미설정 — Google 로그인 비활성 (.env 에 키 입력)"
 log "로그 합쳐 보기: tail -f $LOG_DIR/*.log   (종료: Ctrl+C)"

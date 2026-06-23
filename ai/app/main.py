@@ -3,7 +3,6 @@
 엔드포인트:
   GET  /internal/health        liveness
   POST /internal/embed         text -> vector(384)
-  POST /internal/translate     공고 제목/본문 기계 번역 (LibreTranslate 셀프호스팅)
   POST /internal/etl/trigger   수동 ETL 트리거 (dev 전용)
 
 ETL 은 lifespan 안에서 APScheduler 로 등록 (settings.etl_enabled=True 일 때만).
@@ -17,7 +16,7 @@ from fastapi import FastAPI
 
 from .config import settings
 from .etl.scheduler import shutdown_scheduler, start_scheduler
-from .routes import coach, embed, etl, health, parse_profile, summarize, translate
+from .routes import coach, embed, etl, health, parse_profile, summarize
 
 log = logging.getLogger(__name__)
 
@@ -53,7 +52,6 @@ app = FastAPI(
 
 app.include_router(health.router, prefix="/internal", tags=["internal"])
 app.include_router(embed.router, prefix="/internal", tags=["internal"])
-app.include_router(translate.router, prefix="/internal", tags=["internal"])
 app.include_router(summarize.router, prefix="/internal", tags=["internal"])
 app.include_router(coach.router, prefix="/internal", tags=["internal"])
 app.include_router(etl.router, prefix="/internal", tags=["internal"])

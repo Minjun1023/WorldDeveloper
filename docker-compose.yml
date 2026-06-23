@@ -31,18 +31,5 @@ services:
     ports:
       - "6379:6379"
 
-  # 번역 엔진 (셀프호스팅, 외부 API/키 불필요). 첫 기동 시 모델 다운로드(수 분 소요 가능).
-  # 모델은 컨테이너 내부에 저장 — docker start 로 재사용되고, 컨테이너 재생성(down/recreate) 시에만
-  # 재다운로드. (named volume 은 root 소유 권한 충돌로 비루트 컨테이너가 쓰지 못해 제외.)
-  # ja 포함: 일본 공고가 다수라 한국어 번역 필요. 직접 ja↔ko 모델은 없어 LibreTranslate 가
-  # en 을 경유해 자동 피벗(ja→en→ko)한다. ja 미적재 시 auto 감지가 ja 를 못 골라 오역/환각 발생.
-  libretranslate:
-    image: libretranslate/libretranslate:latest
-    container_name: dev-jobs-libretranslate
-    environment:
-      LT_LOAD_ONLY: "en,ko,ja"
-    ports:
-      - "5050:5000"
-
 volumes:
   postgres-data:

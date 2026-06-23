@@ -221,15 +221,5 @@ async def run_full_cycle(
         log.warning("visa 재분류 실패: %s", e)
         result["visa_reclassified"] = {"error": str(e)}
 
-    # 6. 신규/미번역 활성 공고 한국어 사전번역 → job_translations 캐시 워밍.
-    #    조회 시 캐시 히트로 즉시 표시(로딩/503 방지). 멱등(이미 번역된 건 건너뜀).
-    try:
-        from .backfill_translations import backfill_translations
-
-        result["translated"] = await backfill_translations()
-    except Exception as e:  # noqa: BLE001 — 번역 실패가 수집 사이클을 막지 않도록
-        log.warning("번역 사전캐시 실패: %s", e)
-        result["translated"] = {"error": str(e)}
-
     log.info("ETL cycle 완료: %s", result)
     return result
