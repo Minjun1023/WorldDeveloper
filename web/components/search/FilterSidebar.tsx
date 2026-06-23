@@ -1,6 +1,6 @@
 "use client";
 
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
 import type { RegionCount } from "@/lib/api";
@@ -53,20 +53,39 @@ export function FilterSidebar({ regions }: { regions: RegionCount[] }) {
   const update = useUpdateQuery();
 
   const countries = regions.filter((r) => r.value !== "remote" && r.count > 0);
+  const countryValues = new Set(countries.map((c) => c.value));
   const selectedRegions = new Set((sp.get("region") ?? "").split(",").map((s) => s.trim()).filter(Boolean));
+  // rc: 도시를 골랐을 때의 부모 국가(통합검색 모달이 전달). 도시 검색은 그대로 두고 국가 체크만 추가 표시.
+  const regionCountry = sp.get("rc");
+  // 국가 체크박스에 없는 활성 지역(도시 등) — 통합검색 모달에서 도시를 고르면 여기에 들어온다.
+  const cityRegions = [...selectedRegions].filter((v) => !countryValues.has(v));
+  const prettyRegion = (v: string) =>
+    v.split("-").map((w) => (w ? w[0].toUpperCase() + w.slice(1) : w)).join(" ");
+  // 국가/도시 값을 모두 보존하며 토글(기존엔 국가만 남겨 도시가 사라졌다).
   const toggleRegion = (key: string) => {
+    // 도시 선택 때문에 rc 로 체크된 국가를 끄면 → 도시 region + rc 모두 해제
+    if (regionCountry === key && !selectedRegions.has(key)) {
+      update({ region: null, rc: null });
+      return;
+    }
     const next = new Set(selectedRegions);
     if (next.has(key)) next.delete(key);
     else next.add(key);
-    const csv = countries.filter((c) => next.has(c.value)).map((c) => c.value).join(",");
-    update({ region: csv || null });
+    update({ region: [...next].join(",") || null });
+  };
+  const removeRegion = (key: string) => {
+    const next = new Set(selectedRegions);
+    next.delete(key);
+    // 부모 국가가 있으면 도시 대신 국가 전체로 남겨 국가 체크는 유지.
+    if (regionCountry) next.add(regionCountry);
+    update({ region: [...next].join(",") || null, rc: null });
   };
 
   const discipline = sp.get("discipline");
   const remote = sp.get("remote") === "true";
 
   // 모든 필터를 비워 기본 목록으로 되돌린다(선택이 없어도 무해). 버튼은 항상 노출.
-  const reset = () => update({ region: null, discipline: null, remote: null });
+  const reset = () => update({ region: null, discipline: null, remote: null, rc: null });
 
   return (
     <aside className="h-fit rounded-2xl border border-border bg-surface p-4 lg:sticky lg:top-4">
@@ -85,10 +104,27 @@ export function FilterSidebar({ regions }: { regions: RegionCount[] }) {
       </div>
       {countries.length > 0 && (
         <Group title="국가">
+          {/* 통합검색에서 고른 상세 지역(도시 등) — 국가 체크박스엔 없으므로 칩으로 표시·제거 */}
+          {cityRegions.length > 0 && (
+            <div className="-mt-0.5 mb-1 flex flex-wrap gap-1.5">
+              {cityRegions.map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => removeRegion(v)}
+                  className="inline-flex items-center gap-1 rounded-full bg-primary-tint px-2.5 py-1 text-caption font-semibold text-primary transition-colors hover:opacity-80"
+                  aria-label={`${prettyRegion(v)} 지역 필터 제거`}
+                >
+                  {prettyRegion(v)}
+                  <X className="h-3 w-3" aria-hidden="true" />
+                </button>
+              ))}
+            </div>
+          )}
           {countries.map((c) => (
             <CheckRow
               key={c.value}
-              checked={selectedRegions.has(c.value)}
+              checked={selectedRegions.has(c.value) || regionCountry === c.value}
               onToggle={() => toggleRegion(c.value)}
               label={c.label}
               count={c.count}

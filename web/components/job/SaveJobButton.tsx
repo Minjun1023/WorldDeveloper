@@ -1,6 +1,6 @@
 "use client";
 
-import { Heart } from "lucide-react";
+import { Bookmark } from "lucide-react";
 import Link from "next/link";
 
 import { useSaveJob } from "@/lib/saved-jobs";
@@ -22,7 +22,7 @@ export function SaveJobButton({ jobId, loggedIn, className }: { jobId: string; l
         title="저장하려면 로그인하세요"
         className={cn(ICON_BTN, "border-border text-foreground hover:bg-accent", className)}
       >
-        <Heart className="h-5 w-5" aria-hidden="true" />
+        <Bookmark className="h-5 w-5" aria-hidden="true" />
       </Link>
     );
   }
@@ -40,7 +40,7 @@ export function SaveJobButton({ jobId, loggedIn, className }: { jobId: string; l
         className,
       )}
     >
-      <Heart className={cn("h-5 w-5", saved && "fill-current")} aria-hidden="true" />
+      <Bookmark className={cn("h-5 w-5", saved && "fill-current")} aria-hidden="true" />
     </button>
   );
 }

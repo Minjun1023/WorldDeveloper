@@ -5,7 +5,7 @@ import Link from "next/link";
 // 로고는 홈(/)으로 가는 출구 역할.
 const FEATURES = [
   { icon: ShieldCheck, label: "비자 스폰서 공고 추천" },
-  { icon: BarChart3, label: "6차원 점수로 매칭 분석" },
+  { icon: BarChart3, label: "5축 점수로 매칭 분석" },
   { icon: Sparkles, label: "AI 이력서 코치 무료" },
 ];
 

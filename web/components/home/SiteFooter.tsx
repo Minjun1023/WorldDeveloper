@@ -53,7 +53,7 @@ export function SiteFooter() {
               </span>
             </Link>
             <p className="mt-3 max-w-xs text-body-sm leading-relaxed text-muted-foreground">
-              비자 스폰서십이 명시된 해외 공고만 모아, 6차원 점수로 한국 개발자의 해외 취업을
+              비자 스폰서십이 명시된 해외 공고만 모아, 5축 점수로 한국 개발자의 해외 취업을
               돕습니다.
             </p>
             <div className="mt-4 flex items-center gap-2">

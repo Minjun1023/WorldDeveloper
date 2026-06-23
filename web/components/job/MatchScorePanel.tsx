@@ -7,9 +7,9 @@ import { ScoreRadar } from "@/components/recommend/ScoreRadar";
 import { useMatchScore } from "@/lib/use-match-score";
 import type { ScoreBreakdown } from "@/lib/types";
 
+// 5축 — 비자는 매칭 축이 아니라 기본 필터/검증 배지라 제외.
 const AXES: { key: keyof ScoreBreakdown; label: string }[] = [
   { key: "stack", label: "스택" },
-  { key: "visa", label: "비자" },
   { key: "location", label: "지역" },
   { key: "seniority", label: "레벨" },
   { key: "salary", label: "연봉" },

@@ -56,12 +56,24 @@ export function MemberRecommend() {
   }
 
   return (
-    <div className="space-y-4">
-      <form onSubmit={applyNote} className="flex gap-2">
-        <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="조건 추가(선택): 예) 베를린 우선, 시니어" className="flex-1" />
-        <Button type="submit" disabled={loading}>적용</Button>
-      </form>
-      {loading && <RecommendationSkeleton count={9} message="프로필로 6차원 점수를 계산하는 중…" />}
+    <div className="space-y-6">
+      {/* 추천 조건 — 내 프로필 기준 + 메모로 보정. 프로필 자체 수정은 /me/profile. */}
+      <div className="rounded-2xl border border-border bg-surface p-5">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="text-h3 font-bold">추천 조건</h2>
+          <Link href="/me/profile" className="text-body-sm font-medium text-primary hover:underline">
+            프로필 수정
+          </Link>
+        </div>
+        <p className="mt-1 text-body-sm text-muted-foreground">
+          내 프로필(스택·지역·레벨·연봉·관심 도메인)을 기준으로 매칭합니다. 조건을 추가해 더 좁힐 수 있어요.
+        </p>
+        <form onSubmit={applyNote} className="mt-3 flex flex-col gap-2 sm:flex-row">
+          <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="조건 추가(선택): 예) 베를린 우선, 시니어" className="flex-1" />
+          <Button type="submit" disabled={loading} className="sm:w-28">적용</Button>
+        </form>
+      </div>
+      {loading && <RecommendationSkeleton count={9} message="프로필로 5축 점수를 계산하는 중…" />}
       {error && <p className="text-body-sm text-destructive">추천 실패: {error}</p>}
       {result && !loading && (visible.length === 0
         ? <p className="text-body-sm text-muted-foreground">조건에 맞는 추천이 없습니다.</p>

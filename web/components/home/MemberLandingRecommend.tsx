@@ -32,7 +32,7 @@ export function MemberLandingRecommend() {
     <section>
       <SectionHeader
         title="맞춤 추천 공고"
-        subtitle="프로필 기반 6축 매칭"
+        subtitle="프로필 기반 5축 매칭"
         href="/recommend"
         hrefLabel="추천 전체 보기"
       />

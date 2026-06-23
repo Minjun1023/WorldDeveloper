@@ -65,12 +65,6 @@ export default async function JobDetailPage({ params }: { params: { id: string }
           slug={job.company.slug}
         />
         <RecordJobView jobId={job.id} />
-        <Link
-          href="/search"
-          className="mb-4 inline-block text-body-sm text-muted-foreground hover:text-foreground"
-        >
-          ← 목록으로
-        </Link>
 
         <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-8">
           <article className="min-w-0 space-y-5">

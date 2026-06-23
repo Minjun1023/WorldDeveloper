@@ -34,7 +34,7 @@ function SkeletonCard() {
 }
 
 /**
- * AI 추천 대기 중 표시하는 로딩 골격. NL→프로필 변환 + 6차원 점수 계산이 수초 걸려서
+ * AI 추천 대기 중 표시하는 로딩 골격. NL→프로필 변환 + 5축 점수 계산이 수초 걸려서
  * 빈 화면 대신 진행 상태와 결과 카드 그리드의 placeholder 를 보여준다.
  */
 export function RecommendationSkeleton({

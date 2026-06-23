@@ -2,6 +2,7 @@ import { JobRow } from "@/components/job/JobRow";
 import { FilterSidebar } from "@/components/search/FilterSidebar";
 import { Pagination } from "@/components/search/Pagination";
 import { RecentSearches } from "@/components/search/RecentSearches";
+import { RecordSearch } from "@/components/search/RecordSearch";
 import { SearchBar } from "@/components/search/SearchBar";
 import { SortToggle } from "@/components/search/SortToggle";
 import { fetchJobs, fetchRegions, fetchSavedJobIds } from "@/lib/api";
@@ -47,6 +48,9 @@ export default async function SearchPage({
 
   return (
     <div className="space-y-6">
+      {/* 키워드 검색 1건 기록(인기 검색어용). 백엔드가 검색자/일 dedup. */}
+      {q ? <RecordSearch term={q} /> : null}
+
       <section className="space-y-3">
         <SearchBar />
         <RecentSearches />

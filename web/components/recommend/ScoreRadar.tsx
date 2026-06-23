@@ -1,10 +1,10 @@
 import type { ScoreBreakdown } from "@/lib/types";
 
-// 6차원 점수를 육각형 레이더(거미줄) 차트로 시각화. 차트 라이브러리 없이 순수 SVG.
-// 축 순서(상단부터 시계방향): 스택 → 비자 → 지역 → 레벨 → 연봉 → 의미.
+// 5축 점수를 오각형 레이더(거미줄) 차트로 시각화. 차트 라이브러리 없이 순수 SVG.
+// 축 순서(상단부터 시계방향): 스택 → 지역 → 레벨 → 연봉 → 의미.
+// 비자는 매칭 축이 아니라 기본 필터/검증 배지라 레이더에서 제외한다.
 const DIMS: { key: keyof ScoreBreakdown; label: string }[] = [
   { key: "stack", label: "스택" },
-  { key: "visa", label: "비자" },
   { key: "location", label: "지역" },
   { key: "seniority", label: "레벨" },
   { key: "salary", label: "연봉" },
@@ -14,9 +14,9 @@ const DIMS: { key: keyof ScoreBreakdown; label: string }[] = [
 const C = 75; // viewBox 150 중심
 const R = 46; // 최대 반지름(라벨 공간 확보)
 const RINGS = 4;
-const LABEL_R = 59;
+const LABEL_R = 60;
 
-const angle = (i: number) => ((-90 + i * 60) * Math.PI) / 180;
+const angle = (i: number) => ((-90 + i * 72) * Math.PI) / 180;
 const point = (i: number, radius: number): [number, number] => [
   C + radius * Math.cos(angle(i)),
   C + radius * Math.sin(angle(i)),
@@ -26,8 +26,8 @@ const polygon = (radius: number | ((i: number) => number)) =>
     .join(" L ");
 const clamp01 = (n: number) => Math.max(0, Math.min(1, Number(n) || 0)); // 누락/NaN 방어
 
-// 라벨 정렬: 상/하=가운데, 우측 2개=왼쪽기준 시작, 좌측 2개=오른쪽기준 끝.
-const anchorFor = (i: number) => (i === 0 || i === 3 ? "middle" : i === 1 || i === 2 ? "start" : "end");
+// 라벨 정렬(오각형): 상단=가운데, 우측 2개=왼쪽기준 시작, 좌측 2개=오른쪽기준 끝.
+const anchorFor = (i: number) => (i === 0 ? "middle" : i === 1 || i === 2 ? "start" : "end");
 
 export function ScoreRadar({ score, size = 150 }: { score: ScoreBreakdown; size?: number }) {
   const ringPaths = Array.from({ length: RINGS }, (_, k) => `M ${polygon((R * (k + 1)) / RINGS)} Z`);
@@ -39,10 +39,10 @@ export function ScoreRadar({ score, size = 150 }: { score: ScoreBreakdown; size?
       width={size}
       height={size}
       role="img"
-      aria-label="6차원 매칭 점수 차트"
+      aria-label="5축 매칭 점수 차트"
       className="overflow-visible"
     >
-      {/* 동심 육각형 그리드 */}
+      {/* 동심 오각형 그리드 */}
       {ringPaths.map((d, k) => (
         <path key={k} d={d} fill="none" style={{ stroke: "var(--border)" }} strokeWidth={1} />
       ))}

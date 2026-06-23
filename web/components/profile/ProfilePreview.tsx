@@ -70,10 +70,10 @@ export function ProfilePreview({ profile }: { profile: RecommendProfile }) {
         </button>
       </div>
 
-      {/* 6차원 반영 */}
+      {/* 5축 반영 */}
       <div className="rounded-2xl border border-border bg-surface p-4">
         <div className="mb-2.5 flex items-center justify-between">
-          <p className="text-caption font-medium uppercase tracking-wide text-muted-foreground">6차원 반영</p>
+          <p className="text-caption font-medium uppercase tracking-wide text-muted-foreground">5축 반영</p>
           <span className="text-caption font-semibold text-foreground">{reflected}/{DIM_TOTAL} 입력됨</span>
         </div>
         <ul className="text-body-sm">

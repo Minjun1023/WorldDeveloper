@@ -83,7 +83,7 @@ function Dropdown({
   );
 }
 
-export function PopularJobs() {
+export function PopularJobs({ loggedIn = false }: { loggedIn?: boolean }) {
   const [region, setRegion] = useState("");
   const [fn, setFn] = useState("");
   const [items, setItems] = useState<PopularItem[]>([]);
@@ -117,7 +117,7 @@ export function PopularJobs() {
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((it) => (
-            <JobCard key={it.job.id} job={it.job} />
+            <JobCard key={it.job.id} job={it.job} showSave loggedIn={loggedIn} />
           ))}
         </div>
       )}
