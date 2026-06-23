@@ -38,34 +38,6 @@ public class AiClient {
 
     private record EmbedResponse(List<Double> embedding, int dim, String model) {}
 
-    /** 번역 결과 (AI /internal/translate 응답). */
-    public record AiTranslation(String title, String description, String engine) {}
-
-    /** 제목/본문을 lang 으로 번역. 실패(키 미설정/업스트림 오류 포함) 시 null. */
-    public AiTranslation translate(String title, String description, String lang) {
-        try {
-            String json = mapper.writeValueAsString(Map.of(
-                "title", title == null ? "" : title,
-                "description", description == null ? "" : description,
-                "target_lang", lang));
-            HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/internal/translate"))
-                .header("content-type", "application/json")
-                .timeout(Duration.ofSeconds(70))
-                .POST(HttpRequest.BodyPublishers.ofString(json))
-                .build();
-            HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
-            if (resp.statusCode() != 200) {
-                log.warn("ai translate HTTP {}: {}", resp.statusCode(), resp.body());
-                return null;
-            }
-            return mapper.readValue(resp.body(), AiTranslation.class);
-        } catch (Exception e) {
-            log.warn("ai translate 실패: {}", e.getMessage());
-            return null;
-        }
-    }
-
     /** 텍스트 → 임베딩 벡터. 실패하면 null. */
     public List<Double> embed(String text) {
         try {

@@ -141,21 +141,6 @@ export async function fetchCachedSummary(id: string, lang = "ko"): Promise<JobSu
   }
 }
 
-// 캐시된 번역만 서버에서 미리 읽어 SSR 즉시표시(번역 트리거 안 함). 미스/오류면 null → 클라가 번역.
-export async function fetchCachedTranslation(id: string, lang = "ko"): Promise<string | null> {
-  try {
-    const res = await fetch(
-      `${BACKEND_URL}/api/v1/jobs/${id}/translation?lang=${lang}&cacheOnly=true`,
-      { cache: "no-store", signal: AbortSignal.timeout(3000) },
-    );
-    if (!res.ok) return null;
-    const data = (await res.json()) as { description?: string };
-    return data.description ?? null;
-  } catch {
-    return null;
-  }
-}
-
 export type RegionCount = { value: string; label: string; count: number };
 
 export async function fetchRegions(): Promise<RegionCount[]> {

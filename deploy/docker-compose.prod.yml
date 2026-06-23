@@ -21,12 +21,6 @@ services:
     image: redis:7-alpine
     restart: unless-stopped
 
-  libretranslate:
-    image: libretranslate/libretranslate:latest
-    restart: unless-stopped
-    environment:
-      LT_LOAD_ONLY: "en,ko,ja"
-
   ai:
     build:
       context: ../ai
@@ -37,7 +31,6 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://devjobs:${POSTGRES_PASSWORD}@postgres:5432/devjobs
-      LIBRETRANSLATE_URL: http://libretranslate:5000
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ETL_ENABLED: "false"         # 웹은 서빙 전용 — 수집 스케줄러는 etl-worker 가 전담
       PORT: "8001"
@@ -54,15 +47,11 @@ services:
         condition: service_healthy
     environment:
       DATABASE_URL: postgresql://devjobs:${POSTGRES_PASSWORD}@postgres:5432/devjobs
-      LIBRETRANSLATE_URL: http://libretranslate:5000
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       ETL_ENABLED: "true"          # 스케줄러 on
       ETL_TIMEZONE: Asia/Seoul     # 매일 00:00 KST
       # 부트스트랩: 새 환경을 첫 자정 기다리지 않고 바로 채우려면 .env 에 ETL_RUN_ON_START=1
       ETL_RUN_ON_START: "${ETL_RUN_ON_START:-false}"
-      # 배포 직후 자정을 안 기다리고 번역 캐시를 워밍(부팅 1회 백필). 멱등 — 첫 워밍 후엔 미번역만 처리해 빠름.
-      # 끄려면 서버 deploy/.env 에 TRANSLATE_BACKFILL_ON_START=0.
-      TRANSLATE_BACKFILL_ON_START: "${TRANSLATE_BACKFILL_ON_START:-false}"
     command: ["/app/.venv/bin/python", "-m", "app.etl.worker"]
 
   backend:
