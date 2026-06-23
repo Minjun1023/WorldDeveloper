@@ -3,7 +3,7 @@
 엔드포인트:
   GET  /internal/health        liveness
   POST /internal/embed         text -> vector(384)
-  POST /internal/translate     공고 제목/본문 기계 번역 (LibreTranslate 셀프호스팅)
+  POST /internal/translate     공고 제목/본문 기계 번역 (DeepL)
   POST /internal/etl/trigger   수동 ETL 트리거 (dev 전용)
 
 ETL 은 lifespan 안에서 APScheduler 로 등록 (settings.etl_enabled=True 일 때만).

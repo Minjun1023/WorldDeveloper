@@ -221,15 +221,17 @@ async def run_full_cycle(
         log.warning("visa 재분류 실패: %s", e)
         result["visa_reclassified"] = {"error": str(e)}
 
-    # 6. 신규/미번역 활성 공고 한국어 사전번역 → job_translations 캐시 워밍.
-    #    조회 시 캐시 히트로 즉시 표시(로딩/503 방지). 멱등(이미 번역된 건 건너뜀).
-    try:
-        from .backfill_translations import backfill_translations
+    # 6. (옵트인) 미번역 활성 공고 한국어 사전번역 → job_translations 캐시 워밍.
+    #    DeepL 무료 한도(월 100만자) 때문에 기본 off — 평소엔 온디맨드+캐시(조회된 공고만)로 충분.
+    #    전량 워밍이 필요하고 한도가 허용되면 ETL_TRANSLATE_BACKFILL=1 로 켠다.
+    if settings.etl_translate_backfill:
+        try:
+            from .backfill_translations import backfill_translations
 
-        result["translated"] = await backfill_translations()
-    except Exception as e:  # noqa: BLE001 — 번역 실패가 수집 사이클을 막지 않도록
-        log.warning("번역 사전캐시 실패: %s", e)
-        result["translated"] = {"error": str(e)}
+            result["translated"] = await backfill_translations()
+        except Exception as e:  # noqa: BLE001 — 번역 실패가 수집 사이클을 막지 않도록
+            log.warning("번역 사전캐시 실패: %s", e)
+            result["translated"] = {"error": str(e)}
 
     log.info("ETL cycle 완료: %s", result)
     return result

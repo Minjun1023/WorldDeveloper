@@ -1,7 +1,7 @@
 """POST /internal/translate — 공고 제목/본문 기계 번역.
 
-실제 번역 로직은 app.translate_engine(LibreTranslate, 청크 병렬)에 있다 — 온디맨드/ETL 사전번역이 공유.
-URL 미설정이면 503, 서버 미기동/오류는 502. 캐싱은 백엔드(job_translations)가 처리.
+실제 번역 로직은 app.translate_engine(DeepL)에 있다 — 온디맨드/ETL 백필이 공유.
+키 미설정이면 503, 업스트림 오류(한도초과 등)는 502. 캐싱은 백엔드(job_translations)가 처리.
 """
 from __future__ import annotations
 

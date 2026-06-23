@@ -1,9 +1,8 @@
-import pytest
 from fastapi.testclient import TestClient
 
+from app import translate_engine as te
 from app.config import settings
 from app.main import app
-from app.routes import translate as tr
 
 client = TestClient(app)
 
@@ -12,45 +11,46 @@ class _FakeResp:
     status_code = 200
 
     def json(self):
-        return {"translatedText": "OK"}
+        return {"translations": [{"text": "엔지니어"}, {"text": "<p>소개</p>"}]}
 
 
 class _FakeClient:
-    def __init__(self):
-        self.last_payload = None
+    def __init__(self, *a, **k):
+        self.last = None
 
-    async def post(self, url, json):
-        self.last_payload = json
+    async def __aenter__(self):
+        return self
+
+    async def __aexit__(self, *a):
+        return False
+
+    async def post(self, url, headers=None, json=None):
+        self.last = {"url": url, "headers": headers, "json": json}
         return _FakeResp()
 
 
-@pytest.mark.asyncio
-async def test_lt_translate_passes_format_html():
-    c = _FakeClient()
-    out = await tr._lt_translate(c, "http://x", "", "ko", "<p>hi</p>", "html")
-    assert out == "OK"
-    assert c.last_payload["format"] == "html"
-    assert c.last_payload["q"] == "<p>hi</p>"
+def test_deepl_translates_and_preserves_html(monkeypatch):
+    monkeypatch.setattr(settings, "deepl_api_key", "abc:fx", raising=False)
+    monkeypatch.setattr(te.httpx, "AsyncClient", lambda *a, **k: _FakeClient())
+    r = client.post("/internal/translate", json={"title": "Engineer", "description": "<p>About</p>"})
+    assert r.status_code == 200
+    data = r.json()
+    assert data["engine"] == "deepl"
+    assert data["title"] == "엔지니어"
+    assert data["description"] == "<p>소개</p>"
 
 
-@pytest.mark.asyncio
-async def test_lt_translate_default_format_text():
-    c = _FakeClient()
-    await tr._lt_translate(c, "http://x", "", "ko", "plain title")
-    assert c.last_payload["format"] == "text"
-
-
-def test_missing_url_returns_503(monkeypatch):
-    # LibreTranslate URL 미설정 시 503 (번역 미설정 안내)
-    monkeypatch.setattr(settings, "libretranslate_url", "", raising=False)
-    monkeypatch.delenv("LIBRETRANSLATE_URL", raising=False)
-    r = client.post("/internal/translate", json={"title": "Engineer", "description": "About us"})
+def test_missing_key_returns_503(monkeypatch):
+    # DEEPL_API_KEY 미설정 시 503 (번역 미설정 안내)
+    monkeypatch.setattr(settings, "deepl_api_key", "", raising=False)
+    monkeypatch.delenv("DEEPL_API_KEY", raising=False)
+    r = client.post("/internal/translate", json={"title": "Engineer", "description": "About"})
     assert r.status_code == 503
 
 
 def test_empty_input_returns_400(monkeypatch):
-    # URL 은 있는데 입력이 모두 비면 400 (HTTP 호출 전에 차단)
-    monkeypatch.setattr(settings, "libretranslate_url", "http://localhost:5050", raising=False)
+    # 입력이 모두 비면 400 (DeepL 호출 전에 차단)
+    monkeypatch.setattr(settings, "deepl_api_key", "abc:fx", raising=False)
     r = client.post("/internal/translate", json={"title": "", "description": ""})
     assert r.status_code == 400
 

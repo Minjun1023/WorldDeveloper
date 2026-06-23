@@ -17,10 +17,9 @@ class Settings(BaseSettings):
     # OpenAI 호출 모델. 코드 상수 대신 env(OPENAI_MODEL)로 교체 가능 — 모델 A/B·업그레이드용.
     openai_model: str = "gpt-4o-mini"
 
-    # 번역 (LibreTranslate 셀프호스팅). 외부 API/키 불필요 — 로컬 컨테이너 호출.
-    # dev.sh(docker compose)가 5050 포트로 띄움. URL 을 빈 값으로 두면 번역 비활성(503).
-    libretranslate_url: str = "http://localhost:5050"
-    libretranslate_api_key: str = ""  # LibreTranslate 에 api-keys 설정한 경우만(로컬 기본 불필요)
+    # 번역 — DeepL(관리형, 빠름·HTML 보존). 키 미설정 시 번역 비활성(503).
+    # DEEPL_API_KEY 는 서버 .env 로만 주입(클라이언트 노출 금지). 무료 키는 ':fx' 로 끝남.
+    deepl_api_key: str = ""
 
     # 임베딩 모델
     embedding_model: str = "paraphrase-multilingual-MiniLM-L12-v2"
@@ -42,8 +41,11 @@ class Settings(BaseSettings):
     # 워커(app.etl.worker) 부팅 시 1회 즉시 수집 여부. 기본 off — 재시작마다 전량 재수집되지 않도록.
     # 새 환경 부트스트랩용: ETL_RUN_ON_START=1 로 켜면 첫 자정을 기다리지 않고 바로 채운다.
     etl_run_on_start: bool = False
-    # 부팅 시 수집 없이 번역 백필만 1회 실행(배포 직후 캐시 워밍·즉시 확인용). 멱등 — 미번역만.
+    # 부팅 시 수집 없이 번역 백필만 1회 실행(배포 직후 캐시 워밍용). 멱등 — 미번역만.
+    # 주의: DeepL 무료 한도(월 100만자)가 있어 전량 백필은 초과할 수 있음 → 기본 off, 온디맨드 권장.
     translate_backfill_on_start: bool = False
+    # 야간 수집 사이클 끝에 번역 백필을 돌릴지. 기본 off(온디맨드+캐시만) — DeepL 무료 한도 보호.
+    etl_translate_backfill: bool = False
     # 정기/수동 ETL 사이클에서 비자 LLM 재분류(OpenAI 호출)를 할지. 기본 off = 무비용.
     # 수집·정리(전부 로컬)와 유료 LLM 단계를 분리 — 재분류는 /etl/reclassify-visa 로 옵트인.
     etl_reclassify: bool = False

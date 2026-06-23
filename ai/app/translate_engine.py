@@ -1,15 +1,14 @@
-"""공고 번역 엔진 (LibreTranslate 셀프호스팅).
+"""공고 번역 엔진 — DeepL (관리형, 빠르고 안정적, HTML 보존).
 
-온디맨드 라우트(/internal/translate)와 ETL 사전번역(backfill_translations)이 공유한다.
-긴 본문은 블록 종료 태그 경계로 청크 분할 후 병렬 번역해 지연/타임아웃을 줄인다.
-엔진 교체(DeepL/Google 등) 시 이 파일만 수정.
+온디맨드 라우트(/internal/translate)와 ETL 백필이 공유. 캐싱은 백엔드(job_translations)가 처리하므로
+같은 공고는 한 번만 번역된다. 엔진 교체 시 이 파일만 수정.
+
+DEEPL_API_KEY 는 서버 .env 로만 주입(클라이언트 노출 금지). 무료 키는 ':fx' 로 끝난다.
 """
 from __future__ import annotations
 
-import asyncio
 import logging
 import os
-import re
 
 import httpx
 
@@ -17,97 +16,74 @@ from .config import settings
 
 log = logging.getLogger(__name__)
 
-ENGINE = "libretranslate"
-_MAX_CHUNK = 3500  # 청크 최대 글자수(긴 본문 단일요청 타임아웃 방지)
-_CONCURRENCY = 4  # LibreTranslate 동시 호출 상한(단일 인스턴스 과부하 방지)
-_TIMEOUT = 60
-
-# 블록 종료 태그 경계에서만 자른다(태그 균형 유지) — 인라인 태그는 청크 내부에 보존된다.
-_BLOCK_BREAK = re.compile(
-    r"(</(?:p|li|ul|ol|div|h[1-6]|tr|table|section|blockquote|pre)>)", re.I
-)
+ENGINE = "deepl"
+_TIMEOUT = 30
 
 
 class TranslationUnavailable(Exception):
-    """LIBRETRANSLATE_URL 미설정 — 번역 비활성(라우트가 503 으로 매핑)."""
+    """DEEPL_API_KEY 미설정/인증 실패 — 라우트가 503 으로 매핑."""
 
 
 class TranslationUpstreamError(Exception):
-    """LibreTranslate 서버 미기동/오류(라우트가 502 로 매핑)."""
+    """DeepL 업스트림 오류(한도초과/타임아웃 등) — 라우트가 502 로 매핑."""
 
 
-def _base_url() -> str:
-    return (settings.libretranslate_url or os.getenv("LIBRETRANSLATE_URL") or "").rstrip("/")
+def _deepl_key() -> str:
+    return settings.deepl_api_key or os.getenv("DEEPL_API_KEY") or ""
 
 
-def _api_key() -> str:
-    return settings.libretranslate_api_key or os.getenv("LIBRETRANSLATE_API_KEY") or ""
-
-
-def split_html(html: str, max_len: int = _MAX_CHUNK) -> list[str]:
-    """본문 HTML 을 블록 종료 태그 경계로 분할. 짧으면 그대로 1개. 태그를 가르지 않는다."""
-    if len(html) <= max_len:
-        return [html] if html else []
-    tokens = _BLOCK_BREAK.split(html)  # 구분자(닫는 블록 태그)를 보존하며 분할
-    blocks: list[str] = []
-    i = 0
-    while i < len(tokens):
-        seg = tokens[i]
-        if i + 1 < len(tokens):
-            seg += tokens[i + 1]  # 닫는 블록 태그를 같은 조각에 붙인다
-            i += 2
-        else:
-            i += 1
-        if seg:
-            blocks.append(seg)
-    chunks: list[str] = []
-    cur = ""
-    for b in blocks:
-        if cur and len(cur) + len(b) > max_len:
-            chunks.append(cur)
-            cur = b
-        else:
-            cur += b
-    if cur:
-        chunks.append(cur)
-    return chunks
-
-
-async def _lt_call(
-    client: httpx.AsyncClient, base_url: str, api_key: str, target: str, text: str, fmt: str
-) -> str:
-    if not text:
-        return ""
-    payload: dict[str, str] = {"q": text, "source": "auto", "target": target, "format": fmt}
-    if api_key:
-        payload["api_key"] = api_key
-    resp = await client.post(f"{base_url}/translate", json=payload)
-    if resp.status_code != 200:
-        log.warning("libretranslate HTTP %s: %s", resp.status_code, resp.text[:300])
-        raise TranslationUpstreamError(f"upstream {resp.status_code}")
-    return resp.json()["translatedText"]
+def _deepl_endpoint(key: str) -> str:
+    # 무료 키는 ':fx' 로 끝난다 → api-free, 유료는 api.
+    return (
+        "https://api-free.deepl.com/v2/translate"
+        if key.endswith(":fx")
+        else "https://api.deepl.com/v2/translate"
+    )
 
 
 async def translate_pair(title: str, description: str, target: str = "ko") -> tuple[str, str, str]:
-    """제목(text) + 본문(html, 청크 병렬)을 target 으로 번역. 반환 (title, description, engine)."""
-    base_url = _base_url()
-    if not base_url:
-        raise TranslationUnavailable("LIBRETRANSLATE_URL not set")
-    api_key = _api_key()
-    chunks = split_html(description or "")
-    sem = asyncio.Semaphore(_CONCURRENCY)
+    """제목 + 본문(HTML)을 target 으로 번역. 반환 (title, description, engine)."""
+    key = _deepl_key()
+    if not key:
+        raise TranslationUnavailable("DEEPL_API_KEY not set")
 
-    async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
+    # 빈 항목은 제외하고 인덱스 매핑(불필요한 글자수 소모/오류 방지).
+    texts: list[str] = []
+    ti = di = -1
+    if title:
+        ti = len(texts)
+        texts.append(title)
+    if description:
+        di = len(texts)
+        texts.append(description)
+    if not texts:
+        return (title, description, ENGINE)
 
-        async def _chunk(text: str) -> str:
-            async with sem:
-                return await _lt_call(client, base_url, api_key, target, text, "html")
+    try:
+        async with httpx.AsyncClient(timeout=_TIMEOUT) as client:
+            resp = await client.post(
+                _deepl_endpoint(key),
+                headers={
+                    "Authorization": f"DeepL-Auth-Key {key}",
+                    "Content-Type": "application/json",
+                },
+                # tag_handling=html 로 HTML 태그 보존하며 본문 텍스트만 번역.
+                json={"text": texts, "target_lang": target.upper(), "tag_handling": "html"},
+            )
+    except httpx.HTTPError as e:
+        log.warning("deepl 호출 실패: %s", e)
+        raise TranslationUpstreamError(str(e)) from e
 
-        try:
-            title_t = await _lt_call(client, base_url, api_key, target, title or "", "text")
-            parts = await asyncio.gather(*[_chunk(c) for c in chunks]) if chunks else []
-        except (httpx.HTTPError, KeyError, ValueError) as e:
-            log.warning("libretranslate 호출 실패: %s", e)
-            raise TranslationUpstreamError(str(e)) from e
+    if resp.status_code == 456:
+        log.warning("deepl 한도 초과(456)")
+        raise TranslationUpstreamError("deepl quota exceeded")
+    if resp.status_code in (401, 403):
+        raise TranslationUnavailable(f"deepl auth failed ({resp.status_code})")
+    if resp.status_code != 200:
+        log.warning("deepl HTTP %s: %s", resp.status_code, resp.text[:200])
+        raise TranslationUpstreamError(f"deepl upstream {resp.status_code}")
 
-    return (title_t or title, "".join(parts), ENGINE)
+    out = resp.json().get("translations", [])
+    t_title = out[ti]["text"] if 0 <= ti < len(out) else title
+    t_desc = out[di]["text"] if 0 <= di < len(out) else description
+    return (t_title or title, t_desc, ENGINE)
