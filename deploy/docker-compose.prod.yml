@@ -62,7 +62,7 @@ services:
       ETL_RUN_ON_START: "${ETL_RUN_ON_START:-false}"
       # 배포 직후 자정을 안 기다리고 번역 캐시를 워밍(부팅 1회 백필). 멱등 — 첫 워밍 후엔 미번역만 처리해 빠름.
       # 끄려면 서버 deploy/.env 에 TRANSLATE_BACKFILL_ON_START=0.
-      TRANSLATE_BACKFILL_ON_START: "${TRANSLATE_BACKFILL_ON_START:-1}"
+      TRANSLATE_BACKFILL_ON_START: "${TRANSLATE_BACKFILL_ON_START:-false}"
     command: ["/app/.venv/bin/python", "-m", "app.etl.worker"]
 
   backend:
