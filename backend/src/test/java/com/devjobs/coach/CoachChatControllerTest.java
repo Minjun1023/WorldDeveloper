@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.devjobs.coach.dto.CoachDtos.ChatMessage;
+import com.devjobs.coach.dto.CoachDtos.ResumeOptimizeResponse;
 
 import com.devjobs.auth.JwtService;
 import com.devjobs.auth.MailService;
@@ -90,6 +91,12 @@ class CoachChatControllerTest {
         // company/visa/remote/salary 등은 buildContext가 null 허용 → 전부 null.
         return new JobDetailDto(id, "Backend Engineer", null, null, null, null, null, null,
             null, null, null, null, null, null, null, null, null, null);
+    }
+
+    private static JobDetailDto jobWithDescription(String id, String description) {
+        // description(9번째 인자)만 채워 skill-match 경로(jd 비어있지 않음)를 태운다.
+        return new JobDetailDto(id, "Backend Engineer", null, null, null, null, null, null,
+            description, null, null, null, null, null, null, null, null, null);
     }
 
     private String bearer() {
@@ -229,6 +236,74 @@ class CoachChatControllerTest {
         assertThat(saved.getMessages()).hasSize(2); // 요청 user 메시지 + assistant 응답
         assertThat(saved.getMessages().get(1).role()).isEqualTo("assistant");
         assertThat(saved.getMessages().get(1).content()).isEqualTo("이력서 조언입니다.");
+    }
+
+    @Test
+    void skillMatchResultIsUsedForKeywordGap() throws Exception {
+        // Phase 1: ai skill-match 가 성공하면 그 present/missing 이 grounding 컨텍스트에 들어가고,
+        // 기존 resumeOptimize 폴백은 호출되지 않는다.
+        when(rateLimiter.tryAcquire(anyString())).thenReturn(true);
+        when(jobService.findById(anyString()))
+            .thenReturn(Optional.of(jobWithDescription("job-sm", "Python, Kubernetes, gRPC required")));
+        when(profileService.load(any())).thenReturn(Optional.empty());
+        when(aiClient.skillMatch(anyString(), anyString())).thenReturn(
+            new AiClient.SkillMatchResult(
+                List.of("Python", "Kubernetes", "gRPC"),
+                List.of("Python", "Kubernetes"),
+                List.of("gRPC")));
+        when(aiClient.coachChat(anyString(), anyString(), anyList()))
+            .thenReturn(new CoachChatResult("ok", "gpt-4o-mini"));
+
+        UUID userId = insertUser();
+        String token = "Bearer " + jwtService.issue(userId.toString());
+        var body = Map.of("job_id", "job-sm", "resume", "파이썬 쿠버네티스 경험",
+            "messages", List.of(Map.of("role", "user", "content", "키워드 봐줘")));
+
+        mvc.perform(post("/api/v1/me/coach")
+                .header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(body)))
+            .andExpect(status().isOk());
+
+        ArgumentCaptor<String> ctx = ArgumentCaptor.forClass(String.class);
+        verify(aiClient).coachChat(ctx.capture(), anyString(), anyList());
+        assertThat(ctx.getValue()).contains("보유 스킬: Python, Kubernetes");
+        assertThat(ctx.getValue()).contains("공고 요구 중 미보유: gRPC");
+        // skill-match 성공 시 폴백(resumeOptimize)은 호출되지 않는다.
+        verify(coachService, org.mockito.Mockito.never()).resumeOptimize(anyString(), anyString());
+    }
+
+    @Test
+    void fallsBackToResumeOptimizeWhenSkillMatchNull() throws Exception {
+        // ai 다운(skillMatch null) → 기존 resumeOptimize 경로로 폴백.
+        when(rateLimiter.tryAcquire(anyString())).thenReturn(true);
+        when(jobService.findById(anyString()))
+            .thenReturn(Optional.of(jobWithDescription("job-fb", "Go, Kafka required")));
+        when(profileService.load(any())).thenReturn(Optional.empty());
+        when(aiClient.skillMatch(anyString(), anyString())).thenReturn(null);
+        when(coachService.resumeOptimize(anyString(), anyString())).thenReturn(Optional.of(
+            new ResumeOptimizeResponse("job-fb", "Backend Engineer", null, 0.5,
+                List.of("go", "kafka"), List.of("go"), List.of("kafka"),
+                List.of(), List.of(), 0, List.of(), null)));
+        when(aiClient.coachChat(anyString(), anyString(), anyList()))
+            .thenReturn(new CoachChatResult("ok", "gpt-4o-mini"));
+
+        UUID userId = insertUser();
+        String token = "Bearer " + jwtService.issue(userId.toString());
+        var body = Map.of("job_id", "job-fb", "resume", "Go 개발",
+            "messages", List.of(Map.of("role", "user", "content", "키워드 봐줘")));
+
+        mvc.perform(post("/api/v1/me/coach")
+                .header("Authorization", token)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(body)))
+            .andExpect(status().isOk());
+
+        ArgumentCaptor<String> ctx = ArgumentCaptor.forClass(String.class);
+        verify(aiClient).coachChat(ctx.capture(), anyString(), anyList());
+        assertThat(ctx.getValue()).contains("보유 스킬: go");
+        assertThat(ctx.getValue()).contains("공고 요구 중 미보유: kafka");
+        verify(coachService).resumeOptimize(anyString(), anyString());
     }
 
     @Test

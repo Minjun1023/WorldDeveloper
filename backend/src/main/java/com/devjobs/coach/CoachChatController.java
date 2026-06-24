@@ -255,12 +255,24 @@ public class CoachChatController {
                 });
             }
 
-            // 키워드 갭: 이력서가 있을 때만 의미 있음. resumeOptimize 는 비활성/없는 공고면 empty.
+            // 키워드 갭: 이력서가 있을 때만 의미 있음.
+            // 1순위: ai /internal/skill-match (확장 taxonomy + semantic 매칭, Phase 1).
+            // ai 다운/실패(null) 시 기존 resumeOptimize(고정 어휘 + 별칭, #306) 로 폴백.
             if (resume != null && !resume.isBlank()) {
-                coachService.resumeOptimize(jobId, resume).ifPresent(opt -> {
-                    sb.append("보유 스킬: ").append(joinOrNone(opt.presentKeywords()))
-                      .append(" / 공고 요구 중 미보유: ").append(joinOrNone(opt.missingKeywords())).append("\n");
-                });
+                String jd = job.description() != null ? truncate(job.description(), MAX_JD) : "";
+                AiClient.SkillMatchResult sm = jd.isBlank() ? null : aiClient.skillMatch(jd, resume);
+                if (sm != null) {
+                    log.info("skill-match: required={} present={} missing={}",
+                        size(sm.required()), size(sm.present()), size(sm.missing()));
+                    sb.append("보유 스킬: ").append(joinOrNone(sm.present()))
+                      .append(" / 공고 요구 중 미보유: ").append(joinOrNone(sm.missing())).append("\n");
+                } else {
+                    // 폴백: resumeOptimize 는 비활성/없는 공고면 empty.
+                    coachService.resumeOptimize(jobId, resume).ifPresent(opt -> {
+                        sb.append("보유 스킬: ").append(joinOrNone(opt.presentKeywords()))
+                          .append(" / 공고 요구 중 미보유: ").append(joinOrNone(opt.missingKeywords())).append("\n");
+                    });
+                }
             }
         } else {
             // 공고 미첨부(일반 코칭) — 모델이 특정 공고를 가정/추측해 '공고 맞춤 키워드'를 지어내지 않도록
@@ -320,6 +332,10 @@ public class CoachChatController {
 
     private static String joinOrNone(List<String> v) {
         return (v == null || v.isEmpty()) ? "없음" : String.join(", ", v);
+    }
+
+    private static int size(List<String> v) {
+        return v == null ? 0 : v.size();
     }
 
     private static String truncate(String s, int max) {
