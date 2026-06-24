@@ -12,21 +12,27 @@ const base: RecommendProfile = {
   preferred_locations: [],
 };
 
-function mockRecommend(total: number) {
+// strong: final_score>=0.5 인 공고 수, weak: 임계 미만(카운트에서 제외돼야 함).
+function mockRecommend(strong: number, weak = 4) {
+  const recs = [
+    ...Array.from({ length: strong }, () => ({ job: {}, score: { final_score: 0.7 } })),
+    ...Array.from({ length: weak }, () => ({ job: {}, score: { final_score: 0.3 } })),
+  ];
   return vi.fn().mockResolvedValue({
     ok: true,
-    json: () => Promise.resolve({ total_candidates: total, returned: 0, recommendations: [] }),
+    // total_candidates 는 풀 크기(프로필 무관) — 더 이상 카운트로 쓰지 않음.
+    json: () => Promise.resolve({ total_candidates: 75, returned: recs.length, recommendations: recs }),
   });
 }
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe("ProfilePreview", () => {
-  it("fetches the match count once on mount and shows total_candidates", async () => {
-    const f = mockRecommend(128);
+  it("마운트 시 1회 호출, 임계 이상 '잘 맞는 공고 수'만 센다(풀 크기 아님)", async () => {
+    const f = mockRecommend(12); // strong 12 + weak 4 → 12 만 카운트
     vi.stubGlobal("fetch", f);
     render(<ProfilePreview profile={base} />);
-    expect(await screen.findByText("128")).toBeInTheDocument();
+    expect(await screen.findByText("12")).toBeInTheDocument();
     expect(f).toHaveBeenCalledTimes(1);
   });
 

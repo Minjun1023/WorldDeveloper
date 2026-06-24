@@ -7,6 +7,10 @@ import { DIM_TOTAL, PROFILE_DIMS, dimState, reflectedCount } from "@/lib/profile
 import { cn } from "@/lib/utils";
 import type { RecommendProfile, RecommendResponse } from "@/lib/types";
 
+// '잘 맞는 공고' 기준 점수. 이 미만은 후보 풀엔 있어도 매칭 카운트엔 안 센다.
+// (total_candidates 는 후보 풀 크기라 프로필과 무관하게 일정 → 매칭 수로 쓰면 오해를 부른다.)
+const STRONG_MATCH = 0.5;
+
 export function ProfilePreview({ profile }: { profile: RecommendProfile }) {
   const [count, setCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
@@ -21,13 +25,17 @@ export function ProfilePreview({ profile }: { profile: RecommendProfile }) {
       const res = await fetch("/api/recommend", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(profileRef.current),
+        // 후보 전량을 점수와 함께 받아 임계(STRONG_MATCH) 이상만 센다 → 프로필에 따라 변하는 '잘 맞는 공고 수'.
+        body: JSON.stringify({ ...profileRef.current, top_k: 100, max_per_company: 99 }),
         // 백엔드(추천 엔진)가 느려도 '계산 중…'에 무한히 갇히지 않도록 타임아웃.
         signal: AbortSignal.timeout(10_000),
       });
       if (!res.ok) throw new Error();
       const data = (await res.json()) as RecommendResponse;
-      setCount(data.total_candidates ?? 0);
+      const strong = (data.recommendations ?? []).filter(
+        (r) => (r.score?.final_score ?? 0) >= STRONG_MATCH,
+      ).length;
+      setCount(strong);
     } catch {
       setError(true);
     } finally {
