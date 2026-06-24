@@ -130,6 +130,37 @@ public class AiClient {
         }
     }
 
+    /** AI /internal/skill-match 응답 — JD 요구 스킬과 이력서 보유/미보유. */
+    public record SkillMatchResult(List<String> required, List<String> present, List<String> missing) {}
+
+    /**
+     * AI /internal/skill-match 호출 — JD/이력서로 보유/미보유 스킬을 판정(코치 키워드 갭).
+     * 확장 taxonomy + semantic(임베딩) 매칭. 실패/비-200 시 null → 호출 측이 ResumeOptimizer 로 폴백.
+     */
+    public SkillMatchResult skillMatch(String jd, String resume) {
+        try {
+            String json = mapper.writeValueAsString(Map.of(
+                "jd", jd == null ? "" : jd,
+                "resume", resume == null ? "" : resume,
+                "threshold", 0.5));
+            HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/internal/skill-match"))
+                .header("content-type", "application/json")
+                .timeout(Duration.ofSeconds(15))
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+            HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() != 200) {
+                log.warn("ai skill-match HTTP {}: {}", resp.statusCode(), resp.body());
+                return null;
+            }
+            return mapper.readValue(resp.body(), SkillMatchResult.class);
+        } catch (Exception e) {
+            log.warn("ai skill-match 실패: {}", e.getMessage());
+            return null;
+        }
+    }
+
     public record CoachChatMessage(String role, String content) {}
     public record CoachChatResult(String reply, String engine) {}
 
