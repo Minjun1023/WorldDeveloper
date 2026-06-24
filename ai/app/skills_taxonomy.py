@@ -9,8 +9,9 @@ backend ResumeOptimizer 는 고정 ~30단어 어휘 + 별칭 매칭(#306)을 쓴
     임베딩을 **모듈 최상단에서 import 하지 않는다** (ai CI 는 torch 없이 `import app.main` 만 함).
   - 별칭(aliases)은 backend TechExtractor.ALIASES(#306)와 겹치는 부분에서 일관되게 유지.
   - gloss 는 semantic 신호용 짧은 패러프레이즈 확장(회수율↑). alias 매칭에는 쓰이지 않는다.
-  - 평가(ai/scripts/skill_match_eval.py)에서 cosine 임계값 0.50 이 precision 100% 유지하며
-    recall 71%→87% 로 가장 좋았다 → 엔드포인트 기본 임계값 0.50.
+  - 평가(ai/scripts/skill_match_eval.py)에서 cosine 0.50 이 precision 100%(오탐 0) 유지하며
+    hybrid recall 이 가장 안전하게 높았다(현재 97%) → 엔드포인트 기본 임계값 0.50.
+    평가는 이 모듈의 SKILLS/phrases/token_hit 를 import 해 '프로덕션 taxonomy' 를 직접 측정한다.
 """
 
 from __future__ import annotations
@@ -82,14 +83,22 @@ SKILLS: dict[str, tuple[list[str], str]] = {
     ),
     "Observability": (
         ["observability", "옵저버빌리티", "관측성"],
-        "metrics logs distributed tracing Prometheus Grafana monitoring 지표 로그 트레이싱 모니터링",
+        "메트릭과 로그 분산 추적으로 서비스 상태를 관측하고 모니터링하는 체계 장애 대응 "
+        "지표 트레이싱 가시성 로그 수집 대시보드 알림 "
+        "Grafana dashboards distributed tracing metrics logs monitoring Prometheus APM",
     ),
     # --- 그 외 자주 등장 ---
     "Elixir": (["elixir", "엘릭서"], "Elixir Erlang BEAM concurrency"),
 }
 
-# 구절(구) 분리에 쓰는 구분자 — 이력서 한 줄을 의미 단위 클로즈로 쪼개 semantic 매칭 노이즈를 줄인다.
-_SPLIT_TOKENS = ("\n", ",", "·", " and ", " 및 ", " 와 ", " 그리고 ", ";", "/")
+# 줄(line) 단위 구분자 — 이력서를 굵은(coarse) 의미 단위로 먼저 나눈다(불릿/줄바꿈).
+_LINE_TOKENS = ("\n",)
+# 줄 안에서 더 잘게 쪼개는 구분자 — 열거형 산문을 가는(fine) 클로즈로 분해해 noise 를 줄인다.
+# 단, 가는 분해만 하면 "지표·로그·분산 추적으로 모니터링" 같은 한국어 열거-동사 구문이 토막나
+# 결합 신호를 잃는다 → phrases() 는 굵은 줄 + 가는 클로즈를 **둘 다** 후보로 내보낸다(최대 코사인용).
+_FINE_TOKENS = (",", "·", " and ", " 및 ", " 와 ", " 그리고 ", ";", "/")
+# 하위 호환: 기존 _SPLIT_TOKENS 를 참조하던 코드를 위해 합집합을 유지.
+_SPLIT_TOKENS = _LINE_TOKENS + _FINE_TOKENS
 
 # 소문자화하면 평범한 영어 단어/너무 일반적인 약어와 충돌하는 표면형.
 # JD/이력서 산문("go above", "rest assured")이 Go/REST/Elasticsearch 를 오탐하게 만든다.
@@ -99,15 +108,37 @@ AMBIGUOUS: frozenset[str] = frozenset({"go", "rest", "es"})
 
 
 def phrases(text: str) -> list[str]:
-    """이력서 텍스트(또는 줄 목록)를 의미 단위 구절로 분해. 빈 구절은 제거."""
+    """이력서 텍스트를 semantic 매칭 후보 구절로 분해(중복 제거, 빈 구절 제거).
+
+    굵은(coarse) 단위 = 줄(line) 전체, 가는(fine) 단위 = 줄을 열거 구분자로 더 쪼갠 클로즈.
+    **둘 다** 후보로 낸다 — 최대 코사인 매칭에서, 가는 토막이 신호를 잃어도 굵은 줄이 보전한다.
+    예) "지표·로그·분산 추적으로 모니터링 체계 구축" → ["지표·로그·…구축"(굵은), "지표", "로그", "분산 추적으로 …구축"(가는)].
+    """
     out: list[str] = []
-    for sep in _SPLIT_TOKENS:
-        if not out:
-            out = [seg for seg in text.split(sep)]
-        else:
-            out = [seg for p in out for seg in p.split(sep)]
-    cleaned = [p.strip() for p in out if p.strip()]
-    return cleaned or ([text.strip()] if text.strip() else [])
+    seen: set[str] = set()
+
+    def _add(seg: str) -> None:
+        s = seg.strip()
+        if s and s not in seen:
+            seen.add(s)
+            out.append(s)
+
+    # 줄 단위로 먼저 분해.
+    lines: list[str] = [text]
+    for sep in _LINE_TOKENS:
+        lines = [seg for ln in lines for seg in ln.split(sep)]
+
+    for line in lines:
+        if not line.strip():
+            continue
+        _add(line)  # 굵은 단위: 줄 전체
+        segs = [line]
+        for sep in _FINE_TOKENS:
+            segs = [seg for p in segs for seg in p.split(sep)]
+        for seg in segs:  # 가는 단위: 줄 안의 클로즈들
+            _add(seg)
+
+    return out or ([text.strip()] if text.strip() else [])
 
 
 def token_hit(needle: str, text: str) -> bool:
