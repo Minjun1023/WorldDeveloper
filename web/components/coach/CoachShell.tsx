@@ -34,8 +34,10 @@ export function CoachShell({ loggedIn, initialJobId }: { loggedIn: boolean; init
     if (activeJobId === jobId) select(null);
   };
 
+  // 풀스크린 앱: 전역 nav(61px) 아래를 뷰포트 높이로 채운다. 페이지 스크롤 없이
+  // 레일/메인 각자 내부 스크롤만 둔다(overflow-hidden).
   return (
-    <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
+    <div className="flex h-[calc(100dvh-61px)] overflow-hidden">
       {loggedIn && (
         <CoachConversationRail
           items={items}
@@ -45,14 +47,14 @@ export function CoachShell({ loggedIn, initialJobId }: { loggedIn: boolean; init
           onDelete={remove}
         />
       )}
-      <div className="min-w-0 flex-1">
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
         <CoachChat
           loggedIn={loggedIn}
           selectSignal={selectSignal}
           onConversationSaved={reload}
           onActiveJobChange={setActiveJobId}
         />
-      </div>
+      </main>
     </div>
   );
 }
