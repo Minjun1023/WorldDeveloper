@@ -11,7 +11,7 @@ import {
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
-import { Plus, X } from "lucide-react";
+import { MessageSquareText, Plus, X } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
@@ -128,7 +128,7 @@ export function JobTrackerBoard() {
               <Plus className="h-4 w-4" aria-hidden="true" /> 공고 추가
             </Link>
             {poolJobs.map((j) => (
-              <JobChip key={j.id} job={j} onRemove={removeBookmark} />
+              <JobChip key={j.id} job={j} onRemove={removeBookmark} columnKey={POOL} />
             ))}
           </div>
         </div>
@@ -176,7 +176,7 @@ function ColumnDrop({
       </div>
       <div className="flex-1 space-y-2 overflow-y-auto pr-0.5">
         {jobs.map((j) => (
-          <JobChip key={j.id} job={j} onRemove={onRemove} />
+          <JobChip key={j.id} job={j} onRemove={onRemove} columnKey={col.key} />
         ))}
       </div>
     </div>
@@ -207,7 +207,15 @@ function CardSurface({ job, dragging }: { job: Job; dragging?: boolean }) {
   );
 }
 
-function JobChip({ job, onRemove }: { job: Job; onRemove: (jobId: string) => void }) {
+function JobChip({
+  job,
+  onRemove,
+  columnKey,
+}: {
+  job: Job;
+  onRemove: (jobId: string) => void;
+  columnKey: string;
+}) {
   const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id: job.id });
   return (
     <div
@@ -235,6 +243,17 @@ function JobChip({ job, onRemove }: { job: Job; onRemove: (jobId: string) => voi
         <X className="h-3.5 w-3.5" aria-hidden="true" />
       </button>
       <CardContent job={job} />
+      {columnKey === "prep" && (
+        <Link
+          href={`/coach?jobId=${encodeURIComponent(job.id)}`}
+          onPointerDown={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          className="mt-2 inline-flex items-center gap-1 text-caption font-medium text-primary hover:underline"
+        >
+          <MessageSquareText className="h-3.5 w-3.5" aria-hidden="true" />
+          이력서 코치 피드백 받기
+        </Link>
+      )}
     </div>
   );
 }

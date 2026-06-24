@@ -70,4 +70,15 @@ public final class CoachDtos {
     public record CoachReply(String reply) {}
 
     public record ConversationResponse(String jobId, List<ChatMessage> messages, OffsetDateTime lastActiveAt) {}
+
+    /** 대화 이력 레일 항목 — 공고 라벨(byIds 조인)과 첫 user 메시지 미리보기 포함. */
+    public record ConversationSummary(
+        String jobId,
+        String company,
+        String title,
+        OffsetDateTime lastActiveAt,
+        String preview
+    ) {}
+
+    public record ConversationListResponse(List<ConversationSummary> items) {}
 }

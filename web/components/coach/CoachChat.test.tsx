@@ -52,6 +52,7 @@ function mockFetch(opts: { conversation?: unknown; convStatus?: number; reply?: 
 // 모달에서 공고 선택 + 이력서 붙여넣기 → '첨부 완료'로 커밋.
 async function attach(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole("button", { name: /첨부/ })); // 모달 열기
+  await user.click(screen.getByRole("button", { name: "직접 붙여넣기" })); // 파일이 기본이므로 붙여넣기 탭으로
   await user.selectOptions(screen.getByRole("combobox"), "greenhouse:acme:1");
   await user.type(screen.getByPlaceholderText(/이력서 전문/), "Go dev 5y");
   await user.click(screen.getByRole("button", { name: "첨부 완료" }));
@@ -134,15 +135,39 @@ describe("CoachChat", () => {
   it("restores a saved conversation after attaching the job", async () => {
     vi.stubGlobal("fetch", mockFetch({
       conversation: {
-        jobId: "greenhouse:acme:1",
+        job_id: "greenhouse:acme:1",
         messages: [{ role: "assistant", content: "이전 조언이에요." }],
-        lastActiveAt: "2026-06-01T00:00:00Z",
+        last_active_at: "2026-06-01T00:00:00Z",
       },
     }));
     render(<CoachChat initialJobs={jobs as never} />);
     const user = userEvent.setup();
     await attach(user);
     await waitFor(() => expect(screen.getByText("이전 조언이에요.")).toBeInTheDocument());
+  });
+
+  it("selectSignal 변경(레일 클릭 복원)으로 대화를 fetch 하고 복원 메시지를 렌더한다", async () => {
+    const fetchMock = mockFetch({
+      conversation: {
+        job_id: "greenhouse:acme:1",
+        messages: [{ role: "assistant", content: "레일에서 복원된 상담." }],
+        last_active_at: "2026-06-01T00:00:00Z",
+      },
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const { rerender } = render(
+      <CoachChat initialJobs={jobs as never} selectSignal={{ jobId: null, n: 0 }} />,
+    );
+    // 레일에서 해당 공고를 클릭한 것처럼 signal 변경(같은 jobId 재선택도 반영되도록 n 증가).
+    rerender(<CoachChat initialJobs={jobs as never} selectSignal={{ jobId: "greenhouse:acme:1", n: 1 }} />);
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.some(
+          (c) => String(c[0]) === "/api/me/coach/conversation?jobId=greenhouse%3Aacme%3A1",
+        ),
+      ).toBe(true),
+    );
+    expect(await screen.findByText("레일에서 복원된 상담.")).toBeInTheDocument();
   });
 
   it("일반 퀵 질문 칩은 입력창을 채운다", async () => {
@@ -168,7 +193,7 @@ describe("CoachChat", () => {
     const { container } = render(<CoachChat initialJobs={jobs as never} />);
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: /첨부/ }));
-    await user.click(screen.getByRole("button", { name: "파일로 첨부" }));
+    await user.click(screen.getByRole("button", { name: "파일 업로드" })); // 파일 업로드 탭(기본)
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     const pdf = new File([new Uint8Array([37, 80, 68, 70])], "resume.pdf", { type: "application/pdf" });
     await user.upload(input, pdf);

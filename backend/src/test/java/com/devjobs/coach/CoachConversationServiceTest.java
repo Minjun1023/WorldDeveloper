@@ -94,4 +94,25 @@ class CoachConversationServiceTest {
         service.delete(user, "job-4");
         assertThat(service.get(user, "job-4")).isEmpty();
     }
+
+    @Test
+    void list_returnsConversationsNewestFirst_withPreviewFromFirstUserMessage() {
+        UUID user = insertUser();
+        var c1 = new CoachConversationEntity(user, "job-a");
+        c1.setMessages(List.of(new ChatMessage("user", "이 공고 어때요?"),
+                               new ChatMessage("assistant", "좋아요")));
+        c1.setLastActiveAt(OffsetDateTime.now().minusHours(1));
+        repo.save(c1);
+        var c2 = new CoachConversationEntity(user, "job-b");
+        c2.setMessages(List.of(new ChatMessage("user", "이력서 봐주세요")));
+        c2.setLastActiveAt(OffsetDateTime.now());
+        repo.save(c2);
+
+        var result = service.list(user);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).jobId()).isEqualTo("job-b");
+        assertThat(result.get(0).preview()).isEqualTo("이력서 봐주세요");
+        assertThat(result.get(1).jobId()).isEqualTo("job-a");
+    }
 }

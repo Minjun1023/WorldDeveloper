@@ -1,6 +1,7 @@
 package com.devjobs.coach;
 
 import com.devjobs.coach.dto.CoachDtos.ChatMessage;
+import com.devjobs.coach.dto.CoachDtos.ConversationSummary;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -46,5 +47,24 @@ public class CoachConversationService {
     @Transactional
     public void delete(UUID userId, String jobId) {
         repo.deleteByUserIdAndJobId(userId, jobId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ConversationSummary> list(UUID userId) {
+        OffsetDateTime cutoff = OffsetDateTime.now().minusDays(EXPIRY_DAYS);
+        return repo.findByUserIdOrderByLastActiveAtDesc(userId).stream()
+            .filter(c -> c.getLastActiveAt() != null && c.getLastActiveAt().isAfter(cutoff))
+            .map(c -> new ConversationSummary(
+                c.getJobId(), "", "", c.getLastActiveAt(), firstUserPreview(c.getMessages())))
+            .toList();
+    }
+
+    private static String firstUserPreview(List<ChatMessage> messages) {
+        return messages.stream()
+            .filter(m -> "user".equals(m.role()))
+            .map(ChatMessage::content)
+            .findFirst()
+            .map(s -> s.length() > 80 ? s.substring(0, 80) : s)
+            .orElse("");
     }
 }
