@@ -12,6 +12,8 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 공고별 이력서 키워드 최적화(휴리스틱) — resume_optimizer.py 포팅.
@@ -22,6 +24,9 @@ import java.util.stream.Collectors;
 final class ResumeOptimizer {
 
     private ResumeOptimizer() {}
+
+    // 별칭(#306) 효과 모니터링용. 이력서 본문은 로깅하지 않는다(개인정보) — 집계 수치/스킬명만.
+    private static final Logger log = LoggerFactory.getLogger(ResumeOptimizer.class);
 
     private static final Pattern BULLET = Pattern.compile("^[-*•·▪◦●○]+\\s*");
     private static final int MAX_LINES = 20;
@@ -68,6 +73,18 @@ final class ResumeOptimizer {
 
         double matchScore = jobKw.isEmpty() ? 0.0
             : Math.round(((double) present.size() / jobKw.size()) * 1000.0) / 1000.0;
+
+        // 별칭(#306) 효과 모니터링: 정확매칭(containsToken)만이었다면 몇 개를 잡았을지와 비교해
+        // 별칭/약어/한글로 '추가로' 잡힌 스킬을 남긴다. 실데이터에서 별칭 기여를 직접 관찰하기 위함.
+        if (!jobKw.isEmpty()) {
+            List<String> aliasGained = present.stream()
+                .filter(k -> !TechExtractor.containsToken(lower, k))
+                .sorted()
+                .toList();
+            log.info("coach keyword-gap job={} jobKw={} present={} exactOnly={} aliasGain={} score={} gained={}",
+                job.getId(), jobKw.size(), present.size(), present.size() - aliasGained.size(),
+                aliasGained.size(), matchScore, aliasGained);
+        }
 
         List<String> suggestions = buildSuggestions(missing, leadWith, scored, freq.isEmpty());
 
