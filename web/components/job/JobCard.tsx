@@ -148,11 +148,17 @@ export function JobCard({
               <div className="text-caption text-muted-foreground">{deadline.text}</div>
             )}
           </div>
-          {posted && (
-            <span className="flex shrink-0 items-center gap-1 text-caption text-muted-foreground">
-              <Clock className="h-3 w-3" aria-hidden="true" />
-              {posted}
-            </span>
+          {(salary || posted) && (
+            <div className="flex shrink-0 flex-col items-end gap-0.5 text-caption text-muted-foreground">
+              {/* 연봉이 왼쪽을 차지하면 마감 문구가 사라지므로, 연봉 카드에선 마감을 오른쪽에 표기 */}
+              {salary && <span className="whitespace-nowrap">{deadline.text}</span>}
+              {posted && (
+                <span className="flex items-center gap-1 whitespace-nowrap">
+                  <Clock className="h-3 w-3" aria-hidden="true" />
+                  {posted}
+                </span>
+              )}
+            </div>
           )}
         </div>
       </Card>
