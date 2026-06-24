@@ -81,6 +81,24 @@ export function CoachLanding() {
           ))}
         </div>
       </section>
+
+      {/* 소개 */}
+      <section>
+        <h2 className="text-body-sm font-medium text-muted-foreground">이력서 코치 소개</h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          {[
+            ["공고 기반 조언", "여러 공고를 한꺼번에 보는 검색이 아니라, 고른 공고 한 건에 맞춰 강조할 키워드와 보완할 점을 짚어줘요."],
+            ["개인정보 보호", "이력서는 저장하지 않아요. 대화 내용만 90일간 보관돼 다음에 이어볼 수 있어요."],
+            ["무엇을 물어볼 수 있나요", "공고 맞춤 키워드, 경력 요약 다듬기, 기술 스택 구성, 프로젝트 섹션 피드백, 면접 예상 질문 등."],
+            ["크레딧 — 베타 무료", "지금은 베타라 크레딧 차감 없이 무료로 쓸 수 있어요. 짧은 시간에 너무 많은 요청을 보내면 잠시 제한될 수 있어요."],
+          ].map(([title, body]) => (
+            <div key={title} className="rounded-2xl border border-border bg-surface p-5">
+              <p className="text-body-sm font-semibold text-foreground">{title}</p>
+              <p className="mt-1.5 text-body-sm leading-relaxed text-muted-foreground">{body}</p>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }
