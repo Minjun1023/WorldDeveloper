@@ -54,7 +54,7 @@ export function AccountMenu({ loggedIn }: { loggedIn: boolean }) {
             onClick={() => setOpen(false)}
             className="block rounded-md px-3 py-2 text-body-sm hover:bg-muted"
           >
-            내 프로필
+            프로필 정보
           </Link>
           <form action="/api/auth/logout" method="post">
             <button

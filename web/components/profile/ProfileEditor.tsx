@@ -78,10 +78,7 @@ export function ProfileEditor() {
 
   return (
     <div className="space-y-6">
-      <header className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-display">프로필</h1>
-        </div>
+      <header className="flex flex-wrap items-end justify-end gap-4">
         {ready && (
           <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-2.5 shadow-sm">
             <span className="text-body-sm font-bold tabular-nums">
