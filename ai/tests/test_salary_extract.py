@@ -96,3 +96,25 @@ def test_jp_english_takes_priority():
     # 영어 명시 범위가 있으면 그걸 우선(일본어 폴백은 영어 실패 시만).
     r = ex("The base salary range is $150,000 to $200,000. 年収 800万円〜1000万円")
     assert r["currency"] == "USD"
+
+
+def test_space_separated_range_with_currency():
+    # 대시 없이 공백 구분 + 둘째 금액도 $ — Databricks "Local Pay Range$130,000 $160,000 USD" 류
+    r = ex("Local Pay Range $130,000 $160,000 USD")
+    assert r == {"min": 130000, "max": 160000, "currency": "USD", "period": "YEAR"}
+
+
+def test_hourly_rate_space_separated():
+    # "Hourly Rate" 앵커 + 공백 구분 시급
+    r = ex("SF Bay Area Hourly Rate $54 $60 USD")
+    assert r == {"min": 54, "max": 60, "currency": "USD", "period": "HOUR"}
+
+
+def test_rejects_malformed_decimal_thousands():
+    # "$170.40 $255.60" — 마침표가 천단위 자리로 깨진 원본. 170.40 은 연 단위 정상범위(1만~) 미달 → 거절.
+    assert ex("Local Pay Range $170.40 $255.60 USD") is None
+
+
+def test_space_separator_requires_second_currency():
+    # 공백 구분은 둘째 금액에 통화기호 필수 — 없으면 범위로 보지 않음(단일값 → None)
+    assert ex("Base salary range $130,000 and great benefits") is None
