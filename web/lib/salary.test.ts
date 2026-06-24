@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatSalary } from "@/lib/salary";
+import { formatSalary, formatSalaryKrw } from "@/lib/salary";
 
 describe("formatSalary", () => {
   it("원본 통화(파운드/유로) 우선 표시, 연봉 k반올림", () => {
@@ -36,5 +36,29 @@ describe("formatSalary", () => {
     expect(formatSalary(null)).toBeNull();
     expect(formatSalary(undefined)).toBeNull();
     expect(formatSalary({})).toBeNull();
+  });
+});
+
+describe("formatSalaryKrw", () => {
+  it("USD 연봉을 원화 억 단위로 환산(약 N억 원)", () => {
+    expect(formatSalaryKrw({ currency: "USD", min: 130000, max: 160000 })).toBe("약 1.8억~2.2억 원");
+    expect(formatSalaryKrw({ min_usd: 120000, max_usd: 160000 })).toBe("약 1.7억~2.2억 원");
+  });
+
+  it("min 만 있으면 단일", () => {
+    expect(formatSalaryKrw({ min_usd: 140000 })).toBe("약 1.9억 원");
+  });
+
+  it("시급/월급은 환산하지 않음(연봉만)", () => {
+    expect(formatSalaryKrw({ currency: "USD", min: 31, max: 45, period: "HOUR" })).toBeNull();
+  });
+
+  it("USD 환산값 없는 비-USD 원본은 환산 불가(null)", () => {
+    expect(formatSalaryKrw({ currency: "GBP", min: 65600, max: 98400 })).toBeNull();
+  });
+
+  it("빈 입력은 null", () => {
+    expect(formatSalaryKrw(null)).toBeNull();
+    expect(formatSalaryKrw({})).toBeNull();
   });
 });

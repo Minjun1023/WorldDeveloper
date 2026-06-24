@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { JobRow } from "@/components/job/JobRow";
 import type { Job } from "@/lib/types";
 
-// 급여가 있는 공고. formatSalary({currency:"USD",min:204000,max:255000}) => "$204k–$255k"
+// 급여가 있는 공고. 원화(주) 표시: 204k~255k USD ×1380 ≈ "약 2.8억~3.5억 원"
 const salariedJob = {
   id: "greenhouse:acme:1",
   title: "Backend Engineer",
@@ -17,9 +17,9 @@ const salariedJob = {
 } as unknown as Job;
 
 describe("JobRow", () => {
-  it("급여가 있으면 메타 줄에 표시한다(Figma 카드)", () => {
+  it("급여가 있으면 메타 줄에 원화로 표시한다(Figma 카드)", () => {
     render(<JobRow job={salariedJob} />);
-    expect(screen.getByText(/\$204k/)).toBeInTheDocument();
+    expect(screen.getByText(/약 2\.8억~3\.5억 원/)).toBeInTheDocument();
   });
 
   it("제목(한글)·영문·회사·위치를 표시한다", () => {

@@ -1,5 +1,5 @@
 import { CompanyLogo } from "@/components/company/CompanyLogo";
-import { formatSalary } from "@/lib/salary";
+import { formatSalary, formatSalaryKrw } from "@/lib/salary";
 import { filterTechTags } from "@/lib/techTags";
 import type { Job } from "@/lib/types";
 
@@ -26,7 +26,7 @@ export function HeroJobCard({ job }: { job?: Job | null }) {
         ? null
         : "비자 검증";
 
-  const salary = job ? formatSalary(job.salary) : "$180k–$240k";
+  const salary = job ? (formatSalaryKrw(job.salary) ?? formatSalary(job.salary)) : "약 2.5억~3.3억 원";
   const techTags = job ? filterTechTags(job.tags, job.company).slice(0, 3) : ["go", "postgres", "kubernetes"];
   const chips = [...techTags, ...(salary ? [salary] : [])];
 

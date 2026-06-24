@@ -5,12 +5,12 @@ import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { RemoteBadge } from "@/components/job/RemoteBadge";
 import { Card } from "@/components/ui/card";
 import { postedRelativeLabel } from "@/lib/jobDates";
-import { formatSalary } from "@/lib/salary";
+import { formatSalary, formatSalaryKrw } from "@/lib/salary";
 import type { Job } from "@/lib/types";
 
 // 최신 비자 스폰서십 공고 카드(2열). 명부 검증은 배지로만 표시(근거 원문 문장은 상세 페이지에서).
 export function SponsorJobCard({ job }: { job: Job }) {
-  const salary = formatSalary(job.salary);
+  const salary = formatSalaryKrw(job.salary) ?? formatSalary(job.salary);
   const posted = postedRelativeLabel(job.posted_at);
   const locText = (job.location_ko ?? job.location) || (job.is_remote ? "원격" : null);
 

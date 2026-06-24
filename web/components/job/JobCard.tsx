@@ -7,7 +7,7 @@ import { Card } from "@/components/ui/card";
 import { flagFromLocation } from "@/lib/flags";
 import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
 import { fallbackMetaChip } from "@/lib/jobMeta";
-import { formatSalary } from "@/lib/salary";
+import { formatSalary, formatSalaryKrw } from "@/lib/salary";
 import { filterTechTags } from "@/lib/techTags";
 import type { Job } from "@/lib/types";
 
@@ -32,6 +32,7 @@ export function JobCard({
   loggedIn?: boolean;
 }) {
   const salary = formatSalary(job.salary);
+  const salaryKrw = formatSalaryKrw(job.salary);
   const posted = postedRelativeLabel(job.posted_at);
   const deadline = deadlineLabel(job.closes_at);
   const techTags = filterTechTags(job.tags, job.company);
@@ -141,8 +142,10 @@ export function JobCard({
           <div className="min-w-0">
             {salary ? (
               <>
-                <div className="truncate text-body-sm font-semibold text-foreground">{salary}</div>
-                <div className="text-caption text-muted-foreground">연봉 추정</div>
+                <div className="truncate text-body-sm font-semibold text-foreground">{salaryKrw ?? salary}</div>
+                <div className="truncate text-caption text-muted-foreground">
+                  {salaryKrw ? `${salary} · 연봉 추정` : "연봉 추정"}
+                </div>
               </>
             ) : (
               <div className="text-caption text-muted-foreground">{deadline.text}</div>
