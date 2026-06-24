@@ -135,9 +135,9 @@ describe("CoachChat", () => {
   it("restores a saved conversation after attaching the job", async () => {
     vi.stubGlobal("fetch", mockFetch({
       conversation: {
-        jobId: "greenhouse:acme:1",
+        job_id: "greenhouse:acme:1",
         messages: [{ role: "assistant", content: "이전 조언이에요." }],
-        lastActiveAt: "2026-06-01T00:00:00Z",
+        last_active_at: "2026-06-01T00:00:00Z",
       },
     }));
     render(<CoachChat initialJobs={jobs as never} />);
@@ -149,9 +149,9 @@ describe("CoachChat", () => {
   it("selectSignal 변경(레일 클릭 복원)으로 대화를 fetch 하고 복원 메시지를 렌더한다", async () => {
     const fetchMock = mockFetch({
       conversation: {
-        jobId: "greenhouse:acme:1",
+        job_id: "greenhouse:acme:1",
         messages: [{ role: "assistant", content: "레일에서 복원된 상담." }],
-        lastActiveAt: "2026-06-01T00:00:00Z",
+        last_active_at: "2026-06-01T00:00:00Z",
       },
     });
     vi.stubGlobal("fetch", fetchMock);

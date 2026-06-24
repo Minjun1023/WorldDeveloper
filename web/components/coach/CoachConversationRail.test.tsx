@@ -5,7 +5,7 @@ import { describe, expect, it, vi } from "vitest";
 import { CoachConversationRail } from "@/components/coach/CoachConversationRail";
 
 const items = [
-  { jobId: "j1", company: "Stripe", title: "Backend", lastActiveAt: "2026-06-24T00:00:00Z", preview: "이력서 봐주세요" },
+  { job_id: "j1", company: "Stripe", title: "Backend", last_active_at: "2026-06-24T00:00:00Z", preview: "이력서 봐주세요" },
 ];
 
 describe("CoachConversationRail", () => {

@@ -171,7 +171,7 @@ export function CoachChat({
           const data = await res.json();
           if (Array.isArray(data?.messages) && data.messages.length > 0) {
             setMessages(data.messages as Msg[]);
-            setHydratedAt(typeof data.lastActiveAt === "string" ? data.lastActiveAt : null);
+            setHydratedAt(typeof data.last_active_at === "string" ? data.last_active_at : null);
             return;
           }
         }

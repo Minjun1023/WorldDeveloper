@@ -29,7 +29,7 @@ export function CoachShell({ loggedIn, initialJobId }: { loggedIn: boolean; init
   };
 
   const remove = (jobId: string) => {
-    setItems((xs) => xs.filter((x) => x.jobId !== jobId)); // 낙관적
+    setItems((xs) => xs.filter((x) => x.job_id !== jobId)); // 낙관적
     fetch(`/api/me/coach/conversation?jobId=${encodeURIComponent(jobId)}`, { method: "DELETE" }).catch(() => {});
     if (activeJobId === jobId) select(null);
   };
