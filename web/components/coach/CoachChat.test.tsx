@@ -52,6 +52,7 @@ function mockFetch(opts: { conversation?: unknown; convStatus?: number; reply?: 
 // 모달에서 공고 선택 + 이력서 붙여넣기 → '첨부 완료'로 커밋.
 async function attach(user: ReturnType<typeof userEvent.setup>) {
   await user.click(screen.getByRole("button", { name: /첨부/ })); // 모달 열기
+  await user.click(screen.getByRole("button", { name: "직접 붙여넣기" })); // 파일이 기본이므로 붙여넣기 탭으로
   await user.selectOptions(screen.getByRole("combobox"), "greenhouse:acme:1");
   await user.type(screen.getByPlaceholderText(/이력서 전문/), "Go dev 5y");
   await user.click(screen.getByRole("button", { name: "첨부 완료" }));
@@ -168,7 +169,7 @@ describe("CoachChat", () => {
     const { container } = render(<CoachChat initialJobs={jobs as never} />);
     const user = userEvent.setup();
     await user.click(screen.getByRole("button", { name: /첨부/ }));
-    await user.click(screen.getByRole("button", { name: "파일로 첨부" }));
+    await user.click(screen.getByRole("button", { name: "파일 업로드" })); // 파일 업로드 탭(기본)
     const input = container.querySelector('input[type="file"]') as HTMLInputElement;
     const pdf = new File([new Uint8Array([37, 80, 68, 70])], "resume.pdf", { type: "application/pdf" });
     await user.upload(input, pdf);
