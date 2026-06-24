@@ -5,8 +5,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 
-import { getRecentJobs } from "@/lib/recent";
-import { readRecommendCache } from "@/lib/recommend-cache";
 import { cn } from "@/lib/utils";
 
 import { CoachLanding } from "./CoachLanding";
@@ -38,7 +36,19 @@ function defaultQuestion(hasJob: boolean, hasResume: boolean): string {
 }
 
 // initialJobs 미제공 시(서버 블로킹 회피) picker 공고를 클라이언트에서 로드한다.
-export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: PickJob[]; loggedIn?: boolean }) {
+export function CoachChat({
+  initialJobs,
+  loggedIn = true,
+  selectSignal,
+  onConversationSaved,
+  onActiveJobChange,
+}: {
+  initialJobs?: PickJob[];
+  loggedIn?: boolean;
+  selectSignal?: { jobId: string | null; n: number };
+  onConversationSaved?: () => void;
+  onActiveJobChange?: (jobId: string | null) => void;
+}) {
   const router = useRouter();
   const [jobId, setJobId] = useState("");
   const [resume, setResume] = useState("");
@@ -54,7 +64,7 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
 
   // 공고·이력서 첨부 모달 — 초안(draft)을 편집하고 '첨부 완료' 시 커밋.
   const [modalOpen, setModalOpen] = useState(false);
-  const [attachTab, setAttachTab] = useState<"paste" | "file">("paste");
+  const [attachTab, setAttachTab] = useState<"paste" | "file">("file");
   const [draftJobId, setDraftJobId] = useState("");
   const [draftResume, setDraftResume] = useState("");
   const [draftFileName, setDraftFileName] = useState<string | null>(null);
@@ -71,53 +81,26 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
   const needsAttach = !jobId || !hasResume;
   const canCommit = !!draftJobId && draftResume.trim().length > 0;
 
-  // picker 공고 = 최근 본 공고 + 저장한 공고 + 추천. 비로그인은 조회하지 않는다(로그인 후 이용).
+  // picker 공고 = 북마크(저장) + 지원상태. 지원준비중(interested) 먼저. 비로그인은 조회하지 않는다.
   useEffect(() => {
     if (initialJobs !== undefined || !loggedIn) return;
     let cancelled = false;
     (async () => {
-      const collected = new Map<string, PickJob>();
-      for (const r of getRecentJobs()) {
-        if (r.id && !collected.has(r.id)) {
-          collected.set(r.id, { id: r.id, title: r.title, company: { display_name: r.company } });
-        }
-      }
-      try {
-        const r = await fetch("/api/me/saved");
-        if (r.ok) {
-          const saved = (await r.json()) as PickJob[];
-          if (Array.isArray(saved)) for (const j of saved) collected.set(j.id, j);
-        }
-      } catch {
-        /* 무시 */
-      }
-      const cached = readRecommendCache("full") ?? readRecommendCache("landing");
-      if (cached) {
-        for (const rec of cached.result.recommendations) {
-          const j = rec.job;
-          if (!collected.has(j.id)) collected.set(j.id, { id: j.id, title: j.title, company: { display_name: j.company.display_name } });
-        }
-      } else {
-        try {
-          const r = await fetch("/api/me/recommend", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({ note: null }),
-            signal: AbortSignal.timeout(8000),
-          });
-          if (r.ok) {
-            const data = (await r.json()) as { recommendations?: { job: PickJob }[] };
-            for (const rec of data.recommendations ?? []) {
-              const j = rec.job;
-              if (!collected.has(j.id)) collected.set(j.id, j);
-            }
-          }
-        } catch {
-          /* 타임아웃/실패 — picker 는 저장 공고만으로 동작 */
-        }
-      }
+      const [saved, apps] = await Promise.all([
+        fetch("/api/me/saved").then((r) => (r.ok ? r.json() : [])).catch(() => []),
+        fetch("/api/me/applications").then((r) => (r.ok ? r.json() : null)).catch(() => null),
+      ]);
+      const status: Record<string, string> = {};
+      const appItems = (apps as { items?: { job_id: string; status: string }[] } | null)?.items;
+      if (Array.isArray(appItems)) for (const a of appItems) status[a.job_id] = a.status;
+      const list: PickJob[] = Array.isArray(saved) ? saved : [];
+      // 지원준비중(interested) 먼저, 그다음 나머지 북마크. 각 그룹은 원래 순서 유지.
+      const ordered = [
+        ...list.filter((j) => status[j.id] === "interested"),
+        ...list.filter((j) => status[j.id] !== "interested"),
+      ];
       if (!cancelled) {
-        setJobs([...collected.values()]);
+        setJobs(ordered);
         setJobsLoading(false);
       }
     })();
@@ -125,6 +108,44 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
       cancelled = true;
     };
   }, [initialJobs, loggedIn]);
+
+  // 레일 선택 신호 → jobId 반영. null 이면 새 상담처럼 초기화.
+  useEffect(() => {
+    if (!selectSignal) return;
+    if (selectSignal.jobId) {
+      setJobId(selectSignal.jobId);
+    } else {
+      setJobId("");
+      setMessages([]);
+      setResume("");
+      setResumeFileName(null);
+      setInput("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectSignal?.n]);
+
+  // 활성 공고 변경을 상위에 통지(레일 하이라이트 동기화).
+  useEffect(() => {
+    onActiveJobChange?.(jobId || null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [jobId]);
+
+  // 레일/URL 로 들어온 jobId 가 후보(saved)에 없으면 단건 조회해 합류(비-북마크 직접 진입 엣지케이스용).
+  useEffect(() => {
+    const id = selectSignal?.jobId;
+    if (!id || jobs.some((j) => j.id === id)) return;
+    let cancelled = false;
+    fetch(`/api/jobs/${encodeURIComponent(id)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j: PickJob | null) => {
+        if (!cancelled && j && j.id) setJobs((xs) => (xs.some((x) => x.id === j.id) ? xs : [j, ...xs]));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectSignal?.jobId, jobs]);
 
   // 새 메시지/타이핑마다 스레드 맨 아래로 스크롤 (jsdom 엔 scrollTo 없음 → scrollTop 폴백)
   useEffect(() => {
@@ -202,7 +223,7 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
     setDraftJobId(jobId);
     setDraftResume(resume);
     setDraftFileName(resumeFileName);
-    setAttachTab(resumeFileName ? "file" : "paste");
+    setAttachTab("file"); // 파일 업로드 우선 노출
     setModalOpen(true);
   }
 
@@ -294,6 +315,8 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
         }
       }
       if (!started) throw new Error("답변을 받지 못했어요. 잠시 후 다시 시도해 주세요.");
+      // 백엔드가 스트림 종료 시 대화를 저장하므로, 좌측 레일 목록을 새로고침한다.
+      onConversationSaved?.();
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -560,8 +583,8 @@ export function CoachChat({ initialJobs, loggedIn = true }: { initialJobs?: Pick
 
             <div className="flex gap-1 rounded-lg bg-surface-2 p-1">
               {([
-                { key: "paste", label: "붙여넣기" },
-                { key: "file", label: "파일로 첨부" },
+                { key: "file", label: "파일 업로드" },
+                { key: "paste", label: "직접 붙여넣기" },
               ] as const).map((t) => (
                 <button
                   key={t.key}
