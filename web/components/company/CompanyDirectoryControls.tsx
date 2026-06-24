@@ -90,7 +90,8 @@ export function CompanyDirectoryControls({ tagOptions }: { tagOptions: TagOption
             <OptionRow
               key={o.value}
               selected={tag === o.value}
-              label={o.count !== undefined ? `${o.label} (${o.count})` : o.label}
+              label={o.label}
+              count={o.count}
               onClick={() => {
                 update({ tag: o.value });
                 setTagOpen(false);
@@ -119,19 +120,36 @@ export function CompanyDirectoryControls({ tagOptions }: { tagOptions: TagOption
   );
 }
 
-function OptionRow({ selected, label, onClick }: { selected: boolean; label: string; onClick: () => void }) {
+function OptionRow({
+  selected,
+  label,
+  count,
+  onClick,
+}: {
+  selected: boolean;
+  label: string;
+  count?: number;
+  onClick: () => void;
+}) {
   return (
     <li>
       <button
         type="button"
         onClick={onClick}
         className={cn(
-          "flex w-full items-center justify-between gap-2 rounded-md px-3 py-2.5 text-left text-body-sm hover:bg-surface-2",
+          "flex w-full items-center justify-between gap-3 rounded-md px-3 py-2.5 text-left text-body-sm hover:bg-surface-2",
           selected ? "font-semibold text-primary" : "text-foreground",
         )}
       >
-        <span className="truncate">{label}</span>
-        {selected && <Check className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />}
+        <span className="flex min-w-0 items-center gap-1.5">
+          <span className="truncate">{label}</span>
+          {selected && <Check className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />}
+        </span>
+        {count !== undefined && (
+          <span className={cn("shrink-0 tabular-nums", selected ? "text-primary/60" : "text-muted-foreground")}>
+            {count.toLocaleString()}
+          </span>
+        )}
       </button>
     </li>
   );
