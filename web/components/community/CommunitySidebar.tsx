@@ -12,6 +12,13 @@ const GUIDES = [
   { href: "/coach", icon: FileText, label: "이력서 코치", desc: "공고 맞춤 1:1 상담" },
 ];
 
+// 커뮤니티 안내(글쓰기 가이드) — 항상 노출. 사례 편차·개인정보·도배 신고 3원칙.
+const GUIDELINES = [
+  "비자·면접·연봉은 사례별로 달라요. 경험은 참고로만 봐주세요.",
+  "회사·개인 식별 정보는 가려주세요.",
+  "광고·구인 도배 글은 신고로 정리됩니다.",
+];
+
 export async function CommunitySidebar({ facets }: { facets: CommunityFacets }) {
   const popular = (await fetchCommunityPosts({ sort: "top" })).items.slice(0, 5);
   const countries = facets.countries.slice(0, 8);
@@ -92,6 +99,18 @@ export async function CommunitySidebar({ facets }: { facets: CommunityFacets }) 
               </li>
             );
           })}
+        </ul>
+      </section>
+
+      <section className="rounded-xl border border-border bg-surface p-4">
+        <h2 className="text-body-sm font-semibold text-foreground">커뮤니티 안내</h2>
+        <ul className="mt-3 space-y-2 text-caption leading-relaxed text-muted-foreground">
+          {GUIDELINES.map((g) => (
+            <li key={g} className="flex gap-1.5">
+              <span aria-hidden className="text-muted-foreground/50">·</span>
+              <span>{g}</span>
+            </li>
+          ))}
         </ul>
       </section>
     </aside>
