@@ -11,12 +11,22 @@ import type { RecommendProfile } from "@/lib/types";
 
 const SENIORITY = [
   { value: "entry", label: "신입" },
-  { value: "junior", label: "junior" },
-  { value: "mid", label: "mid" },
-  { value: "senior", label: "senior" },
-  { value: "staff", label: "staff" },
-  { value: "principal", label: "principal" },
+  { value: "junior", label: "주니어" },
+  { value: "mid", label: "미들" },
+  { value: "senior", label: "시니어" },
+  { value: "staff", label: "스태프" },
+  { value: "principal", label: "프린시플" },
 ];
+
+// 각 단계의 대략적 연차(회사·국가마다 다름 — 참고용). 선택 시 힌트로 보여준다.
+const SENIORITY_YEARS: Record<string, string> = {
+  entry: "0~1년차",
+  junior: "1~3년차",
+  mid: "3~5년차",
+  senior: "5~9년차",
+  staff: "8~12년차",
+  principal: "12년차+",
+};
 const REMOTE = [
   { value: "any", label: "상관없음" },
   { value: "remote", label: "원격" },
@@ -66,12 +76,19 @@ export function ProfileFields({
             suggestions={TECH_VOCAB}
             placeholder="예: Python, Kubernetes…"
           />
-          <Segmented
-            label="시니어리티"
-            options={SENIORITY}
-            value={value.seniority}
-            onChange={(seniority) => set({ seniority })}
-          />
+          <div className="space-y-1.5">
+            <Segmented
+              label="시니어리티"
+              options={SENIORITY}
+              value={value.seniority}
+              onChange={(seniority) => set({ seniority })}
+            />
+            {SENIORITY_YEARS[value.seniority] && (
+              <p className="text-caption text-muted-foreground">
+                대략 <span className="font-medium text-foreground">{SENIORITY_YEARS[value.seniority]}</span> 경력에 해당해요 (회사·국가마다 달라요).
+              </p>
+            )}
+          </div>
           <label className="block space-y-1.5">
             <span className="text-body-sm font-medium">
               연차 <span className="font-normal text-muted-foreground">(선택)</span>
