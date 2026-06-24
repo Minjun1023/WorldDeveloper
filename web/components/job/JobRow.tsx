@@ -5,7 +5,7 @@ import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { SaveHeartButton } from "@/components/job/SaveHeartButton";
 import { postedRelativeLabel } from "@/lib/jobDates";
 import { locationDisplayParts } from "@/lib/jobLocation";
-import { formatSalary } from "@/lib/salary";
+import { formatSalary, formatSalaryKrw } from "@/lib/salary";
 import { filterTechTags } from "@/lib/techTags";
 import type { Job } from "@/lib/types";
 
@@ -14,7 +14,7 @@ import type { Job } from "@/lib/types";
 export function JobRow({ job, loggedIn = false, saved = false }: { job: Job; loggedIn?: boolean; saved?: boolean }) {
   const posted = postedRelativeLabel(job.posted_at);
   const loc = locationDisplayParts(job).join(" · ");
-  const salary = formatSalary(job.salary);
+  const salary = formatSalaryKrw(job.salary) ?? formatSalary(job.salary);
   const techTags = filterTechTags(job.tags, job.company);
 
   return (

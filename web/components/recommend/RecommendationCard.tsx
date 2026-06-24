@@ -4,7 +4,7 @@ import Link from "next/link";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { Card } from "@/components/ui/card";
 import { locationDisplayParts } from "@/lib/jobLocation";
-import { formatSalary } from "@/lib/salary";
+import { formatSalary, formatSalaryKrw } from "@/lib/salary";
 import { filterTechTags } from "@/lib/techTags";
 import type { RecommendationItem } from "@/lib/types";
 
@@ -23,6 +23,7 @@ export function RecommendationCard({
   const location = locationDisplayParts(job, "Remote").join(", ");
   const matchPct = Math.round(score.final_score * 100);
   const salary = formatSalary(job.salary);
+  const salaryKrw = formatSalaryKrw(job.salary);
   const techTags = filterTechTags(job.tags, job.company).slice(0, 3);
   const visaLabel = job.visa?.register_verified
     ? "비자 검증"
@@ -100,7 +101,10 @@ export function RecommendationCard({
       {/* 하단: 연봉(좌) + 스택 칩(우) */}
       <div className="mt-auto flex items-center justify-between gap-3 pt-4">
         {salary ? (
-          <span className="text-lg font-extrabold tracking-tight text-foreground">{salary}</span>
+          <span className="flex flex-col leading-tight">
+            <span className="text-lg font-extrabold tracking-tight text-foreground">{salaryKrw ?? salary}</span>
+            {salaryKrw && <span className="text-caption font-normal text-muted-foreground">{salary}</span>}
+          </span>
         ) : (
           <span aria-hidden />
         )}

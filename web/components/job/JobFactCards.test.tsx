@@ -29,9 +29,12 @@ describe("JobFactCards", () => {
     expect(screen.getByText("상시채용")).toBeInTheDocument();
     expect(screen.getByText("비공개")).toBeInTheDocument();
   });
-  it("연봉이 있으면 파랑 강조(text-primary)로 표시한다", () => {
+  it("연봉이 있으면 원화(주, 파랑) + 달러(보조)로 표시한다", () => {
     render(<JobFactCards job={{ ...base, salary: { min_usd: 279000, max_usd: 377000, currency: "USD" } }} />);
-    const salaryEl = screen.getByText(/\$/);
-    expect(salaryEl).toHaveClass("text-primary");
+    // 주: 원화 억 단위(파랑). 279k~377k USD ×1380 ≈ 약 3.9억~5.2억 원
+    const krwEl = screen.getByText(/약 3\.9억~5\.2억 원/);
+    expect(krwEl).toHaveClass("text-primary");
+    // 보조: 달러 병기
+    expect(screen.getByText("$279k–$377k")).toBeInTheDocument();
   });
 });
