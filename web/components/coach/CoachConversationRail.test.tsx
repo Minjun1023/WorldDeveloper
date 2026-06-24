@@ -28,4 +28,13 @@ describe("CoachConversationRail", () => {
     await userEvent.click(screen.getByRole("button", { name: /새 상담/ }));
     expect(onNew).toHaveBeenCalled();
   });
+
+  it("항목별 삭제 버튼 클릭 시 onDelete(jobId) 호출", async () => {
+    const onDelete = vi.fn();
+    render(
+      <CoachConversationRail items={items} activeJobId={null} onSelect={() => {}} onNew={() => {}} onDelete={onDelete} />,
+    );
+    await userEvent.click(screen.getByRole("button", { name: "상담 삭제" }));
+    expect(onDelete).toHaveBeenCalledWith("j1");
+  });
 });

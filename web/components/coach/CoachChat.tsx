@@ -201,6 +201,8 @@ export function CoachChat({
     if (jobId) {
       try {
         await fetch(`/api/me/coach/conversation?jobId=${encodeURIComponent(jobId)}`, { method: "DELETE" });
+        // 서버에서 삭제됐으므로 상위(레일) 목록을 새로고침해 삭제된 대화가 사라지게 한다.
+        onConversationSaved?.();
       } catch {
         /* 무시 */
       }

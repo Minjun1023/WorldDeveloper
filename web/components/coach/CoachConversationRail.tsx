@@ -10,6 +10,18 @@ export type ConversationSummary = {
   preview: string;
 };
 
+// 레일 항목의 상대시간 캡션(오늘/어제/N일 전, 그 이상은 날짜). 잘못된 값은 빈 문자열.
+function relativeTime(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  const diffMs = Date.now() - d.getTime();
+  const day = 86_400_000;
+  if (diffMs < day) return "오늘";
+  if (diffMs < 2 * day) return "어제";
+  if (diffMs < 7 * day) return `${Math.floor(diffMs / day)}일 전`;
+  return d.toLocaleDateString("ko-KR");
+}
+
 export function CoachConversationRail({
   items,
   activeJobId,
@@ -33,21 +45,29 @@ export function CoachConversationRail({
         <Plus className="h-4 w-4" aria-hidden="true" /> 새 상담
       </button>
       <p className="px-1 pt-2 text-caption font-medium text-muted-foreground">이전 상담</p>
-      <ul className="space-y-1">
+      <ul className="max-h-56 space-y-1 overflow-y-auto lg:max-h-none lg:overflow-visible">
         {items.length === 0 && <li className="px-1 text-caption text-muted-foreground">아직 저장된 상담이 없어요.</li>}
         {items.map((c) => (
           <li key={c.jobId} className="group relative">
             <button
               type="button"
               onClick={() => onSelect(c.jobId)}
-              aria-current={activeJobId === c.jobId}
+              aria-current={activeJobId === c.jobId ? "page" : undefined}
               className={
                 "w-full rounded-lg px-2.5 py-2 text-left transition-colors " +
                 (activeJobId === c.jobId ? "bg-primary/10" : "hover:bg-accent")
               }
             >
               <span className="block truncate text-body-sm font-semibold text-foreground">{c.title}</span>
-              <span className="block truncate text-caption text-muted-foreground">{c.company}</span>
+              <span className="flex items-center gap-1.5 truncate text-caption text-muted-foreground">
+                <span className="truncate">{c.company}</span>
+                {relativeTime(c.lastActiveAt) && (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <span className="shrink-0">{relativeTime(c.lastActiveAt)}</span>
+                  </>
+                )}
+              </span>
             </button>
             <button
               type="button"
