@@ -26,7 +26,11 @@ describe("CompanyDirectoryControls", () => {
   it("분야 모달에서 옵션(카운트 표기) 선택 시 tag 로 update 한다", async () => {
     render(<CompanyDirectoryControls tagOptions={tags} />);
     await userEvent.click(screen.getByRole("button", { name: "분야 필터" }));
-    await userEvent.click(screen.getByRole("button", { name: /fintech \(40\)/ }));
+    // 라벨(좌) + 카운트(우, 콤마) 분리 표시 — 괄호 없음
+    const opt = screen.getByRole("button", { name: /fintech/ });
+    expect(opt).toHaveTextContent("40");
+    expect(opt).not.toHaveTextContent("(40)");
+    await userEvent.click(opt);
     expect(updateMock).toHaveBeenCalledWith({ tag: "fintech" });
   });
 
