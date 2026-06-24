@@ -19,6 +19,15 @@ describe("filterTechTags", () => {
     ]);
   });
 
+  it("단/복수 중복 칩을 합친다: 'ai agent'+'ai agents' → 'ai agent', 단일 's' 태그는 유지", () => {
+    expect(filterTechTags(["mlops", "llm", "ai agent", "ai agents", "vector search"])).toEqual([
+      "mlops",
+      "llm",
+      "ai agent",
+      "vector search",
+    ]);
+  });
+
   it("AI 직무 핵심 신호(mlops·llmops·rag·ai agents·vector database)는 유지한다", () => {
     expect(
       filterTechTags(["llm", "mlops", "rag", "ai agents", "vector database", "observability"]),
