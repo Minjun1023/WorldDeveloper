@@ -35,11 +35,19 @@ export function filterTechTags(
   if (company?.slug) companyNames.add(norm(company.slug));
   if (company?.display_name) companyNames.add(norm(company.display_name));
 
-  return tags.filter((t) => {
+  const kept = tags.filter((t) => {
     const n = norm(t);
     if (!n) return false;
     if (NON_TECH_CONCEPTS.has(n)) return false;
     if (companyNames.has(n)) return false;
     return true;
+  });
+
+  // 단/복수 중복 칩 제거: 단수형이 함께 있으면 복수형을 버린다(예: 'ai agent'+'ai agents' → 'ai agent').
+  // 정확히 끝 's' 만 다른 경우만 합치므로 'mlops' 처럼 's' 로 끝나는 단일 태그는 영향 없음.
+  const present = new Set(kept.map(norm));
+  return kept.filter((t) => {
+    const n = norm(t);
+    return !(n.endsWith("s") && present.has(n.slice(0, -1)));
   });
 }
