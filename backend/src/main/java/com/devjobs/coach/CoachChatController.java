@@ -3,13 +3,16 @@ package com.devjobs.coach;
 import com.devjobs.coach.dto.CoachDtos.ChatMessage;
 import com.devjobs.coach.dto.CoachDtos.CoachReply;
 import com.devjobs.coach.dto.CoachDtos.CoachRequest;
+import com.devjobs.coach.dto.CoachDtos.ConversationListResponse;
 import com.devjobs.coach.dto.CoachDtos.ConversationResponse;
+import com.devjobs.coach.dto.CoachDtos.ConversationSummary;
 import com.devjobs.company.CompanyService;
 import com.devjobs.company.dto.CompanyDtos.CompanyDetail;
 import com.devjobs.profile.ProfileService;
 import com.devjobs.profile.UserProfileEntity;
 import com.devjobs.scout.JobService;
 import com.devjobs.scout.dto.JobDtos.JobDetailDto;
+import com.devjobs.scout.dto.JobDtos.JobDto;
 import com.devjobs.strategist.AiClient;
 import com.devjobs.strategist.RateLimiter;
 import java.io.IOException;
@@ -17,7 +20,10 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -194,6 +200,22 @@ public class CoachChatController {
             .map(c -> ResponseEntity.ok(
                 new ConversationResponse(c.getJobId(), c.getMessages(), c.getLastActiveAt())))
             .orElseGet(() -> ResponseEntity.noContent().build());
+    }
+
+    @GetMapping("/conversations")
+    public ResponseEntity<ConversationListResponse> listConversations(
+            @AuthenticationPrincipal String userId) {
+        List<ConversationSummary> base = conversationService.list(UUID.fromString(userId));
+        List<String> ids = base.stream().map(ConversationSummary::jobId).toList();
+        Map<String, JobDto> byId = jobService.byIds(ids).stream()
+            .collect(Collectors.toMap(JobDto::id, Function.identity(), (a, b) -> a));
+        List<ConversationSummary> withLabels = base.stream().map(s -> {
+            JobDto j = byId.get(s.jobId());
+            String company = j != null ? j.company().displayName() : "(만료된 공고)";
+            String title = j != null ? j.title() : s.jobId();
+            return new ConversationSummary(s.jobId(), company, title, s.lastActiveAt(), s.preview());
+        }).toList();
+        return ResponseEntity.ok(new ConversationListResponse(withLabels));
     }
 
     @DeleteMapping("/conversation")
