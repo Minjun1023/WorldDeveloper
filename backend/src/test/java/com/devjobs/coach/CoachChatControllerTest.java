@@ -267,6 +267,28 @@ class CoachChatControllerTest {
     }
 
     @Test
+    void listConversationsSerializesSnakeCaseKeys() throws Exception {
+        // 회귀 가드: 글로벌 SNAKE_CASE 전략으로 ConversationSummary(jobId/lastActiveAt)가
+        // 와이어에서 job_id/last_active_at 으로 나가야 한다(프론트가 이 키로 읽음).
+        UUID userId = insertUser();
+        String token = "Bearer " + jwtService.issue(userId.toString());
+        var e = new CoachConversationEntity(userId, "job-list");
+        e.setMessages(List.of(new ChatMessage("user", "안녕"), new ChatMessage("assistant", "네")));
+        e.setLastActiveAt(java.time.OffsetDateTime.now());
+        conversationRepo.save(e);
+
+        mvc.perform(get("/api/v1/me/coach/conversations")
+                .header("Authorization", token))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.items.length()").value(1))
+            .andExpect(jsonPath("$.items[0].job_id").value("job-list"))
+            .andExpect(jsonPath("$.items[0].last_active_at").exists())
+            // camelCase 키는 와이어에 존재하지 않아야 한다(프론트가 undefined 로 읽던 버그).
+            .andExpect(jsonPath("$.items[0].jobId").doesNotExist())
+            .andExpect(jsonPath("$.items[0].lastActiveAt").doesNotExist());
+    }
+
+    @Test
     void getConversationReturnsOwnerThreadAndDeleteClears() throws Exception {
         UUID userId = insertUser();
         String token = "Bearer " + jwtService.issue(userId.toString());
