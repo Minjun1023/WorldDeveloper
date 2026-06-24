@@ -23,6 +23,46 @@ def test_required_extraction_expanded_taxonomy():
     assert "Observability" in req
 
 
+def test_ambiguous_surfaces_no_prose_false_positive():
+    # 평범한 영어 산문은 Go/REST 를 요구 스킬로 잡으면 안 된다(대소문자 가드).
+    req = required_skills("You will go above and beyond, rest assured")
+    assert "Go" not in req
+    assert "REST" not in req
+    # 다른 변형 산문도 동일.
+    assert "Go" not in required_skills("go to market, good to go")
+    assert "REST" not in required_skills("we offer rest and relaxation")
+    assert "Elasticsearch" not in required_skills("the answer es simple")  # 소문자 es 산문
+
+
+def test_ambiguous_surfaces_cased_match_extracts():
+    # 대문자/약어 표기는 정상 추출(Go / REST / Elasticsearch).
+    req = required_skills("Backend in Go with REST APIs and Elasticsearch")
+    assert "Go" in req
+    assert "REST" in req
+    assert "Elasticsearch" in req
+
+
+def test_distinctive_aliases_case_insensitive():
+    # 구별력 있는 별칭(golang/restful)은 대소문자 무관하게 Go/REST 추출.
+    req = required_skills("strong experience with Golang and RESTful services")
+    assert "Go" in req
+    assert "REST" in req
+
+
+def test_resume_prose_does_not_mark_ambiguous_present(monkeypatch):
+    # 이력서 산문 'rest and relaxation' 은 REST 보유로 표시되면 안 된다.
+    import dev_jobs_core.recommender.embeddings as core_emb
+
+    monkeypatch.setattr(core_emb, "is_available", lambda: False)
+
+    jd = "Backend with REST APIs required."  # REST 가 요구됨(별칭 'rest api')
+    resume = "I value rest and relaxation; I am a go-getter"
+    res = sm.match_skills(jd, resume, threshold=0.5)
+    assert "REST" in res.required
+    assert "REST" not in res.present
+    assert "REST" in res.missing
+
+
 def test_token_hit_word_boundary_no_false_positive():
     # 'javascript' 안의 'java' 를 잡지 않아야 한다.
     assert token_hit("java", "i love javascript") is False

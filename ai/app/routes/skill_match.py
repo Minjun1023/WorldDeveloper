@@ -77,7 +77,8 @@ def match_skills(jd: str, resume: str, threshold: float = 0.5) -> SkillMatchResp
     present_set: set[str] = set()
     pending: list[str] = []
     for skill in required:
-        if matches_surface(skill, lowered_resume):
+        # 모호 표면형(go/rest/es)은 원문 이력서 대상 대소문자 가드 — 산문 'go-getter' 오탐 방지.
+        if matches_surface(skill, lowered_resume, resume):
             present_set.add(skill)
         else:
             pending.append(skill)

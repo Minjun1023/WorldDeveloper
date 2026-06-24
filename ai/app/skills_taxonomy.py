@@ -91,6 +91,12 @@ SKILLS: dict[str, tuple[list[str], str]] = {
 # 구절(구) 분리에 쓰는 구분자 — 이력서 한 줄을 의미 단위 클로즈로 쪼개 semantic 매칭 노이즈를 줄인다.
 _SPLIT_TOKENS = ("\n", ",", "·", " and ", " 및 ", " 와 ", " 그리고 ", ";", "/")
 
+# 소문자화하면 평범한 영어 단어/너무 일반적인 약어와 충돌하는 표면형.
+# JD/이력서 산문("go above", "rest assured")이 Go/REST/Elasticsearch 를 오탐하게 만든다.
+# 이 표면형들은 소문자 산문 대신 대문자/약어 표기("Go", "REST", "ES")로만 매칭한다(대소문자 가드).
+# 구별력 있는 별칭(golang, restful, rest api, elasticsearch)은 영향 없음 → 실제 JD 는 그쪽으로 추출.
+AMBIGUOUS: frozenset[str] = frozenset({"go", "rest", "es"})
+
 
 def phrases(text: str) -> list[str]:
     """이력서 텍스트(또는 줄 목록)를 의미 단위 구절로 분해. 빈 구절은 제거."""
@@ -114,15 +120,42 @@ def token_hit(needle: str, text: str) -> bool:
     return re.search(rf"(?<![a-z0-9가-힣]){pat}(?![a-z0-9])", text) is not None
 
 
+def token_hit_cased(needle: str, original_text: str) -> bool:
+    """needle(모호 표면형: go/rest/es) 이 original_text(소문자화하지 않은 원문) 안에
+    '토큰 경계'로, **대문자/약어 표기**(Go/GO, REST/Rest, ES/Es)로 등장하면 True.
+
+    오탐 방지용 — 평범한 산문은 소문자('go above', 'rest assured', 'es simple')이므로 거른다.
+    캐논이 대문자라도 alias 가 소문자('es')로 저장될 수 있어, needle 의 대문자/타이틀 변형으로 매칭한다.
+    경계는 token_hit 과 동일하되 IGNORECASE 를 쓰지 않는다(소문자 표기 불인정).
+    """
+    # 인정 표기: 전부 대문자(REST/ES/GO) 또는 첫 글자 대문자(Go/Rest/Es). 전부 소문자는 거른다.
+    variants = {needle.upper(), needle[:1].upper() + needle[1:].lower()}
+    alt = "|".join(re.escape(v).replace(r"\ ", r"\s+") for v in variants)
+    return re.search(rf"(?<![A-Za-z0-9가-힣])(?:{alt})(?![A-Za-z0-9])", original_text) is not None
+
+
 def surface_forms(skill: str) -> list[str]:
     """스킬의 모든 표면형(표준형 자기 자신 + 별칭)."""
     aliases, _gloss = SKILLS[skill]
     return [skill, *aliases]
 
 
-def matches_surface(skill: str, lowered_text: str) -> bool:
-    """스킬의 표면형(별칭 포함) 중 하나라도 소문자화된 text 에 등장하면 True."""
-    return any(token_hit(s, lowered_text) for s in surface_forms(skill))
+def _surface_hit(surface: str, lowered_text: str, original_text: str) -> bool:
+    """표면형 1개 매칭. 모호한 표면형(go/rest/es)은 원문 대소문자 가드로,
+    나머지는 소문자 token_hit 으로 판정한다."""
+    if surface.lower() in AMBIGUOUS:
+        # 모호 표면형은 캐논("Go")이든 별칭("es")이든 대소문자 정확 표기만 인정.
+        return token_hit_cased(surface, original_text)
+    return token_hit(surface, lowered_text)
+
+
+def matches_surface(skill: str, lowered_text: str, original_text: str | None = None) -> bool:
+    """스킬의 표면형(별칭 포함) 중 하나라도 text 에 등장하면 True.
+
+    모호한 표면형(go/rest/es)은 `original_text`(소문자화하지 않은 원문) 대상 **대소문자 가드** 매칭으로
+    산문 오탐(go above / rest assured)을 거른다. original_text 미전달 시 lowered_text 로 폴백(가드 없음)."""
+    src = lowered_text if original_text is None else original_text
+    return any(_surface_hit(s, lowered_text, src) for s in surface_forms(skill))
 
 
 def semantic_probe(skill: str) -> str:
@@ -132,6 +165,8 @@ def semantic_probe(skill: str) -> str:
 
 
 def required_skills(jd: str) -> list[str]:
-    """JD 에서 표면형(별칭 포함)이 등장하는 모든 표준 스킬 — 확장 추출(Java 30단어 대비)."""
+    """JD 에서 표면형(별칭 포함)이 등장하는 모든 표준 스킬 — 확장 추출(Java 30단어 대비).
+
+    모호 표면형(go/rest/es)은 원문 JD 대상 대소문자 가드로 매칭해 산문 오탐을 막는다."""
     lowered = jd.lower()
-    return [skill for skill in SKILLS if matches_surface(skill, lowered)]
+    return [skill for skill in SKILLS if matches_surface(skill, lowered, jd)]
