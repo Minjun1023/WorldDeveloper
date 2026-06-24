@@ -101,7 +101,8 @@ _SAL_ANCHOR = re.compile(
     r"|(?:base|annual|target|total|gross|yearly|expected|on[- ]target|ote)\s+(?:salary|pay|compensation)"  # "annual salary"
     r"|(?:salary|compensation)\s*(?::|of\b|is\b)"                          # "Salary:", "salary of/is"
     r"|(?:range|band)\s+(?:of|for)\s+(?:the\s+)?(?:base\s+|annual\s+)?(?:salary|pay|compensation)"  # "range of base salary"
-    r"|salary\s+for\s+this",
+    r"|salary\s+for\s+this"
+    r"|hourly\s+(?:rate|pay)|pay\s+rate",                                  # "Hourly Rate", "pay rate"
     re.I,
 )
 
@@ -113,10 +114,12 @@ _SAL_EXCLUDE = re.compile(
 )
 
 # 통화기호 + 숫자 + (k) + 구분자 + (통화기호) + 숫자 + (k)
+# 구분자: 대시/to/~ (양쪽 통화기호 선택) OR 공백(단, 둘째 금액도 통화기호 필수 — 오탐 방지).
+#   일부 소스(예: Databricks "Local Pay Range$54 $60 USD")가 대시 없이 공백으로만 두 금액을 적는다.
 _SAL_RANGE = re.compile(
     r"(?P<sym>US\$|C\$|A\$|S\$|[$£€])\s?"
     r"(?P<min>\d{1,3}(?:,\d{3})+|\d{1,7})(?:\.\d+)?\s?(?P<munit>[kK])?"
-    r"\s*(?:-|–|—|to|~)\s*"
+    r"(?:\s*(?:-|–|—|to|~)\s*|\s+(?=US\$|C\$|A\$|S\$|[$£€]))"
     r"(?:US\$|C\$|A\$|S\$|[$£€])?\s?"
     r"(?P<max>\d{1,3}(?:,\d{3})+|\d{1,7})(?:\.\d+)?\s?(?P<xunit>[kK])?"
 )
