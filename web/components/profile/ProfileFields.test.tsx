@@ -21,7 +21,7 @@ describe("ProfileFields", () => {
   it("emits seniority change via Segmented", async () => {
     const onChange = vi.fn();
     render(<ProfileFields value={base} onChange={onChange} />);
-    await userEvent.click(screen.getByRole("button", { name: "junior" }));
+    await userEvent.click(screen.getByRole("button", { name: "주니어" }));
     expect(onChange).toHaveBeenCalledWith(
       expect.objectContaining({ seniority: "junior" }),
     );

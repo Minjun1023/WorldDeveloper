@@ -37,8 +37,11 @@ def detect_seniority(title: str, description: str = "") -> str:
     return "unspecified"
 
 
-# 시니어리티 순서값 (점수화에 사용)
+# 시니어리티 순서값 (점수화에 사용).
+# 'entry'(프로필 신입)는 매칭상 junior 와 같은 단계로 둔다 — 공고 추출(detect_seniority)이
+# 신입/인턴/new-grad 를 모두 'junior' 로 접기 때문. 없으면 신입 사용자 레벨 매칭이 중립(0.5)으로 죽음.
 SENIORITY_ORDER = {
+    "entry": 1,
     "junior": 1,
     "mid": 2,
     "senior": 3,
