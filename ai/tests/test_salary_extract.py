@@ -110,9 +110,16 @@ def test_hourly_rate_space_separated():
     assert r == {"min": 54, "max": 60, "currency": "USD", "period": "HOUR"}
 
 
-def test_rejects_malformed_decimal_thousands():
-    # "$170.40 $255.60" — 마침표가 천단위 자리로 깨진 원본. 170.40 은 연 단위 정상범위(1만~) 미달 → 거절.
-    assert ex("Local Pay Range $170.40 $255.60 USD") is None
+def test_recovers_malformed_decimal_thousands():
+    # "$170.40 $255.60" — 천단위 표기 깨짐(실제 $170,400~$255,600). 연봉 맥락 + 1000 미만 → ×1000 복구.
+    r = ex("Local Pay Range $170.40 $255.60 USD")
+    assert r == {"min": 170400, "max": 255600, "currency": "USD", "period": "YEAR"}
+
+
+def test_recovers_dropped_k():
+    # 'K' 누락: "$130 $160" 가 연봉 맥락이면 $130k~$160k 로 복구.
+    r = ex("Annual salary range $130 $160 USD")
+    assert r == {"min": 130000, "max": 160000, "currency": "USD", "period": "YEAR"}
 
 
 def test_space_separator_requires_second_currency():
