@@ -6,12 +6,12 @@
 // 운영 실천·방법론·아키텍처 스타일 — '쓰는 기술'이 아니라 '일하는/만드는 방식'이라 스택 칩에서 제외.
 // 주의: machine learning·deep learning·computer vision 같은 전문 분야나 data engineering 등
 // 도메인은 직무를 알려주는 의미 있는 태그라 제외하지 않는다(과거 너무 공격적이라 ML 공고의
-// 스택이 통째로 비던 문제 수정).
+// 스택이 통째로 비던 문제 수정). mlops·llmops·rag·ai agents·vector database 등 AI 직무의
+// 핵심 신호도 같은 이유로 유지한다(AI 엔지니어 공고가 'llm' 하나만 뜨던 문제 수정).
 const NON_TECH_CONCEPTS = new Set<string>([
   "observability",
   "devops",
   "sre",
-  "mlops",
   "agile",
   "scrum",
   "microservices",

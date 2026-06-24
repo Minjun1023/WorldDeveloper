@@ -19,6 +19,12 @@ describe("filterTechTags", () => {
     ]);
   });
 
+  it("AI 직무 핵심 신호(mlops·llmops·rag·ai agents·vector database)는 유지한다", () => {
+    expect(
+      filterTechTags(["llm", "mlops", "rag", "ai agents", "vector database", "observability"]),
+    ).toEqual(["llm", "mlops", "rag", "ai agents", "vector database"]);
+  });
+
   it("공고 회사명/슬러그와 같은 태그는 제거한다", () => {
     expect(
       filterTechTags(["datadog", "spring", "linux"], { slug: "datadog", display_name: "Datadog" }),

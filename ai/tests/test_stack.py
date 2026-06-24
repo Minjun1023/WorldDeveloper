@@ -58,3 +58,34 @@ def test_normalize_keeps_new_platforms():
     assert normalize_tech_tags(["Salesforce", "ServiceNow", "Shopify"]) == [
         "salesforce", "servicenow", "shopify",
     ]
+
+
+def test_extract_finds_ai_stack_richly():
+    # AI 엔지니어 공고가 'llm' 하나만 잡히던 문제 — 생성형/에이전트/RAG/벡터DB/서빙 어휘 인식.
+    desc = (
+        "Join our AI Platform team to build LLM and AI agent infrastructure. "
+        "You'll work on RAG pipelines, prompt engineering, fine-tuning, and embeddings, "
+        "serving models with vLLM, orchestrating with LangGraph and LlamaIndex, "
+        "storing vectors in Pinecone (vector database), and running MLflow for MLOps."
+    )
+    found = set(extract_tech(desc))
+    assert {
+        "llm", "ai agent", "rag", "prompt engineering", "fine-tuning", "embeddings",
+        "vllm", "langgraph", "llamaindex", "pinecone", "vector database", "mlflow", "mlops",
+    } <= found
+
+
+def test_extract_generative_ai_and_providers():
+    found = set(extract_tech("Generative AI / GenAI work with Claude (Anthropic) and Mistral models."))
+    assert {"generative ai", "genai", "claude", "anthropic", "mistral"} <= found
+
+
+def test_extract_ai_terms_no_false_positives():
+    # 'ai agent'/'agentic' 만 인식하고 일반 'agent'(보험/유저 에이전트)는 안 잡아야 함.
+    # 'vector' 단독(수학/그래픽)도 'vector database/search' 가 아니면 안 잡아야 함.
+    found = set(extract_tech("The insurance agent used a vector graphic in the user agent string."))
+    assert "ai agent" not in found
+    assert "ai agents" not in found
+    assert "agentic" not in found
+    assert "vector database" not in found
+    assert "vector search" not in found
