@@ -18,45 +18,28 @@
 
 from __future__ import annotations
 
+import os
+import sys
+
 import numpy as np
+
+# 프로덕션 taxonomy 를 단일 진실원천(single source of truth)으로 사용한다.
+# 이 스크립트는 `ai/.venv/bin/python ai/scripts/skill_match_eval.py` 로 실행되므로
+# `ai/` 디렉터리를 sys.path 에 넣어 `from app.skills_taxonomy import ...` 가 해석되게 한다.
+_AI_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _AI_DIR not in sys.path:
+    sys.path.insert(0, _AI_DIR)
+
+from app.skills_taxonomy import (  # noqa: E402, I001  # sys.path 설정 후라 import 가 최상단에 못 옴
+    SKILLS,
+    phrases as _taxonomy_phrases,
+    token_hit,
+)
 
 MODEL_NAME = "paraphrase-multilingual-MiniLM-L12-v2"
 
-# 표준 스킬 → (별칭 표면형, 의미 gloss). 별칭은 backend TechExtractor.ALIASES 와 동일하게 유지.
-# gloss 는 semantic 신호용 짧은 확장(패러프레이즈 회수용) — alias 매칭엔 쓰이지 않는다.
-SKILLS: dict[str, tuple[list[str], str]] = {
-    "Kubernetes": (["k8s", "쿠버네티스"], "container orchestration cluster"),
-    "Docker": (["도커"], "containerization images"),
-    "PostgreSQL": (["postgres", "포스트그레스"], "relational database SQL"),
-    "Redis": (["레디스"], "in-memory cache key-value store"),
-    "Kafka": (["카프카"], "event streaming log"),
-    "Python": (["파이썬"], "Python programming language"),
-    "Java": (["자바"], "Java JVM programming"),
-    "Go": (["golang", "고랭"], "Go programming language"),
-    "React": (["리액트"], "React frontend UI"),
-    "TypeScript": (["타입스크립트"], "TypeScript typed JavaScript"),
-    "Terraform": (["테라폼"], "infrastructure as code provisioning"),
-    "AWS": (["amazon web services"], "AWS cloud infrastructure"),
-    # --- 별칭으론 못 잡고 semantic 이 필요한 개념형 ---
-    "gRPC": (["grpc"], "RPC services using protocol buffers protobuf"),
-    "Observability": (
-        ["observability"],
-        "metrics logs distributed tracing Prometheus Grafana monitoring 지표 로그 트레이싱 모니터링",
-    ),
-    "CI/CD": (["ci/cd", "cicd"], "automated build test deployment pipeline 배포 파이프라인"),
-    "Message Queue": (
-        ["message queue", "메시지 큐"],
-        "asynchronous message broker event streaming queue Kafka RabbitMQ",
-    ),
-    # --- 보통 absent 라벨로 쓰는 다양성(오탐 측정) ---
-    "Rust": (["rust", "러스트"], "Rust systems programming"),
-    "GraphQL": (["graphql", "그래프큐엘"], "GraphQL query API schema"),
-    "Scala": (["scala", "스칼라"], "Scala functional JVM"),
-    "Spark": (["spark", "스파크"], "Apache Spark big data processing"),
-    "Elixir": (["elixir", "엘릭서"], "Elixir Erlang BEAM concurrency"),
-}
-
 # (제목, 요구 스킬, 이력서 줄들, 정답 present 집합). absent = required - present.
+# 모든 required 스킬은 프로덕션 taxonomy(app.skills_taxonomy.SKILLS)의 키여야 한다.
 CASES: list[dict] = [
     {
         "title": "C1 영문 백엔드 패러프레이즈",
@@ -159,24 +142,20 @@ CASES: list[dict] = [
     },
 ]
 
-_SPLIT_TOKENS = ("\n", ",", "·", " and ", " 및 ", " 와 ", " 그리고 ", ";")
+# CASES 가 참조하는 모든 required 스킬은 프로덕션 taxonomy 의 키여야 한다(단일 진실원천 보장).
+_UNKNOWN = sorted({s for c in CASES for s in c["required"] if s not in SKILLS})
+if _UNKNOWN:
+    raise SystemExit(
+        f"CASES 가 taxonomy 에 없는 스킬 참조: {_UNKNOWN} — SKILLS 에 추가하라."
+    )
 
 
 def phrases(lines: list[str]) -> list[str]:
+    """이력서 줄 목록을 의미 단위 구절로 분해 — 프로덕션 taxonomy.phrases(줄 단위 적용)."""
     out: list[str] = []
     for ln in lines:
-        parts = [ln]
-        for sep in _SPLIT_TOKENS:
-            parts = [seg for p in parts for seg in p.split(sep)]
-        out.extend(p.strip() for p in parts if p.strip())
+        out.extend(_taxonomy_phrases(ln))
     return out or lines
-
-
-def token_hit(needle: str, text: str) -> bool:
-    import re
-
-    pat = re.escape(needle.lower()).replace(r"\ ", r"\s+")
-    return re.search(rf"(?<![a-z0-9가-힣]){pat}(?![a-z0-9])", text) is not None
 
 
 def baseline_present(skill: str, resume: list[str]) -> bool:
