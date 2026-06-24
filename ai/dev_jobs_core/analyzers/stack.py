@@ -43,6 +43,18 @@ TECH_KEYWORDS = [
     "observability", "mlops", "devops", "sre",
     # AI/ML
     "nlp", "llm", "rag", "hugging face", "langchain", "openai", "cuda",
+    # AI/LLM (확장) — 생성형·에이전트·RAG·벡터DB·서빙/평가. 다중어·특정어 위주라 단어경계 매칭에서 오탐 적음.
+    "generative ai", "genai", "ai agent", "ai agents", "agentic", "multi-agent",
+    "retrieval augmented generation", "prompt engineering", "fine-tuning", "fine tuning",
+    "embeddings", "vector database", "vector search", "semantic search",
+    "model serving", "model inference", "llmops", "model context protocol",
+    # AI 도구/프레임워크
+    "llamaindex", "langgraph", "vllm", "ollama", "mlflow", "kubeflow",
+    "sagemaker", "vertex ai", "amazon bedrock", "wandb",
+    # 벡터 DB
+    "pinecone", "weaviate", "milvus", "qdrant", "chromadb", "faiss",
+    # 모델/제공자
+    "anthropic", "claude", "llama", "mistral", "stable diffusion",
     # 데이터 (추가)
     "sql", "nosql", "flink", "presto", "trino", "hive", "dagster", "prefect", "iceberg",
     # 언어 (추가)
