@@ -200,6 +200,9 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
         <div className="min-w-0 space-y-6">
           {items.length === 0 ? (
             <div className="rounded-xl border border-border bg-surface p-8 text-center sm:p-12">
+              <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full bg-primary/10">
+                <MessageSquare className="h-6 w-6 text-primary" aria-hidden="true" />
+              </div>
               <p className="text-body font-medium text-foreground">
                 {hasFilter ? "조건에 맞는 글이 없어요" : "아직 글이 없어요"}
               </p>
