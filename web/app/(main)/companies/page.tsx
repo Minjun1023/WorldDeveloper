@@ -84,10 +84,9 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
 
   return (
     <div className="space-y-6">
-      {/* 헤더 */}
-      <div className="flex items-start justify-between gap-3">
-        <h1 className="text-h1">기업 디렉터리</h1>
-        <span className="shrink-0 whitespace-nowrap pt-1 text-body-sm font-semibold text-muted-foreground">
+      {/* 헤더 — 제목 제거, 기업 수만 우측 */}
+      <div className="flex items-center justify-end gap-3">
+        <span className="shrink-0 whitespace-nowrap text-body-sm font-semibold text-muted-foreground">
           {visible.length.toLocaleString()}개 기업
         </span>
       </div>
