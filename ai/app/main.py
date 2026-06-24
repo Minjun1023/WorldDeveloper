@@ -3,6 +3,7 @@
 엔드포인트:
   GET  /internal/health        liveness
   POST /internal/embed         text -> vector(384)
+  POST /internal/skill-match   JD/이력서 -> 보유/미보유 스킬(코치 키워드 갭)
   POST /internal/etl/trigger   수동 ETL 트리거 (dev 전용)
 
 ETL 은 lifespan 안에서 APScheduler 로 등록 (settings.etl_enabled=True 일 때만).
@@ -16,7 +17,7 @@ from fastapi import FastAPI
 
 from .config import settings
 from .etl.scheduler import shutdown_scheduler, start_scheduler
-from .routes import coach, embed, etl, health, parse_profile, summarize
+from .routes import coach, embed, etl, health, parse_profile, skill_match, summarize
 
 log = logging.getLogger(__name__)
 
@@ -56,3 +57,4 @@ app.include_router(summarize.router, prefix="/internal", tags=["internal"])
 app.include_router(coach.router, prefix="/internal", tags=["internal"])
 app.include_router(etl.router, prefix="/internal", tags=["internal"])
 app.include_router(parse_profile.router, prefix="/internal", tags=["internal"])
+app.include_router(skill_match.router, prefix="/internal", tags=["internal"])
