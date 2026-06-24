@@ -15,7 +15,7 @@ const SECTIONS: Record<string, { label: string; href: string }> = {
   coach: { label: "이력서 코치", href: "/coach" },
   jobs: { label: "공고", href: "/search" },
   visa: { label: "비자 가이드", href: "/visa" },
-  me: { label: "내 정보", href: "/me/profile" },
+  me: { label: "프로필 정보", href: "/me/profile" },
   recent: { label: "최근 본 공고", href: "/recent" },
   contact: { label: "문의", href: "/contact" },
 };

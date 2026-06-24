@@ -44,10 +44,6 @@ export default async function CompanyDetailPage({
 
   return (
     <div className="space-y-8">
-      <Link href="/companies" className="inline-block text-body-sm text-muted-foreground hover:text-foreground">
-        ← 회사 목록
-      </Link>
-
       {/* 히어로 카드 */}
       <header className="rounded-2xl border border-border bg-surface p-6">
         <div className="flex items-start gap-4">
@@ -112,7 +108,7 @@ export default async function CompanyDetailPage({
           <>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {pageJobs.map((job) => (
-                <JobCard key={job.id} job={job} showRestrictedRemote />
+                <JobCard key={job.id} job={job} showRestrictedRemote showSave loggedIn={!!session} />
               ))}
             </div>
             <Pagination page={page} pageSize={PAGE_SIZE} total={jobs.length} />

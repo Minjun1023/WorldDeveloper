@@ -81,10 +81,6 @@ export function ProfileEditor() {
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-display">프로필</h1>
-          <p className="mt-2 text-muted-foreground">
-            채울수록 <strong className="font-semibold text-foreground">5축 매칭</strong>이 정확해져요.
-            비자 스폰서십은 기본 포함이에요.
-          </p>
         </div>
         {ready && (
           <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-2.5 shadow-sm">
