@@ -2,8 +2,10 @@ import Link from "next/link";
 
 import { CompanyDirectoryControls } from "@/components/company/CompanyDirectoryControls";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { FavoriteCompanyButton } from "@/components/company/FavoriteCompanyButton";
 import { Pagination } from "@/components/search/Pagination";
-import { fetchCompanies } from "@/lib/api";
+import { fetchCompanies, fetchFavoriteCompanySlugs } from "@/lib/api";
+import { getSessionToken } from "@/lib/session-server";
 import { COMPANY_LOCATIONS } from "@/lib/company-locations";
 import { companyBlurb } from "@/lib/company-blurb";
 import { companyProfile, flagEmoji } from "@/lib/company-profiles";
@@ -26,6 +28,10 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
   const sort = str(searchParams.sort) ?? "jobs"; // jobs(공고 많은 순) | name(이름순)
   // 전체를 받아 분야 칩을 집계하고, 선택된 분야/검색/정렬은 서버 JS 로 적용한다.
   const data = await fetchCompanies();
+  // 관심 기업 ★ 초기 상태: 로그인 시 한 번만 조회해 행마다 prop 으로 내려준다(행별 fetch 방지).
+  const token = await getSessionToken();
+  const loggedIn = !!token;
+  const favSlugs = token ? await fetchFavoriteCompanySlugs(token) : new Set<string>();
 
   // 위치: 큐레이션 ?? 정적 스냅샷 ?? 백엔드 파생. 국기: ISO 우선, 없으면 위치 문자열 추론.
   // '내용 없는' 희소 기업은 디렉터리에서만 숨긴다(공고는 검색/추천에 남음).
@@ -79,16 +85,11 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
   return (
     <div className="space-y-6">
       {/* 헤더 */}
-      <div className="space-y-2">
-        <div className="flex items-start justify-between gap-3">
-          <h1 className="text-h1">기업 디렉터리</h1>
-          <span className="shrink-0 whitespace-nowrap pt-1 text-body-sm font-semibold text-muted-foreground">
-            {visible.length.toLocaleString()}개 기업
-          </span>
-        </div>
-        <p className="text-body-sm text-muted-foreground">
-          해외 취업 비자를 지원하는 글로벌 테크 기업들을 모았어요.
-        </p>
+      <div className="flex items-start justify-between gap-3">
+        <h1 className="text-h1">기업 디렉터리</h1>
+        <span className="shrink-0 whitespace-nowrap pt-1 text-body-sm font-semibold text-muted-foreground">
+          {visible.length.toLocaleString()}개 기업
+        </span>
       </div>
 
       {/* 검색 + 분야 + 정렬 */}
@@ -112,18 +113,20 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
               <span className="hidden w-44 shrink-0 lg:block">분야</span>
               <span className="hidden w-28 shrink-0 sm:block">지역</span>
               <span className="w-20 shrink-0 whitespace-nowrap text-right">채용중 공고</span>
+              <span className="w-12 shrink-0" aria-hidden="true" />
             </div>
 
             {pageItems.map((e, i) => {
               const { c, location, flag, countryCode, blurb } = e;
               return (
-                <Link
+                <div
                   key={c.slug}
-                  href={`/companies/${c.slug}`}
-                  className={`group flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-surface-2 ${
-                    i > 0 ? "border-t border-border" : ""
-                  }`}
+                  className={`flex items-stretch ${i > 0 ? "border-t border-border" : ""}`}
                 >
+                  <Link
+                    href={`/companies/${c.slug}`}
+                    className="group flex flex-1 items-center gap-3 px-4 py-3.5 transition-colors hover:bg-surface-2"
+                  >
                   <CompanyLogo slug={c.slug} name={c.display_name} size={36} />
                   <div className="min-w-0 flex-1">
                     <span className="block truncate font-semibold text-foreground group-hover:text-primary">
@@ -167,7 +170,17 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                     <span className="font-semibold text-foreground">{c.job_count}</span>
                     <span className="text-caption text-muted-foreground">개</span>
                   </div>
-                </Link>
+                  </Link>
+                  {/* 관심 기업 ★ — 행 링크 밖 형제로 둬 a 중첩/네비 충돌 방지 */}
+                  <div className="flex w-12 shrink-0 items-center justify-center">
+                    <FavoriteCompanyButton
+                      slug={c.slug}
+                      loggedIn={loggedIn}
+                      initialFav={favSlugs.has(c.slug)}
+                      className="h-9 w-9"
+                    />
+                  </div>
+                </div>
               );
             })}
           </div>

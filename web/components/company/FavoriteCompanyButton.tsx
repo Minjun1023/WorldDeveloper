@@ -15,16 +15,19 @@ const ICON_BTN =
 export function FavoriteCompanyButton({
   slug,
   loggedIn,
+  initialFav,
   className,
 }: {
   slug: string;
   loggedIn: boolean;
+  // 초기 관심 여부. 제공되면(목록처럼 부모가 한 번에 조회) mount 시 자체 fetch 를 생략한다.
+  initialFav?: boolean;
   className?: string;
 }) {
-  const [fav, setFav] = useState(false);
+  const [fav, setFav] = useState(initialFav ?? false);
 
   useEffect(() => {
-    if (!loggedIn) return;
+    if (!loggedIn || initialFav !== undefined) return;
     let alive = true;
     fetch("/api/me/favorite-companies")
       .then((r) => (r.ok ? r.json() : null))
@@ -35,7 +38,7 @@ export function FavoriteCompanyButton({
     return () => {
       alive = false;
     };
-  }, [slug, loggedIn]);
+  }, [slug, loggedIn, initialFav]);
 
   if (!loggedIn) {
     return (

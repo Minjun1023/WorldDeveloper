@@ -106,9 +106,6 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-h2 text-foreground">커뮤니티</h1>
-          <p className="mt-1 text-body-sm text-muted-foreground">
-            해외취업을 준비하고 경험한 개발자들이 비자·면접·연봉·정착 정보를 나누는 공간.
-          </p>
         </div>
         <Link
           href="/community/new"

@@ -200,6 +200,23 @@ export async function fetchSavedJobIds(token: string): Promise<Set<string>> {
   }
 }
 
+// 서버 컴포넌트용: 로그인 사용자의 관심 기업 slug 집합. 기업 디렉터리 ★ 초기 상태 표시에 사용
+// (행마다 클라 fetch 하지 않도록 한 번에 받아 prop 으로 내려준다).
+export async function fetchFavoriteCompanySlugs(token: string): Promise<Set<string>> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/me/favorite-companies`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return new Set();
+    const data = (await res.json()) as Array<{ slug?: string }>;
+    return new Set(Array.isArray(data) ? data.map((c) => c.slug).filter((s): s is string => !!s) : []);
+  } catch {
+    return new Set();
+  }
+}
+
 export async function fetchCompanies(tag?: string): Promise<CompanyListResponse | null> {
   const url = new URL(`${BACKEND_URL}/api/v1/companies`);
   if (tag) url.searchParams.set("tag", tag);
