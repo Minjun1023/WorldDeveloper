@@ -1,53 +1,44 @@
-import { Briefcase, MapPin } from "lucide-react";
-import type { ComponentType } from "react";
-
 import { flagFromLocation } from "@/lib/flags";
+import { deadlineLabel } from "@/lib/jobDates";
 import { compactLocation } from "@/lib/jobLocation";
 import { employmentLabel, levelText } from "@/lib/jobMeta";
 import { formatSalary } from "@/lib/salary";
 import type { JobDetail } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-type Chip = {
-  icon?: ComponentType<{ className?: string }>;
-  text: string;
-  tone?: "salary";
-  flex?: boolean; // 공간 부족 시 줄어들며 말줄임(긴 위치 칩 전용) — 나머지는 고정.
-};
+type Row = { label: string; value: string; tone?: "salary" };
 
-// 핵심 정보(위치·레벨·고용형태·연봉)를 제목 아래 pill 칩으로 한 줄에. (Figma 상세 헤더)
-// 연봉=파랑, 위치=국기 동반, 길면 위치만 말줄임. 비자는 뷰어블 게이트로 노출 공고가 전부
-// 지원 가능이라 칩을 생략한다.
+// 핵심 정보(근무지·경력·고용형태·연봉·마감)를 라벨-값 그리드로 표시. 칩 한 줄 대신 표 형태라
+// 정렬이 깔끔하고 스캔하기 쉽다. 연봉=파랑. 비자는 뷰어블 게이트로 노출 공고가 전부 지원
+// 가능이라 행을 생략한다(사이드바가 상세 비자 정보를 담당).
 export function JobFactCards({ job }: { job: JobDetail }) {
   const salaryText = formatSalary(job.salary);
   const flag = flagFromLocation(job.location);
   const locText = compactLocation(job) || "위치 미표기";
   const level = levelText(job.experience_years, job.seniority);
+  const deadline = deadlineLabel(job.closes_at);
 
-  const chips: Chip[] = [
-    { icon: MapPin, text: flag ? `${locText} ${flag}` : locText, flex: true },
-    ...(level ? [{ icon: Briefcase, text: level }] : []),
-    { text: employmentLabel(job.employment_type) },
-    ...(salaryText ? [{ text: salaryText, tone: "salary" as const }] : []),
+  const rows: Row[] = [
+    { label: "근무지", value: flag ? `${locText} ${flag}` : locText },
+    ...(level ? [{ label: "경력", value: level }] : []),
+    { label: "고용형태", value: employmentLabel(job.employment_type) },
+    { label: "연봉", value: salaryText ?? "비공개", tone: salaryText ? "salary" : undefined },
+    { label: "마감", value: deadline.text },
   ];
 
   return (
-    // 한 줄 고정(flex-nowrap): 공간이 부족하면 긴 위치 칩만 말줄임되고, 나머지 칩은 그대로 보인다.
-    <div className="flex flex-nowrap gap-2 overflow-hidden">
-      {chips.map((c) => (
-        <span
-          key={c.text}
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-body-sm font-semibold",
-            c.flex ? "min-w-0" : "shrink-0 whitespace-nowrap",
-            c.tone === "salary" && "border-primary/30 bg-primary/5 text-primary",
-            !c.tone && "border-border bg-surface-2 text-foreground",
-          )}
+    <dl className="divide-y divide-border border-t border-border">
+      {rows.map((r) => (
+        <div
+          key={r.label}
+          className="grid grid-cols-[4.5rem_1fr] items-baseline gap-x-4 py-2.5 sm:grid-cols-[5.5rem_1fr]"
         >
-          {c.icon && <c.icon className="h-4 w-4 shrink-0 text-muted-foreground" />}
-          {c.flex ? <span className="truncate">{c.text}</span> : c.text}
-        </span>
+          <dt className="text-body-sm font-medium text-muted-foreground">{r.label}</dt>
+          <dd className={cn("text-body-sm font-semibold text-foreground", r.tone === "salary" && "text-primary")}>
+            {r.value}
+          </dd>
+        </div>
       ))}
-    </div>
+    </dl>
   );
 }
