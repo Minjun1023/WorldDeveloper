@@ -429,8 +429,12 @@ export function CoachChat({
     </div>
   );
 
+  const noJobs = loggedIn && !jobsLoading && jobs.length === 0;
+
+  // 풀스크린 앱: 부모 <main> 을 가득 채우는 전체높이 flex 컬럼.
+  // 위쪽(스크롤 영역)만 내부 스크롤하고, 컴포저는 하단에 항상 고정된다(빈/진행 상태 공통).
   return (
-    <div className="relative">
+    <div className="relative flex h-full flex-col">
       {/* 옅은 파랑 배경 글로우 */}
       <div
         aria-hidden="true"
@@ -438,106 +442,109 @@ export function CoachChat({
         style={{ background: "radial-gradient(60% 60% at 50% 0%, color-mix(in srgb, var(--primary) 11%, transparent), transparent)" }}
       />
 
-      {loggedIn && !jobsLoading && jobs.length === 0 ? (
-        <div className="mx-auto max-w-2xl">
-          <NoJobs />
-        </div>
-      ) : started ? (
-        // 대화 진행 — 넓은 폭으로 화면을 활용(메시지·입력 모두). 가독성 위해 5xl 로 캡.
-        <div className="mx-auto flex w-full max-w-5xl flex-col gap-4">
-          <div className="flex items-center justify-between gap-3">
-            {selectedJob ? (
-              <span
-                className="inline-flex min-w-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-caption font-medium text-primary"
-                style={{ backgroundColor: "color-mix(in srgb, var(--primary) 12%, transparent)" }}
-              >
-                <Briefcase className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                <span className="truncate">
-                  {selectedJob.company.display_name} · {selectedJob.title}
-                </span>
-              </span>
-            ) : (
-              <span />
-            )}
-            <button
-              type="button"
-              onClick={reset}
-              className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-body-sm text-foreground transition-colors hover:bg-accent"
-            >
-              <RefreshCw className="h-4 w-4" aria-hidden="true" />
-              새 상담
-            </button>
+      {/* 스크롤 영역 — 화면에서 유일하게 스크롤되는 곳(이중 스크롤바 방지) */}
+      <div className="min-h-0 flex-1 overflow-y-auto">
+        {noJobs ? (
+          <div className="mx-auto w-full max-w-2xl px-4 py-6">
+            <NoJobs />
           </div>
-
-          <div
-            ref={threadRef}
-            className="min-h-[260px] flex-1 space-y-4 overflow-y-auto rounded-2xl border border-border bg-surface p-5 shadow-sm"
-            style={{ maxHeight: "calc(100vh - 24rem)" }}
-          >
-            {hydratedAt && resume.trim().length === 0 && (
-              <div className="flex items-start gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-caption text-muted-foreground">
-                <History className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
-                <span>
-                  이전 상담을 이어갑니다
-                  {hydratedAt ? ` · ${new Date(hydratedAt).toLocaleDateString("ko-KR")}` : ""}.
-                  이어가려면 아래 &lsquo;공고·이력서&rsquo;에서 이력서를 다시 첨부해 주세요.
-                </span>
-              </div>
-            )}
-
-            {messages.map((m, i) =>
-              m.role === "user" ? (
-                <div key={i} className="flex justify-end">
-                  <span className="inline-block max-w-[82%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-primary px-3.5 py-2.5 text-body-sm text-primary-foreground">
-                    {m.content}
+        ) : started ? (
+          // 대화 진행 — 헤더(공고 칩 + 새 상담) + 메시지 스레드. flex 로 남는 높이를 채운다.
+          <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-4 px-4 py-4">
+            <div className="flex items-center justify-between gap-3">
+              {selectedJob ? (
+                <span
+                  className="inline-flex min-w-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-caption font-medium text-primary"
+                  style={{ backgroundColor: "color-mix(in srgb, var(--primary) 12%, transparent)" }}
+                >
+                  <Briefcase className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span className="truncate">
+                    {selectedJob.company.display_name} · {selectedJob.title}
                   </span>
-                </div>
+                </span>
               ) : (
-                <div key={i} className="flex justify-start gap-2.5">
-                  <CoachAvatar />
-                  <span className="inline-block max-w-[82%] whitespace-pre-wrap rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-2.5 text-body-sm text-foreground">
-                    {m.content}
+                <span />
+              )}
+              <button
+                type="button"
+                onClick={reset}
+                className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-body-sm text-foreground transition-colors hover:bg-accent"
+              >
+                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                새 상담
+              </button>
+            </div>
+
+            <div ref={threadRef} className="min-h-[260px] flex-1 space-y-4 overflow-y-auto">
+              {hydratedAt && resume.trim().length === 0 && (
+                <div className="flex items-start gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-caption text-muted-foreground">
+                  <History className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
+                  <span>
+                    이전 상담을 이어갑니다
+                    {hydratedAt ? ` · ${new Date(hydratedAt).toLocaleDateString("ko-KR")}` : ""}.
+                    이어가려면 아래 &lsquo;공고·이력서&rsquo;에서 이력서를 다시 첨부해 주세요.
                   </span>
                 </div>
-              ),
-            )}
+              )}
 
-            {pending && messages[messages.length - 1]?.role === "user" && (
-              <div className="flex justify-start gap-2.5">
-                <CoachAvatar />
-                <span className="inline-flex items-center gap-1 rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-3">
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]" />
-                  <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" />
-                </span>
-              </div>
-            )}
+              {messages.map((m, i) =>
+                m.role === "user" ? (
+                  <div key={i} className="flex justify-end">
+                    <span className="inline-block max-w-[82%] whitespace-pre-wrap rounded-2xl rounded-br-sm bg-primary px-3.5 py-2.5 text-body-sm text-primary-foreground">
+                      {m.content}
+                    </span>
+                  </div>
+                ) : (
+                  <div key={i} className="flex justify-start gap-2.5">
+                    <CoachAvatar />
+                    <span className="inline-block max-w-[82%] whitespace-pre-wrap rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-2.5 text-body-sm text-foreground">
+                      {m.content}
+                    </span>
+                  </div>
+                ),
+              )}
 
-            {error && (
-              <div
-                className="rounded-lg border border-destructive/30 px-3.5 py-2.5 text-body-sm text-destructive"
-                style={{ backgroundColor: "color-mix(in srgb, var(--destructive) 7%, transparent)" }}
-              >
-                {error}
-              </div>
-            )}
+              {pending && messages[messages.length - 1]?.role === "user" && (
+                <div className="flex justify-start gap-2.5">
+                  <CoachAvatar />
+                  <span className="inline-flex items-center gap-1 rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-3">
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]" />
+                    <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" />
+                  </span>
+                </div>
+              )}
+
+              {error && (
+                <div
+                  className="rounded-lg border border-destructive/30 px-3.5 py-2.5 text-body-sm text-destructive"
+                  style={{ backgroundColor: "color-mix(in srgb, var(--destructive) 7%, transparent)" }}
+                >
+                  {error}
+                </div>
+              )}
+            </div>
           </div>
+        ) : (
+          // 진입(빈) 상태 — 랜딩(가치 제안) 마케팅 콘텐츠. 컴포저는 아래 고정 바에 있다.
+          <div className="mx-auto w-full max-w-3xl px-4 py-6">
+            <CoachLanding />
+          </div>
+        )}
+      </div>
 
-          {composer}
-          {pills}
-        </div>
-      ) : (
-        // 진입(빈) 상태 — 랜딩(가치 제안) + 바로 시작 입력창
-        <div className="mx-auto flex w-full max-w-4xl flex-col gap-10 pt-2 sm:pt-6">
-          <CoachLanding />
-
-          <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4">
-            {pills}
+      {/* 하단 고정 컴포저 바 — 빈/진행 상태 모두에서 항상 보인다 */}
+      {!noJobs && (
+        <div className="shrink-0 border-t border-border">
+          <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-4 py-3">
+            {!started && pills}
             {composer}
-            <p className="flex max-w-md items-start justify-center gap-1.5 text-center text-caption text-muted-foreground">
-              <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-              붙여넣은 공고·이력서만 보고 답해요. 공고를 첨부한 대화는 90일간 저장되고, 이력서는 저장되지 않아요.
-            </p>
+            {!started && (
+              <p className="flex items-start justify-center gap-1.5 text-center text-caption text-muted-foreground">
+                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                붙여넣은 공고·이력서만 보고 답해요. 공고를 첨부한 대화는 90일간 저장되고, 이력서는 저장되지 않아요.
+              </p>
+            )}
           </div>
         </div>
       )}
