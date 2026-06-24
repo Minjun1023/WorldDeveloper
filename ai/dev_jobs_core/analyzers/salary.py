@@ -118,10 +118,10 @@ _SAL_EXCLUDE = re.compile(
 #   일부 소스(예: Databricks "Local Pay Range$54 $60 USD")가 대시 없이 공백으로만 두 금액을 적는다.
 _SAL_RANGE = re.compile(
     r"(?P<sym>US\$|C\$|A\$|S\$|[$£€])\s?"
-    r"(?P<min>\d{1,3}(?:,\d{3})+|\d{1,7})(?:\.\d+)?\s?(?P<munit>[kK])?"
+    r"(?P<min>\d{1,3}(?:,\d{3})+|\d{1,7})(?P<mdec>\.\d+)?\s?(?P<munit>[kK])?"
     r"(?:\s*(?:-|–|—|to|~)\s*|\s+(?=US\$|C\$|A\$|S\$|[$£€]))"
     r"(?:US\$|C\$|A\$|S\$|[$£€])?\s?"
-    r"(?P<max>\d{1,3}(?:,\d{3})+|\d{1,7})(?:\.\d+)?\s?(?P<xunit>[kK])?"
+    r"(?P<max>\d{1,3}(?:,\d{3})+|\d{1,7})(?P<xdec>\.\d+)?\s?(?P<xunit>[kK])?"
 )
 
 _SAL_PERIODS = [
@@ -130,8 +130,8 @@ _SAL_PERIODS = [
 ]
 
 
-def _sal_num(s: str, unit: str | None) -> float:
-    v = float(s.replace(",", ""))
+def _sal_num(s: str, dec: str | None, unit: str | None) -> float:
+    v = float(s.replace(",", "") + (dec or ""))
     if unit and unit.lower() == "k":
         v *= 1000
     return v
@@ -192,8 +192,8 @@ def extract_salary_from_description(text: str | None) -> dict | None:
         # 금액 직전 25자에 지분/펀딩/매출 등 비-연봉 단서가 있으면 스킵(앵커가 통과해도).
         if _SAL_EXCLUDE.search(text[max(0, m.start() - 25): m.start()]):
             continue
-        lo = _sal_num(m.group("min"), m.group("munit"))
-        hi = _sal_num(m.group("max"), m.group("xunit") or m.group("munit"))
+        lo = _sal_num(m.group("min"), m.group("mdec"), m.group("munit"))
+        hi = _sal_num(m.group("max"), m.group("xdec"), m.group("xunit") or m.group("munit"))
         if hi < lo:
             lo, hi = hi, lo
         sym = m.group("sym").upper()
@@ -210,8 +210,14 @@ def extract_salary_from_description(text: str | None) -> dict | None:
         if period == "HOUR":
             if not (5 <= lo <= 2000 and 5 <= hi <= 2000):
                 continue
-        elif not (10_000 <= lo <= 10_000_000 and 10_000 <= hi <= 10_000_000):
-            continue
+        else:
+            # 연봉 맥락에서 1,000 미만은 'K 누락'($130→$130k) 또는 천단위 표기 깨짐
+            # ($170.40→$170,400) → ×1000 복구. 둘 다 작을 때만(부분 누락 오인 방지).
+            if lo < 1000 and hi < 1000:
+                lo *= 1000
+                hi *= 1000
+            if not (10_000 <= lo <= 10_000_000 and 10_000 <= hi <= 10_000_000):
+                continue
         return {"min": int(lo), "max": int(hi), "currency": cur, "period": period}
     # 영어 패턴이 없으면 일본어(円/万円) 시도.
     return _extract_jp_salary(text)
