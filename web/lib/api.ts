@@ -10,6 +10,7 @@ import type {
   JobDetail,
   JobListResponse,
   JobSummary,
+  VisaGuide,
 } from "@/lib/types";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
@@ -122,6 +123,19 @@ export async function fetchInterviewPrep(id: string): Promise<InterviewPrep | nu
     });
     if (!res.ok) return null;
     return (await res.json()) as InterviewPrep;
+  } catch {
+    return null;
+  }
+}
+
+export async function fetchVisaGuide(id: string): Promise<VisaGuide | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/jobs/${id}/visa-guide`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.status === 204 || !res.ok) return null;
+    return (await res.json()) as VisaGuide;
   } catch {
     return null;
   }

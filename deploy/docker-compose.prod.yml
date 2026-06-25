@@ -110,6 +110,7 @@ services:
     environment:
       DATABASE_URL: postgresql://devjobs:${POSTGRES_PASSWORD}@postgres:5432/devjobs
       VISA_GUIDES_DIR: /app/_visa_guides
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}   # 국가 가이드 사전합성에 필요
     volumes:
       - ../docs/visa-guides:/app/_visa_guides:ro
     command: ["/app/.venv/bin/python", "scripts/seed_visa_guides.py"]
