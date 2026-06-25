@@ -23,6 +23,35 @@ def test_required_extraction_expanded_taxonomy():
     assert "Observability" in req
 
 
+def test_tags_extract_skills_jd_prose_lacks():
+    # 공고 산문이 표면형을 직접 담지 않아도, 큐레이션 tags 가 누락 스킬을 잡는다(skill_gap 공백 해소).
+    jd = "We build APM products with distributed tracing and visibility."
+    assert "Observability" not in required_skills(jd)  # 산문엔 표면형 없음
+    req = required_skills(jd, tags=["observability"])
+    assert "Observability" in req
+    # ML/GenAI tags 도 동일하게 추출(확장 taxonomy).
+    genai = required_skills(jd, tags=["machine learning", "genai", "fine-tuning"])
+    assert {"Machine Learning", "GenAI", "Fine-tuning"} <= set(genai)
+
+
+def test_tags_precision_no_false_positive():
+    # 무해한 tag/단어는 스킬로 오탐하면 안 된다(정밀도).
+    assert required_skills("We build great products", tags=["agile", "teamwork"]) == []
+    # 소문자 산문의 모호 약어(ml/cv/rag)는 대소문자 가드로 걸러진다.
+    req = required_skills("add 5 ml of water, view his cv, clean with a rag")
+    assert "Machine Learning" not in req
+    assert "Computer Vision" not in req
+    assert "RAG" not in req
+
+
+def test_tags_dedup_and_order_stable():
+    # tags 와 JD 가 같은 스킬을 가리켜도 중복 없이 SKILLS 키 순서로 안정.
+    req = required_skills("machine learning role", tags=["machine learning", "observability"])
+    assert req.count("Machine Learning") == 1
+    assert req == [s for s in req]  # 결정적
+    assert "Machine Learning" in req and "Observability" in req
+
+
 def test_ambiguous_surfaces_no_prose_false_positive():
     # 평범한 영어 산문은 Go/REST 를 요구 스킬로 잡으면 안 된다(대소문자 가드).
     req = required_skills("You will go above and beyond, rest assured")

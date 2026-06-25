@@ -33,6 +33,7 @@ router = APIRouter()
 class SkillMatchRequest(BaseModel):
     jd: str = Field(..., max_length=8_000)
     resume: str = Field(..., max_length=20_000)
+    tags: list[str] = []
     threshold: float = Field(0.5, ge=0.0, le=1.0)
 
 
@@ -64,13 +65,16 @@ def _cosine_max(probe_vec, phrase_vecs) -> float:
     return best
 
 
-def match_skills(jd: str, resume: str, threshold: float = 0.5) -> SkillMatchResponse:
-    """JD 요구 스킬 추출 + 이력서 present/missing 판정.
+def match_skills(
+    jd: str, resume: str, threshold: float = 0.5, tags: list[str] | None = None
+) -> SkillMatchResponse:
+    """JD(+공고 tags) 요구 스킬 추출 + 이력서 present/missing 판정.
 
+    tags 는 공고의 큐레이션 스킬 라벨 — JD 산문이 표면형을 놓쳐도 요구 스킬을 잡는다(skill_gap 공백 해소).
     임베딩 backend 가 있으면 semantic(별칭 OR 코사인>=threshold), 없으면 alias-only.
     임베딩 import/로드는 이 함수 안에서만 발생한다(모듈 import 시점엔 torch 불필요).
     """
-    required = required_skills(jd)
+    required = required_skills(jd, tags)
     lowered_resume = resume.lower()
 
     # 별칭(표면형)으로 먼저 잡고, 못 잡은 것만 semantic 후보로 남긴다.
@@ -115,4 +119,4 @@ def match_skills(jd: str, resume: str, threshold: float = 0.5) -> SkillMatchResp
 
 @router.post("/skill-match", response_model=SkillMatchResponse)
 def skill_match(req: SkillMatchRequest) -> SkillMatchResponse:
-    return match_skills(req.jd, req.resume, req.threshold)
+    return match_skills(req.jd, req.resume, req.threshold, req.tags)
