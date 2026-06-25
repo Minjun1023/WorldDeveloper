@@ -39,8 +39,8 @@ public class ApplicationKitService {
         String jd = job.description() == null ? ""
             : job.description().substring(0, Math.min(job.description().length(), MAX_JD));
 
-        // 스킬 갭 (#310 skill-match) — 실패(null) 시 빈 갭.
-        var sm = aiClient.skillMatch(jd, resume);
+        // 스킬 갭 (#310 skill-match) — 공고 큐레이션 tags 도 넘겨 JD 산문이 놓친 요구 스킬을 보강. 실패(null) 시 빈 갭.
+        var sm = aiClient.skillMatch(jd, resume, job.tags());
         SkillGap gap = sm == null ? new SkillGap(List.of(), List.of(), List.of())
             : new SkillGap(sm.required(), sm.present(), sm.missing());
 

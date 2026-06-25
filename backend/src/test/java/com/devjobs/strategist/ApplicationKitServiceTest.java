@@ -2,6 +2,7 @@ package com.devjobs.strategist;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -63,7 +64,7 @@ class ApplicationKitServiceTest {
         when(jobService.findById(jobId)).thenReturn(
             Optional.of(jobDetail(jobId, new VisaDto("sponsors", List.of("UK Home Office"), true))));
         when(jobService.byIds(List.of(jobId))).thenReturn(List.of(jobSummary(jobId)));
-        when(aiClient.skillMatch(anyString(), anyString())).thenReturn(
+        when(aiClient.skillMatch(anyString(), anyString(), any())).thenReturn(
             new SkillMatchResult(List.of("python", "grpc"), List.of("python"), List.of("grpc")));
         when(aiClient.applicationKit(anyString(), anyString(), any(), any())).thenReturn(
             new KitSynthesis("잘 맞음", "보완 전략", "커버레터", List.of("Q1", "Q2")));
@@ -88,7 +89,7 @@ class ApplicationKitServiceTest {
         when(jobService.findById(jobId)).thenReturn(
             Optional.of(jobDetail(jobId, new VisaDto("sponsors", List.of(), false))));
         when(jobService.byIds(List.of(jobId))).thenReturn(List.of(jobSummary(jobId)));
-        when(aiClient.skillMatch(anyString(), anyString())).thenReturn(
+        when(aiClient.skillMatch(anyString(), anyString(), any())).thenReturn(
             new SkillMatchResult(List.of("python"), List.of("python"), List.of()));
         // 합성 실패 → null
         when(aiClient.applicationKit(anyString(), anyString(), any(), any())).thenReturn(null);
@@ -110,7 +111,7 @@ class ApplicationKitServiceTest {
         when(jobService.findById(jobId)).thenReturn(
             Optional.of(jobDetail(jobId, new VisaDto("unclear", List.of(), false))));
         when(jobService.byIds(List.of(jobId))).thenReturn(List.of(jobSummary(jobId)));
-        when(aiClient.skillMatch(anyString(), anyString())).thenReturn(null);
+        when(aiClient.skillMatch(anyString(), anyString(), any())).thenReturn(null);
         when(aiClient.applicationKit(anyString(), anyString(), any(), any())).thenReturn(null);
 
         Optional<ApplicationKitResponse> out = service.build(jobId, "내 이력서");

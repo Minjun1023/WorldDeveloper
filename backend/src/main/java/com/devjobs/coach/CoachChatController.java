@@ -260,7 +260,9 @@ public class CoachChatController {
             // ai 다운/실패(null) 시 기존 resumeOptimize(고정 어휘 + 별칭, #306) 로 폴백.
             if (resume != null && !resume.isBlank()) {
                 String jd = job.description() != null ? truncate(job.description(), MAX_JD) : "";
-                AiClient.SkillMatchResult sm = jd.isBlank() ? null : aiClient.skillMatch(jd, resume);
+                // 공고 큐레이션 tags 도 넘겨 JD 산문이 놓친 요구 스킬을 보강(skill_gap 공백 해소).
+                AiClient.SkillMatchResult sm =
+                    jd.isBlank() ? null : aiClient.skillMatch(jd, resume, job.tags());
                 if (sm != null) {
                     log.info("skill-match: required={} present={} missing={}",
                         size(sm.required()), size(sm.present()), size(sm.missing()));

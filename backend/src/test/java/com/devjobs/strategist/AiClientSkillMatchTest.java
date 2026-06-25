@@ -3,6 +3,7 @@ package com.devjobs.strategist;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.devjobs.strategist.AiClient.SkillMatchResult;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -12,6 +13,7 @@ import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
@@ -22,6 +24,7 @@ import org.junit.jupiter.api.Test;
 class AiClientSkillMatchTest {
 
     private HttpServer server;
+    private final AtomicReference<String> lastRequestBody = new AtomicReference<>();
 
     @AfterEach
     void tearDown() {
@@ -33,6 +36,8 @@ class AiClientSkillMatchTest {
     private AiClient clientFor(int status, String body) throws Exception {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/internal/skill-match", exchange -> {
+            lastRequestBody.set(new String(
+                exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
             byte[] out = body.getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(status, out.length);
             try (OutputStream os = exchange.getResponseBody()) {
@@ -54,7 +59,8 @@ class AiClientSkillMatchTest {
             + "\"missing\":[\"gRPC\"],\"engine\":\"semantic\"}";
         AiClient client = clientFor(200, body);
 
-        SkillMatchResult res = client.skillMatch("JD with python kubernetes grpc", "파이썬 쿠버네티스");
+        SkillMatchResult res = client.skillMatch(
+            "JD with python kubernetes grpc", "파이썬 쿠버네티스", List.of("machine learning"));
         assertNotNull(res);
         assertEquals(List.of("Python", "Kubernetes", "gRPC"), res.required());
         assertEquals(List.of("Python", "Kubernetes"), res.present());
@@ -62,9 +68,33 @@ class AiClientSkillMatchTest {
     }
 
     @Test
+    void sendsTagsInRequestBody() throws Exception {
+        String body = "{\"required\":[],\"present\":[],\"missing\":[],\"engine\":\"alias-only\"}";
+        AiClient client = clientFor(200, body);
+
+        client.skillMatch("JD", "resume", List.of("observability", "genai"));
+        String sent = lastRequestBody.get();
+        assertNotNull(sent);
+        assertTrue(sent.contains("\"tags\""), "request body should carry tags: " + sent);
+        assertTrue(sent.contains("observability"), "request body should include tag values: " + sent);
+        assertTrue(sent.contains("genai"), "request body should include tag values: " + sent);
+    }
+
+    @Test
+    void nullTagsBecomeEmptyList() throws Exception {
+        String body = "{\"required\":[],\"present\":[],\"missing\":[],\"engine\":\"alias-only\"}";
+        AiClient client = clientFor(200, body);
+
+        client.skillMatch("JD", "resume", null);
+        String sent = lastRequestBody.get();
+        assertNotNull(sent);
+        assertTrue(sent.contains("\"tags\":[]"), "null tags should serialize to []: " + sent);
+    }
+
+    @Test
     void returnsNullOnNon200() throws Exception {
         AiClient client = clientFor(503, "service unavailable");
-        assertNull(client.skillMatch("JD", "resume"));
+        assertNull(client.skillMatch("JD", "resume", List.of()));
     }
 
     @Test
@@ -72,6 +102,6 @@ class AiClientSkillMatchTest {
         // 떠 있지 않은 포트 → 연결 실패 → null(폴백 경로).
         ObjectMapper mapper = new ObjectMapper();
         AiClient client = new AiClient(mapper, "http://127.0.0.1:1");
-        assertNull(client.skillMatch("JD", "resume"));
+        assertNull(client.skillMatch("JD", "resume", List.of()));
     }
 }
