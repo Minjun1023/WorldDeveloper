@@ -23,11 +23,11 @@ describe("JobFactCards", () => {
     render(<JobFactCards job={{ ...base, location: "Remote - United States" }} />);
     expect(screen.getByText(/원격 · 미국/)).toBeInTheDocument();
   });
-  it("값 없을 때 폴백: 위치 '위치 미표기', 마감 '상시채용', 연봉 '비공개'", () => {
+  it("값 없을 때 폴백: 위치 '위치 미표기', 마감 '상시채용', 연봉 '공고 미기재'", () => {
     render(<JobFactCards job={{ ...base }} />);
     expect(screen.getByText("위치 미표기")).toBeInTheDocument();
     expect(screen.getByText("상시채용")).toBeInTheDocument();
-    expect(screen.getByText("비공개")).toBeInTheDocument();
+    expect(screen.getByText("공고 미기재")).toBeInTheDocument();
   });
   it("연봉이 있으면 원화(주, 파랑) + 달러(보조)로 표시한다", () => {
     render(<JobFactCards job={{ ...base, salary: { min_usd: 279000, max_usd: 377000, currency: "USD" } }} />);
