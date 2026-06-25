@@ -246,7 +246,7 @@ class CoachChatControllerTest {
         when(jobService.findById(anyString()))
             .thenReturn(Optional.of(jobWithDescription("job-sm", "Python, Kubernetes, gRPC required")));
         when(profileService.load(any())).thenReturn(Optional.empty());
-        when(aiClient.skillMatch(anyString(), anyString())).thenReturn(
+        when(aiClient.skillMatch(anyString(), anyString(), any())).thenReturn(
             new AiClient.SkillMatchResult(
                 List.of("Python", "Kubernetes", "gRPC"),
                 List.of("Python", "Kubernetes"),
@@ -280,7 +280,7 @@ class CoachChatControllerTest {
         when(jobService.findById(anyString()))
             .thenReturn(Optional.of(jobWithDescription("job-fb", "Go, Kafka required")));
         when(profileService.load(any())).thenReturn(Optional.empty());
-        when(aiClient.skillMatch(anyString(), anyString())).thenReturn(null);
+        when(aiClient.skillMatch(anyString(), anyString(), any())).thenReturn(null);
         when(coachService.resumeOptimize(anyString(), anyString())).thenReturn(Optional.of(
             new ResumeOptimizeResponse("job-fb", "Backend Engineer", null, 0.5,
                 List.of("go", "kafka"), List.of("go"), List.of("kafka"),

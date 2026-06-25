@@ -135,14 +135,16 @@ public class AiClient {
     public record SkillMatchResult(List<String> required, List<String> present, List<String> missing) {}
 
     /**
-     * AI /internal/skill-match 호출 — JD/이력서로 보유/미보유 스킬을 판정(코치 키워드 갭).
-     * 확장 taxonomy + semantic(임베딩) 매칭. 실패/비-200 시 null → 호출 측이 ResumeOptimizer 로 폴백.
+     * AI /internal/skill-match 호출 — JD/이력서/공고 tags 로 보유/미보유 스킬을 판정(코치 키워드 갭).
+     * 확장 taxonomy + semantic(임베딩) 매칭. tags 는 공고 큐레이션 스킬 라벨 — JD 산문이 표면형을 놓쳐도
+     * 요구 스킬을 잡아 skill_gap 공백을 줄인다. 실패/비-200 시 null → 호출 측이 ResumeOptimizer 로 폴백.
      */
-    public SkillMatchResult skillMatch(String jd, String resume) {
+    public SkillMatchResult skillMatch(String jd, String resume, List<String> tags) {
         try {
             String json = mapper.writeValueAsString(Map.of(
                 "jd", jd == null ? "" : jd,
                 "resume", resume == null ? "" : resume,
+                "tags", tags == null ? List.of() : tags,
                 "threshold", 0.5));
             HttpRequest req = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + "/internal/skill-match"))

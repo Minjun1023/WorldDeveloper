@@ -68,6 +68,44 @@ SKILLS: dict[str, tuple[list[str], str]] = {
     "Airflow": (["apache airflow", "에어플로우"], "Apache Airflow data pipeline workflow orchestration DAG"),
     "PyTorch": (["파이토치"], "PyTorch deep learning framework"),
     "TensorFlow": (["텐서플로우"], "TensorFlow deep learning framework"),
+    # --- ML/데이터/GenAI ---
+    # 짧고 모호한 약어(ml/cv/rag/nlp)는 AMBIGUOUS 대소문자 가드 — 평범한 단어/단위 오탐 방지.
+    "Machine Learning": (
+        ["machine learning", "ml", "머신러닝", "기계학습"],
+        "machine learning models training inference supervised unsupervised 머신러닝 모델 학습 추론",
+    ),
+    "Deep Learning": (
+        ["deep learning", "딥러닝"],
+        "deep learning neural networks 신경망 딥러닝 모델",
+    ),
+    "LLM": (
+        ["llm", "large language model", "거대 언어 모델"],
+        "large language models LLM transformer prompt 거대 언어 모델 프롬프트",
+    ),
+    "GenAI": (
+        ["genai", "gen ai", "generative ai", "생성형 ai", "생성형 인공지능"],
+        "generative AI GenAI content generation diffusion 생성형 인공지능 콘텐츠 생성",
+    ),
+    "NLP": (
+        ["nlp", "natural language processing", "자연어 처리", "자연어처리"],
+        "natural language processing NLP text tokenization embeddings 자연어 처리 텍스트",
+    ),
+    "MLOps": (
+        ["mlops", "ml ops", "엠엘옵스"],
+        "MLOps model deployment serving monitoring pipelines feature store 모델 배포 서빙 운영",
+    ),
+    "Fine-tuning": (
+        ["fine-tuning", "fine tuning", "finetuning", "파인튜닝", "미세조정"],
+        "fine-tuning pretrained models LoRA adapters instruction tuning 파인튜닝 미세 조정",
+    ),
+    "RAG": (
+        ["rag", "retrieval augmented generation", "retrieval-augmented generation"],
+        "retrieval augmented generation RAG vector search grounding context 검색 증강 생성",
+    ),
+    "Computer Vision": (
+        ["computer vision", "cv", "컴퓨터 비전", "컴퓨터비전"],
+        "computer vision image recognition object detection segmentation 컴퓨터 비전 이미지 인식",
+    ),
     # --- API/통신 ---
     "REST": (["rest api", "restful", "레스트"], "REST RESTful HTTP API design"),
     "GraphQL": (["graphql", "그래프큐엘"], "GraphQL query API schema"),
@@ -100,11 +138,13 @@ _FINE_TOKENS = (",", "·", " and ", " 및 ", " 와 ", " 그리고 ", ";", "/")
 # 하위 호환: 기존 _SPLIT_TOKENS 를 참조하던 코드를 위해 합집합을 유지.
 _SPLIT_TOKENS = _LINE_TOKENS + _FINE_TOKENS
 
-# 소문자화하면 평범한 영어 단어/너무 일반적인 약어와 충돌하는 표면형.
-# JD/이력서 산문("go above", "rest assured")이 Go/REST/Elasticsearch 를 오탐하게 만든다.
-# 이 표면형들은 소문자 산문 대신 대문자/약어 표기("Go", "REST", "ES")로만 매칭한다(대소문자 가드).
-# 구별력 있는 별칭(golang, restful, rest api, elasticsearch)은 영향 없음 → 실제 JD 는 그쪽으로 추출.
-AMBIGUOUS: frozenset[str] = frozenset({"go", "rest", "es"})
+# 소문자화하면 평범한 영어 단어/너무 일반적인 약어/단위와 충돌하는 표면형.
+# JD/이력서 산문("go above", "rest assured", "5ml", "his cv", "a rag")이 해당 스킬을 오탐하게 만든다.
+# 이 표면형들은 소문자 산문 대신 대문자/약어 표기("Go", "REST", "ES", "ML", "CV", "RAG", "NLP")로만 매칭한다(대소문자 가드).
+# 구별력 있는 별칭(golang, restful, elasticsearch, machine learning, computer vision, natural language
+# processing, retrieval augmented generation)은 영향 없음 → 실제 JD/tags 는 그 긴 별칭으로 추출한다.
+# 짧은 약어(ml/cv/rag/nlp)는 가드가 없으면 'ml'(밀리리터)·'cv'(curriculum vitae)·'rag'(천)·'nlp' 산문이 오탐.
+AMBIGUOUS: frozenset[str] = frozenset({"go", "rest", "es", "ml", "cv", "rag", "nlp"})
 
 
 def phrases(text: str) -> list[str]:
@@ -195,9 +235,16 @@ def semantic_probe(skill: str) -> str:
     return f"{skill} {' '.join(aliases)} {gloss}".strip()
 
 
-def required_skills(jd: str) -> list[str]:
-    """JD 에서 표면형(별칭 포함)이 등장하는 모든 표준 스킬 — 확장 추출(Java 30단어 대비).
+def required_skills(jd: str, tags: list[str] | None = None) -> list[str]:
+    """JD(+공고 큐레이션 tags)에서 표면형(별칭 포함)이 등장하는 모든 표준 스킬 — 확장 추출.
 
-    모호 표면형(go/rest/es)은 원문 JD 대상 대소문자 가드로 매칭해 산문 오탐을 막는다."""
-    lowered = jd.lower()
-    return [skill for skill in SKILLS if matches_surface(skill, lowered, jd)]
+    tags 는 깔끔한 스킬 라벨(예: ["machine learning","observability","genai"])이라, JD 산문이
+    표면형을 직접 담지 않아도(예: 'APM/분산 추적'만 적힌 GenAI 공고) 누락 스킬을 안정적으로 잡는다.
+    JD 와 tags 를 한 매칭 텍스트로 합쳐 기존 표면형 로직을 그대로 돌린다 — 결과는 SKILLS 키 순서로 안정·중복제거.
+
+    모호 표면형(go/rest/es/ml/cv/rag/nlp)은 원문 대상 대소문자 가드로 매칭해 산문 오탐을 막는다.
+    tags 는 소문자라 모호 약어(ml/cv/rag/nlp 단독)는 가드로 걸러지지만, 긴 별칭
+    (machine learning/computer vision 등)으로 안전하게 추출된다."""
+    matchable = jd if not tags else jd + "\n" + "\n".join(tags)
+    lowered = matchable.lower()
+    return [skill for skill in SKILLS if matches_surface(skill, lowered, matchable)]
