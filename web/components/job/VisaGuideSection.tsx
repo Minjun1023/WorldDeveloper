@@ -21,7 +21,7 @@ export function VisaGuideSection({ guide }: { guide: VisaGuide }) {
               href={s.url}
               target="_blank"
               rel="noopener noreferrer"
-              className={buttonVariants({ variant: "outline", size: "sm" })}
+              className={buttonVariants({ variant: "primary", size: "sm" })}
             >
               {s.title}
               <ExternalLink className="h-4 w-4" aria-hidden="true" />
