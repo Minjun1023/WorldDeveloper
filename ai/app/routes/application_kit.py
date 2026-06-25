@@ -33,7 +33,11 @@ SYSTEM = (
     "(3) honestly acknowledge ONE key requirement the resume lacks and how adjacent experience or "
     "fast learning would cover it — grounded, never fabricated; "
     "(4) a brief close. Avoid cliches, filler, and empty enthusiasm), "
-    "interview_questions (array of 4-6 likely interview questions for THIS role/stack). "
+    "interview_questions (array of 4-6 interview questions an interviewer would likely ask THIS "
+    "specific candidate, derived from the gap between their resume and this job: probe the missing/weak "
+    "requirements in skill_gap.missing and pressure-test the concrete claims in the resume. Each question "
+    "must reference something specific from the resume or the skill gap — NOT generic role/stack trivia "
+    "(a separate stage-by-stage interview-prep already covers general questions). "
     "Output JSON only, no prose around it."
 )
 

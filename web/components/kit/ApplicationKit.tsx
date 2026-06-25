@@ -106,7 +106,7 @@ export function ApplicationKit({ kit }: { kit: Kit }) {
           <Section title="커버레터 초안" jobId={jobId}>
             {kit.synthesis.cover_letter}
           </Section>
-          <Section title="예상 면접 질문" jobId={jobId}>
+          <Section title="이력서 기반 예상 면접 질문" jobId={jobId}>
             <ul className="list-disc space-y-1 pl-5">
               {kit.synthesis.interview_questions.map((q, i) => (
                 <li key={i}>{q}</li>
