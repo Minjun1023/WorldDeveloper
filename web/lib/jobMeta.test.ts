@@ -16,16 +16,23 @@ describe("employmentLabel", () => {
 
 describe("levelText", () => {
   it("maps seniority and handles entry/years", () => {
-    expect(levelText(null, "Senior")).toBe("시니어");
-    expect(levelText(0, null)).toBe("신입");
+    expect(levelText(null, "Principal")).toBe("12년+");
+    expect(levelText(null, "Staff")).toBe("8년+");
+    expect(levelText(null, "Lead")).toBe("7년+");
+    expect(levelText(null, "Senior")).toBe("5년+");
+    expect(levelText(null, "Junior")).toBe("1년+");
     expect(levelText(5, null)).toBe("5년+");
+    expect(levelText(3, "Senior")).toBe("5년+"); // 라벨 우선(연수 모순 방지)
+    expect(levelText(0, null)).toBe("신입");
+    expect(levelText(null, "Entry")).toBe("신입");
+    expect(levelText(null, "Intern")).toBe("인턴");
     expect(levelText(null, null)).toBeNull();
   });
 });
 
 describe("fallbackMetaChip", () => {
   it("prefers level, falls back to employment, else null", () => {
-    expect(fallbackMetaChip({ seniority: "Junior" })).toBe("주니어");
+    expect(fallbackMetaChip({ seniority: "Junior" })).toBe("1년+");
     expect(fallbackMetaChip({ employment_type: "FREELANCE" })).toBe("프리랜서");
     expect(fallbackMetaChip({})).toBeNull();
   });
