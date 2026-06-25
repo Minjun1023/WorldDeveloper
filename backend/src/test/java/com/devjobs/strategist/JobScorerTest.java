@@ -1,5 +1,6 @@
 package com.devjobs.strategist;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -36,5 +37,34 @@ class JobScorerTest {
         assertFalse(JobScorer.isKoreaViableRemote(false, "worldwide"));
         assertFalse(JobScorer.isKoreaViableRemote(false, null));
         assertFalse(JobScorer.isKoreaViableRemote(null, "worldwide"));
+    }
+
+    // --- over-leveled 패널티: 신입이 스태프/시니어 공고를 1순위로 보지 않게 ---
+
+    @Test
+    void overLeveledThreeStepsHeavyPenalty() {
+        // 신입↔스태프(3), 주니어↔프린시플(4) → 0.3 배
+        assertEquals(0.3, Seniority.overLevelPenalty("entry", "staff"), 1e-9);
+        assertEquals(0.3, Seniority.overLevelPenalty("junior", "principal"), 1e-9);
+    }
+
+    @Test
+    void overLeveledTwoStepsModeratePenalty() {
+        // 신입↔시니어(2), 미들↔스태프(2) → 0.6 배
+        assertEquals(0.6, Seniority.overLevelPenalty("entry", "senior"), 1e-9);
+        assertEquals(0.6, Seniority.overLevelPenalty("mid", "staff"), 1e-9);
+    }
+
+    @Test
+    void sameOneStepOrLowerNoPenalty() {
+        assertEquals(1.0, Seniority.overLevelPenalty("senior", "senior"), 1e-9); // 동급
+        assertEquals(1.0, Seniority.overLevelPenalty("junior", "mid"), 1e-9);    // 1단계 도전 OK
+        assertEquals(1.0, Seniority.overLevelPenalty("staff", "junior"), 1e-9);  // 하위 공고는 패널티 X
+    }
+
+    @Test
+    void unknownLevelNoPenalty() {
+        assertEquals(1.0, Seniority.overLevelPenalty("entry", "unspecified"), 1e-9);
+        assertEquals(1.0, Seniority.overLevelPenalty(null, "staff"), 1e-9);
     }
 }

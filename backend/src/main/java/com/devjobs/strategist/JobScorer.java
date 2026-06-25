@@ -59,6 +59,13 @@ public class JobScorer {
             penalty = 0.0;
             dealBreakers.add("제외 회사");
         }
+        // over-leveled 패널티: 공고가 사용자보다 2단계↑ 높으면(예: 신입 vs 스태프) 비현실적이라
+        // 강하게 눌러 상위 추천에서 뺀다. 레벨 가중치(0.10)만으로는 비자·연봉 평탄가산에 묻혔다.
+        double overPenalty = Seniority.overLevelPenalty(req.seniority(), jobLevel);
+        if (overPenalty < 1.0) {
+            penalty *= overPenalty;
+            dealBreakers.add("직급 격차 큼 (사용자 " + req.seniority() + " ↔ 공고 " + jobLevel + ")");
+        }
 
         double finalScore = raw * penalty;
 
