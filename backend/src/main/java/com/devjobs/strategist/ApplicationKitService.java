@@ -20,10 +20,12 @@ public class ApplicationKitService {
     private static final int MAX_JD = 3500;
     private final JobService jobService;
     private final AiClient aiClient;
+    private final VisaGuideService visaGuideService;
 
-    public ApplicationKitService(JobService jobService, AiClient aiClient) {
+    public ApplicationKitService(JobService jobService, AiClient aiClient, VisaGuideService visaGuideService) {
         this.jobService = jobService;
         this.aiClient = aiClient;
+        this.visaGuideService = visaGuideService;
     }
 
     public Optional<ApplicationKitResponse> build(String jobId, String resume) {
@@ -34,7 +36,8 @@ public class ApplicationKitService {
         JobDetailDto job = opt.get();
 
         var visa = VisaInterpreter.interpret(job.visa());
-        VisaInsightDto visaDto = new VisaInsightDto(visa.confidence(), visa.message(), null);
+        var guide = visaGuideService.buildGuide(job);   // 실패 시 null
+        VisaInsightDto visaDto = new VisaInsightDto(visa.confidence(), visa.message(), guide);
 
         String jd = job.description() == null ? ""
             : job.description().substring(0, Math.min(job.description().length(), MAX_JD));
