@@ -29,7 +29,7 @@ _SYNTH_SYSTEM = (
 )
 
 _DISCLAIMER = (
-    "법률·이민 자문이 아닙니다. {date} 기준 정보이며 비자 규정은 자주 바뀝니다. "
+    "법률·이민 자문이 아닙니다. 비자 규정은 자주 바뀝니다. "
     "지원 전 반드시 공식 사이트에서 최신 내용을 확인하세요."
 )
 
@@ -100,16 +100,15 @@ def synthesize_country_guide(country: str, chunks: list[dict]) -> str | None:
         return None
 
 
-def _country_sources(chunks: list[dict]) -> tuple[list[dict], str]:
-    """청크에서 출처(중복 url 제거) + 최신 작성일을 결정적으로 조립."""
+def _country_sources(chunks: list[dict]) -> list[dict]:
+    """청크에서 출처(중복 url 제거)를 결정적으로 조립."""
     sources, seen = [], set()
     for c in chunks:
         url, date = c.get("source_url", ""), c.get("retrieved_at", "")
         if url and date and url not in seen:
             seen.add(url)
             sources.append({"title": c.get("title", ""), "url": url, "retrieved_at": date})
-    max_date = max((c.get("retrieved_at", "") for c in chunks if c.get("retrieved_at")), default="")
-    return sources, max_date
+    return sources
 
 
 def _wait_for_table(dsn: str, attempts: int = 20, delay: float = 3.0) -> bool:
@@ -172,8 +171,8 @@ def seed(guides_dir: str | None = None) -> int:
             if not guide:
                 log.warning("가이드 합성 실패 — 건너뜀: %s", country)
                 continue
-            sources, max_date = _country_sources(chunks)
-            disclaimer = _DISCLAIMER.format(date=max_date)
+            sources = _country_sources(chunks)
+            disclaimer = _DISCLAIMER
             conn.execute(
                 """
                 INSERT INTO visa_country_guides (country, guide_text, sources, disclaimer, generated_at)
