@@ -1,3 +1,6 @@
+import { ExternalLink } from "lucide-react";
+
+import { buttonVariants } from "@/components/ui/button";
 import type { VisaGuide } from "@/lib/types";
 
 export function VisaGuideSection({ guide }: { guide: VisaGuide }) {
@@ -11,21 +14,20 @@ export function VisaGuideSection({ guide }: { guide: VisaGuide }) {
       </div>
       <p className="whitespace-pre-line text-body-sm text-foreground/90">{guide.text}</p>
       {guide.sources.length > 0 && (
-        <ul className="space-y-1">
+        <div className="flex flex-wrap gap-2">
           {guide.sources.map((s) => (
-            <li key={s.url} className="text-caption">
-              <a
-                href={s.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary underline underline-offset-2"
-              >
-                {s.title}
-              </a>
-              <span className="text-muted-foreground"> · {s.retrieved_at} 확인</span>
-            </li>
+            <a
+              key={s.url}
+              href={s.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonVariants({ variant: "outline", size: "sm" })}
+            >
+              {s.title}
+              <ExternalLink className="h-4 w-4" aria-hidden="true" />
+            </a>
           ))}
-        </ul>
+        </div>
       )}
       <p className="text-caption text-muted-foreground">{guide.disclaimer}</p>
     </section>
