@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { InterviewPrepSection } from "@/components/job/InterviewPrepSection";
+import { VisaGuideSection } from "@/components/job/VisaGuideSection";
 import { JobCard } from "@/components/job/JobCard";
 import { JobDescription } from "@/components/job/JobDescription";
 import { JobFactCards } from "@/components/job/JobFactCards";
@@ -19,6 +20,7 @@ import {
   fetchCompany,
   fetchInterviewPrep,
   fetchJob,
+  fetchVisaGuide,
 } from "@/lib/api";
 import { getSession } from "@/lib/session-server";
 import { filterTechTags } from "@/lib/techTags";
@@ -26,9 +28,10 @@ import { filterTechTags } from "@/lib/techTags";
 export const dynamic = "force-dynamic";
 
 export default async function JobDetailPage({ params }: { params: { id: string } }) {
-  const [result, prep, session, initialSummary] = await Promise.all([
+  const [result, prep, visaGuide, session, initialSummary] = await Promise.all([
     fetchJob(params.id),
     fetchInterviewPrep(params.id),
+    fetchVisaGuide(params.id),
     getSession(),
     fetchCachedSummary(params.id, "ko"), // 캐시된 요약만(즉시 펼침), 미스면 null → 클라 생성
   ]);
@@ -89,6 +92,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
             {job.description && <JobSummary jobId={job.id} initialData={initialSummary} />}
             {job.description && <JobDescription original={job.description} />}
             {techTags.length > 0 ? <TechStackMatch tags={techTags} /> : <NoTechStackNote />}
+            {visaGuide && <VisaGuideSection guide={visaGuide} />}
             {prep && <InterviewPrepSection prep={prep} />}
 
             <ApplicationKitButton jobId={job.id} loggedIn={!!session} />

@@ -221,3 +221,9 @@ export interface Recovery {
   next_actions: string[];
   encouragement: string;
 }
+
+export interface VisaGuide {
+  text: string;
+  sources: { title: string; url: string; retrieved_at: string }[];
+  disclaimer: string;
+}
