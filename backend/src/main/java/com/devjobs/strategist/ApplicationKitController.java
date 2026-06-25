@@ -18,9 +18,11 @@ import org.springframework.web.server.ResponseStatusException;
 @RequestMapping("/api/v1/me/application-kit")
 public class ApplicationKitController {
     private final ApplicationKitService service;
+    private final RateLimiter rateLimiter;
 
-    public ApplicationKitController(ApplicationKitService service) {
+    public ApplicationKitController(ApplicationKitService service, RateLimiter rateLimiter) {
         this.service = service;
+        this.rateLimiter = rateLimiter;
     }
 
     public record KitRequest(String jobId, String resume) {}
@@ -30,6 +32,10 @@ public class ApplicationKitController {
             @AuthenticationPrincipal String userId, @RequestBody KitRequest req) {
         if (req.jobId() == null || req.jobId().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "jobId 필요");
+        }
+        // 코치와 동일 게이트 + 레이트리밋 — 키트는 최대 2회 LLM 호출(skill-match + 합성)로 가장 무거운 경로.
+        if (!rateLimiter.tryAcquire("kit:" + userId)) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "요청이 많아요. 잠시 후 다시.");
         }
         return service.build(req.jobId(), req.resume() == null ? "" : req.resume())
             .map(ResponseEntity::ok)
