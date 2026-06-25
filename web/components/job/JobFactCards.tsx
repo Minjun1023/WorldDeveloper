@@ -25,7 +25,7 @@ export function JobFactCards({ job }: { job: JobDetail }) {
     { label: "고용형태", value: employmentLabel(job.employment_type) },
     {
       label: "연봉",
-      value: salaryKrw ?? salaryText ?? "비공개",
+      value: salaryKrw ?? salaryText ?? "공고 미기재",
       tone: salaryText ? "salary" : undefined,
       sub: salaryKrw && salaryText ? salaryText : undefined,
     },
