@@ -10,4 +10,4 @@ from app.visa_guides import seed  # noqa: E402
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     count = seed()
-    print(f"seeded {count} visa-guide chunks")
+    print(f"seeded {count} country visa guides")
