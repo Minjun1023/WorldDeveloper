@@ -17,12 +17,24 @@ FX_TO_USD = {
     "CAD": 0.73,
     "AUD": 0.66,
     "SGD": 0.74,
+    "NZD": 0.60,
+    "HKD": 0.128,
     "JPY": 0.0066,
     "KRW": 0.00072,
     "INR": 0.012,
     "CHF": 1.12,
     "SEK": 0.094,
+    "NOK": 0.092,
+    "DKK": 0.145,
     "PLN": 0.25,
+    "CZK": 0.043,
+    "HUF": 0.0028,
+    "RON": 0.22,
+    "BRL": 0.18,
+    "MXN": 0.054,
+    "ZAR": 0.054,
+    "ILS": 0.27,
+    "AED": 0.27,
 }
 
 
@@ -90,16 +102,19 @@ import re
 # 통화 기호/접두/통화어 → ISO 코드
 _SAL_SYMBOL = {"$": "USD", "£": "GBP", "€": "EUR"}
 _SAL_PREFIX = {"US$": "USD", "C$": "CAD", "A$": "AUD", "S$": "SGD"}
-_SAL_CUR_WORD = re.compile(r"\b(USD|CAD|AUD|SGD|GBP|EUR|CHF)\b")
+_SAL_CUR_WORD = re.compile(
+    r"\b(USD|CAD|AUD|SGD|NZD|HKD|GBP|EUR|CHF|SEK|NOK|DKK|PLN|CZK|HUF|RON|"
+    r"JPY|KRW|INR|BRL|MXN|ZAR|ILS|AED)\b")
 
 # 앵커: 연봉 명시 문구(오탐 방지). 금액 직전 ~80자 내에 있어야 인정.
 # 핵심: 연봉어(salary/pay/compensation)를 range/band 또는 금액 맥락과 *바로* 붙여야 한다.
 # 임의 단어를 사이에 허용하면 "compensation package ... a value range of $X"(지분 가치) 같은
 # 비-연봉 금액이 새어 들어온다 → 인접 결합만 인정.
 _SAL_ANCHOR = re.compile(
-    r"(?:salary|pay|compensation)\s+(?:range|band)"                       # "salary range", "pay band"
+    r"(?:salary|pay|compensation)\s+(?:[A-Za-z]+\s+){0,2}(?:range|band)"   # "salary range", "Salary Hiring Range", "pay band"
     r"|(?:base|annual|target|total|gross|yearly|expected|on[- ]target|ote)\s+(?:salary|pay|compensation)"  # "annual salary"
     r"|(?:salary|compensation)\s*(?::|of\b|is\b)"                          # "Salary:", "salary of/is"
+    r"|(?:salary|compensation|base\s+pay)\s+(?=US\$|[$£€]|\d{1,3},\d{3})"  # "Compensation $X", "Salary 153,000"
     r"|(?:range|band)\s+(?:of|for)\s+(?:the\s+)?(?:base\s+|annual\s+)?(?:salary|pay|compensation)"  # "range of base salary"
     r"|salary\s+for\s+this"
     r"|hourly\s+(?:rate|pay)|pay\s+rate",                                  # "Hourly Rate", "pay rate"
@@ -113,16 +128,29 @@ _SAL_EXCLUDE = re.compile(
     re.I,
 )
 
-# 통화기호 + 숫자 + (k) + 구분자 + (통화기호) + 숫자 + (k)
-# 구분자: 대시/to/~ (양쪽 통화기호 선택) OR 공백(단, 둘째 금액도 통화기호 필수 — 오탐 방지).
-#   일부 소스(예: Databricks "Local Pay Range$54 $60 USD")가 대시 없이 공백으로만 두 금액을 적는다.
+# (통화기호) + 숫자 + (k) + 구분자 + (통화기호) + 숫자 + (k)
+# 첫 통화기호는 선택 — "153,000 - 213,000"(Affirm)·"230,000 - $270,000"(Harvey) 처럼 기호 없이
+# 적는 소스가 많다. 단, 기호 없는 매칭은 아래 코드에서 엄격 검증(salary-shaped + 명사 가드)한다.
+# 구분자: 대시/to/~ (양쪽 통화기호 선택) OR 공백(단, 둘째 금액 통화기호 필수 — 오탐 방지).
 _SAL_RANGE = re.compile(
-    r"(?P<sym>US\$|C\$|A\$|S\$|[$£€])\s?"
+    r"(?P<sym>US\$|C\$|A\$|S\$|[$£€])?\s?"
     r"(?P<min>\d{1,3}(?:,\d{3})+|\d{1,7})(?P<mdec>\.\d+)?\s?(?P<munit>[kK])?"
     r"(?:\s*(?:-|–|—|to|~)\s*|\s+(?=US\$|C\$|A\$|S\$|[$£€]))"
-    r"(?:US\$|C\$|A\$|S\$|[$£€])?\s?"
+    r"(?P<sym2>US\$|C\$|A\$|S\$|[$£€])?\s?"
     r"(?P<max>\d{1,3}(?:,\d{3})+|\d{1,7})(?P<xdec>\.\d+)?\s?(?P<xunit>[kK])?"
 )
+
+# 통화기호 없는 범위 직후에 이런 명사가 오면 금액(연봉)이 아니다(인원수/기간 등 오탐 방지).
+_SAL_COUNT_NOUN = re.compile(
+    r"\s*(?:employees?|customers?|users?|people|members?|companies|clients?|"
+    r"organizations?|developers?|engineers?|seats?|hours?|years?|months?|days?|reviews?)",
+    re.I,
+)
+
+
+def _is_salary_shaped(num: str) -> bool:
+    """통화기호 없는 금액이 연봉 규모로 보이나 — 콤마 구분(153,000) 또는 5자리+(153000)."""
+    return "," in num or len(num) >= 5
 
 _SAL_PERIODS = [
     (re.compile(r"per\s+hour|/\s?hour|hourly|/\s?hr\b|an\s+hour", re.I), "HOUR"),
@@ -186,19 +214,29 @@ def extract_salary_from_description(text: str | None) -> dict | None:
     if not text:
         return None
     for m in _SAL_RANGE.finditer(text):
-        pre = text[max(0, m.start() - 80): m.start()]
-        if not _SAL_ANCHOR.search(pre):
+        # 앵커 탐색 구간은 금액 시작 +8자까지 포함 — "Compensation $X" 처럼 연봉어 바로 뒤에
+        # 금액이 오는 형태를 인식하려면(앵커의 금액 lookahead) 금액 앞부분이 보여야 한다.
+        if not _SAL_ANCHOR.search(text[max(0, m.start() - 80): m.start() + 8]):
             continue
         # 금액 직전 25자에 지분/펀딩/매출 등 비-연봉 단서가 있으면 스킵(앵커가 통과해도).
         if _SAL_EXCLUDE.search(text[max(0, m.start() - 25): m.start()]):
             continue
+        first_sym = m.group("sym")  # 첫 금액 통화기호(없을 수 있음)
+        # 통화기호 없는 매칭은 더 엄격히: 두 금액 모두 salary-shaped + 직후 비-금액 명사 제외.
+        if not first_sym:
+            if not (_is_salary_shaped(m.group("min")) and _is_salary_shaped(m.group("max"))):
+                continue
+            if _SAL_COUNT_NOUN.match(text[m.end(): m.end() + 20]):
+                continue
         lo = _sal_num(m.group("min"), m.group("mdec"), m.group("munit"))
         hi = _sal_num(m.group("max"), m.group("xdec"), m.group("xunit") or m.group("munit"))
         if hi < lo:
             lo, hi = hi, lo
-        sym = m.group("sym").upper()
-        cur = _SAL_PREFIX.get(sym) or _SAL_SYMBOL.get(sym[-1]) or "USD"
-        cw = _SAL_CUR_WORD.search(text[m.end(): m.end() + 6].upper())
+        # 통화: 첫/둘째 금액 기호 → 접두/심볼, 없으면 범위 앞뒤 ~8자의 통화어(CAD/USD 등), 기본 USD.
+        cur_sym = (first_sym or m.group("sym2") or "").upper()
+        cur = _SAL_PREFIX.get(cur_sym) or _SAL_SYMBOL.get(cur_sym[-1:]) or "USD"
+        cw = (_SAL_CUR_WORD.search(text[max(0, m.start() - 8): m.start()].upper())
+              or _SAL_CUR_WORD.search(text[m.end(): m.end() + 6].upper()))
         if cw:
             cur = cw.group(1)
         period = "YEAR"
@@ -212,12 +250,21 @@ def extract_salary_from_description(text: str | None) -> dict | None:
                 continue
         else:
             # 연봉 맥락에서 1,000 미만은 'K 누락'($130→$130k) 또는 천단위 표기 깨짐
-            # ($170.40→$170,400) → ×1000 복구. 둘 다 작을 때만(부분 누락 오인 방지).
-            if lo < 1000 and hi < 1000:
+            # ($170.40→$170,400) → ×1000 복구. 기호 있을 때만(기호 없는 범위는 항상 온전한 숫자).
+            if first_sym and lo < 1000 and hi < 1000:
                 lo *= 1000
                 hi *= 1000
             if not (10_000 <= lo <= 10_000_000 and 10_000 <= hi <= 10_000_000):
                 continue
+            # 통화 근거(기호·통화코드)가 전혀 없어 USD 로 '가정'한 경우엔 미국 현실 범위만 신뢰한다.
+            # 예: "compensation range ... specific to Czech Republic ... 1,480,000"(CZK 코드 없음)을
+            # USD 로 오인해 $148만 같은 쓰레기값을 내보내는 것을 막는다(외화 100만대 → 거부).
+            cur_evidenced = bool(cur_sym) or bool(cw)
+            if not cur_evidenced:
+                if period == "YEAR" and not (30_000 <= lo <= 600_000 and 30_000 <= hi <= 700_000):
+                    continue
+                if period == "MONTH" and not (2_000 <= lo <= 60_000 and 2_000 <= hi <= 60_000):
+                    continue
         return {"min": int(lo), "max": int(hi), "currency": cur, "period": period}
     # 영어 패턴이 없으면 일본어(円/万円) 시도.
     return _extract_jp_salary(text)

@@ -125,3 +125,75 @@ def test_recovers_dropped_k():
 def test_space_separator_requires_second_currency():
     # 공백 구분은 둘째 금액에 통화기호 필수 — 없으면 범위로 보지 않음(단일값 → None)
     assert ex("Base salary range $130,000 and great benefits") is None
+
+
+# --- 통화기호 없는/형식 깨진 실제 공고 복구 (운영 false-negative 358건 대상) ---
+
+def test_recovers_range_without_currency_symbol():
+    # Affirm: "CAN base pay range per year: 153,000 - 213,000" ($ 없음, 콤마 범위)
+    r = ex("CAN base pay range per year: 153,000 - 213,000 #LI-Remote")
+    assert r == {"min": 153000, "max": 213000, "currency": "USD", "period": "YEAR"}
+
+
+def test_recovers_first_number_missing_symbol():
+    # Harvey: 첫 금액에만 $ 누락 "Salary Range: 40 hours/week; 230,000 - $270,000/year"
+    r = ex("Salary Range: 40 hours/week; 230,000 - $270,000/year Job Description")
+    assert r == {"min": 230000, "max": 270000, "currency": "USD", "period": "YEAR"}
+
+
+def test_recovers_text_currency_code():
+    # Asana: "salary range is between CAD 211,000-240,000" (텍스트 통화코드)
+    r = ex("The salary range is between CAD 211,000-240,000. The actual base salary")
+    assert r["min"] == 211000 and r["max"] == 240000 and r["currency"] == "CAD"
+
+
+def test_recovers_word_between_salary_and_range():
+    # Calendly: "Tier 1 Salary Hiring Range $202,542 — $245,434 USD" (salary↔range 사이 단어)
+    r = ex("Tier 1 Salary Hiring Range $202,542 — $245,434 USD Tier 2")
+    assert r == {"min": 202542, "max": 245434, "currency": "USD", "period": "YEAR"}
+
+
+def test_recovers_compensation_immediately_before_amount():
+    # Harvey: "Compensation $188,000 - $282,000" (compensation 바로 뒤 금액, range/콜론 없음)
+    r = ex("Compensation $188,000 - $282,000 Depending on your location")
+    assert r == {"min": 188000, "max": 282000, "currency": "USD", "period": "YEAR"}
+
+
+# --- 통화기호 없는 매칭의 오탐 가드 ---
+
+def test_rejects_symbolless_employee_count():
+    # 앵커가 있어도 직후 명사(employees)면 연봉 아님
+    assert ex("Our salary range supports teams of 50,000 - 100,000 employees") is None
+
+
+def test_rejects_symbolless_small_numbers():
+    # salary-shaped(콤마/5자리+) 아닌 작은 숫자는 범위로 보지 않음
+    assert ex("This salary band covers levels 10 - 15 across the org") is None
+
+
+def test_rejects_symbolless_year_range():
+    # 4자리 연도 범위는 salary-shaped 아님 → 무시
+    assert ex("Annual salary review cycle runs 2020 - 2024 each period") is None
+
+
+def test_recovers_czk_annual_currency_code():
+    # Fireblocks: "compensation range ... CZK 1,384,000 – 1,800,000 gross annually" (USD 로 오인 금지)
+    r = ex("The estimated compensation range for this role is CZK 1,384,000 – 1,800,000 gross annually.")
+    assert r == {"min": 1384000, "max": 1800000, "currency": "CZK", "period": "YEAR"}
+
+
+def test_recovers_pln_monthly_currency_code():
+    # Asana: "base salary range is between 40,750 - 46,333 PLN gross per month"
+    r = ex("the estimated base salary range is between 40,750 - 46,333 PLN gross per month")
+    assert r == {"min": 40750, "max": 46333, "currency": "PLN", "period": "MONTH"}
+
+
+def test_rejects_guessed_usd_implausible_magnitude():
+    # 통화코드 없는 체코(CZK 100만대)를 USD 로 오인하면 $148만 → 거부(미국 범위 밖).
+    assert ex("The base salary range for this role, specific to Czech Republic, is 1,480,000 - 1,945,000 gross.") is None
+
+
+def test_keeps_symbolless_usd_within_us_range():
+    # 통화코드 없어도 미국 현실 범위면 USD 로 유지(Affirm CAN/USA base pay 류).
+    r = ex("USA base pay range per year: 153,000 - 213,000")
+    assert r == {"min": 153000, "max": 213000, "currency": "USD", "period": "YEAR"}
