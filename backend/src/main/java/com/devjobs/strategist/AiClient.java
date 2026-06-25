@@ -1,5 +1,6 @@
 package com.devjobs.strategist;
 
+import com.devjobs.strategist.dto.ApplicationKitDtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.InputStream;
@@ -157,6 +158,37 @@ public class AiClient {
             return mapper.readValue(resp.body(), SkillMatchResult.class);
         } catch (Exception e) {
             log.warn("ai skill-match 실패: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * AI /internal/application-kit 호출 — JD/이력서/공고메타/스킬갭으로 지원 키트 4종 합성.
+     * 실패(키 미설정/업스트림 오류/도달불가 포함) 시 null → 호출 측이 부분 키트(공고+비자+스킬갭)로 폴백.
+     * ai 응답의 engine 필드는 record 에 없으나 SNAKE_CASE + FAIL_ON_UNKNOWN_PROPERTIES=false 로 무시.
+     */
+    public ApplicationKitDtos.KitSynthesis applicationKit(
+            String jd, String resume, Map<String, Object> jobMeta, Map<String, Object> skillGap) {
+        try {
+            String json = mapper.writeValueAsString(Map.of(
+                "jd", jd == null ? "" : jd,
+                "resume", resume == null ? "" : resume,
+                "job_meta", jobMeta == null ? Map.of() : jobMeta,
+                "skill_gap", skillGap == null ? Map.of() : skillGap));
+            HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/internal/application-kit"))
+                .header("content-type", "application/json")
+                .timeout(Duration.ofSeconds(60))
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+            HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() != 200) {
+                log.warn("ai application-kit HTTP {}", resp.statusCode());
+                return null;
+            }
+            return mapper.readValue(resp.body(), ApplicationKitDtos.KitSynthesis.class);
+        } catch (Exception e) {
+            log.warn("ai application-kit 실패: {}", e.getMessage());
             return null;
         }
     }
