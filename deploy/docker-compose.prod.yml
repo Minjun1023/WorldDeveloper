@@ -91,6 +91,29 @@ services:
       MAIL_FROM: ${MAIL_FROM:-no-reply@${DOMAIN}}
       PORT: "8080"
 
+  # 비자 가이드 코퍼스 1회 시드(idempotent upsert) — 배포마다 실행되며 콘텐츠 변경도 반영.
+  # backend Flyway(V26)가 visa_guides 테이블을 만든 뒤 시드하도록 시드 스크립트가 테이블을 잠시 대기한다.
+  # 서빙 경로(ai/backend/web)와 격리된 일회성 컨테이너(restart: no) — 실패해도 서비스에 영향 없음.
+  # 가이드 마크다운(docs/visa-guides)은 ai 빌드 컨텍스트 밖이라 호스트에서 read-only 로 마운트한다.
+  # 콘텐츠만 바뀌고 ai 이미지가 안 바뀐 배포에선 재시드가 안 될 수 있으므로,
+  # 그때는 수동으로:  sudo docker compose -f docker-compose.prod.yml run --rm visa-seed
+  visa-seed:
+    build:
+      context: ../ai
+      dockerfile: Dockerfile
+    restart: "no"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      backend:
+        condition: service_started
+    environment:
+      DATABASE_URL: postgresql://devjobs:${POSTGRES_PASSWORD}@postgres:5432/devjobs
+      VISA_GUIDES_DIR: /app/_visa_guides
+    volumes:
+      - ../docs/visa-guides:/app/_visa_guides:ro
+    command: ["/app/.venv/bin/python", "scripts/seed_visa_guides.py"]
+
   web:
     build:
       context: ../web

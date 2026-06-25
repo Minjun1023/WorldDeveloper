@@ -46,6 +46,25 @@ def parse_guide_md(country: str, text: str) -> list[dict]:
     return [c for c in chunks if c["content"]]
 
 
+def _wait_for_table(dsn: str, attempts: int = 20, delay: float = 3.0) -> bool:
+    """visa_guides 테이블이 생길 때까지 폴링(autocommit 으로 최신 카탈로그 확인).
+
+    배포 직후 backend Flyway(V26) 가 테이블을 만들기 전에 시드가 먼저 도는 레이스를 막는다.
+    생기면 True, 시도 초과면 False.
+    """
+    import time
+
+    import psycopg
+
+    for _ in range(attempts):
+        with psycopg.connect(dsn, autocommit=True) as conn:
+            row = conn.execute("SELECT to_regclass('public.visa_guides')").fetchone()
+        if row and row[0] is not None:
+            return True
+        time.sleep(delay)
+    return False
+
+
 def seed(guides_dir: str | None = None) -> int:
     """가이드 마크다운 → 임베딩 → visa_guides upsert. 반환: upsert 행 수.
 
@@ -65,6 +84,11 @@ def seed(guides_dir: str | None = None) -> int:
     files = sorted(base.glob("*.md"))
     if not files:
         log.warning("시드할 가이드 파일 없음: %s", base)
+        return 0
+
+    # 테이블 생성(backend Flyway V26)까지 대기 — 없으면 시드 건너뜀(배포 실패시키지 않음).
+    if not _wait_for_table(settings.database_url):
+        log.warning("visa_guides 테이블 없음(마이그레이션 대기 초과) — 시드 건너뜀")
         return 0
 
     n = 0
