@@ -7,12 +7,36 @@
 from __future__ import annotations
 
 import logging
+import re
 import threading
 from functools import lru_cache
 
 log = logging.getLogger(__name__)
 
 MODEL_NAME = "paraphrase-multilingual-MiniLM-L12-v2"
+
+_WS = re.compile(r"\s+")
+
+
+def build_embed_text(
+    title: str | None, tags: list[str] | None, plain: str | None
+) -> str:
+    """임베딩에 넣을 텍스트를 구성한다.
+
+    모델은 128토큰만 보므로(긴 본문은 잘림) 제목·기술스택을 맨 앞에 둬서 역할/도메인
+    신호가 회사 소개 보일러플레이트에 묻히지 않게 한다. 'Skills:' 앵커는 쿼리(프로필)
+    측 텍스트와 형태를 맞춰(동일 앵커 + 공통 스킬 토큰) 한↔영 교차 코사인을 높인다.
+    """
+    parts: list[str] = []
+    if title:
+        parts.append(_WS.sub(" ", title).strip())
+    if tags:
+        parts.append("Skills: " + ", ".join(tags))
+    if plain:
+        snippet = _WS.sub(" ", plain).strip()[:400]
+        if snippet:
+            parts.append(snippet)
+    return ". ".join(p for p in parts if p)
 
 _model = None
 _load_failed = False
