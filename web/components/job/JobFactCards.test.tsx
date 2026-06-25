@@ -15,7 +15,7 @@ describe("JobFactCards", () => {
     // 값: 위치는 compactLocation 한글 단축 표기 + 국기 동반(Singapore → "싱가포르 🇸🇬")
     expect(screen.getByText(/싱가포르/)).toBeInTheDocument();
     expect(screen.getByText("정규직")).toBeInTheDocument();
-    expect(screen.getByText("시니어")).toBeInTheDocument();
+    expect(screen.getByText("5년+")).toBeInTheDocument();
     // 뷰어블 게이트로 전부 비자 지원 가능이라 비자 행은 노출하지 않는다.
     expect(screen.queryByText(/비자/)).toBeNull();
   });
