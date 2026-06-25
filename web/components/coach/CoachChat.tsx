@@ -1,31 +1,22 @@
 "use client";
 
-import { ArrowUp, Briefcase, Check, FileText, History, Info, Paperclip, RefreshCw, Sparkles, Upload, X } from "lucide-react";
+import { ArrowUp, Briefcase, FileText, History, Info, Plus, RefreshCw, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
-import { CoachLanding } from "./CoachLanding";
+import { CoachJobModal, type PickJob } from "./CoachJobModal";
+import { CoachResumeModal } from "./CoachResumeModal";
 
-type PickJob = { id: string; title: string; company: { display_name: string } };
 type Msg = { role: "user" | "assistant"; content: string };
-
-// 진입 히어로의 빠른 프롬프트 (Figma). jobSpecific=true 는 공고가 있어야 의미 있는 질문 —
-// 공고 미첨부 시 누르면 입력 대신 첨부 모달을 열어, 공고 없이 공고 맞춤 답을 요구하는 경로를 막는다.
-const QUICK_PROMPTS: { text: string; jobSpecific: boolean }[] = [
-  { text: "이 공고에 맞는 키워드는?", jobSpecific: true },
-  { text: "내 이력서에서 부족한 점은?", jobSpecific: false },
-  { text: "면접 예상 질문 뽑아줘", jobSpecific: true },
-  { text: "자기소개 문단 다듬어줘", jobSpecific: false },
-];
 
 const SIGNIN = "/signin?callbackUrl=/coach";
 
 // 질문·공고·이력서가 하나도 없이 보내기를 눌렀을 때만 띄우는 안내.
 const EMPTY_GUIDANCE =
-  "무엇이 궁금하신가요? 질문을 입력하거나, 아래 ‘공고·이력서’로 공고·이력서를 첨부해 보세요. 하나만 있어도 답해드려요.";
+  "무엇이 궁금하신가요? 질문을 입력하거나, 위 ‘＋’로 공고·이력서를 첨부해 보세요. 하나만 있어도 답해드려요.";
 
 // 메시지 없이 첨부만 보낼 때 자동으로 채울 기본 질문(첨부 구성에 맞춰).
 function defaultQuestion(hasJob: boolean, hasResume: boolean): string {
@@ -61,25 +52,17 @@ export function CoachChat({
   const [jobs, setJobs] = useState<PickJob[]>(initialJobs ?? []);
   const [jobsLoading, setJobsLoading] = useState(initialJobs === undefined && loggedIn);
   const threadRef = useRef<HTMLDivElement>(null);
+  const composerWrapRef = useRef<HTMLDivElement>(null);
 
-  // 공고·이력서 첨부 모달 — 초안(draft)을 편집하고 '첨부 완료' 시 커밋.
-  const [modalOpen, setModalOpen] = useState(false);
-  const [attachTab, setAttachTab] = useState<"paste" | "file">("file");
-  const [draftJobId, setDraftJobId] = useState("");
-  const [draftResume, setDraftResume] = useState("");
-  const [draftFileName, setDraftFileName] = useState<string | null>(null);
-  const [extracting, setExtracting] = useState(false); // PDF 텍스트 추출 중
-  const [extractError, setExtractError] = useState<string | null>(null);
-  const modalRef = useRef<HTMLDialogElement>(null);
-  const modalTitleId = useId();
+  // ＋ 팝오버 메뉴 + 두 첨부 모달(공고 / 이력서).
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [jobModalOpen, setJobModalOpen] = useState(false);
+  const [resumeModalOpen, setResumeModalOpen] = useState(false);
 
   const selectedJob = jobs.find((j) => j.id === jobId);
   const started = messages.length > 0;
   const hasResume = resume.trim().length > 0;
-  const hasMessage = input.trim().length > 0;
   const attachmentCount = (jobId ? 1 : 0) + (hasResume ? 1 : 0);
-  const needsAttach = !jobId || !hasResume;
-  const canCommit = !!draftJobId && draftResume.trim().length > 0;
 
   // picker 공고 = 북마크(저장) + 지원상태. 지원준비중(interested) 먼저. 비로그인은 조회하지 않는다.
   useEffect(() => {
@@ -94,7 +77,6 @@ export function CoachChat({
       const appItems = (apps as { items?: { job_id: string; status: string }[] } | null)?.items;
       if (Array.isArray(appItems)) for (const a of appItems) status[a.job_id] = a.status;
       const list: PickJob[] = Array.isArray(saved) ? saved : [];
-      // 지원준비중(interested) 먼저, 그다음 나머지 북마크. 각 그룹은 원래 순서 유지.
       const ordered = [
         ...list.filter((j) => status[j.id] === "interested"),
         ...list.filter((j) => status[j.id] !== "interested"),
@@ -189,14 +171,6 @@ export function CoachChat({
     };
   }, [jobId]);
 
-  // 첨부 모달 열림/닫힘 → 네이티브 dialog 제어
-  useEffect(() => {
-    const el = modalRef.current;
-    if (!el) return;
-    if (modalOpen && !el.open) el.showModal();
-    else if (!modalOpen && el.open) el.close();
-  }, [modalOpen]);
-
   async function reset() {
     if (jobId) {
       try {
@@ -214,59 +188,33 @@ export function CoachChat({
     setJobId("");
     setResume("");
     setResumeFileName(null);
-    setModalOpen(false);
+    setMenuOpen(false);
   }
 
-  function openAttach() {
+  // ＋ 메뉴 바깥 클릭 / Esc 로 닫기.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!composerWrapRef.current?.contains(e.target as Node)) setMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
+  // ＋ 버튼: 비로그인은 로그인으로, 로그인은 첨부 메뉴 토글.
+  function openMenu() {
     if (!loggedIn) {
       router.push(SIGNIN);
       return;
     }
-    setDraftJobId(jobId);
-    setDraftResume(resume);
-    setDraftFileName(resumeFileName);
-    setAttachTab("file"); // 파일 업로드 우선 노출
-    setModalOpen(true);
-  }
-
-  function commitAttach() {
-    setJobId(draftJobId);
-    setResume(draftResume);
-    setResumeFileName(draftFileName);
-    setModalOpen(false);
-  }
-
-  // .txt/.md 는 브라우저에서 즉시 읽고, .pdf 는 서버(/resume-extract, Node)에서 텍스트만 추출한다.
-  async function readResumeFile(file: File | undefined) {
-    if (!file) return;
-    setExtractError(null);
-    const isPdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
-    if (isPdf) {
-      setExtracting(true);
-      try {
-        const fd = new FormData();
-        fd.append("file", file);
-        const res = await fetch("/api/me/coach/resume-extract", { method: "POST", body: fd });
-        const data = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
-        if (res.ok && data.text) {
-          setDraftResume(data.text);
-          setDraftFileName(file.name);
-        } else {
-          setExtractError(data.error ?? "PDF를 읽지 못했어요.");
-        }
-      } catch {
-        setExtractError("PDF 업로드에 실패했어요.");
-      } finally {
-        setExtracting(false);
-      }
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = () => {
-      setDraftResume(typeof reader.result === "string" ? reader.result : "");
-      setDraftFileName(file.name);
-    };
-    reader.readAsText(file);
+    setMenuOpen((v) => !v);
   }
 
   async function send() {
@@ -300,13 +248,13 @@ export function CoachChat({
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
       let acc = "";
-      let started = false;
+      let firstChunk = false;
       for (;;) {
         const { done, value } = await reader.read();
         if (done) break;
         acc += decoder.decode(value, { stream: true });
-        if (!started) {
-          started = true;
+        if (!firstChunk) {
+          firstChunk = true;
           setMessages((m) => [...m, { role: "assistant", content: acc }]);
         } else {
           setMessages((m) => {
@@ -316,7 +264,7 @@ export function CoachChat({
           });
         }
       }
-      if (!started) throw new Error("답변을 받지 못했어요. 잠시 후 다시 시도해 주세요.");
+      if (!firstChunk) throw new Error("답변을 받지 못했어요. 잠시 후 다시 시도해 주세요.");
       // 백엔드가 스트림 종료 시 대화를 저장하므로, 좌측 레일 목록을 새로고침한다.
       onConversationSaved?.();
     } catch (e) {
@@ -326,10 +274,22 @@ export function CoachChat({
     }
   }
 
-  // 직행 커리어AI 식 입력 카드: 메시지 + 둥근 첨부(좌)·전송(우). 공고·이력서는 모달로 첨부.
+  // ChatGPT식 알약 컴포저: ＋(첨부 메뉴) + 입력 + 전송. 마이크·음성 없음.
   const composer = (
-    <div className="w-full">
-      <div className="w-full rounded-2xl border border-border bg-surface shadow-sm">
+    <div ref={composerWrapRef} className="relative w-full">
+      <div className="flex items-center gap-2 rounded-[1.75rem] border border-border bg-surface px-2 py-2 pl-3 shadow-sm">
+        <button
+          type="button"
+          onClick={openMenu}
+          aria-label="공고·이력서 첨부"
+          aria-haspopup="menu"
+          className={cn(
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors",
+            attachmentCount ? "bg-primary/10 text-primary" : "bg-surface-2 text-foreground hover:bg-border",
+          )}
+        >
+          <Plus className="h-5 w-5" aria-hidden="true" />
+        </button>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -340,49 +300,70 @@ export function CoachChat({
               send();
             }
           }}
-          rows={2}
+          rows={1}
           placeholder={
             jobId
               ? "메시지를 입력하세요 — 이 공고에 맞춰 답해드려요 (Enter 전송, Shift+Enter 줄바꿈)"
-              : "메시지를 입력하세요 — 이력서 전반을 코치해드려요. 공고를 붙이면 맞춤 분석 (Enter 전송, Shift+Enter 줄바꿈)"
+              : "메시지를 입력하세요 — 이력서 전반을 코치해드려요. 공고를 붙이면 맞춤 분석 (Enter 전송)"
           }
-          className="block max-h-44 min-h-[4rem] w-full resize-none bg-transparent px-4 pt-4 text-body-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none"
+          className="block max-h-40 min-h-[40px] flex-1 resize-none bg-transparent py-2 text-body-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
-
-        <div className="flex items-center justify-between gap-2 px-3 pb-3 pt-1.5">
-          <button
-            type="button"
-            onClick={openAttach}
-            aria-haspopup="dialog"
-            aria-label="공고·이력서 첨부"
-            style={attachmentCount ? { backgroundColor: "color-mix(in srgb, var(--primary) 8%, transparent)" } : undefined}
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-caption font-medium transition-colors",
-              attachmentCount
-                ? "border-primary text-primary"
-                : "border-border text-muted-foreground hover:bg-accent hover:text-foreground",
-            )}
-          >
-            <Paperclip className="h-3.5 w-3.5" aria-hidden="true" />
-            공고·이력서
-            {attachmentCount === 2 && <Check className="h-3.5 w-3.5" aria-hidden="true" />}
-          </button>
-          <button
-            type="button"
-            onClick={send}
-            disabled={pending}
-            aria-label="보내기"
-            className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-opacity",
-              pending ? "bg-surface-2 text-muted-foreground" : "bg-brand-gradient text-white hover:opacity-90",
-            )}
-          >
-            <ArrowUp className="h-5 w-5" aria-hidden="true" />
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={send}
+          disabled={pending}
+          aria-label="보내기"
+          className={cn(
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-opacity",
+            pending ? "bg-surface-2 text-muted-foreground" : "bg-brand-gradient text-white hover:opacity-90",
+          )}
+        >
+          <ArrowUp className="h-5 w-5" aria-hidden="true" />
+        </button>
       </div>
 
-      {attachmentCount > 0 ? (
+      {/* ＋ 팝오버 메뉴 */}
+      {menuOpen && (
+        <div className="absolute bottom-[3.5rem] left-0 z-30 min-w-[16rem] rounded-2xl border border-border bg-surface p-1.5 shadow-lg">
+          <button
+            type="button"
+            aria-label="공고 첨부"
+            onClick={() => {
+              setMenuOpen(false);
+              setJobModalOpen(true);
+            }}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-surface-2"
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Briefcase className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <span>
+              <span className="block text-body-sm font-semibold text-foreground">공고 첨부</span>
+              <span className="block text-caption text-muted-foreground">북마크·지원준비중에서 선택</span>
+            </span>
+          </button>
+          <button
+            type="button"
+            aria-label="이력서 첨부"
+            onClick={() => {
+              setMenuOpen(false);
+              setResumeModalOpen(true);
+            }}
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-surface-2"
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <FileText className="h-4 w-4" aria-hidden="true" />
+            </span>
+            <span>
+              <span className="block text-body-sm font-semibold text-foreground">이력서 첨부</span>
+              <span className="block text-caption text-muted-foreground">파일 업로드 또는 붙여넣기</span>
+            </span>
+          </button>
+        </div>
+      )}
+
+      {/* 첨부됨 칩 */}
+      {attachmentCount > 0 && (
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {selectedJob && (
             <AttachedChip icon={Briefcase}>
@@ -394,45 +375,13 @@ export function CoachChat({
               {resumeFileName ? `이력서 첨부됨 · ${resumeFileName}` : "이력서 첨부됨"}
             </AttachedChip>
           )}
-          {needsAttach && (
-            <button type="button" onClick={openAttach} className="text-caption font-medium text-primary hover:underline">
-              {!jobId ? "공고 선택" : "이력서 추가"}
-            </button>
-          )}
         </div>
-      ) : (
-        !started && (
-          <p className="mt-2 px-1 text-caption text-muted-foreground">
-            <button type="button" onClick={openAttach} className="font-medium text-primary hover:underline">
-              공고·이력서
-            </button>
-            를 첨부하면 더 정확하게 답해드려요. 공고는 선택이에요.
-          </p>
-        )
       )}
-    </div>
-  );
-
-  // 빠른 질문 칩. 공고 전용 질문인데 공고가 없으면 입력 대신 첨부 모달을 연다.
-  const pills = (
-    <div className="flex flex-wrap justify-center gap-2">
-      {QUICK_PROMPTS.map((p) => (
-        <button
-          key={p.text}
-          type="button"
-          onClick={() => (p.jobSpecific && !jobId ? openAttach() : setInput(p.text))}
-          className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-caption text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-        >
-          {p.text}
-        </button>
-      ))}
     </div>
   );
 
   const noJobs = loggedIn && !jobsLoading && jobs.length === 0;
 
-  // 풀스크린 앱: 부모 <main> 을 가득 채우는 전체높이 flex 컬럼.
-  // 위쪽(스크롤 영역)만 내부 스크롤하고, 컴포저는 하단에 항상 고정된다(빈/진행 상태 공통).
   return (
     <div className="relative flex h-full flex-col">
       {/* 옅은 파랑 배경 글로우 */}
@@ -442,14 +391,13 @@ export function CoachChat({
         style={{ background: "radial-gradient(60% 60% at 50% 0%, color-mix(in srgb, var(--primary) 11%, transparent), transparent)" }}
       />
 
-      {/* 스크롤 영역 — 화면에서 유일하게 스크롤되는 곳(이중 스크롤바 방지) */}
       <div className="min-h-0 flex-1 overflow-y-auto">
         {noJobs ? (
           <div className="mx-auto w-full max-w-2xl px-4 py-6">
             <NoJobs />
           </div>
         ) : started ? (
-          // 대화 진행 — 헤더(공고 칩 + 새 상담) + 메시지 스레드. flex 로 남는 높이를 채운다.
+          // 대화 진행 — 헤더(공고 칩 + 새 상담) + 메시지 스레드. 컴포저는 하단 바.
           <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-4 px-4 py-4">
             <div className="flex items-center justify-between gap-3">
               {selectedJob ? (
@@ -482,7 +430,7 @@ export function CoachChat({
                   <span>
                     이전 상담을 이어갑니다
                     {hydratedAt ? ` · ${new Date(hydratedAt).toLocaleDateString("ko-KR")}` : ""}.
-                    이어가려면 아래 &lsquo;공고·이력서&rsquo;에서 이력서를 다시 첨부해 주세요.
+                    이어가려면 위 ‘＋’에서 이력서를 다시 첨부해 주세요.
                   </span>
                 </div>
               )}
@@ -526,160 +474,63 @@ export function CoachChat({
             </div>
           </div>
         ) : (
-          // 진입(빈) 상태 — 랜딩(가치 제안) 마케팅 콘텐츠. 컴포저는 아래 고정 바에 있다.
-          <div className="mx-auto w-full max-w-3xl px-4 py-6">
-            <CoachLanding />
+          // 진입(빈) 상태 — 미니멀: 헤드라인 + 중앙 컴포저 + 안내.
+          <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col items-center justify-center px-4 py-10 text-center">
+            <h1 className="text-[clamp(1.5rem,3vw,2rem)] font-bold tracking-tight text-foreground">
+              이력서, 어떤 걸 도와드릴까요?
+            </h1>
+            <div className="mt-6 w-full">{composer}</div>
+            {loggedIn ? (
+              <p className="mt-4 flex items-center justify-center gap-1.5 text-caption text-muted-foreground">
+                <Info className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                붙여넣은 공고·이력서만 보고 답해요. 이력서는 저장되지 않아요.
+              </p>
+            ) : (
+              <div className="mt-4 flex flex-col items-center gap-3">
+                <p className="flex items-center gap-1.5 text-caption text-muted-foreground">
+                  <Info className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                  <span>
+                    <span className="font-semibold text-foreground">로그인 시 이용 가능</span> · 이력서는 저장되지 않아요.
+                  </span>
+                </p>
+                <Link
+                  href={SIGNIN}
+                  className="bg-brand-gradient rounded-xl px-5 py-2.5 text-body-sm font-semibold text-white transition-opacity hover:opacity-90"
+                >
+                  로그인하고 시작 →
+                </Link>
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* 하단 고정 컴포저 바 — 빈/진행 상태 모두에서 항상 보인다 */}
-      {!noJobs && (
+      {/* 하단 고정 컴포저 — 대화 진행 중에만(빈 상태는 컴포저가 중앙). */}
+      {!noJobs && started && (
         <div className="shrink-0 border-t border-border">
-          <div className="mx-auto flex w-full max-w-3xl flex-col gap-2 px-4 py-3">
-            {!started && pills}
-            {composer}
-            {!started && (
-              <p className="flex items-start justify-center gap-1.5 text-center text-caption text-muted-foreground">
-                <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                붙여넣은 공고·이력서만 보고 답해요. 공고를 첨부한 대화는 90일간 저장되고, 이력서는 저장되지 않아요.
-              </p>
-            )}
-          </div>
+          <div className="mx-auto w-full max-w-3xl px-4 py-3">{composer}</div>
         </div>
       )}
 
-      {/* 공고·이력서 첨부 모달 — 공고 드롭다운 + 이력서(붙여넣기 / 파일로 첨부) 탭 */}
-      <dialog
-        ref={modalRef}
-        aria-labelledby={modalTitleId}
-        onClose={() => setModalOpen(false)}
-        onClick={(e) => {
-          if (e.target === modalRef.current) setModalOpen(false);
+      {/* 첨부 모달 — ＋ 메뉴에서 연다(공고 / 이력서). */}
+      <CoachJobModal
+        open={jobModalOpen}
+        jobs={jobs}
+        jobsLoading={jobsLoading}
+        selectedId={jobId}
+        onSelect={(id) => setJobId(id)}
+        onClose={() => setJobModalOpen(false)}
+      />
+      <CoachResumeModal
+        open={resumeModalOpen}
+        initialText={resume}
+        initialFileName={resumeFileName}
+        onCommit={(text, name) => {
+          setResume(text);
+          setResumeFileName(name);
         }}
-        className="m-auto w-[min(92vw,34rem)] rounded-2xl border border-border bg-surface p-0 text-foreground shadow-lg backdrop:bg-black/40"
-      >
-        <div className="flex items-center justify-between border-b border-border p-5">
-          <h2 id={modalTitleId} className="text-h3 font-semibold">공고·이력서 첨부</h2>
-          <button type="button" onClick={() => setModalOpen(false)} aria-label="닫기" className="text-muted-foreground hover:text-foreground">
-            <X className="h-5 w-5" />
-          </button>
-        </div>
-
-        <div className="space-y-5 p-5">
-          <label className="block space-y-1.5">
-            <span className="text-body-sm font-semibold text-foreground">상담할 공고</span>
-            <select
-              value={draftJobId}
-              onChange={(e) => setDraftJobId(e.target.value)}
-              disabled={jobsLoading}
-              className="h-11 w-full rounded-lg border border-input bg-background px-3 text-body-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
-            >
-              <option value="">{jobsLoading ? "공고 불러오는 중…" : "공고를 선택하세요…"}</option>
-              {jobs.map((j) => (
-                <option key={j.id} value={j.id}>
-                  {j.company.display_name} · {j.title}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-body-sm font-semibold text-foreground">이력서</span>
-              <span className="text-caption text-muted-foreground">(저장되지 않아요)</span>
-            </div>
-
-            <div className="flex gap-1 rounded-lg bg-surface-2 p-1">
-              {([
-                { key: "file", label: "파일 업로드" },
-                { key: "paste", label: "직접 붙여넣기" },
-              ] as const).map((t) => (
-                <button
-                  key={t.key}
-                  type="button"
-                  onClick={() => setAttachTab(t.key)}
-                  className={cn(
-                    "flex-1 rounded-md px-3 py-2 text-body-sm font-medium transition-colors",
-                    attachTab === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-                  )}
-                >
-                  {t.label}
-                </button>
-              ))}
-            </div>
-
-            {attachTab === "paste" ? (
-              <textarea
-                value={draftResume}
-                onChange={(e) => {
-                  setDraftResume(e.target.value);
-                  setDraftFileName(null);
-                }}
-                rows={8}
-                placeholder="이력서 전문을 붙여넣으세요"
-                className="w-full resize-y rounded-lg border border-input bg-background px-3 py-2 text-body-sm leading-relaxed placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-            ) : (
-              <label
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  readResumeFile(e.dataTransfer.files?.[0]);
-                }}
-                className="flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-background px-4 py-10 text-center transition-colors hover:border-primary/40"
-              >
-                <Upload className="h-6 w-6 text-muted-foreground" aria-hidden="true" />
-                <span className="text-body-sm font-semibold text-foreground">파일을 드래그하거나 클릭해서 선택</span>
-                <span className="text-caption text-muted-foreground">.pdf .txt .md 지원</span>
-                <span className="mt-1 inline-flex rounded-lg border border-border px-4 py-2 text-caption font-medium text-foreground">
-                  파일 선택
-                </span>
-                {draftFileName && (
-                  <span className="mt-1 inline-flex items-center gap-1.5 text-caption text-primary">
-                    <Check className="h-3.5 w-3.5" aria-hidden="true" />
-                    {draftFileName}
-                  </span>
-                )}
-                <span className={cn("mt-1 text-caption", extractError ? "text-destructive" : "text-muted-foreground")}>
-                  {extracting
-                    ? "PDF에서 텍스트 추출 중…"
-                    : extractError
-                      ? extractError
-                      : "PDF는 텍스트만 추출돼요(스캔/이미지 PDF는 제외)."}
-                </span>
-                <input
-                  type="file"
-                  accept=".pdf,application/pdf,.txt,.md,.markdown,.text,text/plain"
-                  className="sr-only"
-                  onChange={(e) => {
-                    readResumeFile(e.target.files?.[0]);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-            )}
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-2 border-t border-border p-5">
-          <button
-            type="button"
-            onClick={() => setModalOpen(false)}
-            className="rounded-lg border border-border px-5 py-2.5 text-body-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            취소
-          </button>
-          <button
-            type="button"
-            onClick={commitAttach}
-            disabled={!canCommit}
-            className="rounded-lg bg-primary px-5 py-2.5 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
-            첨부 완료
-          </button>
-        </div>
-      </dialog>
+        onClose={() => setResumeModalOpen(false)}
+      />
     </div>
   );
 }
@@ -691,7 +542,6 @@ function AttachedChip({ icon: Icon, children }: { icon: typeof Briefcase; childr
       className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-caption font-medium text-primary"
       style={{ backgroundColor: "color-mix(in srgb, var(--primary) 12%, transparent)" }}
     >
-      <Check className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
       <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
       <span className="truncate">{children}</span>
     </span>
