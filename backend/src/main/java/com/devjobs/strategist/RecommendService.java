@@ -137,11 +137,15 @@ public class RecommendService {
         return chosen;
     }
 
-    private String buildProfileText(RecommendRequest req) {
+    // 쿼리(프로필) 임베딩 텍스트. 공고측 build_embed_text 와 형태를 맞춘다 — 'Skills:' 앵커를
+    // 앞세워 공통 스킬 토큰이 동일 위치에 오게 해, 짧은 한글 bio ↔ 긴 영문 공고의 교차 코사인을 높인다.
+    static String buildProfileText(RecommendRequest req) {
         StringBuilder sb = new StringBuilder();
-        if (req.bio() != null) sb.append(req.bio()).append(' ');
-        if (req.resumeText() != null) sb.append(req.resumeText()).append(' ');
-        if (req.skills() != null) sb.append(String.join(" ", req.skills()));
+        if (req.skills() != null && !req.skills().isEmpty()) {
+            sb.append("Skills: ").append(String.join(", ", req.skills())).append(". ");
+        }
+        if (req.bio() != null && !req.bio().isBlank()) sb.append(req.bio()).append(' ');
+        if (req.resumeText() != null && !req.resumeText().isBlank()) sb.append(req.resumeText());
         return sb.toString().trim();
     }
 

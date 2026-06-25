@@ -16,7 +16,7 @@ from dev_jobs_core.analyzers.seniority import extract_seniority
 from dev_jobs_core.analyzers.stack import extract_tech, normalize_tech_tags
 from dev_jobs_core.analyzers.visa import classify_visa
 from dev_jobs_core.models import JobPosting
-from dev_jobs_core.recommender.embeddings import embed_text
+from dev_jobs_core.recommender.embeddings import build_embed_text, embed_text
 from dev_jobs_core.registry import resolve as resolve_company
 
 
@@ -154,7 +154,8 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
     # 보드 태그(arbeitnow/remoteok 등)는 비기술 라벨이 섞여 들어오므로 기술스택만 정규화.
     # 남는 기술 태그가 없으면 제목+본문에서 추출로 폴백("iOS Engineer"·"Go Developer" 등 제목 스택 포착).
     tags = normalize_tech_tags(j.tags) or extract_tech(f"{j.title or ''}\n{plain}")
-    embedding = embed_text(f"{j.title}\n{plain}")
+    # 제목+스택을 앞세운 텍스트로 임베딩 — 의미 유사도가 도메인/역할을 실제로 반영하게.
+    embedding = embed_text(build_embed_text(j.title, tags, plain))
 
     # 구조화 연봉이 없으면 본문에서 명시 범위 추출(원본 통화 표시 + USD 환산 점수용).
     raw_min, raw_max = j.salary_min, j.salary_max
