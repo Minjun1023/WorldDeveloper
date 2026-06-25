@@ -67,4 +67,27 @@ class JobScorerTest {
         assertEquals(1.0, Seniority.overLevelPenalty("entry", "unspecified"), 1e-9);
         assertEquals(1.0, Seniority.overLevelPenalty(null, "staff"), 1e-9);
     }
+
+    @Test
+    void visaSponsorsTopScore() {
+        assertEquals(1.0, JobScorer.scoreVisa(true, "sponsors"), 1e-9);
+    }
+
+    @Test
+    void visaUnclearRaisedFloor() {
+        // unclear 는 '스폰서 안 함'이 아니라 '확인 안 됨' → 0.6 (스택 더 맞는 공고가 밀리지 않게)
+        assertEquals(0.6, JobScorer.scoreVisa(true, "unclear"), 1e-9);
+        assertEquals(0.6, JobScorer.scoreVisa(true, null), 1e-9);
+    }
+
+    @Test
+    void visaNoSponsorZeroOnAxis() {
+        // 축 점수는 0 (추가로 deal-breaker ×0.1 도 별도 적용됨)
+        assertEquals(0.0, JobScorer.scoreVisa(true, "no_sponsor"), 1e-9);
+    }
+
+    @Test
+    void visaIgnoredWhenNotNeeded() {
+        assertEquals(1.0, JobScorer.scoreVisa(false, "unclear"), 1e-9);
+    }
 }

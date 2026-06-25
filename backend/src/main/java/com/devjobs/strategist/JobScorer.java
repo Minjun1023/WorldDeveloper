@@ -35,7 +35,7 @@ public class JobScorer {
 
         double visa = scoreVisa(needsVisa, job.getVisaStatus());
         double location = scoreLocation(req, job);
-        String jobLevel = Seniority.detect(job.getTitle(), job.getDescriptionText());
+        String jobLevel = Seniority.detect(job.getTitle(), job.getDescriptionText(), job.getExperienceYears());
         double seniority = Seniority.fit(req.seniority(), jobLevel);
         double salary = scoreSalary(req.desiredSalaryUsd(), job.getSalaryMaxUsd());
 
@@ -99,12 +99,16 @@ public class JobScorer {
         return new double[]{Math.min(1.0, 0.6 * ratio + 0.4 * absBonus)};
     }
 
-    private double scoreVisa(boolean needsVisa, String status) {
+    // 비자 점수. needsVisa 일 때만 차등. no_sponsor 는 별도 deal-breaker(×0.1)로 강등되므로
+    // 여기서의 핵심은 sponsors(확정) vs unclear(불명)의 격차다. unclear 는 '스폰서 안 함'이 아니라
+    // '확인 안 됨'이므로 0.4→0.6 으로 올려, 스택이 더 맞는 unclear 공고가 단지 스폰서 확정이라는
+    // 이유만으로 저스택 공고(보안/인프라 등)에 밀려 하위로 가던 문제를 완화한다.
+    static double scoreVisa(boolean needsVisa, String status) {
         if (!needsVisa) return 1.0;
         return switch (status == null ? "unclear" : status) {
             case "sponsors" -> 1.0;
             case "no_sponsor" -> 0.0;
-            default -> 0.4;
+            default -> 0.6;
         };
     }
 
