@@ -52,6 +52,7 @@ export function CoachChat({
   const [jobs, setJobs] = useState<PickJob[]>(initialJobs ?? []);
   const [jobsLoading, setJobsLoading] = useState(initialJobs === undefined && loggedIn);
   const threadRef = useRef<HTMLDivElement>(null);
+  const composerWrapRef = useRef<HTMLDivElement>(null);
 
   // ＋ 팝오버 메뉴 + 두 첨부 모달(공고 / 이력서).
   const [menuOpen, setMenuOpen] = useState(false);
@@ -190,6 +191,23 @@ export function CoachChat({
     setMenuOpen(false);
   }
 
+  // ＋ 메뉴 바깥 클릭 / Esc 로 닫기.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (!composerWrapRef.current?.contains(e.target as Node)) setMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
+
   // ＋ 버튼: 비로그인은 로그인으로, 로그인은 첨부 메뉴 토글.
   function openMenu() {
     if (!loggedIn) {
@@ -258,7 +276,7 @@ export function CoachChat({
 
   // ChatGPT식 알약 컴포저: ＋(첨부 메뉴) + 입력 + 전송. 마이크·음성 없음.
   const composer = (
-    <div className="relative w-full">
+    <div ref={composerWrapRef} className="relative w-full">
       <div className="flex items-center gap-2 rounded-[1.75rem] border border-border bg-surface px-2 py-2 pl-3 shadow-sm">
         <button
           type="button"
