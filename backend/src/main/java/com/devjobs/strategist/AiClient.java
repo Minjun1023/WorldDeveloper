@@ -2,6 +2,7 @@ package com.devjobs.strategist;
 
 import com.devjobs.strategist.dto.ApplicationKitDtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -191,6 +192,41 @@ public class AiClient {
             return mapper.readValue(resp.body(), ApplicationKitDtos.KitSynthesis.class);
         } catch (Exception e) {
             log.warn("ai application-kit 실패: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * 비자 가이드 합성 — 회수 청크(content/source_url/retrieved_at/section)에 근거한 가이드 단락.
+     * ai 는 무상태(DB 미접근). 실패/비200 시 null → 호출측에서 guide 생략(graceful).
+     */
+    public String visaGuide(String country, String visaStatus,
+                            Map<String, Object> jobMeta,
+                            List<Map<String, Object>> chunks) {
+        try {
+            String json = mapper.writeValueAsString(Map.of(
+                "country", country == null ? "" : country,
+                "visa_status", visaStatus == null ? "" : visaStatus,
+                "job_meta", jobMeta == null ? Map.of() : jobMeta,
+                "chunks", chunks == null ? List.of() : chunks));
+            HttpRequest req = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + "/internal/visa-guide"))
+                .header("content-type", "application/json")
+                .timeout(Duration.ofSeconds(60))
+                .POST(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+            HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
+            if (resp.statusCode() != 200) {
+                String body = resp.body();
+                log.warn("visa-guide ai HTTP {}: {}", resp.statusCode(),
+                    body.substring(0, Math.min(300, body.length())));
+                return null;
+            }
+            JsonNode node = mapper.readTree(resp.body());
+            String guide = node.path("guide").asText("");
+            return guide.isBlank() ? null : guide;
+        } catch (Exception e) {
+            log.warn("visa-guide ai 호출 실패: {}", e.getMessage());
             return null;
         }
     }

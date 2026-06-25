@@ -17,7 +17,7 @@ from fastapi import FastAPI
 
 from .config import settings
 from .etl.scheduler import shutdown_scheduler, start_scheduler
-from .routes import application_kit, coach, embed, etl, health, parse_profile, skill_match, summarize
+from .routes import application_kit, coach, embed, etl, health, parse_profile, skill_match, summarize, visa_guide
 
 log = logging.getLogger(__name__)
 
@@ -59,3 +59,4 @@ app.include_router(etl.router, prefix="/internal", tags=["internal"])
 app.include_router(parse_profile.router, prefix="/internal", tags=["internal"])
 app.include_router(skill_match.router, prefix="/internal", tags=["internal"])
 app.include_router(application_kit.router, prefix="/internal", tags=["internal"])
+app.include_router(visa_guide.router, prefix="/internal", tags=["internal"])

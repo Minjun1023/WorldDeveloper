@@ -16,6 +16,7 @@ import com.devjobs.scout.dto.JobDtos.VisaDto;
 import com.devjobs.strategist.AiClient.SkillMatchResult;
 import com.devjobs.strategist.dto.ApplicationKitDtos.ApplicationKitResponse;
 import com.devjobs.strategist.dto.ApplicationKitDtos.KitSynthesis;
+import com.devjobs.strategist.dto.ApplicationKitDtos.VisaGuideDto;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,13 +31,15 @@ class ApplicationKitServiceTest {
 
     private JobService jobService;
     private AiClient aiClient;
+    private VisaGuideService visaGuideService;
     private ApplicationKitService service;
 
     @BeforeEach
     void setUp() {
         jobService = mock(JobService.class);
         aiClient = mock(AiClient.class);
-        service = new ApplicationKitService(jobService, aiClient);
+        visaGuideService = mock(VisaGuideService.class);
+        service = new ApplicationKitService(jobService, aiClient, visaGuideService);
     }
 
     private static JobDetailDto jobDetail(String id, VisaDto visa) {
@@ -68,6 +71,9 @@ class ApplicationKitServiceTest {
             new SkillMatchResult(List.of("python", "grpc"), List.of("python"), List.of("grpc")));
         when(aiClient.applicationKit(anyString(), anyString(), any(), any())).thenReturn(
             new KitSynthesis("잘 맞음", "보완 전략", "커버레터", List.of("Q1", "Q2")));
+        VisaGuideDto guide = new VisaGuideDto("독일 Blue Card 경로",
+            java.util.List.of(), "법률·이민 자문이 아닙니다. 2026-06-25 기준 ... 공식 사이트 확인");
+        when(visaGuideService.buildGuide(any())).thenReturn(guide);
 
         Optional<ApplicationKitResponse> out = service.build(jobId, "내 이력서");
 
@@ -81,6 +87,8 @@ class ApplicationKitServiceTest {
         assertThat(kit.synthesis()).isNotNull();
         assertThat(kit.synthesis().fitSummary()).isEqualTo("잘 맞음");
         assertThat(kit.synthesis().interviewQuestions()).containsExactly("Q1", "Q2");
+        assertThat(kit.visa().guide()).isNotNull();
+        assertThat(kit.visa().guide().text()).isEqualTo("독일 Blue Card 경로");
     }
 
     @Test

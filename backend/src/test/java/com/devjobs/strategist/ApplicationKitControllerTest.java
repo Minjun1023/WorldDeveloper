@@ -115,7 +115,7 @@ class ApplicationKitControllerTest {
         when(kitService.build(anyString(), anyString())).thenReturn(Optional.of(
             new ApplicationKitResponse(
                 null,
-                new VisaInsightDto("verified", "스폰서 명부에서 확인됨"),
+                new VisaInsightDto("verified", "스폰서 명부에서 확인됨", null),
                 new SkillGap(List.of("python", "grpc"), List.of("python"), List.of("grpc")),
                 new KitSynthesis("잘 맞음", "보완 전략", "커버레터", List.of("Q1", "Q2")))));
         var body = Map.of("job_id", "job-1", "resume", "내 이력서");
