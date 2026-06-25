@@ -17,9 +17,11 @@ DSN = os.environ.get("DATABASE_URL", "postgresql://devjobs:devjobs@localhost:543
 def main() -> None:
     filled = 0
     with psycopg.connect(DSN) as conn:
+        # 평문(description_text) 우선 — 추출기 패턴이 HTML 태그에 방해받지 않게(transform 과 동일).
         rows = conn.execute(
-            "SELECT id, description FROM jobs "
-            "WHERE is_active = true AND salary_currency IS NULL AND description IS NOT NULL"
+            "SELECT id, COALESCE(description_text, description) FROM jobs "
+            "WHERE is_active = true AND salary_currency IS NULL "
+            "AND COALESCE(description_text, description) IS NOT NULL"
         ).fetchall()
         for jid, desc in rows:
             ext = extract_salary_from_description(desc)
