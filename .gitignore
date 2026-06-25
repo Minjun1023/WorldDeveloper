@@ -85,4 +85,6 @@ docs/*
 !docs/screenshots/
 docs/screenshots/*
 !docs/screenshots/v2/
+# 비자 가이드 RAG 코퍼스(시드 소스) — 배포 시 시드가 참조하므로 추적.
+!docs/visa-guides/
 .gstack/
