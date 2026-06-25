@@ -34,7 +34,7 @@ public class ApplicationKitService {
         JobDetailDto job = opt.get();
 
         var visa = VisaInterpreter.interpret(job.visa());
-        VisaInsightDto visaDto = new VisaInsightDto(visa.confidence(), visa.message());
+        VisaInsightDto visaDto = new VisaInsightDto(visa.confidence(), visa.message(), null);
 
         String jd = job.description() == null ? ""
             : job.description().substring(0, Math.min(job.description().length(), MAX_JD));
