@@ -7,7 +7,15 @@ import Link from "next/link";
 //  job.company.display_name). 코치 링크의 ?jobId= 만 URL 쿼리 규약(camel)을 따른다.
 export type Kit = {
   job: { id: string; title: string; company: { display_name: string } };
-  visa: { confidence: string; message: string };
+  visa: {
+    confidence: string;
+    message: string;
+    guide?: {
+      text: string;
+      sources: { title: string; url: string; retrieved_at: string }[];
+      disclaimer: string;
+    } | null;
+  };
   skill_gap: { required: string[]; present: string[]; missing: string[] };
   synthesis: {
     fit_summary: string;
@@ -60,6 +68,25 @@ export function ApplicationKit({ kit }: { kit: Kit }) {
           {kit.visa.confidence}
         </span>
         {kit.visa.message}
+        {kit.visa.guide ? (
+          <div className="mt-3 flex flex-col gap-2 border-t border-border pt-3">
+            <p className="whitespace-pre-line text-body text-foreground">{kit.visa.guide.text}</p>
+            {kit.visa.guide.sources.length > 0 ? (
+              <ul className="flex flex-col gap-1">
+                {kit.visa.guide.sources.map((s) => (
+                  <li key={s.url} className="text-caption">
+                    <a href={s.url} target="_blank" rel="noopener noreferrer"
+                       className="text-primary underline underline-offset-2">
+                      {s.title}
+                    </a>
+                    <span className="text-muted-foreground"> · {s.retrieved_at} 확인</span>
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            <p className="text-caption text-muted-foreground">{kit.visa.guide.disclaimer}</p>
+          </div>
+        ) : null}
       </Section>
 
       <Section title="공고 요구 중 미보유 스킬" jobId={jobId}>
