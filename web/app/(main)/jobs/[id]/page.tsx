@@ -10,7 +10,6 @@ import { JobFactCards } from "@/components/job/JobFactCards";
 import { JobSidebar } from "@/components/job/JobSidebar";
 import { JobSummary } from "@/components/job/JobSummary";
 import { MobileApplyBar } from "@/components/job/MobileApplyBar";
-import { ApplicationKitButton } from "@/components/kit/ApplicationKitButton";
 import { NoTechStackNote } from "@/components/job/NoTechStackNote";
 import { RecordJobView } from "@/components/job/RecordJobView";
 import { RecordRecentJob } from "@/components/job/RecordRecentJob";
@@ -94,8 +93,6 @@ export default async function JobDetailPage({ params }: { params: { id: string }
             {techTags.length > 0 ? <TechStackMatch tags={techTags} /> : <NoTechStackNote />}
             {visaGuide && <VisaGuideSection guide={visaGuide} />}
             {prep && <InterviewPrepSection prep={prep} />}
-
-            <ApplicationKitButton jobId={job.id} loggedIn={!!session} />
 
             {otherJobs.length > 0 && (
               <section className="space-y-3 border-t border-border pt-6">
