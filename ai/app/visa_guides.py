@@ -47,14 +47,21 @@ def parse_guide_md(country: str, text: str) -> list[dict]:
 
 
 def seed(guides_dir: str | None = None) -> int:
-    """docs/visa-guides/*.md → 임베딩 → visa_guides upsert. 반환: upsert 행 수."""
+    """가이드 마크다운 → 임베딩 → visa_guides upsert. 반환: upsert 행 수.
+
+    디렉터리 우선순위: 인자 > VISA_GUIDES_DIR 환경변수 > 레포 docs/visa-guides.
+    (프로덕션은 ai 빌드 컨텍스트에 docs/ 가 없으므로 VISA_GUIDES_DIR 로 마운트 경로를 지정한다.)
+    """
+    import os
+
     import psycopg
     from pgvector.psycopg import register_vector
 
     from app.config import settings
     from dev_jobs_core.recommender.embeddings import embed_text
 
-    base = Path(guides_dir) if guides_dir else Path(__file__).resolve().parents[2] / "docs" / "visa-guides"
+    chosen = guides_dir or os.getenv("VISA_GUIDES_DIR")
+    base = Path(chosen) if chosen else Path(__file__).resolve().parents[2] / "docs" / "visa-guides"
     files = sorted(base.glob("*.md"))
     if not files:
         log.warning("시드할 가이드 파일 없음: %s", base)
