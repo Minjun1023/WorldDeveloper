@@ -11,11 +11,15 @@ final class Seniority {
 
     private record Level(String name, List<Pattern> patterns) {}
 
+    // 로마숫자 등급(Engineer II/III/IV)은 표준적이라 추가로 인식한다. 회사마다 제각각인
+    // 아라비아 숫자("Engineer 3")·"L4" 는 노이즈가 커서 의도적으로 제외하고, 그런 공고는
+    // 아래 detect 의 경력연수(experience_years) 추론으로 레벨을 채운다.
     private static final List<Level> LEVELS = List.of(
         new Level("principal", List.of(p("\\bprincipal\\b"), p("\\bdistinguished\\b"), p("\\bfellow\\b"))),
-        new Level("staff", List.of(p("\\bstaff\\b"))),
-        new Level("senior", List.of(p("\\bsenior\\b"), p("\\bsr\\.?\\b"), p("\\blead\\b(?!\\s+to)"))),
-        new Level("mid", List.of(p("\\bmid[-\\s]?(?:level)?\\b"), p("\\bintermediate\\b"))),
+        new Level("staff", List.of(p("\\bstaff\\b"), p("\\bIV\\b"))),
+        new Level("senior", List.of(p("\\bsenior\\b"), p("\\bsr\\.?\\b"), p("\\blead\\b(?!\\s+to)"),
+            p("\\bIII\\b"))),
+        new Level("mid", List.of(p("\\bmid[-\\s]?(?:level)?\\b"), p("\\bintermediate\\b"), p("\\bII\\b"))),
         new Level("junior", List.of(p("\\bjunior\\b"), p("\\bjr\\.?\\b"), p("\\bentry[-\\s]?level\\b"),
             p("\\bnew\\s+grad\\b"), p("\\bgraduate\\b"), p("\\bintern\\b")))
     );
@@ -28,7 +32,7 @@ final class Seniority {
         return Pattern.compile(re, Pattern.CASE_INSENSITIVE);
     }
 
-    static String detect(String title, String description) {
+    static String detect(String title, String description, Integer experienceYears) {
         String text = title == null ? "" : title;
         for (Level lv : LEVELS) {
             for (Pattern pat : lv.patterns()) {
@@ -41,7 +45,19 @@ final class Seniority {
                 if (pat.matcher(head).find()) return lv.name();
             }
         }
-        return "unspecified";
+        // 제목·본문에 레벨 단어가 없으면(보드의 ~43%) 요구 경력연수로 추론한다.
+        // 예: '보안 엔지니어'(레벨 단어 없음)라도 8년+ 요구면 사실상 스태프급 → 신입에겐 over-level.
+        // 이게 없으면 fit/over-level 패널티가 절반 공고에 무력했다.
+        return fromExperienceYears(experienceYears);
+    }
+
+    /** 요구 경력연수 → 레벨. 키워드 추출 실패 시의 폴백. null 이면 정보없음. */
+    static String fromExperienceYears(Integer years) {
+        if (years == null) return "unspecified";
+        if (years >= 8) return "staff";
+        if (years >= 5) return "senior";
+        if (years >= 3) return "mid";
+        return "junior"; // 0~2년 (entry 와 동급 레벨)
     }
 
     /** 0~1 적합도. 일치 1.0 / 1단계 0.6 / 2단계 0.3 / 정보없음 0.5. */
