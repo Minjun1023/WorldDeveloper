@@ -11,17 +11,9 @@ from __future__ import annotations
 import argparse
 import json
 
-import numpy as np
-from datasets import Dataset
-from seqeval.metrics import classification_report, f1_score
-from transformers import (
-    AutoModelForTokenClassification,
-    AutoTokenizer,
-    DataCollatorForTokenClassification,
-    Trainer,
-    TrainingArguments,
-)
-
+# 무거운 학습 전용 의존성(datasets/seqeval/transformers/numpy)은 main() 안에서
+# 지연 import 한다. 그래야 char_spans_to_token_labels 만 쓰는 단위 테스트나
+# 다른 모듈이 이 파일을 import 할 때 학습 패키지 미설치로 깨지지 않는다.
 from dev_jobs_core.analyzers.visa_tags import ID2LABEL, LABEL2ID, LABELS
 
 BASE_MODEL = "xlm-roberta-base"
@@ -51,6 +43,17 @@ def char_spans_to_token_labels(text, spans, tokenizer):
 
 
 def main() -> None:
+    import numpy as np
+    from datasets import Dataset
+    from seqeval.metrics import classification_report, f1_score
+    from transformers import (
+        AutoModelForTokenClassification,
+        AutoTokenizer,
+        DataCollatorForTokenClassification,
+        Trainer,
+        TrainingArguments,
+    )
+
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", required=True)
     ap.add_argument("--out", default="./visa-tagger-model")
