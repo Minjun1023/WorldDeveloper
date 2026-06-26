@@ -100,7 +100,7 @@ export function JobCard({
         {/* 신호 배지(비자·원격 — 명부검증 방패는 위 회사명 옆 인라인으로 분리) */}
         {hasBadges && (
           <div className="mt-3 flex flex-wrap gap-1.5">
-            {showVisa && <VisaBadge status={job.visa?.status} />}
+            {showVisa && <VisaBadge status={job.visa?.status} remoteViable={showRemote} />}
             <RemoteBadge
               eligibility={job.remote?.eligibility}
               isRemote={job.is_remote}

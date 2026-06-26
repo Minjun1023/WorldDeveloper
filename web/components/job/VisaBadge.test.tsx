@@ -13,6 +13,14 @@ describe("VisaBadge", () => {
     expect(el.getAttribute("title")).toMatch(/직접 확인/);
   });
 
+  it("unclear + remoteViable → '비자 불필요' (원격이라 비자 N/A)", () => {
+    render(<VisaBadge status="unclear" remoteViable />);
+    const el = screen.getByText("비자 불필요");
+    expect(el).toBeInTheDocument();
+    expect(el.getAttribute("title")).toMatch(/필요 없/);
+    expect(screen.queryByText("비자 정보 없음")).not.toBeInTheDocument();
+  });
+
   it("no_sponsor → '스폰서 불가' 경고", () => {
     render(<VisaBadge status="no_sponsor" />);
     expect(screen.getByText("스폰서 불가")).toBeInTheDocument();

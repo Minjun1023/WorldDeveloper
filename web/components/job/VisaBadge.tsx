@@ -3,11 +3,29 @@ import type { VisaStatus } from "@/lib/types";
 
 // "스폰서 가능"(sponsors)은 배지를 표시하지 않는다 — 사이트가 사실상 스폰서 가능 공고 위주라
 // 중복 신호이기 때문. (명부 검증은 별도 RegisterVerifiedBadge)
-// unclear 는 "검사했으나 본문에 비자 언급이 없음 = 모름"이라, 침묵 대신 정직한 중립 라벨로
-// 표시한다(직접 확인 안내 툴팁). sponsors 로 추정하지 않는다("추정 금지·정확도 우선").
+// unclear 는 "검사했으나 본문에 비자 언급이 없음 = 모름". 단, 한국에서 가능한 원격(remoteViable)
+// 공고는 한국에서 일하므로 비자가 애초에 필요 없다 → '비자 정보 없음'(누락처럼 보임) 대신
+// '비자 불필요'(해당 없음)로 정직하게 표시한다. 온사이트/지역제한이면 '비자 정보 없음' 유지.
 // "스폰서 불가"(no_sponsor)는 부정 신호라 경고로 남긴다.
-export function VisaBadge({ status }: { status?: VisaStatus }) {
+export function VisaBadge({
+  status,
+  remoteViable = false,
+}: {
+  status?: VisaStatus;
+  remoteViable?: boolean;
+}) {
   if (status === "unclear") {
+    if (remoteViable) {
+      return (
+        <Badge
+          variant="muted"
+          className="shrink-0"
+          title="한국에서 가능한 원격 근무라 비자 스폰서십이 필요 없어요."
+        >
+          비자 불필요
+        </Badge>
+      );
+    }
     return (
       <Badge
         variant="muted"
