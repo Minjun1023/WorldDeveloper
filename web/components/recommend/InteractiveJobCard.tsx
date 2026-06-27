@@ -52,11 +52,17 @@ export function InteractiveJobCard({
   async function dislike() {
     setReaction("dislike");
     try {
-      await fetch(`/api/me/reactions/${encodeURIComponent(jobId)}`, {
+      const res = await fetch(`/api/me/reactions/${encodeURIComponent(jobId)}`, {
         method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ reaction: "dislike" }),
       });
-    } catch { /* 무시 */ }
-    onDislike(jobId);
+      if (res.ok) {
+        onDislike(jobId);     // 서버 반영 성공 시에만 숨김(새로고침 시 재등장 방지)
+      } else {
+        setReaction(null);    // 실패 → 원복(재시도 가능)
+      }
+    } catch {
+      setReaction(null);
+    }
   }
 
   const actions = (

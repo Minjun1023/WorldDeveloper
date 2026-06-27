@@ -38,6 +38,7 @@ export function Dropdown({
         type="button"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
+        aria-haspopup="listbox"
         className={cn(
           "flex w-full items-center justify-between gap-2 rounded-md border border-border bg-surface px-3 py-2 text-body-sm",
           selected ? "text-foreground" : "text-muted-foreground",
@@ -47,9 +48,11 @@ export function Dropdown({
         <ChevronDown className="h-4 w-4 shrink-0" />
       </button>
       {open && (
-        <div className="absolute left-0 right-0 z-30 mt-1 max-h-72 overflow-y-auto rounded-md border border-border bg-surface py-1 shadow-md">
+        <div role="listbox" className="absolute left-0 right-0 z-30 mt-1 max-h-72 overflow-y-auto rounded-md border border-border bg-surface py-1 shadow-md">
           <button
             type="button"
+            role="option"
+            aria-selected={value === null}
             onClick={() => { onSelect(null); setOpen(false); }}
             className={cn(
               "flex w-full items-center px-3 py-1.5 text-body-sm hover:bg-accent",
@@ -62,6 +65,8 @@ export function Dropdown({
             <button
               key={o.value}
               type="button"
+              role="option"
+              aria-selected={value === o.value}
               onClick={() => { onSelect(o.value); setOpen(false); }}
               className={cn(
                 "flex w-full items-center justify-between gap-3 px-3 py-1.5 text-body-sm hover:bg-accent",
