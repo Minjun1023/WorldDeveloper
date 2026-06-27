@@ -14,6 +14,11 @@ def test_empty_description_returns_400():
     assert r.status_code == 400
 
 
+def test_oversized_title_returns_422():
+    r = client.post("/internal/summarize", json={"title": "x" * 501, "description": "d"})
+    assert r.status_code == 422  # pydantic max_length(500)
+
+
 @pytest.mark.skipif(
     bool(settings.openai_api_key or os.getenv("OPENAI_API_KEY")),
     reason="OPENAI_API_KEY set — 503 경로 스킵",
