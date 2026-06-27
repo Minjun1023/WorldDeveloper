@@ -240,6 +240,15 @@ def test_parse_weights_none_returns_default():
     assert parse_weights(None) is DEFAULT_WEIGHTS
 
 
+def test_parse_weights_rejects_negative():
+    # 음수 가중치를 0 으로 막아 정규화 후 차원이 음수가 되지 않게(0~1 보장)
+    w = parse_weights({"stack": -1, "visa": 2})
+    for dim in (w.stack, w.visa, w.location, w.seniority, w.salary, w.semantic):
+        assert dim >= 0.0
+    total = w.stack + w.visa + w.location + w.seniority + w.salary + w.semantic
+    assert total == pytest.approx(1.0)
+
+
 # ---------- engine.recommend: 게이트 + 정렬 + 다양성 ----------
 
 def test_recommend_ranks_and_gates():

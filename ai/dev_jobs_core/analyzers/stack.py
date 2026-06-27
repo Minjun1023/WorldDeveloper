@@ -83,7 +83,9 @@ def extract_tech(text: str) -> list[str]:
     """text 에서 등장하는 기술 키워드를 모두 추출 (소문자 정규화)."""
     if not text:
         return []
-    text_lower = text.lower()
+    # 공백 정규화 — 다중어 키워드("machine learning")가 줄바꿈/이중공백으로 끊겨
+    # 매칭을 놓치던 문제 방지(스크래핑 본문에 흔함). 단어 경계는 그대로 유지된다.
+    text_lower = re.sub(r"\s+", " ", text.lower())
     found: list[str] = []
     seen: set[str] = set()
     for kw in TECH_KEYWORDS:
