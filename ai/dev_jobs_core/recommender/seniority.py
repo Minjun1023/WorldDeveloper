@@ -7,8 +7,10 @@ import re
 SENIORITY_PATTERNS = [
     ("principal", [r"\bprincipal\b", r"\bdistinguished\b", r"\bfellow\b"]),
     ("staff",     [r"\bstaff\b", r"\bsr\.?\s*staff\b"]),
-    ("senior",    [r"\bsenior\b", r"\bsr\.?\b", r"\blead\b(?!\s+to)"]),  # "lead to" 는 제외
-    ("mid",       [r"\bmid[-\s]?(?:level)?\b", r"\bintermediate\b", r"\bii\b"]),
+    # "non-senior"/"non senior"(주니어 친화)를 senior 로 오분류하지 않도록 lookbehind 로 제외.
+    ("senior",    [r"(?<!non-)(?<!non )\bsenior\b", r"\bsr\.?\b", r"\blead\b(?!\s+to)"]),  # "lead to" 는 제외
+    # "ii" 는 레벨 접미(제목 끝 또는 , ( / - 앞)일 때만 — "World War II", "(Phase ii)" 오탐 방지.
+    ("mid",       [r"\bmid[-\s]?(?:level)?\b", r"\bintermediate\b", r"\bii\b(?=\s*$|\s*[,(/\-])"]),
     ("junior",    [r"\bjunior\b", r"\bjr\.?\b", r"\bentry[-\s]?level\b", r"\bnew\s+grad\b", r"\bgraduate\b", r"\bintern\b"]),
 ]
 
@@ -59,8 +61,8 @@ def seniority_fit_score(user_level: str, job_level: str) -> float:
     - 두 단계 차이: 0.3
     - 더 멀거나 unspecified: 0.5 (중립)
     """
-    u = SENIORITY_ORDER.get(user_level.lower(), 0)
-    j = SENIORITY_ORDER.get(job_level.lower(), 0)
+    u = SENIORITY_ORDER.get((user_level or "").lower(), 0)
+    j = SENIORITY_ORDER.get((job_level or "").lower(), 0)
     if u == 0 or j == 0:
         return 0.5  # 정보 없음 → 중립
     diff = abs(u - j)

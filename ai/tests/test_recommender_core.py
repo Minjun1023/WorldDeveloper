@@ -139,6 +139,22 @@ def test_salary_unspecified_neutral():
     assert s == 0.7
 
 
+def test_salary_zero_desired_is_neutral_not_perfect():
+    # desired=0 을 '아무 연봉이나 만점(1.0)'으로 보지 않고 미지정(중립 0.7)로 처리
+    s, _ = scorer.score_salary(
+        _user(desired_salary_usd=0),
+        _job(salary_max=40000, salary_currency="USD", salary_period="YEAR"))
+    assert s == 0.7
+
+
+def test_apply_diversity_zero_topk_returns_empty():
+    user = _user()
+    jobs = [_job(jid=f"t:{i}", company=f"C{i}") for i in range(3)]
+    scored = [(j, scorer.score_job(j, user, DEFAULT_WEIGHTS)) for j in jobs]
+    assert scorer.apply_diversity(scored, top_k=0) == []
+    assert scorer.apply_diversity(scored, top_k=-1) == []
+
+
 # ---------- score_job: 가중 합산 + 패널티 ----------
 
 def test_score_job_weighted_sum_matches_manual():
