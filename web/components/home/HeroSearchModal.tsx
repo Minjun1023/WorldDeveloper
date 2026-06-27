@@ -32,6 +32,9 @@ export function HeroSearchModal({
   const [discipline, setDiscipline] = useState<Disc | null>(null);
   const [panel, setPanel] = useState<"region" | "discipline" | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  // 포커스 트랩/복귀용: 모달 패널 + 열기 직전 포커스된 요소(트리거).
+  const panelRef = useRef<HTMLDivElement>(null);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
 
   // 지역: 활성 국가 + 도시 캐시(지연 로드)
   const [activeCountry, setActiveCountry] = useState<string | null>(null);
@@ -44,15 +47,45 @@ export function HeroSearchModal({
   const countries = regions.filter((r) => r.value !== "remote" && r.count > 0);
 
   useEffect(() => {
+    // 열기 직전 포커스(트리거)를 기억했다가 닫을 때 되돌린다.
+    restoreFocusRef.current = document.activeElement as HTMLElement | null;
     inputRef.current?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      // 포커스 트랩 — Tab 이 모달 밖 배경 요소로 새지 않도록 패널 내부에서 순환.
+      if (e.key === "Tab") {
+        const root = panelRef.current;
+        if (!root) return;
+        const focusables = Array.from(
+          root.querySelectorAll<HTMLElement>(
+            'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+          ),
+        ).filter((el) => el.offsetParent !== null);
+        if (focusables.length === 0) return;
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        const active = document.activeElement;
+        if (e.shiftKey) {
+          if (active === first || !root.contains(active)) {
+            e.preventDefault();
+            last.focus();
+          }
+        } else if (active === last || !root.contains(active)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
     document.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
+      // 트리거로 포커스 복귀(요소가 아직 살아 있으면).
+      restoreFocusRef.current?.focus?.();
     };
   }, [onClose]);
 
@@ -124,6 +157,7 @@ export function HeroSearchModal({
       aria-label="공고 통합 검색"
     >
       <div
+        ref={panelRef}
         className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_12px_32px_rgba(0,0,0,0.18)]"
         style={panelStyle}
         onMouseDown={(e) => e.stopPropagation()}
