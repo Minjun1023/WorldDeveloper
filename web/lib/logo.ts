@@ -50,10 +50,12 @@ const LOGODEV_TOKEN = process.env.NEXT_PUBLIC_LOGODEV_TOKEN;
 
 // 로고 소스 교체 단일 지점.
 // 토큰 있으면 Logo.dev(실제 브랜드 로고 DB, 커버리지·품질↑), 없으면 무료 DuckDuckGo favicon 폴백.
-export function logoUrl(domain: string): string {
+// size 는 화면 표시 픽셀(기본 64) — retina=true 가 2배로 서빙하므로 슬롯의 2배만 받는다.
+// 기존 고정 size=128(+retina=256px) 은 36~40px 카드 로고엔 과대 → 표시 크기에 맞춰 대역폭 절감.
+export function logoUrl(domain: string, size = 64): string {
   if (!domain) return "";
   if (LOGODEV_TOKEN) {
-    return `https://img.logo.dev/${domain}?token=${LOGODEV_TOKEN}&size=128&format=png&retina=true`;
+    return `https://img.logo.dev/${domain}?token=${LOGODEV_TOKEN}&size=${size}&format=png&retina=true`;
   }
   return `https://icons.duckduckgo.com/ip3/${domain}.ico`;
 }

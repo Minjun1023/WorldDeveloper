@@ -275,7 +275,7 @@ class JobSearchTest {
             "마감일 미래/없음 공고는 검색 노출");
         assertTrue(!ids.contains("e_dead"), "마감 지난 공고는 ETL 없이도 검색에서 즉시 제외");
 
-        var byCompany = service.listByCompany("exp").stream().map(j -> j.id()).toList();
+        var byCompany = service.listByCompany("exp", 1, 20).items().stream().map(j -> j.id()).toList();
         assertEquals(java.util.Set.of("e_live", "e_rolling"), new java.util.HashSet<>(byCompany),
             "회사 공고 목록도 마감 지난 공고 제외");
 

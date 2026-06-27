@@ -3,6 +3,8 @@ package com.devjobs.scout;
 import com.devjobs.domain.CompanyEntity;
 import com.devjobs.domain.JobEntity;
 import com.devjobs.scout.dto.JobDtos.CompanyDto;
+import com.devjobs.scout.dto.JobDtos.CompanyJobStats;
+import com.devjobs.scout.dto.JobDtos.CompanyJobsResponse;
 import com.devjobs.scout.dto.JobDtos.FacetsDto;
 import com.devjobs.scout.dto.JobDtos.JobDetailDto;
 import com.devjobs.scout.dto.JobDtos.JobDto;
@@ -343,9 +345,32 @@ public class JobService {
         return out;
     }
 
-    public List<JobDto> listByCompany(String slug) {
-        return repository.findLiveByCompanySlug(slug)
-            .stream().map(this::toDto).toList();
+    // 회사 페이지: 통계는 전체(필터된) 공고로 집계하고, 목록은 요청 페이지만 직렬화한다.
+    // register_verified 는 evidence 파싱(Java)이라 SQL 집계가 어려워 엔티티를 전부 로드해 계산한다
+    // (회사당 공고 수가 작아 비용 낮음). 절감 포인트는 "전체를 네트워크로 보내고 클라가 파싱/렌더"하던 것.
+    public CompanyJobsResponse listByCompany(String slug, int page, int pageSize) {
+        List<JobEntity> all = repository.findLiveByCompanySlug(slug);
+        int total = all.size();
+        long sponsors = all.stream().filter(j -> "sponsors".equals(j.getVisaStatus())).count();
+        int verified = (int) all.stream().filter(j -> isRegisterVerified(j.getVisaEvidence())).count();
+        int remote = (int) all.stream().filter(JobService::isRemoteCapable).count();
+        Integer sponsorRatio = total > 0 ? Math.round(sponsors * 100f / total) : null;
+
+        int size = Math.max(1, pageSize);
+        int totalPages = Math.max(1, (int) Math.ceil(total / (double) size));
+        int p = Math.min(Math.max(1, page), totalPages);
+        int from = Math.min((p - 1) * size, total);
+        int to = Math.min(from + size, total);
+        List<JobDto> items = all.subList(from, to).stream().map(this::toDto).toList();
+        return new CompanyJobsResponse(items, p, size, total,
+            new CompanyJobStats(sponsorRatio, verified, remote));
+    }
+
+    // 프론트 computeCompanyStats 의 isRemoteCapable 와 동일 기준(is_remote 또는 원격 자격 명시).
+    private static boolean isRemoteCapable(JobEntity j) {
+        if (Boolean.TRUE.equals(j.getIsRemote())) return true;
+        String e = j.getRemoteEligibility();
+        return "worldwide".equals(e) || "apac_ok".equals(e) || "region_restricted".equals(e);
     }
 
     public Optional<JobDetailDto> findById(String id) {
@@ -443,12 +468,15 @@ public class JobService {
             ? new CompanyDto(c.getSlug(), c.getDisplayName(), c.getTags())
             : new CompanyDto(j.getCompanySlug(), j.getCompanySlug(), List.of());
 
+        // 목록 응답은 evidence 배열을 싣지 않는다 — 카드는 배지(status/eligibility/registerVerified)만
+        // 렌더하고 근거 텍스트는 상세에서만 쓴다. registerVerified 는 evidence 로 계산하되 배열은 null →
+        // non_null 직렬화로 JSON 에서 생략(공고당 수백 B 절감). 상세는 toDetailDto 가 전문 유지.
         VisaDto visa = new VisaDto(
             j.getVisaStatus() == null ? "unclear" : j.getVisaStatus(),
-            j.getVisaEvidence(),
+            null,
             isRegisterVerified(j.getVisaEvidence()));
 
-        RemoteDto remote = new RemoteDto(j.getRemoteEligibility(), j.getRemoteEvidence());
+        RemoteDto remote = new RemoteDto(j.getRemoteEligibility(), null);
 
         boolean hasSalary = j.getSalaryMinUsd() != null || j.getSalaryMaxUsd() != null
             || j.getSalaryMin() != null || j.getSalaryMax() != null;

@@ -29,18 +29,13 @@ export default async function CompanyDetailPage({
   params: { slug: string };
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
-  const [data, session] = await Promise.all([fetchCompany(params.slug), getSession()]);
+  const page = Math.max(1, Number(searchParams.page) || 1);
+  const [data, session] = await Promise.all([fetchCompany(params.slug, page), getSession()]);
   if (!data) notFound();
 
-  const { company, jobs } = data;
-  // 디렉터리의 verified 와 동일 의미(공고 중 하나라도 정부 명부 근거)를 프론트에서 도출한다.
-  // 검증/통계는 전체 공고로 계산하고, 목록만 현재 페이지로 슬라이스한다.
-  const registerVerified = jobs.some((j) => j.visa?.register_verified === true);
-
-  // 백엔드가 전체 공고 배열을 주므로(페이지네이션 미지원) 서버에서 페이지 슬라이스.
-  const totalPages = Math.max(1, Math.ceil(jobs.length / PAGE_SIZE));
-  const page = Math.min(Math.max(1, Number(searchParams.page) || 1), totalPages);
-  const pageJobs = jobs.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  // 백엔드가 해당 페이지의 공고 + 전체 집계 통계를 함께 준다(통계는 모든 공고 기준).
+  const { company, jobs: pageJobs, total, stats } = data;
+  const registerVerified = stats.verifiedCount > 0;
 
   return (
     <div className="space-y-8">
@@ -91,8 +86,13 @@ export default async function CompanyDetailPage({
         location={COMPANY_LOCATIONS[company.slug]?.location}
       />
 
-      {/* 통계 행 (공고 목록에서 계산) */}
-      <CompanyStats jobs={jobs} jobCount={company.job_count} />
+      {/* 통계 행 (백엔드가 전체 공고로 집계) */}
+      <CompanyStats
+        jobCount={company.job_count}
+        sponsorRatio={stats.sponsorRatio}
+        verifiedCount={stats.verifiedCount}
+        remoteCount={stats.remoteCount}
+      />
 
       {/* 이 회사의 공고 */}
       <section className="space-y-4">
@@ -100,7 +100,7 @@ export default async function CompanyDetailPage({
           <h2 className="text-h2">이 회사의 공고</h2>
           <span className="text-body-sm text-muted-foreground">{company.job_count}개</span>
         </div>
-        {jobs.length === 0 ? (
+        {total === 0 ? (
           <p className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
             현재 공고가 없습니다.
           </p>
@@ -111,7 +111,7 @@ export default async function CompanyDetailPage({
                 <JobCard key={job.id} job={job} showRestrictedRemote showSave loggedIn={!!session} />
               ))}
             </div>
-            <Pagination page={page} pageSize={PAGE_SIZE} total={jobs.length} />
+            <Pagination page={page} pageSize={PAGE_SIZE} total={total} />
           </>
         )}
       </section>

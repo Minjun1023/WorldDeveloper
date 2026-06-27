@@ -3,8 +3,7 @@ package com.devjobs.company;
 import com.devjobs.company.dto.CompanyDtos.CompanyDetail;
 import com.devjobs.company.dto.CompanyDtos.CompanyListResponse;
 import com.devjobs.scout.JobService;
-import com.devjobs.scout.dto.JobDtos.JobDto;
-import java.util.List;
+import com.devjobs.scout.dto.JobDtos.CompanyJobsResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,7 +36,10 @@ public class CompanyController {
     }
 
     @GetMapping("/{slug}/jobs")
-    public List<JobDto> jobs(@PathVariable String slug) {
-        return jobService.listByCompany(slug);
+    public CompanyJobsResponse jobs(
+            @PathVariable String slug,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(name = "page_size", defaultValue = "12") int pageSize) {
+        return jobService.listByCompany(slug, page, pageSize);
     }
 }
