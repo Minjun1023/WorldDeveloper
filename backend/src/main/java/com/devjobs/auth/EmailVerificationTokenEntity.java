@@ -32,6 +32,9 @@ public class EmailVerificationTokenEntity {
     @Column(name = "consumed_at")
     private OffsetDateTime consumedAt;
 
+    @Column(name = "attempts", nullable = false)
+    private int attempts;
+
     @Column(name = "created_at")
     private OffsetDateTime createdAt;
 
@@ -46,9 +49,13 @@ public class EmailVerificationTokenEntity {
     }
 
     public UUID getUserId() { return userId; }
+    public String getTokenHash() { return tokenHash; }
     public String getPurpose() { return purpose; }
     public OffsetDateTime getExpiresAt() { return expiresAt; }
     public OffsetDateTime getConsumedAt() { return consumedAt; }
+    public int getAttempts() { return attempts; }
+
+    public void incrementAttempts() { this.attempts++; }
 
     public void consume(OffsetDateTime at) { this.consumedAt = at; }
 }

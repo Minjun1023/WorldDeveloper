@@ -82,6 +82,29 @@ class AuthServiceTest {
     }
 
     @Test
+    void verifyEmailLocksAfterTooManyAttempts() {
+        authService.register("brute@example.com", "Password123", "B");
+        UserEntity u = userRepo.findByEmail("brute@example.com").orElseThrow();
+        tokenRepo.deleteByUserIdAndPurpose(u.getId(), "verify");   // register 코드 제거 → 단일 활성 토큰
+        String code = "654321";
+        tokenRepo.save(new EmailVerificationTokenEntity(
+            u.getId(), TokenHasher.sha256Hex(code), "verify", java.time.OffsetDateTime.now().plusMinutes(10)));
+
+        // 5회 오답 — 매번 거부되면서 시도 누적
+        for (int i = 0; i < 5; i++) {
+            assertThrows(ResponseStatusException.class,
+                () -> authService.verifyEmail("brute@example.com", "000000"));
+        }
+        // 한도 초과 후엔 '정답' 코드조차 잠겨 거부(429)
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+            () -> authService.verifyEmail("brute@example.com", code));
+        org.junit.jupiter.api.Assertions.assertEquals(429, ex.getStatusCode().value());
+        // 이메일도 미인증 유지
+        org.junit.jupiter.api.Assertions.assertNull(
+            userRepo.findByEmail("brute@example.com").orElseThrow().getEmailVerifiedAt());
+    }
+
+    @Test
     void verifyEmailRejectsUnknownCode() {
         assertThrows(ResponseStatusException.class,
             () -> authService.verifyEmail("ghost@example.com", "000000"));
