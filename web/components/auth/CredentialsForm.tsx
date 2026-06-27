@@ -12,6 +12,7 @@ import { ProfileForm } from "@/components/recommend/ProfileForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { checkPassword, isPasswordValid } from "@/lib/password";
+import { safeInternalPath } from "@/lib/safe-redirect";
 import type { RecommendProfile } from "@/lib/types";
 
 type Mode = "login" | "register";
@@ -150,7 +151,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
       });
       if (res.status === 403) throw new Error("이메일 인증이 필요해요. 회원가입 시 받은 인증번호로 인증해 주세요.");
       if (!res.ok) throw new Error("이메일 또는 비밀번호가 올바르지 않아요.");
-      router.push(callbackUrl);
+      router.push(safeInternalPath(callbackUrl));
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "오류가 발생했어요.");

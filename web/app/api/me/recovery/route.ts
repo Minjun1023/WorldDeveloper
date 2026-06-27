@@ -15,8 +15,8 @@ export async function POST(req: Request) {
   };
   if (!job_id) return NextResponse.json({ error: "job_id required" }, { status: 400 });
 
-  // job_id 는 raw 콜론 그대로 path 에
-  const res = await fetch(`${BACKEND_URL}/api/v1/applications/${job_id}/recovery`, {
+  // job_id 인코딩 — 경로 조작으로 다른 백엔드 엔드포인트에 도달하는 것 차단
+  const res = await fetch(`${BACKEND_URL}/api/v1/applications/${encodeURIComponent(job_id)}/recovery`, {
     method: "POST",
     headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" },
     body: JSON.stringify({ reason: reason ?? "", mark_rejected: mark_rejected ?? true }),
