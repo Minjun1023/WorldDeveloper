@@ -8,8 +8,10 @@ import { SortToggle } from "@/components/search/SortToggle";
 import { fetchJobs, fetchRegions, fetchSavedJobIds } from "@/lib/api";
 import { getSession, getSessionToken } from "@/lib/session-server";
 
-export const dynamic = "force-dynamic";
-
+// force-dynamic 제거 — 이 페이지는 searchParams + 쿠키(getSession/Token)를 읽어 어차피 요청마다
+// 동적 렌더된다. force-dynamic 은 모든 fetch 를 no-store 로 덮어써 fetchRegions 의 revalidate 를
+// 무력화했으므로 제거. 검색 결과(fetchJobs)·저장 ID(fetchSavedJobIds)는 각자 no-store 라 신선 유지,
+// 레퍼런스(fetchRegions)만 캐시된다.
 const PAGE_SIZE = 12;
 
 type SearchParams = { [key: string]: string | string[] | undefined };
