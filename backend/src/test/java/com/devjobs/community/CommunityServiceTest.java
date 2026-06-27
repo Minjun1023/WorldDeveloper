@@ -70,6 +70,24 @@ class CommunityServiceTest {
     }
 
     @Test
+    void stripsNonHttpSourceUrlToPreventStoredXss() {
+        UUID u = insertUser();
+        PostDetail mal = service.create(u, new CreatePostRequest(
+            "qna", "XSS 시도", "본문 내용입니다 — 충분히 길게.", false, "experience",
+            "javascript:alert(document.cookie)", null, null, null, List.of()));
+        String stored = jdbc.queryForObject(
+            "SELECT source_url FROM community_posts WHERE id = ?::uuid", String.class, mal.id());
+        assertThat(stored).isNull();   // 비-http 스킴은 저장 시 제거
+
+        PostDetail ok = service.create(u, new CreatePostRequest(
+            "qna", "정상 출처", "본문 내용입니다 — 충분히 길게.", false, "experience",
+            "https://example.com/post", null, null, null, List.of()));
+        String storedOk = jdbc.queryForObject(
+            "SELECT source_url FROM community_posts WHERE id = ?::uuid", String.class, ok.id());
+        assertThat(storedOk).isEqualTo("https://example.com/post");
+    }
+
+    @Test
     void normalizesTagsStripHashDedupeAndCap() {
         UUID u = insertUser();
         PostDetail d = create(u, "qna", "태그 정규화 확인", null,

@@ -139,7 +139,7 @@ public class CommunityService {
         }
         String sourceType = SOURCE_TYPES.contains(req.sourceType()) ? req.sourceType() : "experience";
         CommunityPost p = new CommunityPost(userId, category, title, body, req.anonymous(),
-            sourceType, blankToNull(req.sourceUrl()), blankToNull(req.linkedCompanySlug()),
+            sourceType, safeUrl(req.sourceUrl()), blankToNull(req.linkedCompanySlug()),
             blankToNull(req.linkedJobId()), blankToNull(req.linkedCountry()), normalizeTags(req.tags()));
         posts.save(p);
         return get(p.getId().toString(), userId);
@@ -299,6 +299,15 @@ public class CommunityService {
         if (s == null) return null;
         String t = s.trim();
         return t.isEmpty() ? null : t;
+    }
+
+    // 출처 URL 은 프론트에서 <a href> 로 그대로 렌더되므로, http(s) 스킴만 허용한다.
+    // (javascript:/data: 등 스킴을 저장하면 클릭 시 저장형 XSS 가 됨.)
+    private static String safeUrl(String s) {
+        String t = blankToNull(s);
+        if (t == null) return null;
+        String lower = t.toLowerCase();
+        return (lower.startsWith("http://") || lower.startsWith("https://")) ? t : null;
     }
 
     private static UUID uuid(String s) {

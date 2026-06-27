@@ -8,8 +8,10 @@ import com.devjobs.tracker.dto.TrackerDtos.PipelineSummary;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 public class TrackerService {
@@ -29,6 +31,9 @@ public class TrackerService {
 
     @Transactional
     public ApplicationDto track(String userId, String jobId, String status, String notes) {
+        if (status == null || !FUNNEL.contains(status)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "유효하지 않은 지원 상태예요");
+        }
         ApplicationEntity app = appRepo.findByUserIdAndJobId(userId, jobId)
             .map(a -> { a.update(status, notes); return a; })
             .orElseGet(() -> new ApplicationEntity(userId, jobId, status, notes));
