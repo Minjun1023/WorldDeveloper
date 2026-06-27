@@ -105,6 +105,7 @@ export function JobCard({
               eligibility={job.remote?.eligibility}
               isRemote={job.is_remote}
               includeRestricted={showRestrictedRemote}
+              location={job.location}
             />
           </div>
         )}

@@ -91,3 +91,55 @@ export function flagFromLocation(location?: string | null): string {
   const iso = isoFromLocation(location);
   return iso ? isoToFlag(iso) : "";
 }
+
+// ISO2 → 한국어 국가명(원격 지역 제한 배지용 짧은 라벨). isoFromLocation 이 낼 수 있는 코드를 모두 포함.
+const ISO_KO: Record<string, string> = {
+  us: "미국", jp: "일본", ca: "캐나다", gb: "영국", de: "독일", fr: "프랑스",
+  es: "스페인", nl: "네덜란드", pl: "폴란드", ie: "아일랜드", pt: "포르투갈",
+  se: "스웨덴", dk: "덴마크", it: "이탈리아", at: "오스트리아", cz: "체코",
+  ch: "스위스", no: "노르웨이", fi: "핀란드", be: "벨기에", lu: "룩셈부르크",
+  tw: "대만", ar: "아르헨티나", au: "호주", nz: "뉴질랜드", sg: "싱가포르",
+  il: "이스라엘", in: "인도", hk: "홍콩", kr: "한국", rs: "세르비아",
+};
+
+// 미국 주(州) 풀네임 — "Remote - California", "Washington D.C." 처럼 isoFromLocation 이 못 잡는
+// 풀네임 주를 미국으로 인식하기 위함. georgia 는 국가 Georgia 와 겹쳐 의도적으로 제외(보수적).
+const US_STATE_NAMES = [
+  "alabama", "alaska", "arizona", "arkansas", "california", "colorado", "connecticut",
+  "delaware", "florida", "hawaii", "idaho", "illinois", "indiana", "iowa", "kansas",
+  "kentucky", "louisiana", "maine", "maryland", "massachusetts", "michigan", "minnesota",
+  "mississippi", "missouri", "montana", "nebraska", "nevada", "ohio", "oklahoma", "oregon",
+  "pennsylvania", "tennessee", "texas", "utah", "vermont", "virginia", "wisconsin", "wyoming",
+  "new hampshire", "new jersey", "new mexico", "new york", "north carolina", "north dakota",
+  "south carolina", "south dakota", "west virginia", "rhode island", "washington",
+];
+
+// region_restricted 원격 공고가 "어느 지역 한정"인지 짧은 한국어 라벨. 못 알아내면 ""(일반 라벨로 폴백).
+// 국가 단위로 정규화한다 — 한국 거주자에게 핵심은 "어느 나라에 있어야 하나"이고, 도시 디테일은
+// 카드의 지역 줄이 이미 보여준다. 정확히 한 국가로 좁혀질 때만 구체 라벨을 쓰고, 여러 국가가
+// 섞이거나("United States & Canada", 5개국 나열 등) 모호하면 일반 "지역 제한"으로 폴백한다(정직).
+// 여러 나라를 아우르는 광역 권역 토큰. 이게 있으면 단일 국가로 단정하지 않고 일반 라벨로 폴백한다
+// ("UK/EU*" 를 '영국 한정'으로 좁히면 EU 를 빠뜨려 오해를 주므로).
+const MACRO_REGIONS = new Set([
+  "eu", "emea", "europe", "european", "apac", "latam", "amer", "americas", "america",
+  "anywhere", "global", "worldwide", "international",
+]);
+
+export function remoteRegionLabelKo(location?: string | null): string {
+  if (!location) return "";
+  const lower = location.toLowerCase();
+  const found = new Set<string>();
+  // 명시적 국가명(다단어 포함) + 단어 토큰(us/usa/uk 등)을 모두 모은다.
+  const parts = lower.split(/[,/()|;]| - /).map((s) => s.trim()).filter(Boolean);
+  for (const p of parts) if (COUNTRY_NAME_ISO[p]) found.add(COUNTRY_NAME_ISO[p]);
+  const tokens = lower.split(/[^a-z]+/).filter(Boolean);
+  for (const t of tokens) if (COUNTRY_NAME_ISO[t]) found.add(COUNTRY_NAME_ISO[t]);
+  // 광역 권역 토큰이 섞여 있으면(EU, Europe, APAC 등) 한 나라로 단정하지 않는다.
+  if (tokens.some((t) => MACRO_REGIONS.has(t) && !COUNTRY_NAME_ISO[t])) return "";
+  // 국가명이 전혀 없을 때만 미국 주(州) 풀네임으로 미국을 추론("Remote - California" 등).
+  if (found.size === 0) {
+    const cleaned = lower.replace(/\./g, "");
+    if (US_STATE_NAMES.some((s) => cleaned.includes(s))) found.add("us");
+  }
+  return found.size === 1 ? (ISO_KO[[...found][0]] ?? "") : "";
+}
