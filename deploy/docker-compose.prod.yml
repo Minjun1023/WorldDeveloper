@@ -71,6 +71,8 @@ services:
       AI_BASE_URL: http://ai:8001
       JWT_SECRET: ${JWT_SECRET}
       INTERNAL_AUTH_SECRET: ${INTERNAL_AUTH_SECRET}
+      # 시크릿이 dev 기본값이면 부팅 거부(fail-fast). 위 값들을 .env 로 반드시 교체해야 기동됨.
+      APP_REQUIRE_SECURE_SECRETS: "true"
       APP_BASE_URL: https://${DOMAIN}
       # Caddy(TLS 종단) 뒤에 있으므로 X-Forwarded-* 를 신뢰해 https redirect URI 를 생성.
       SERVER_FORWARD_HEADERS_STRATEGY: framework
