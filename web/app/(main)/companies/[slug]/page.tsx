@@ -106,7 +106,7 @@ export default async function CompanyDetailPage({
           </p>
         ) : (
           <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {pageJobs.map((job) => (
                 <JobCard key={job.id} job={job} showRestrictedRemote showSave loggedIn={!!session} />
               ))}

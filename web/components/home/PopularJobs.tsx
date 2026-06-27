@@ -115,7 +115,7 @@ export function PopularJobs({ loggedIn = false }: { loggedIn?: boolean }) {
       ) : items.length === 0 ? (
         <p className="py-8 text-center text-body-sm text-muted-foreground">조건에 맞는 공고가 아직 없어요.</p>
       ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((it) => (
             <JobCard key={it.job.id} job={it.job} showSave loggedIn={loggedIn} />
           ))}

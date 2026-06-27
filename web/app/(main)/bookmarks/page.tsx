@@ -7,5 +7,10 @@ export const dynamic = "force-dynamic";
 // 공고 관리/북마크 전체/관심 기업은 로그인 필요, 최근 본 공고는 공개.
 export default async function BookmarksPage() {
   const session = await getSession();
-  return <BookmarksTabs loggedIn={!!session} />;
+  return (
+    <>
+      <h1 className="sr-only">북마크</h1>
+      <BookmarksTabs loggedIn={!!session} />
+    </>
+  );
 }
