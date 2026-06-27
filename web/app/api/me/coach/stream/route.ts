@@ -4,6 +4,7 @@ import { getSessionToken } from "@/lib/session-server";
 export const runtime = "nodejs";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
+const MAX_BODY = 300_000; // AI 비용 경로 — 거대 페이로드 조기 차단(정상 코치 본문은 통과)
 
 export async function POST(req: Request) {
   const token = await getSessionToken();
@@ -13,11 +14,18 @@ export async function POST(req: Request) {
       headers: { "content-type": "application/json" },
     });
   }
+  const body = await req.text();
+  if (body.length > MAX_BODY) {
+    return new Response(JSON.stringify({ error: "요청이 너무 큽니다." }), {
+      status: 413,
+      headers: { "content-type": "application/json" },
+    });
+  }
   try {
     const res = await fetch(`${BACKEND_URL}/api/v1/me/coach/stream`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" },
-      body: await req.text(),
+      body,
       // 스트리밍이라 타임아웃을 두지 않는다(긴 응답).
     });
     if (!res.ok || !res.body) {
