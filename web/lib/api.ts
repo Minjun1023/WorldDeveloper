@@ -160,7 +160,9 @@ export type RegionCount = { value: string; label: string; count: number };
 export async function fetchRegions(): Promise<RegionCount[]> {
   try {
     const res = await fetch(`${BACKEND_URL}/api/v1/jobs/regions`, {
-      cache: "no-store",
+      // 국가·도시별 공고 수는 일 단위 ETL 로만 변함 → 1시간 캐시(필터 드롭다운용).
+      // 프로덕션 빌드에서 작동하며, 호출 페이지가 force-dynamic 이면 무력화된다(ISR 전환 시 활성).
+      next: { revalidate: 3600 },
       signal: AbortSignal.timeout(5000),
     });
     if (!res.ok) return [];
@@ -235,7 +237,9 @@ export async function fetchCompanies(tag?: string): Promise<CompanyListResponse 
   const url = new URL(`${BACKEND_URL}/api/v1/companies`);
   if (tag) url.searchParams.set("tag", tag);
   try {
-    const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(5000) });
+    // 회사 목록(+태그)은 일 단위 ETL 로만 변함 → 1시간 캐시. URL(태그)별로 따로 캐시된다.
+    // 프로덕션 빌드에서 작동하며, 호출 페이지가 force-dynamic 이면 무력화된다(ISR 전환 시 활성).
+    const res = await fetch(url, { next: { revalidate: 3600 }, signal: AbortSignal.timeout(5000) });
     if (!res.ok) return null;
     return (await res.json()) as CompanyListResponse;
   } catch {
