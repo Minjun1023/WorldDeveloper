@@ -96,6 +96,28 @@ def embed_text(text: str) -> list[float] | None:
     return list(v) if v is not None else None
 
 
+def embed_texts(texts: list[str]) -> list[list[float] | None]:
+    """여러 텍스트를 한 번의 model.encode 로 배치 임베딩한다.
+
+    개별 호출(루프) 대비 모델 인코딩 오버헤드를 1회로 줄인다 — sentence-transformers 는
+    리스트를 받으면 벡터화 배치로 처리해 훨씬 빠르다. 입력과 같은 길이/순서로 반환하며
+    빈 텍스트·모델 미가용 위치는 None. (캐시는 쓰지 않는다 — 호출부가 매번 다른 텍스트인
+    이력서 구절 등 uncached 경로에 쓰는 용도.)
+    """
+    out: list[list[float] | None] = [None] * len(texts)
+    model = _load_model()
+    if model is None:
+        return out
+    idx = [i for i, t in enumerate(texts) if t and t.strip()]
+    if not idx:
+        return out
+    batch = [texts[i][:2000] for i in idx]
+    vecs = model.encode(batch, convert_to_numpy=True, show_progress_bar=False)
+    for j, i in enumerate(idx):
+        out[i] = vecs[j].tolist()
+    return out
+
+
 def cosine_similarity(text_a: str, text_b: str) -> float:
     """두 텍스트의 임베딩 코사인 유사도 (0~1, 실패 시 0)."""
     a = _embed_cached(text_a)
