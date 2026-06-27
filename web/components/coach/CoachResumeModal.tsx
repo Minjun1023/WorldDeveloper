@@ -147,6 +147,7 @@ export function CoachResumeModal({
             </span>
             <input
               type="file"
+              aria-label="이력서 파일 업로드"
               accept=".pdf,application/pdf,.txt,.md,.markdown,.text,text/plain"
               className="sr-only"
               onChange={(e) => {

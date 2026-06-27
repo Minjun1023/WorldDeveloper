@@ -50,6 +50,7 @@ export default async function SearchPage({
 
   return (
     <div className="space-y-6">
+      <h1 className="sr-only">개발자 채용 공고 검색</h1>
       {/* 키워드 검색 1건 기록(인기 검색어용). 백엔드가 검색자/일 dedup. */}
       {q ? <RecordSearch term={q} /> : null}
 

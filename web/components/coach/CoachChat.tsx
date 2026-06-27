@@ -301,6 +301,7 @@ export function CoachChat({
             }
           }}
           rows={1}
+          aria-label="코치에게 보낼 메시지"
           placeholder={
             jobId
               ? "메시지를 입력하세요 — 이 공고에 맞춰 답해드려요 (Enter 전송, Shift+Enter 줄바꿈)"

@@ -140,6 +140,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
             type="search"
             name="q"
             defaultValue={q ?? ""}
+            aria-label="커뮤니티 글 검색"
             placeholder="제목·내용 검색"
             className="h-9 w-full rounded-lg border border-input bg-background pl-9 pr-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />

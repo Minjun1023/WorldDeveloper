@@ -14,7 +14,7 @@
     --surface-2: #f2f4f6;
     --foreground: #191f28;
     --muted-foreground: #4e5968;
-    --hint: #8b95a1;
+    --hint: #677079;
     --border: #e5e8eb;
     --input: #e5e8eb;
     --primary: #0064ff;
@@ -23,10 +23,10 @@
     --logo: #c2c6d8;
     --ring: #0064ff;
     --accent: #f2f4f6;
-    --success: #15a35a;
-    --warning: #d97706;
+    --success: #15803d;
+    --warning: #b45309;
     --destructive: #e0301e;
-    --verified: #ca8a04;
+    --verified: #a16207;
     --verified-foreground: #ffffff;
 
     /* score 5축 매칭 (recharts) — 비자는 매칭 축이 아니라 기본 필터/검증 배지 */
@@ -50,7 +50,7 @@
     --surface-2: #262b33;
     --foreground: #f2f4f6;
     --muted-foreground: #9aa3af;
-    --hint: #6b7480;
+    --hint: #7c8694;
     --border: #2c323b;
     --input: #2c323b;
     --primary: #3d83ff;
