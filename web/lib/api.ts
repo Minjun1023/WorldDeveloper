@@ -243,18 +243,49 @@ export async function fetchCompanies(tag?: string): Promise<CompanyListResponse 
   }
 }
 
+export interface CompanyJobStats {
+  sponsorRatio: number | null;
+  verifiedCount: number;
+  remoteCount: number;
+}
+
 export async function fetchCompany(
   slug: string,
-): Promise<{ company: CompanyDetail; jobs: Job[] } | null> {
+  page = 1,
+): Promise<
+  | { company: CompanyDetail; jobs: Job[]; total: number; pageSize: number; stats: CompanyJobStats }
+  | null
+> {
   try {
     const [cRes, jRes] = await Promise.all([
       fetch(`${BACKEND_URL}/api/v1/companies/${slug}`, { cache: "no-store", signal: AbortSignal.timeout(5000) }),
-      fetch(`${BACKEND_URL}/api/v1/companies/${slug}/jobs`, { cache: "no-store", signal: AbortSignal.timeout(5000) }),
+      fetch(`${BACKEND_URL}/api/v1/companies/${slug}/jobs?page=${page}&page_size=12`, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(5000),
+      }),
     ]);
     if (!cRes.ok) return null;
     const company = (await cRes.json()) as CompanyDetail;
-    const jobs = jRes.ok ? ((await jRes.json()) as Job[]) : [];
-    return { company, jobs };
+    // 백엔드가 페이지된 목록 + 전체 집계 통계를 함께 준다(통계는 모든 공고 기준).
+    const j = jRes.ok
+      ? ((await jRes.json()) as {
+          items: Job[];
+          total: number;
+          page_size: number;
+          stats: { sponsor_ratio: number | null; verified_count: number; remote_count: number };
+        })
+      : null;
+    return {
+      company,
+      jobs: j?.items ?? [],
+      total: j?.total ?? 0,
+      pageSize: j?.page_size ?? 12,
+      stats: {
+        sponsorRatio: j?.stats?.sponsor_ratio ?? null,
+        verifiedCount: j?.stats?.verified_count ?? 0,
+        remoteCount: j?.stats?.remote_count ?? 0,
+      },
+    };
   } catch {
     return null;
   }

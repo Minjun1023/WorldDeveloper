@@ -10,6 +10,9 @@ spring:
       maximum-pool-size: 10
 
   jpa:
+    # 뷰 렌더(JSON 직렬화)까지 DB 커넥션을 붙들지 않도록 OSIV 끔 — 풀(10) 보유시간 단축.
+    # 대부분 응답이 native 쿼리+DTO 라 lazy 직렬화 리스크 낮음(JobEntity.company 는 EAGER).
+    open-in-view: false
     hibernate:
       ddl-auto: validate
     properties:
@@ -90,6 +93,12 @@ jwt:
 
 server:
   port: ${PORT:8080}
+  # 응답 gzip 압축 — web↔backend(운영은 별도 서비스) 홉의 JSON 페이로드를 줄인다.
+  # 브라우저←Next 홉은 Next 가 이미 압축하므로, 이 설정은 backend→Next 구간에 효과.
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/plain,text/css,text/javascript
+    min-response-size: 1024
 
 logging:
   level:

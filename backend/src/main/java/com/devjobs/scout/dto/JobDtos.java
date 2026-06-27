@@ -79,4 +79,16 @@ public final class JobDtos {
     ) {}
 
     public record RegionCount(String value, String label, long count) {}
+
+    /** 회사 페이지 통계 — 전체(필터된) 공고 집계. 페이지 슬라이스와 무관하게 항상 전체 기준. */
+    public record CompanyJobStats(Integer sponsorRatio, int verifiedCount, int remoteCount) {}
+
+    /** 회사별 공고 — 페이지네이션된 목록 + 전체 집계 통계(통계는 모든 공고 기준). */
+    public record CompanyJobsResponse(
+        List<JobDto> items,
+        int page,
+        int pageSize,
+        int total,
+        CompanyJobStats stats
+    ) {}
 }
