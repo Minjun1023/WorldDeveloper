@@ -111,6 +111,12 @@ async def coach_chat(req: CoachRequest) -> CoachReply:
         raise HTTPException(502, f"coach request failed: {e}") from e
 
 
+# StreamingResponse 는 시작 시 HTTP 200 이 확정되므로, 도중 업스트림 오류를 상태코드로
+# 알릴 수 없다. 빈 응답으로 끝내면 사용자에게 '무에러 빈 답변'으로 보이므로, 평문 스트림에
+# 사용자용 한국어 오류 문구를 흘려 최소한 실패를 인지하게 한다.
+_STREAM_ERROR_MSG = "\n\n⚠️ 상담 응답을 불러오지 못했어요. 잠시 후 다시 시도해주세요."
+
+
 async def _stream_tokens(key: str, openai_messages: list[dict]) -> AsyncIterator[str]:
     """OpenAI 스트리밍 응답에서 content 델타만 평문으로 흘린다(SSE 프레이밍 없이)."""
     try:
@@ -121,6 +127,7 @@ async def _stream_tokens(key: str, openai_messages: list[dict]) -> AsyncIterator
                 if resp.status_code != 200:
                     body = await resp.aread()
                     log.warning("openai coach stream HTTP %s: %s", resp.status_code, body[:300])
+                    yield _STREAM_ERROR_MSG
                     return
                 async for line in resp.aiter_lines():
                     if not line.startswith("data:"):
@@ -136,6 +143,7 @@ async def _stream_tokens(key: str, openai_messages: list[dict]) -> AsyncIterator
                         yield delta
     except httpx.HTTPError as e:
         log.warning("openai coach stream 실패: %s", e)
+        yield _STREAM_ERROR_MSG
 
 
 @router.post("/coach-chat-stream")

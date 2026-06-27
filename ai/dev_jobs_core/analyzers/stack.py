@@ -128,10 +128,24 @@ def normalize_tech_tags(tags: list[str]) -> list[str]:
     return out
 
 
+# 매칭 동의어: vocab 에 둘 다 등록돼 extract_tech 가 서로 다른 토큰으로 뱉는 같은 기술을
+# 하나로 모은다. 이게 없으면 공고 'golang' vs 이력서 'go' 가 불일치로 잡혀 match_ratio 가
+# 왜곡된다(coach 키워드 갭 오류). 표시는 canonical 형태로 통일.
+_MATCH_CANON = {
+    "golang": "go",
+    "postgresql": "postgres",
+    "k8s": "kubernetes",
+}
+
+
+def _canon_stack(text: str) -> set[str]:
+    return {_MATCH_CANON.get(t, t) for t in extract_tech(text)}
+
+
 def match_resume(resume_text: str, job_description: str) -> dict:
     """이력서와 공고를 비교해 스택 갭 분석."""
-    job_stack = set(extract_tech(job_description))
-    resume_stack = set(extract_tech(resume_text))
+    job_stack = _canon_stack(job_description)
+    resume_stack = _canon_stack(resume_text)
 
     matched = sorted(job_stack & resume_stack)
     missing = sorted(job_stack - resume_stack)

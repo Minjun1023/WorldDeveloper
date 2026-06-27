@@ -119,6 +119,38 @@ def test_stream_endpoint_yields_content_deltas(monkeypatch):
     assert body == "안녕하세요"
 
 
+def test_stream_endpoint_upstream_error_yields_message(monkeypatch):
+    # 업스트림 오류(예: 429)는 StreamingResponse 시작 후라 상태코드로 못 알린다.
+    # 빈 응답으로 끝내 '무에러 빈 답변'이 되는 대신, 사용자용 한국어 오류 문구를 흘려야 함.
+    monkeypatch.setattr(settings, "openai_api_key", "k")
+
+    class _FailStream:
+        status_code = 429
+
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *a):
+            return False
+
+        async def aiter_lines(self):
+            if False:  # 본문 없음 — non-200 이라 델타 루프 진입 전 종료
+                yield ""
+
+        async def aread(self):
+            return b"rate limited"
+
+    monkeypatch.setattr("httpx.AsyncClient.stream", lambda self, method, url, **kw: _FailStream())
+    with client.stream(
+        "POST",
+        "/internal/coach-chat-stream",
+        json={"context": "", "resume": "r", "messages": [{"role": "user", "content": "hi"}]},
+    ) as r:
+        assert r.status_code == 200  # 스트림은 이미 200 으로 시작됨
+        body = "".join(part for part in r.iter_text())
+    assert "다시 시도" in body  # 빈 응답이 아니라 오류 안내가 전달됨
+
+
 def test_stream_endpoint_no_key_returns_503(monkeypatch):
     monkeypatch.setattr(settings, "openai_api_key", "")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)

@@ -1,5 +1,28 @@
 """normalize_tech_tags: 외부/보드 태그에서 기술스택만 남기는지 검증."""
-from dev_jobs_core.analyzers.stack import extract_tech, normalize_tech_tags
+from dev_jobs_core.analyzers.stack import extract_tech, match_resume, normalize_tech_tags
+
+
+def test_match_resume_unifies_synonyms():
+    # vocab 에 둘 다 있는 동의어(golang/go, postgresql/postgres, k8s/kubernetes)가
+    # 공고/이력서에서 다른 표기로 와도 매칭돼야 함(불일치로 빠지면 안 됨).
+    r = match_resume(
+        resume_text="Experienced in Go, Postgres and Kubernetes.",
+        job_description="Looking for Golang, PostgreSQL and k8s expertise.",
+    )
+    assert "go" in r["matched"]
+    assert "postgres" in r["matched"]
+    assert "kubernetes" in r["matched"]
+    assert r["missing"] == []
+    assert r["match_ratio"] == 1.0
+
+
+def test_match_resume_real_gap_still_reported():
+    r = match_resume(
+        resume_text="I use Python and Django.",
+        job_description="We need Python and Rust.",
+    )
+    assert "python" in r["matched"]
+    assert "rust" in r["missing"]
 
 
 def test_keeps_real_tech_case_insensitive():
