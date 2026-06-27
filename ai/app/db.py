@@ -24,74 +24,123 @@ def get_conn() -> psycopg.Connection:
     return conn
 
 
-def upsert_company(conn: psycopg.Connection, company: dict[str, Any]) -> None:
-    conn.execute(
-        """
-        INSERT INTO companies (slug, display_name, ats, ats_token, tags)
-        VALUES (%(slug)s, %(display_name)s, %(ats)s, %(ats_token)s, %(tags)s)
-        ON CONFLICT (slug) DO UPDATE SET
-            display_name = EXCLUDED.display_name,
-            ats          = COALESCE(EXCLUDED.ats, companies.ats),
-            ats_token    = COALESCE(EXCLUDED.ats_token, companies.ats_token),
-            tags         = EXCLUDED.tags
-        """,
-        company,
+_COMPANY_UPSERT = """
+    INSERT INTO companies (slug, display_name, ats, ats_token, tags)
+    VALUES (%(slug)s, %(display_name)s, %(ats)s, %(ats_token)s, %(tags)s)
+    ON CONFLICT (slug) DO UPDATE SET
+        display_name = EXCLUDED.display_name,
+        ats          = COALESCE(EXCLUDED.ats, companies.ats),
+        ats_token    = COALESCE(EXCLUDED.ats_token, companies.ats_token),
+        tags         = EXCLUDED.tags
+"""
+
+_JOB_UPSERT = """
+    INSERT INTO jobs (
+        id, source, title, company_slug, location, is_remote, employment_type,
+        description, description_text, apply_url, posted_at, closes_at, tags,
+        salary_min, salary_max, salary_currency, salary_period,
+        salary_min_usd, salary_max_usd, experience_years, seniority, visa_status, visa_evidence,
+        remote_eligibility, remote_evidence, embedding,
+        first_seen_at, last_seen_at, is_active
+    ) VALUES (
+        %(id)s, %(source)s, %(title)s, %(company_slug)s, %(location)s, %(is_remote)s,
+        %(employment_type)s, %(description)s, %(description_text)s, %(apply_url)s,
+        %(posted_at)s, %(closes_at)s, %(tags)s,
+        %(salary_min)s, %(salary_max)s, %(salary_currency)s, %(salary_period)s,
+        %(salary_min_usd)s, %(salary_max_usd)s, %(experience_years)s, %(seniority)s,
+        %(visa_status)s, %(visa_evidence)s,
+        %(remote_eligibility)s, %(remote_evidence)s, %(embedding)s,
+        now(), now(), true
     )
+    ON CONFLICT (id) DO UPDATE SET
+        title           = EXCLUDED.title,
+        location        = EXCLUDED.location,
+        is_remote       = EXCLUDED.is_remote,
+        employment_type = EXCLUDED.employment_type,
+        description     = EXCLUDED.description,
+        description_text= EXCLUDED.description_text,
+        apply_url       = EXCLUDED.apply_url,
+        posted_at       = EXCLUDED.posted_at,
+        closes_at       = EXCLUDED.closes_at,
+        tags            = EXCLUDED.tags,
+        salary_min      = EXCLUDED.salary_min,
+        salary_max      = EXCLUDED.salary_max,
+        salary_currency = EXCLUDED.salary_currency,
+        salary_period   = EXCLUDED.salary_period,
+        salary_min_usd  = EXCLUDED.salary_min_usd,
+        salary_max_usd  = EXCLUDED.salary_max_usd,
+        experience_years = EXCLUDED.experience_years,
+        seniority        = EXCLUDED.seniority,
+        visa_status     = EXCLUDED.visa_status,
+        visa_evidence   = EXCLUDED.visa_evidence,
+        remote_eligibility = EXCLUDED.remote_eligibility,
+        remote_evidence    = EXCLUDED.remote_evidence,
+        embedding       = EXCLUDED.embedding,
+        last_seen_at    = now(),
+        is_active       = true
+"""
+
+
+def _job_params(job: dict[str, Any]) -> dict[str, Any]:
+    """upsert 파라미터 정규화 — jsonb 컬럼(evidence)을 Json 래핑."""
+    p = dict(job)
+    p["visa_evidence"] = Json(job.get("visa_evidence") or [])
+    p["remote_evidence"] = Json(job.get("remote_evidence") or [])
+    return p
+
+
+def upsert_company(conn: psycopg.Connection, company: dict[str, Any]) -> None:
+    conn.execute(_COMPANY_UPSERT, company)
 
 
 def upsert_job(conn: psycopg.Connection, job: dict[str, Any]) -> None:
     """공고 upsert. 재관측 시 last_seen_at 갱신 + is_active=true 복구."""
-    params = dict(job)
-    params["visa_evidence"] = Json(job.get("visa_evidence") or [])
-    params["remote_evidence"] = Json(job.get("remote_evidence") or [])
-    conn.execute(
-        """
-        INSERT INTO jobs (
-            id, source, title, company_slug, location, is_remote, employment_type,
-            description, description_text, apply_url, posted_at, closes_at, tags,
-            salary_min, salary_max, salary_currency, salary_period,
-            salary_min_usd, salary_max_usd, experience_years, seniority, visa_status, visa_evidence,
-            remote_eligibility, remote_evidence, embedding,
-            first_seen_at, last_seen_at, is_active
-        ) VALUES (
-            %(id)s, %(source)s, %(title)s, %(company_slug)s, %(location)s, %(is_remote)s,
-            %(employment_type)s, %(description)s, %(description_text)s, %(apply_url)s,
-            %(posted_at)s, %(closes_at)s, %(tags)s,
-            %(salary_min)s, %(salary_max)s, %(salary_currency)s, %(salary_period)s,
-            %(salary_min_usd)s, %(salary_max_usd)s, %(experience_years)s, %(seniority)s,
-            %(visa_status)s, %(visa_evidence)s,
-            %(remote_eligibility)s, %(remote_evidence)s, %(embedding)s,
-            now(), now(), true
-        )
-        ON CONFLICT (id) DO UPDATE SET
-            title           = EXCLUDED.title,
-            location        = EXCLUDED.location,
-            is_remote       = EXCLUDED.is_remote,
-            employment_type = EXCLUDED.employment_type,
-            description     = EXCLUDED.description,
-            description_text= EXCLUDED.description_text,
-            apply_url       = EXCLUDED.apply_url,
-            posted_at       = EXCLUDED.posted_at,
-            closes_at       = EXCLUDED.closes_at,
-            tags            = EXCLUDED.tags,
-            salary_min      = EXCLUDED.salary_min,
-            salary_max      = EXCLUDED.salary_max,
-            salary_currency = EXCLUDED.salary_currency,
-            salary_period   = EXCLUDED.salary_period,
-            salary_min_usd  = EXCLUDED.salary_min_usd,
-            salary_max_usd  = EXCLUDED.salary_max_usd,
-            experience_years = EXCLUDED.experience_years,
-            seniority        = EXCLUDED.seniority,
-            visa_status     = EXCLUDED.visa_status,
-            visa_evidence   = EXCLUDED.visa_evidence,
-            remote_eligibility = EXCLUDED.remote_eligibility,
-            remote_evidence    = EXCLUDED.remote_evidence,
-            embedding       = EXCLUDED.embedding,
-            last_seen_at    = now(),
-            is_active       = true
-        """,
-        params,
-    )
+    conn.execute(_JOB_UPSERT, _job_params(job))
+
+
+def upsert_companies(conn: psycopg.Connection, companies: list[dict[str, Any]]) -> None:
+    """여러 회사 batch upsert(executemany) — slug 로 dedup 후 호출 권장. DB 라운드트립 절감.
+
+    배치가 한 행 때문에 통째로 실패하면(현 행별 격리 손실) savepoint 로 감싼 행별 폴백으로 떨어진다.
+    """
+    if not companies:
+        return
+    try:
+        with conn.transaction(), conn.cursor() as cur:
+            cur.executemany(_COMPANY_UPSERT, companies)
+    except Exception:  # noqa: BLE001 — 배치 실패 → 행별 폴백
+        for c in companies:
+            try:
+                with conn.transaction():
+                    conn.execute(_COMPANY_UPSERT, c)
+            except Exception as e:  # noqa: BLE001
+                log.warning("company upsert 실패 %s: %s", c.get("slug"), e)
+
+
+def upsert_jobs(conn: psycopg.Connection, jobs: list[dict[str, Any]]) -> tuple[int, int]:
+    """여러 공고 batch upsert(executemany). (성공, 실패) 반환.
+
+    한 행 실패가 전체를 막지 않도록: 배치를 savepoint 로 시도하고, 실패하면 행별(각자 savepoint)
+    폴백 — 기존 행별 try/except 의 격리성을 유지하면서 happy-path 만 배치로 가속한다.
+    """
+    if not jobs:
+        return 0, 0
+    rows = [_job_params(j) for j in jobs]
+    try:
+        with conn.transaction(), conn.cursor() as cur:
+            cur.executemany(_JOB_UPSERT, rows)
+        return len(rows), 0
+    except Exception:  # noqa: BLE001 — 배치 실패 → 행별 폴백(격리)
+        ok = fail = 0
+        for r in rows:
+            try:
+                with conn.transaction():
+                    conn.execute(_JOB_UPSERT, r)
+                ok += 1
+            except Exception as e:  # noqa: BLE001
+                fail += 1
+                log.warning("upsert 실패 %s: %s", r.get("id"), e)
+        return ok, fail
 
 
 def fetch_unclear_jobs(conn: psycopg.Connection, limit: int | None = None) -> list[dict[str, Any]]:
