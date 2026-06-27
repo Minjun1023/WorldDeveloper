@@ -26,6 +26,7 @@ export function PostInteractions({
   const [score, setScore] = useState(initialScore);
   const [busy, setBusy] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function toggle() {
     if (!loggedIn) {
@@ -34,13 +35,18 @@ export function PostInteractions({
     }
     if (busy) return;
     setBusy(true);
+    setError(null);
     try {
       const res = await fetch(`/api/community/posts/${postId}/reactions`, { method: "POST" });
       if (res.ok) {
         const d = (await res.json()) as { reacted: boolean; score: number };
         setReacted(d.reacted);
         setScore(d.score);
+      } else {
+        setError("추천 처리에 실패했어요. 잠시 후 다시 시도해주세요.");
       }
+    } catch {
+      setError("네트워크 오류로 추천하지 못했어요.");
     } finally {
       setBusy(false);
     }
@@ -56,12 +62,26 @@ export function PostInteractions({
 
   async function remove() {
     if (!window.confirm("이 글을 삭제할까요? 되돌릴 수 없어요.")) return;
-    const res = await fetch(`/api/community/posts/${postId}`, { method: "DELETE" });
-    if (res.ok) router.push("/community");
+    setError(null);
+    try {
+      const res = await fetch(`/api/community/posts/${postId}`, { method: "DELETE" });
+      if (res.ok) {
+        router.push("/community");
+      } else {
+        setError("글 삭제에 실패했어요. 잠시 후 다시 시도해주세요.");
+      }
+    } catch {
+      setError("네트워크 오류로 글을 삭제하지 못했어요.");
+    }
   }
 
   return (
     <>
+    {error && (
+      <p role="alert" className="mb-2 text-caption text-destructive">
+        {error}
+      </p>
+    )}
     <div className="flex items-center gap-2">
       <button
         type="button"

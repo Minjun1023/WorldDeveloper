@@ -5,6 +5,7 @@ import {
   type DragEndEvent,
   DragOverlay,
   type DragStartEvent,
+  KeyboardSensor,
   PointerSensor,
   useDraggable,
   useDroppable,
@@ -55,7 +56,12 @@ export function JobTrackerBoard() {
   const [statusByJob, setStatusByJob] = useState<Record<string, string | null>>({});
   // 드래그 중인 공고 id — DragOverlay(포털)로 떠 있는 카드를 그린다. overflow 클리핑을 벗어나기 위함.
   const [activeId, setActiveId] = useState<string | null>(null);
-  const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }));
+  // 포인터(마우스/터치) + 키보드 둘 다 지원 — 키보드 사용자도 Space 로 집고 방향키로
+  // 컬럼 이동, Space 로 드롭(지원 상태 변경) 가능. dnd-kit 이 스크린리더 안내도 제공.
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor),
+  );
 
   useEffect(() => {
     let alive = true;
@@ -114,7 +120,7 @@ export function JobTrackerBoard() {
       onDragCancel={() => setActiveId(null)}
     >
       {/* 뷰포트 높이를 채우고(전체 크기), 가로는 항상 맞춰(슬라이드 없음) 카드만 컬럼 내부 스크롤. */}
-      <div className="flex h-[calc(100vh-17rem)] gap-2 overflow-x-auto overflow-y-hidden sm:gap-3 md:overflow-x-hidden">
+      <div className="flex h-[calc(100dvh-17rem)] gap-2 overflow-x-auto overflow-y-hidden sm:gap-3 md:overflow-x-hidden">
         {/* 북마크 공고 풀 (드래그 소스) */}
         <div className="flex w-52 shrink-0 flex-col">
           <div className="mb-2 px-1 text-body-sm font-semibold">

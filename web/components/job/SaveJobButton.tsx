@@ -18,7 +18,7 @@ export function SaveJobButton({ jobId, loggedIn, className }: { jobId: string; l
     return (
       <Link
         href={`/signin?callbackUrl=${encodeURIComponent(`/jobs/${encodeURIComponent(jobId)}`)}`}
-        aria-label="저장"
+        aria-label="관심 공고로 저장 (로그인 필요)"
         title="저장하려면 로그인하세요"
         className={cn(ICON_BTN, "border-border text-foreground hover:bg-accent", className)}
       >
@@ -31,9 +31,9 @@ export function SaveJobButton({ jobId, loggedIn, className }: { jobId: string; l
     <button
       type="button"
       onClick={toggle}
-      aria-label={saved ? "저장됨" : "저장"}
+      aria-label={saved ? "관심 공고 저장됨" : "관심 공고로 저장"}
       aria-pressed={saved}
-      title={saved ? "저장됨 (클릭해 해제)" : "저장"}
+      title={saved ? "저장됨 (클릭해 해제)" : "관심 공고로 저장"}
       className={cn(
         ICON_BTN,
         saved ? "border-primary/40 bg-primary/5 text-primary" : "border-border text-foreground hover:bg-accent",

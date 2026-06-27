@@ -102,7 +102,8 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
 
   return (
     <div className="space-y-5">
-      {/* 헤더 — 제목 제거, 글쓰기 버튼만 우측 */}
+      {/* 헤더 — 시각적 제목은 제거(디자인), 스크린리더용 제목만 유지 */}
+      <h1 className="sr-only">커뮤니티</h1>
       <div className="flex flex-wrap items-center justify-end gap-3">
         <Link
           href="/community/new"

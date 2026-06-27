@@ -65,8 +65,8 @@ export function InteractiveJobCard({
         type="button"
         onClick={toggleSave}
         aria-pressed={saved}
-        aria-label={saved ? "저장됨" : "저장"}
-        title={saved ? "저장됨" : "저장"}
+        aria-label={saved ? "관심 공고 저장됨" : "관심 공고로 저장"}
+        title={saved ? "관심 공고 저장됨" : "관심 공고로 저장"}
         className={cn(
           "inline-flex h-8 w-8 items-center justify-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
           saved ? "text-primary" : "text-muted-foreground hover:text-foreground hover:bg-accent",
