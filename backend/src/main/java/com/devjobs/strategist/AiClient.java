@@ -56,8 +56,10 @@ public class AiClient {
     public List<Double> embed(String text) {
         try {
             String json = mapper.writeValueAsString(Map.of("text", text));
+            // 추천은 user-facing 경로 — 임베딩은 보통 sub-second 라 5초면 웜 호출+지터를 커버한다.
+            // AI 가 느리거나 죽으면 빠르게 실패해 호출 측의 최신순 fallback 으로 넘어간다(30초 대기 방지).
             HttpRequest req = internalRequest("/internal/embed")
-                .timeout(Duration.ofSeconds(30))
+                .timeout(Duration.ofSeconds(5))
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
             HttpResponse<String> resp = http.send(req, HttpResponse.BodyHandlers.ofString());
