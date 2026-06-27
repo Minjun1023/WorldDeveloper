@@ -5,16 +5,46 @@ deps 추가 없이 xml.etree 로 파싱 (RSS 2.0 / Atom 1.0 둘 다 지원).
 """
 from __future__ import annotations
 import asyncio
+import ipaddress
 import re
+import socket
 import sqlite3
 import xml.etree.ElementTree as ET
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 import httpx
 
 DB_PATH = Path.home() / ".dev-jobs-mcp" / "applications.db"
+
+
+def _is_safe_feed_url(url: str) -> bool:
+    """SSRF 방어 — http(s) 스킴 + 공인 IP 로만 해석되는 호스트만 허용.
+
+    내부망/루프백/링크로컬(클라우드 메타데이터 169.254.169.254 포함)/예약 IP 로 해석되면
+    거부. 구독(subscribe) 과 fetch 양쪽에서 검사해 저장된 URL·DNS rebinding 도 막는다.
+    """
+    try:
+        p = urlparse(url)
+    except Exception:
+        return False
+    if p.scheme not in ("http", "https") or not p.hostname:
+        return False
+    try:
+        infos = socket.getaddrinfo(p.hostname, None)
+    except Exception:
+        return False
+    for info in infos:
+        try:
+            ip = ipaddress.ip_address(info[4][0])
+        except ValueError:
+            return False
+        if (ip.is_private or ip.is_loopback or ip.is_link_local
+                or ip.is_reserved or ip.is_multicast or ip.is_unspecified):
+            return False
+    return True
 
 # Atom/RSS 네임스페이스 (Atom 은 default ns 사용)
 _NS = {"atom": "http://www.w3.org/2005/Atom"}
@@ -48,6 +78,9 @@ def _conn() -> sqlite3.Connection:
 
 def subscribe(company: str, feed_url: str, kind: str = "blog") -> dict:
     """회사 블로그 RSS/Atom 피드 구독. 같은 company 가 이미 있으면 URL 갱신."""
+    if not _is_safe_feed_url(feed_url):
+        return {"error": "허용되지 않는 feed_url 입니다(http/https 공개 주소만 가능).",
+                "company": company.lower()}
     now = datetime.utcnow().isoformat()
     with _conn() as conn:
         conn.execute(
@@ -113,8 +146,11 @@ def _parse_feed(xml_bytes: bytes) -> list[dict]:
 
 async def _fetch_one(company: str, feed_url: str) -> dict:
     """단일 구독에서 신규 entry 만 반환 + DB 에 seen 표시."""
+    # fetch 시점에도 재검증 — 저장된 URL 변조/DNS rebinding 방어. redirect 는 끄고(우회 차단).
+    if not _is_safe_feed_url(feed_url):
+        return {"company": company, "error": "unsafe feed_url (blocked)", "new_entries": []}
     try:
-        async with httpx.AsyncClient(timeout=15, headers={"User-Agent": "dev-jobs-mcp/0.4"}, follow_redirects=True) as client:
+        async with httpx.AsyncClient(timeout=15, headers={"User-Agent": "dev-jobs-mcp/0.4"}, follow_redirects=False) as client:
             r = await client.get(feed_url)
             r.raise_for_status()
             entries = _parse_feed(r.content)

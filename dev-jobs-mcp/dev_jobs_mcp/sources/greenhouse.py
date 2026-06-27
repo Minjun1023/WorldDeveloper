@@ -8,6 +8,8 @@ https://boards-api.greenhouse.io/v1/boards/{company}/jobs?content=true
 """
 from __future__ import annotations
 import re
+from urllib.parse import quote
+
 import httpx
 from ..models import JobPosting
 
@@ -15,7 +17,7 @@ BASE = "https://boards-api.greenhouse.io/v1/boards"
 
 
 async def fetch(company: str, query: str = "", limit: int = 100) -> list[JobPosting]:
-    url = f"{BASE}/{company}/jobs"
+    url = f"{BASE}/{quote(company, safe='')}/jobs"  # company 인코딩 — 경로 탈출/주입 방지
     async with httpx.AsyncClient(timeout=30, headers={"User-Agent": "dev-jobs-mcp/0.1"}) as client:
         # content=true 로 description 도 함께 받음
         resp = await client.get(url, params={"content": "true"})

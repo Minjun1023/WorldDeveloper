@@ -6,6 +6,8 @@ https://api.ashbyhq.com/posting-api/job-board/{org}?includeCompensation=true
 Linear, Vercel, Posthog, Ramp, Supabase 등 신생 유니콘 다수가 사용.
 """
 from __future__ import annotations
+from urllib.parse import quote
+
 import httpx
 from ..models import JobPosting
 from .greenhouse import _strip_html
@@ -14,7 +16,7 @@ BASE = "https://api.ashbyhq.com/posting-api/job-board"
 
 
 async def fetch(company: str, query: str = "", limit: int = 100) -> list[JobPosting]:
-    url = f"{BASE}/{company}"
+    url = f"{BASE}/{quote(company, safe='')}"  # company 인코딩 — 경로 탈출/주입 방지
     async with httpx.AsyncClient(timeout=30, headers={"User-Agent": "dev-jobs-mcp/0.2"}) as client:
         resp = await client.get(url, params={"includeCompensation": "true"})
         if resp.status_code == 404:
