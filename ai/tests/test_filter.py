@@ -183,6 +183,18 @@ def test_drops_japanese_non_dev_titles():
     assert not is_dev_role("機械設計エンジニア")
 
 
+def test_salesforce_not_dropped_by_sales_substring():
+    # 'sales' 부분문자열이 'salesforce' 를 오매칭해 진짜 개발직을 drop 하던 버그 회귀 방지.
+    assert is_dev_role("Salesforce Architect")        # rule3 generic architect
+    assert is_dev_role("Salesforce Developer")        # STRONG(developer)
+    assert is_dev_role("Senior Salesforce Engineer")  # rule3 generic engineer
+    # 단, 진짜 영업 직무는 단어 경계로 그대로 drop
+    assert not is_dev_role("Sales Engineer")
+    assert not is_dev_role("Account Executive (Sales)")
+    assert not is_dev_role("Salesforce Account Executive")  # 'account exec' deny
+    assert not is_dev_role("Presales Engineer, EMEA")       # 'presales' deny
+
+
 def test_english_filter_unchanged_after_japanese():
     # 회귀: 영어 판정 불변
     assert is_dev_role("Senior Backend Engineer")

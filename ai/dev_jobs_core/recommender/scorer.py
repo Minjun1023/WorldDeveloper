@@ -75,7 +75,7 @@ def score_visa(user: UserProfile, job: JobPosting) -> tuple[float, str]:
         "sponsors": "비자 스폰서십 명시",
         "unclear": "비자 정책 미언급 (별도 확인 필요)",
         "no_sponsor": "비자 스폰서십 불가 명시",
-    }[job.visa_status]
+    }.get(job.visa_status, "비자 정책 미언급 (별도 확인 필요)")  # 비표준 status 도 안전
     return score, reason
 
 
@@ -90,7 +90,7 @@ def score_location(user: UserProfile, job: JobPosting) -> tuple[float, str]:
     if not user.preferred_locations:
         return 0.7, "지역 선호 미지정 (중립)"
 
-    job_loc_lower = job.location.lower()
+    job_loc_lower = (job.location or "").lower()
 
     # 원격이고 사용자가 원격을 선호 목록에 포함시켰으면 매칭
     if job.is_remote and any("remote" in loc.lower() for loc in user.preferred_locations):
@@ -201,7 +201,7 @@ def score_job(
         penalty *= 0.2
         deal_breakers.append("온사이트 공고 (사용자 원격 only)")
 
-    if any(job.company.lower() == c.lower() for c in user.excluded_companies):
+    if any((job.company or "").lower() == c.lower() for c in user.excluded_companies):
         penalty = 0.0
         deal_breakers.append(f"제외 회사 ({job.company})")
 
@@ -250,7 +250,7 @@ def apply_diversity(
     company_count: Counter = Counter()
 
     for job, breakdown in scored:
-        company = job.company.lower().strip()
+        company = (job.company or "").lower().strip()
         if company_count[company] >= max_per_company:
             continue
         chosen.append((job, breakdown))
