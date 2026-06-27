@@ -128,7 +128,7 @@ def score_seniority(user: UserProfile, job: JobPosting) -> tuple[float, str]:
 
 def score_salary(user: UserProfile, job: JobPosting) -> tuple[float, str]:
     """연봉 만족도. 공고 연봉이 사용자 희망 이상이면 1.0."""
-    if user.desired_salary_usd is None:
+    if not user.desired_salary_usd:  # None 또는 0 → 미지정(0 을 '아무 연봉이나 만점'으로 보지 않음)
         return 0.7, "연봉 희망 미지정 (중립)"
 
     if job.salary_min is None and job.salary_max is None:
@@ -245,6 +245,8 @@ def apply_diversity(
 
     이미 score 내림차순으로 정렬된 리스트를 받는다고 가정.
     """
+    if top_k <= 0:  # 0/음수 top_k 에 1건 반환되던 off-by-one 방지
+        return []
     from collections import Counter
     chosen: list[tuple[JobPosting, ScoreBreakdown]] = []
     company_count: Counter = Counter()
