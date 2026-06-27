@@ -23,7 +23,7 @@ export function JobSidebar({ job, loggedIn, companyJobCount }: {
 
   return (
     <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-      <MatchScorePanel jobId={job.id} />
+      <MatchScorePanel jobId={job.id} loggedIn={loggedIn} />
 
       <div className="rounded-2xl border border-border bg-surface p-4">
         <ApplyButton

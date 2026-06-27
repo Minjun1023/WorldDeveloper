@@ -18,8 +18,8 @@ const AXES: { key: keyof ScoreBreakdown; label: string }[] = [
 
 const pct = (n: number) => Math.round(Math.max(0, Math.min(1, Number(n) || 0)) * 100);
 
-export function MatchScorePanel({ jobId }: { jobId: string }) {
-  const { state, score, retry } = useMatchScore(jobId);
+export function MatchScorePanel({ jobId, loggedIn = true }: { jobId: string; loggedIn?: boolean }) {
+  const { state, score, retry } = useMatchScore(jobId, loggedIn);
 
   if (state === "loading") {
     return (

@@ -10,12 +10,18 @@ type State = "loading" | "ready" | "needsProfile" | "loggedOut" | "error";
 // 갇히지 않도록 타임아웃을 둔다. 콜드 스타트 시 임베딩이 느릴 수 있어 10s.
 const TIMEOUT_MS = 10_000;
 
-export function useMatchScore(jobId: string) {
-  const [state, setState] = useState<State>("loading");
+export function useMatchScore(jobId: string, enabled = true) {
+  const [state, setState] = useState<State>(enabled ? "loading" : "loggedOut");
   const [score, setScore] = useState<ScoreBreakdown | null>(null);
   const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
+    // 비로그인 시 보호된 엔드포인트(/api/me/match)를 아예 호출하지 않는다.
+    // 어차피 401 → loggedOut 인데, 호출하면 콘솔에 401 네트워크 에러만 남는다.
+    if (!enabled) {
+      setState("loggedOut");
+      return;
+    }
     let alive = true;
     setState("loading");
     fetch(`/api/me/match/${encodeURIComponent(jobId)}`, {
@@ -34,7 +40,7 @@ export function useMatchScore(jobId: string) {
     return () => {
       alive = false;
     };
-  }, [jobId, attempt]);
+  }, [jobId, attempt, enabled]);
 
   // 일시적 실패(백엔드 재기동 등)를 새로고침 없이 다시 시도.
   const retry = useCallback(() => setAttempt((a) => a + 1), []);

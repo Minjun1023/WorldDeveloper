@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BackButton } from "@/components/BackButton";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { InterviewPrepSection } from "@/components/job/InterviewPrepSection";
 import { VisaGuideSection } from "@/components/job/VisaGuideSection";
@@ -66,6 +67,10 @@ export default async function JobDetailPage({ params }: { params: { id: string }
           slug={job.company.slug}
         />
         <RecordJobView jobId={job.id} />
+
+        <div className="mb-4">
+          <BackButton fallbackHref="/search" label="공고 목록으로" />
+        </div>
 
         <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-8">
           <article className="min-w-0 space-y-5">

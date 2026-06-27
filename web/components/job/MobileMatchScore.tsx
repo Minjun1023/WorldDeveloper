@@ -6,8 +6,8 @@ import type { ScoreBreakdown } from "@/lib/types";
 const pct = (n: number) => Math.round(Math.max(0, Math.min(1, Number(n) || 0)) * 100);
 
 // 모바일 하단바 좌측 매칭 점수. 로그인+프로필로 점수가 준비됐을 때만 노출(아니면 숨김).
-export function MobileMatchScore({ jobId }: { jobId: string }) {
-  const { state, score } = useMatchScore(jobId);
+export function MobileMatchScore({ jobId, loggedIn = true }: { jobId: string; loggedIn?: boolean }) {
+  const { state, score } = useMatchScore(jobId, loggedIn);
   if (state !== "ready" || !score) return null;
   return (
     <div className="shrink-0">
