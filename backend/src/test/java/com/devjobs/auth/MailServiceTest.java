@@ -14,7 +14,7 @@ class MailServiceTest {
     @Test
     void sendsWhenSenderPresentAndHostConfigured() {
         JavaMailSender sender = Mockito.mock(JavaMailSender.class);
-        MailService svc = new MailService(sender, "no-reply@x.dev", "localhost");
+        MailService svc = new MailService(sender, "no-reply@x.dev", "localhost", false);
         svc.sendVerificationCode("u@x.dev", "123456");
         ArgumentCaptor<SimpleMailMessage> cap = ArgumentCaptor.forClass(SimpleMailMessage.class);
         verify(sender).send(cap.capture());
@@ -22,14 +22,22 @@ class MailServiceTest {
 
     @Test
     void logsAndSkipsWhenSenderNull() {
-        MailService svc = new MailService(null, "no-reply@x.dev", "");
+        MailService svc = new MailService(null, "no-reply@x.dev", "", false);
         svc.sendVerificationCode("u@x.dev", "123456"); // 예외 없음
+    }
+
+    @Test
+    void secureModeDoesNotThrowWhenMailDisabled() {
+        // 운영(requireSecure=true) + 메일 미설정 — 코드 노출 없이 안전하게 폴백(예외 없음)
+        MailService svc = new MailService(null, "no-reply@x.dev", "", true);
+        svc.sendVerificationCode("u@x.dev", "123456");
+        svc.sendPasswordResetCode("u@x.dev", "654321");
     }
 
     @Test
     void logsAndSkipsWhenHostBlankEvenIfSenderPresent() {
         JavaMailSender sender = Mockito.mock(JavaMailSender.class);
-        MailService svc = new MailService(sender, "no-reply@x.dev", "  ");
+        MailService svc = new MailService(sender, "no-reply@x.dev", "  ", false);
         svc.sendVerificationCode("u@x.dev", "123456");
         verifyNoInteractions(sender);
     }

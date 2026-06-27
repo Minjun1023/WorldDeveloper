@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
@@ -70,6 +71,7 @@ public class CommunityService {
         };
         // 검색어는 null 금지(널이면 Postgres 가 lower(?) 의 타입을 bytea 로 추론해 에러) → 빈 문자열=전체 매칭.
         String qParam = q == null ? "" : q.trim();
+        if (qParam.length() > 100) qParam = qParam.substring(0, 100);  // 초장문 검색어 DoS 방지
         List<CommunityPost> rows = posts.search(blankToNull(category), blankToNull(company),
             blankToNull(country), blankToNull(jobId), blankToNull(tag), qParam, unanswered,
             PageRequest.of(Math.max(page, 0), sz, order));
@@ -203,11 +205,21 @@ public class CommunityService {
     public ReportResult report(UUID userId, ReportRequest req) {
         String type = "comment".equals(req.targetType()) ? "comment" : "post";
         UUID targetId = uuid(req.targetId());
+        // 신고 대상이 실제로 존재해야 함 — 존재하지 않는 UUID 로 신고 테이블 오염 방지.
+        boolean exists = "comment".equals(type) ? comments.existsById(targetId) : posts.existsById(targetId);
+        if (!exists) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "신고 대상을 찾을 수 없어요");
+        }
         // 같은 신고자가 같은 대상을 또 신고하면 행을 만들지 않음(중복 무시, idempotent).
         if (reports.existsByTargetIdAndReporterId(targetId, userId)) {
             return new ReportResult(true, false);
         }
-        reports.save(new CommunityReport(type, targetId, userId, trim(req.reason())));
+        try {
+            reports.save(new CommunityReport(type, targetId, userId, trim(req.reason())));
+        } catch (DataIntegrityViolationException e) {
+            // 동시 요청 경쟁 — UNIQUE(target_id, reporter_id) 위반 = 이미 신고됨
+            return new ReportResult(true, false);
+        }
         // 고유 신고자 임계치 도달 → 사람 개입 없이 자동 숨김(status='flagged', 되돌릴 수 있음).
         boolean hidden = false;
         if (reports.countByTargetId(targetId) >= AUTO_HIDE_REPORTS) {
