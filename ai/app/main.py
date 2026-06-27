@@ -13,13 +13,24 @@ from __future__ import annotations
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI, Header, HTTPException
 
 from .config import settings
 from .etl.scheduler import shutdown_scheduler, start_scheduler
 from .routes import coach, embed, etl, health, parse_profile, skill_match, summarize
 
 log = logging.getLogger(__name__)
+
+
+def verify_internal_token(x_internal_token: str | None = Header(default=None)) -> None:
+    """settings.internal_auth_token 이 설정된 경우에만 X-Internal-Token 헤더를 강제한다.
+
+    기본값(빈 문자열)이면 비활성 — 로컬/테스트는 네트워크 격리에 의존하고, 운영에서
+    INTERNAL_AUTH_TOKEN env 를 켜면 비인증 호출(유료 OpenAI 트리거/DoS)을 차단한다.
+    """
+    expected = settings.internal_auth_token
+    if expected and x_internal_token != expected:
+        raise HTTPException(status_code=401, detail="invalid or missing internal token")
 
 
 @asynccontextmanager
@@ -51,10 +62,12 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# health 는 liveness 프로브용으로 인증 없이 개방. 나머지(작업/유료 경로)는 토큰 강제(설정 시).
+_auth = [Depends(verify_internal_token)]
 app.include_router(health.router, prefix="/internal", tags=["internal"])
-app.include_router(embed.router, prefix="/internal", tags=["internal"])
-app.include_router(summarize.router, prefix="/internal", tags=["internal"])
-app.include_router(coach.router, prefix="/internal", tags=["internal"])
-app.include_router(etl.router, prefix="/internal", tags=["internal"])
-app.include_router(parse_profile.router, prefix="/internal", tags=["internal"])
-app.include_router(skill_match.router, prefix="/internal", tags=["internal"])
+app.include_router(embed.router, prefix="/internal", tags=["internal"], dependencies=_auth)
+app.include_router(summarize.router, prefix="/internal", tags=["internal"], dependencies=_auth)
+app.include_router(coach.router, prefix="/internal", tags=["internal"], dependencies=_auth)
+app.include_router(etl.router, prefix="/internal", tags=["internal"], dependencies=_auth)
+app.include_router(parse_profile.router, prefix="/internal", tags=["internal"], dependencies=_auth)
+app.include_router(skill_match.router, prefix="/internal", tags=["internal"], dependencies=_auth)

@@ -25,6 +25,7 @@ class AiClientSkillMatchTest {
 
     private HttpServer server;
     private final AtomicReference<String> lastRequestBody = new AtomicReference<>();
+    private final AtomicReference<String> lastInternalToken = new AtomicReference<>();
 
     @AfterEach
     void tearDown() {
@@ -34,10 +35,15 @@ class AiClientSkillMatchTest {
     }
 
     private AiClient clientFor(int status, String body) throws Exception {
+        return clientFor(status, body, "");
+    }
+
+    private AiClient clientFor(int status, String body, String internalToken) throws Exception {
         server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/internal/skill-match", exchange -> {
             lastRequestBody.set(new String(
                 exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
+            lastInternalToken.set(exchange.getRequestHeaders().getFirst("X-Internal-Token"));
             byte[] out = body.getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(status, out.length);
             try (OutputStream os = exchange.getResponseBody()) {
@@ -49,7 +55,7 @@ class AiClientSkillMatchTest {
         // Spring 주입 매퍼와 동일하게 미지 필드(engine 등)는 무시 — DTO 가 부분 필드만 매핑하므로.
         ObjectMapper mapper = new ObjectMapper()
             .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-        return new AiClient(mapper, baseUrl);
+        return new AiClient(mapper, baseUrl, internalToken);
     }
 
     @Test
@@ -92,6 +98,24 @@ class AiClientSkillMatchTest {
     }
 
     @Test
+    void sendsInternalTokenHeaderWhenConfigured() throws Exception {
+        String body = "{\"required\":[],\"present\":[],\"missing\":[],\"engine\":\"alias-only\"}";
+        AiClient client = clientFor(200, body, "secret-token");
+
+        client.skillMatch("JD", "resume", List.of());
+        assertEquals("secret-token", lastInternalToken.get());
+    }
+
+    @Test
+    void omitsInternalTokenHeaderWhenBlank() throws Exception {
+        String body = "{\"required\":[],\"present\":[],\"missing\":[],\"engine\":\"alias-only\"}";
+        AiClient client = clientFor(200, body, "");
+
+        client.skillMatch("JD", "resume", List.of());
+        assertNull(lastInternalToken.get());
+    }
+
+    @Test
     void returnsNullOnNon200() throws Exception {
         AiClient client = clientFor(503, "service unavailable");
         assertNull(client.skillMatch("JD", "resume", List.of()));
@@ -101,7 +125,7 @@ class AiClientSkillMatchTest {
     void returnsNullWhenServiceUnreachable() {
         // 떠 있지 않은 포트 → 연결 실패 → null(폴백 경로).
         ObjectMapper mapper = new ObjectMapper();
-        AiClient client = new AiClient(mapper, "http://127.0.0.1:1");
+        AiClient client = new AiClient(mapper, "http://127.0.0.1:1", "");
         assertNull(client.skillMatch("JD", "resume", List.of()));
     }
 }

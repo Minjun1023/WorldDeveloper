@@ -25,15 +25,29 @@ public class AiClient {
     private static final Logger log = LoggerFactory.getLogger(AiClient.class);
 
     private final String baseUrl;
+    private final String internalToken;
     private final ObjectMapper mapper;
     private final HttpClient http = HttpClient.newBuilder()
         .version(HttpClient.Version.HTTP_1_1)  // uvicorn 은 HTTP/1.1 — HTTP/2 협상 시 body 누락 방지
         .connectTimeout(Duration.ofSeconds(3)).build();
 
     public AiClient(ObjectMapper mapper,
-                    @Value("${ai.base-url:http://localhost:8001}") String baseUrl) {
+                    @Value("${ai.base-url:http://localhost:8001}") String baseUrl,
+                    @Value("${ai.internal-token:}") String internalToken) {
         this.mapper = mapper;
         this.baseUrl = baseUrl;
+        this.internalToken = internalToken;
+    }
+
+    /** /internal/* 공통 요청 빌더 — 토큰이 설정된 경우 X-Internal-Token 헤더를 붙인다(미설정 시 생략). */
+    private HttpRequest.Builder internalRequest(String path) {
+        HttpRequest.Builder b = HttpRequest.newBuilder()
+            .uri(URI.create(baseUrl + path))
+            .header("content-type", "application/json");
+        if (internalToken != null && !internalToken.isBlank()) {
+            b.header("X-Internal-Token", internalToken);
+        }
+        return b;
     }
 
     private record EmbedResponse(List<Double> embedding, int dim, String model) {}
@@ -42,9 +56,7 @@ public class AiClient {
     public List<Double> embed(String text) {
         try {
             String json = mapper.writeValueAsString(Map.of("text", text));
-            HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/internal/embed"))
-                .header("content-type", "application/json")
+            HttpRequest req = internalRequest("/internal/embed")
                 .timeout(Duration.ofSeconds(30))
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
@@ -78,9 +90,7 @@ public class AiClient {
     public ParseResult parseProfile(String text) {
         try {
             String json = mapper.writeValueAsString(Map.of("text", text, "lang", "ko"));
-            HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/internal/parse-profile"))
-                .header("content-type", "application/json")
+            HttpRequest req = internalRequest("/internal/parse-profile")
                 .timeout(Duration.ofSeconds(30))
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
@@ -112,9 +122,7 @@ public class AiClient {
                 "title", title == null ? "" : title,
                 "description", description == null ? "" : description,
                 "lang", "ko"));
-            HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/internal/summarize"))
-                .header("content-type", "application/json")
+            HttpRequest req = internalRequest("/internal/summarize")
                 .timeout(Duration.ofSeconds(70))
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
@@ -145,9 +153,7 @@ public class AiClient {
                 "resume", resume == null ? "" : resume,
                 "tags", tags == null ? List.of() : tags,
                 "threshold", 0.5));
-            HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/internal/skill-match"))
-                .header("content-type", "application/json")
+            HttpRequest req = internalRequest("/internal/skill-match")
                 .timeout(Duration.ofSeconds(15))
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
@@ -173,9 +179,7 @@ public class AiClient {
                 "context", context == null ? "" : context,
                 "resume", resume == null ? "" : resume,
                 "messages", messages == null ? List.of() : messages));
-            HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/internal/coach-chat"))
-                .header("content-type", "application/json")
+            HttpRequest req = internalRequest("/internal/coach-chat")
                 .timeout(Duration.ofSeconds(70))
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
@@ -202,9 +206,7 @@ public class AiClient {
                 "context", context == null ? "" : context,
                 "resume", resume == null ? "" : resume,
                 "messages", messages == null ? List.of() : messages));
-            HttpRequest req = HttpRequest.newBuilder()
-                .uri(URI.create(baseUrl + "/internal/coach-chat-stream"))
-                .header("content-type", "application/json")
+            HttpRequest req = internalRequest("/internal/coach-chat-stream")
                 .timeout(Duration.ofSeconds(120))
                 .POST(HttpRequest.BodyPublishers.ofString(json))
                 .build();
