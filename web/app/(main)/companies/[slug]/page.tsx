@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { BackButton } from "@/components/BackButton";
 import { CompanyInfo } from "@/components/company/CompanyInfo";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { RelatedCommunity } from "@/components/community/RelatedCommunity";
@@ -39,6 +40,7 @@ export default async function CompanyDetailPage({
 
   return (
     <div className="space-y-8">
+      <BackButton fallbackHref="/companies" label="기업 목록으로" />
       {/* 히어로 카드 */}
       <header className="rounded-2xl border border-border bg-surface p-6">
         <div className="flex items-start gap-4">
