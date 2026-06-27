@@ -112,7 +112,7 @@ export function CoachConversationRail({
                   type="button"
                   aria-label="상담 삭제"
                   onClick={() => onDelete(c.job_id)}
-                  className="absolute right-1 top-1.5 inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-destructive focus-visible:opacity-100 group-hover:opacity-100"
+                  className="absolute right-1 top-1.5 inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:text-destructive focus-visible:opacity-100 group-hover:opacity-100"
                 >
                   <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
                 </button>

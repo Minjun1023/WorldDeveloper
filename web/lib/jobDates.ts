@@ -49,6 +49,6 @@ export function deadlineLabel(closes_at?: string | null): DeadlineLabel {
   if (!d) return { text: "상시채용", urgent: false };
   const daysLeft = Math.ceil((d.getTime() - Date.now()) / 86_400_000);
   const date = d.toLocaleDateString("ko-KR");
-  if (daysLeft < 0) return { text: `마감 ${date} (마감)`, urgent: false };
+  if (daysLeft < 0) return { text: `마감 ${date} (종료)`, urgent: false };
   return { text: `마감 ${date} (D-${daysLeft})`, urgent: daysLeft <= 7 };
 }

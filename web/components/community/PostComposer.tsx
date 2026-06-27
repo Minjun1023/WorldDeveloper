@@ -90,7 +90,7 @@ export function PostComposer({
     <form onSubmit={submit} className="space-y-5">
       {/* 카테고리 */}
       <div className="space-y-1.5">
-        <label className="text-body-sm font-medium">카테고리</label>
+        <span className="text-body-sm font-medium">카테고리</span>
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((c) => (
             <button
@@ -134,9 +134,9 @@ export function PostComposer({
 
       {/* 출처 표기 */}
       <div className="space-y-1.5">
-        <label className="text-body-sm font-medium">
+        <span className="block text-body-sm font-medium">
           이 글은 <span className="font-normal text-muted-foreground">(정직성: 추정 글은 피해주세요)</span>
-        </label>
+        </span>
         <div className="flex flex-wrap gap-2">
           {SOURCE_TYPES.map((s) => (
             <button
@@ -166,9 +166,9 @@ export function PostComposer({
 
       {/* 태그 (선택) */}
       <div className="space-y-1.5">
-        <label className="text-body-sm font-medium">
+        <span className="block text-body-sm font-medium">
           태그 <span className="font-normal text-muted-foreground">(선택 · 최대 5개 — 비자종류·도시·회사 등)</span>
-        </label>
+        </span>
         <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-input bg-background px-2 py-2">
           {tags.map((t) => (
             <span key={t} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-caption font-medium text-primary">
