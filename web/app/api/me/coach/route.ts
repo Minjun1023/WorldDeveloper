@@ -3,15 +3,20 @@ import { NextResponse } from "next/server";
 import { getSessionToken } from "@/lib/session-server";
 
 const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8080";
+const MAX_BODY = 300_000; // AI 비용 경로 — 거대 페이로드 조기 차단(정상 코치 본문은 통과)
 
 export async function POST(req: Request) {
   const token = await getSessionToken();
   if (!token) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const body = await req.text();
+  if (body.length > MAX_BODY) {
+    return NextResponse.json({ error: "요청이 너무 큽니다." }, { status: 413 });
+  }
   try {
     const res = await fetch(`${BACKEND_URL}/api/v1/me/coach`, {
       method: "POST",
       headers: { Authorization: `Bearer ${token}`, "content-type": "application/json" },
-      body: await req.text(),
+      body,
       cache: "no-store",
       signal: AbortSignal.timeout(40_000),
     });
