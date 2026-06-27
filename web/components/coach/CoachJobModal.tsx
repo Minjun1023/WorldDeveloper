@@ -57,6 +57,7 @@ export function CoachJobModal({
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
+          aria-label="공고 검색"
           placeholder="공고 검색…"
           className="h-11 w-full rounded-lg border border-input bg-background px-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
