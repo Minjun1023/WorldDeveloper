@@ -37,7 +37,7 @@ WorldDeveloper는 이 지점을 공략한다:
                              Postgres + pgvector          etl-worker
                              (벡터검색 + 관계형)          (수집 스케줄러, 별도 프로세스)
                                      ▲
-                          Redis (레이트리밋)   LibreTranslate (셀프호스팅 번역)
+                       Redis (opt-in, 멀티 인스턴스 시)   LibreTranslate (셀프호스팅 번역)
 ```
 
 세 서비스를 책임으로 분리했다.
@@ -59,8 +59,29 @@ WorldDeveloper는 이 지점을 공략한다:
 - **수집과 서빙의 프로세스 분리** — ETL은 처음 인프로세스 스케줄러였는데, 수집(약 20분, CPU 집약)이 이벤트 루프를 잡아 코치/추천 응답이 멈췄다. 같은 이미지를 `etl-worker`로 따로 띄워 격리.
 - **임베딩 콜드스타트** — 컨테이너 재시작 후 첫 추론이 느려 매칭 점수 요청이 타임아웃 났다. 기동 시 더미 1회 추론으로 모델을 워밍업해 첫 요청부터 정상 동작.
 - **검증 가능한 신뢰** — "비자 스폰서"를 추측하면 사용자를 잘못된 지원으로 보낸다. 정부 명부 대조 + 공고 원문 분류로 등급을 매기고, 모호하면 단정하지 않는다.
+- **복잡도를 더하지 않는 판단** — 단일 인스턴스로 충분한 트래픽 단계라 레이트리밋은 인메모리로 두고, Redis는 멀티 인스턴스로 확장할 때 켤 수 있도록 스캐폴딩만 해뒀다(불필요한 인프라 회피).
 - **비용 통제** — 번역은 셀프호스팅 LibreTranslate(API 비용 0), LLM 요약은 공고당 1회 호출 후 DB 캐시, LLM 재분류는 옵트인.
 - **BFF 패턴** — 세션 JWT와 내부 시크릿은 Next 서버 라우트에만 두고, 백엔드(8080)는 호스트에 노출하지 않는다(Docker 네트워크 내부 전용).
+
+---
+
+## 엔지니어링 하이라이트
+
+**테스트 & CI** — web `vitest` 52파일 · backend JUnit 41파일 · ai/MCP `pytest` 51파일(364 케이스). GitHub Actions가 변경된 레이어만 골라 검증한다(web: 타입체크 + 테스트 + 빌드 / backend: gradle test / ai: pytest + import). 모든 변경은 PR + CI 통과 후 머지.
+
+**보안 (defense-in-depth)**
+- 이메일/비밀번호 재설정 코드 시도 횟수 잠금 — 6자리 코드 브루트포스 차단
+- 운영 시크릿 fail-fast — JWT/내부/DB 시크릿이 dev 기본값이면 부팅 거부
+- 내부(`/internal`) AI 엔드포인트 토큰 인증(opt-in) — 유료 LLM 경로 무단 호출 차단
+- BFF 경로 주입 방어(`encodeURIComponent`) · 오픈 리다이렉트(`callbackUrl`) 검증 · 저장형 XSS(`sourceUrl` 스킴 화이트리스트) · MCP RSS feed SSRF 가드
+- 비용/남용 경로(로그인·추천·요약 등) 레이트리밋
+
+**성능**
+- 임베딩 **배치 인코딩** — 공고/이력서 구절마다 개별 `model.encode` 대신 1회 배치 처리
+- ETL **배치 upsert** — `executemany` + 행별 savepoint 폴백(행 격리를 유지하면서 happy-path 가속)
+- 레퍼런스 데이터(지역·회사 목록) ISR 캐시 + 백엔드→Next JSON gzip
+
+**데이터 파이프라인** — 12개 소스(7 ATS + 잡보드)에서 수집 → 회사명/스택/연봉/시니어리티/원격 정규화 → 비자 분류(키워드 + 정부 명부 교차검증 + LLM 폴백) → 임베딩 → pgvector 적재. dead-end(한국에서 지원 불가한 지역제한 원격 등) 공고는 적재 단계에서 제거.
 
 ---
 
@@ -71,7 +92,7 @@ WorldDeveloper는 이 지점을 공략한다:
 - **AI 이력서 코치** — 공고 grounding 기반 문장 리라이트, PDF 이력서 업로드 추출, 토큰 스트리밍
 - **인기 TOP 공고** — 조회 로그 기반 지역·직무별 인기 공고(데이터 희소 시 최신순 fallback)
 - **인증** — 이메일(6자리 코드 인증) + GitHub/Google OAuth, JWT 세션
-- **지원 관리** — 북마크, 칸반 지원 트래커, 커뮤니티, 회사 디렉터리
+- **지원 관리** — 북마크, 칸반 지원 트래커(키보드 접근성 지원), 커뮤니티, 회사 디렉터리
 - **분석** — 조회/가입/재방문 퍼널(운영자 대시보드), 고유 열람자 기준 중복 제거
 
 ### 화면
@@ -99,7 +120,7 @@ WorldDeveloper/
 └── docs/       설계 문서
 ```
 
-규모: Java 123파일 · TS/TSX 255파일 · Python 23파일 · DB 마이그레이션 23개(Flyway) · 테스트 web 49 / backend 33.
+규모: Java 130파일 · TS/TSX 284파일 · Python 95파일 · DB 마이그레이션 29개(Flyway) · 테스트 web 52 / backend 41 / ai 51 파일.
 
 ---
 
@@ -121,6 +142,8 @@ cd ai && uv sync && uv run uvicorn app.main:app --reload --port 8001
 cd web && npm install && npm run dev
 ```
 
+또는 `./dev.sh` 하나로 DB + 메일(Mailhog) + AI + 백엔드 + 프론트를 한 번에 띄운다.
+
 테스트:
 
 ```bash
@@ -139,4 +162,4 @@ OCI ARM 단일 VM에 Docker Compose로 전체 스택을 올린다(`deploy/docker
 
 ---
 
-설계 상세는 [`DESIGN.md`](./DESIGN.md) 참고.
+설계 상세는 [`DESIGN.md`](./DESIGN.md), 매칭·코치 파이프라인은 [`docs/matching-and-coach-pipeline.md`](./docs/matching-and-coach-pipeline.md) 참고.
