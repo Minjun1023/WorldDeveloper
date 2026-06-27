@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { remoteRegionLabelKo } from "@/lib/flags";
 import type { RemoteEligibility } from "@/lib/types";
 
 // VisaBadge 와 동일 철학: 신호가 되는 값만 표시. 기본은 한국 거주자가 지원 가능한
@@ -13,10 +14,13 @@ export function RemoteBadge({
   eligibility,
   isRemote = false,
   includeRestricted = false,
+  location,
 }: {
   eligibility?: RemoteEligibility | null;
   isRemote?: boolean;
   includeRestricted?: boolean;
+  // 지역 제한 원격일 때 "어느 지역 한정"인지 라벨에 표시하기 위한 근무지 문자열.
+  location?: string | null;
 }) {
   // 강신호 — 한국에서 지원 가능한 원격.
   if (eligibility === "worldwide" || eligibility === "apac_ok") {
@@ -34,9 +38,10 @@ export function RemoteBadge({
   // 옵트인 — 원격이지만 지역 제한이 있는 공고. 강신호와 시각적으로 구분(중립 톤)하고
   // "지역 제한"을 명시해 한국 지원 가능으로 오인하지 않게 한다.
   if (includeRestricted && (eligibility === "region_restricted" || isRemote === true)) {
+    const region = remoteRegionLabelKo(location);
     return (
       <Badge variant="outline" className="shrink-0 border-border text-muted-foreground">
-        원격 (지역 제한)
+        {region ? `원격 (${region} 한정)` : "원격 (지역 제한)"}
       </Badge>
     );
   }
