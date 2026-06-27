@@ -120,8 +120,12 @@ def _usd(amount: int | None, currency: str, period: str) -> int | None:
     return int(v) if v else None
 
 
-def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
-    """(company_row, job_row) 반환. job_row.company_slug 가 company_row.slug 와 일치."""
+def transform(j: JobPosting, *, defer_embedding: bool = False) -> tuple[dict[str, Any], dict[str, Any]]:
+    """(company_row, job_row) 반환. job_row.company_slug 가 company_row.slug 와 일치.
+
+    defer_embedding=True 면 임베딩을 즉시 계산하지 않고(embedding=None) 입력 텍스트를
+    job_row["_embed_input"] 에 담아둔다 — 호출부(ETL)가 여러 공고를 모아 1회 배치 인코딩하기 위함.
+    """
     info = resolve_company(j.company)
     if info:
         slug = info["token"]
@@ -155,7 +159,8 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
     # 남는 기술 태그가 없으면 제목+본문에서 추출로 폴백("iOS Engineer"·"Go Developer" 등 제목 스택 포착).
     tags = normalize_tech_tags(j.tags) or extract_tech(f"{j.title or ''}\n{plain}")
     # 제목+스택을 앞세운 텍스트로 임베딩 — 의미 유사도가 도메인/역할을 실제로 반영하게.
-    embedding = embed_text(build_embed_text(j.title, tags, plain))
+    embed_input = build_embed_text(j.title, tags, plain)
+    embedding = None if defer_embedding else embed_text(embed_input)
 
     # 구조화 연봉이 없으면 본문에서 명시 범위 추출(원본 통화 표시 + USD 환산 점수용).
     raw_min, raw_max = j.salary_min, j.salary_max
@@ -194,4 +199,6 @@ def transform(j: JobPosting) -> tuple[dict[str, Any], dict[str, Any]]:
         "seniority": extract_seniority(j.title or ""),
         "embedding": embedding,
     }
+    if defer_embedding:
+        job_row["_embed_input"] = embed_input  # 배치 인코딩용 임시 키(upsert 전에 제거)
     return company_row, job_row

@@ -101,7 +101,8 @@ def match_skills(
 
         if core_emb is not None:
             ph = phrases(resume)
-            phrase_vecs = [v for v in (core_emb._embed_cached(p) for p in ph) if v is not None]
+            # 이력서 구절은 매 요청 새 텍스트(캐시 무의미) — 개별 호출 N회 대신 1회 배치 인코딩.
+            phrase_vecs = [v for v in core_emb.embed_texts(ph) if v is not None]
             if phrase_vecs:
                 engine = "semantic"
                 for skill in pending:

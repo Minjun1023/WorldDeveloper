@@ -168,20 +168,44 @@ async def run_full_cycle(
         # 업서트 직전 DB 시각 = "이번 사이클" 경계. 이후 재관측 공고는 last_seen_at > threshold,
         # 미관측 공고는 last_seen_at < threshold (앱/DB 시계차 영향 없도록 DB now() 사용).
         threshold = conn.execute("SELECT now()").fetchone()[0]
+
+        # 1) transform(임베딩 보류) — dead-end 필터까지. 임베딩은 _embed_input 에 텍스트만 담아둔다.
+        prepared: list[tuple[dict, dict]] = []
         for p in unique_list:
             try:
-                company_row, job_row = transform(p)
+                company_row, job_row = transform(p, defer_embedding=True)
                 if is_dead_end(
                     job_row["visa_status"], job_row["is_remote"], job_row["remote_eligibility"]
                 ):
                     dropped_dead_end += 1
                     continue
+                prepared.append((company_row, job_row))
+            except Exception as e:  # noqa: BLE001 — 한 공고 실패가 전체를 막지 않도록
+                failed += 1
+                log.warning("transform 실패 %s: %s", p.job_id, e)
+
+        # 2) 임베딩 배치 인코딩 — 공고당 개별 model.encode 대신 1회 호출(배치 실패 시 개별 폴백).
+        embed_inputs = [jr.get("_embed_input", "") for _, jr in prepared]
+        try:
+            from dev_jobs_core.recommender.embeddings import embed_texts
+            vecs = embed_texts(embed_inputs)
+        except Exception as e:  # noqa: BLE001
+            log.warning("배치 임베딩 실패 → 개별 폴백: %s", e)
+            from dev_jobs_core.recommender.embeddings import embed_text as _embed_one
+            vecs = [_embed_one(t) for t in embed_inputs]
+        for (_, jr), v in zip(prepared, vecs):
+            jr["embedding"] = v
+            jr.pop("_embed_input", None)  # 임시 키 제거(upsert 스키마 오염 방지)
+
+        # 3) upsert
+        for company_row, job_row in prepared:
+            try:
                 upsert_company(conn, company_row)
                 upsert_job(conn, job_row)
                 upserted += 1
             except Exception as e:  # noqa: BLE001 — 한 공고 실패가 전체를 막지 않도록
                 failed += 1
-                log.warning("upsert 실패 %s: %s", p.job_id, e)
+                log.warning("upsert 실패 %s: %s", job_row["id"], e)
         deactivated_stale = deactivate_stale(conn, days=settings.stale_days)
         deactivated_expired = deactivate_expired(conn, max_age_days=settings.job_max_age_days)
         # 4b. 저장 공고 재필터(self-heal): 강화된 deny-list 로 과거 적재 비개발 직무 비활성화.
