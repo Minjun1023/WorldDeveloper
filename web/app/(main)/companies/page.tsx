@@ -11,8 +11,9 @@ import { companyBlurb } from "@/lib/company-blurb";
 import { companyProfile, flagEmoji } from "@/lib/company-profiles";
 import { isoFromLocation } from "@/lib/flags";
 
-export const dynamic = "force-dynamic";
-
+// force-dynamic 제거 — searchParams + 쿠키(getSessionToken)로 어차피 요청마다 동적 렌더된다.
+// force-dynamic 이 fetchCompanies 의 revalidate 를 무력화했으므로 제거. 관심기업(fetchFavoriteCompanySlugs)
+// 은 no-store 라 per-user 신선 유지, 회사 목록(fetchCompanies)만 1시간 캐시된다.
 const PAGE_SIZE = 20; // 20개 기업 단위로 페이지네이션
 
 type SearchParams = { [key: string]: string | string[] | undefined };
