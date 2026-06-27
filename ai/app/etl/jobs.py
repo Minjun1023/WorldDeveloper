@@ -38,8 +38,8 @@ from ..db import (
     deactivate_stale,
     deactivate_unseen_in_scopes,
     get_conn,
-    upsert_company,
-    upsert_job,
+    upsert_companies,
+    upsert_jobs,
 )
 from .transform import transform
 from .viability import is_dead_end
@@ -197,15 +197,12 @@ async def run_full_cycle(
             jr["embedding"] = v
             jr.pop("_embed_input", None)  # 임시 키 제거(upsert 스키마 오염 방지)
 
-        # 3) upsert
-        for company_row, job_row in prepared:
-            try:
-                upsert_company(conn, company_row)
-                upsert_job(conn, job_row)
-                upserted += 1
-            except Exception as e:  # noqa: BLE001 — 한 공고 실패가 전체를 막지 않도록
-                failed += 1
-                log.warning("upsert 실패 %s: %s", job_row["id"], e)
+        # 3) upsert — 회사는 slug 로 dedup(한 회사 다수 공고 → 1회), 공고는 배치(executemany).
+        companies_by_slug = {cr["slug"]: cr for cr, _ in prepared}
+        upsert_companies(conn, list(companies_by_slug.values()))
+        ok, fail = upsert_jobs(conn, [jr for _, jr in prepared])
+        upserted += ok
+        failed += fail
         deactivated_stale = deactivate_stale(conn, days=settings.stale_days)
         deactivated_expired = deactivate_expired(conn, max_age_days=settings.job_max_age_days)
         # 4b. 저장 공고 재필터(self-heal): 강화된 deny-list 로 과거 적재 비개발 직무 비활성화.
