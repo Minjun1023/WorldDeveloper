@@ -56,6 +56,11 @@ async def get_company_intel(company: str, months_back: int = 12) -> dict:
 
 async def _fetch_hn_mentions(company: str, months_back: int) -> dict:
     """HN Algolia API 로 최근 언급 조회."""
+    # months_back 검증 — 음수/0/거대값(OverflowError·미래 timestamp로 빈 결과) 방지
+    try:
+        months_back = max(1, min(int(months_back), 120))
+    except (TypeError, ValueError):
+        months_back = 12
     since = datetime.now(timezone.utc) - timedelta(days=months_back * 30)
     since_ts = int(since.timestamp())
 

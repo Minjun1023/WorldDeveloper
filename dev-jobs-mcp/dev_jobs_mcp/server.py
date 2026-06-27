@@ -744,9 +744,8 @@ async def generate_interview_prep(
     if len(parts) != 2:
         return {"error": f"잘못된 job_id 형식: {job_id}"}
     source = parts[0]
-    detail = await _multi_source_search(query="", location="", remote_only=False, limit_per_source=0)
-    # get_job_details 와 동일한 흐름이지만 단순화: 캐시된 공고만 사용 안 하고 search 결과에서 매칭
-    # 정확한 매칭을 위해 get_job_details 재사용
+    # get_job_details 로 정확한 공고를 가져온다(이전의 빈 _multi_source_search 호출은 결과를
+    # 쓰지 않는 불필요한 외부 호출이라 제거 — 레이트리밋 소모·지연만 유발했음).
     full = await get_job_details(job_id)
     if "error" in full:
         return full

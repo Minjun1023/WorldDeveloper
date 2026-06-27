@@ -29,7 +29,7 @@ SYSTEM = (
 
 
 class SummarizeRequest(BaseModel):
-    title: str = ""
+    title: str = Field("", max_length=500)  # 무제한이면 거대 title 로 토큰/비용 폭증
     description: str = Field("", max_length=20_000)
     lang: str = "ko"
 
