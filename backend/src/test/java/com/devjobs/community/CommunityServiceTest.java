@@ -136,6 +136,14 @@ class CommunityServiceTest {
     }
 
     @Test
+    void reportOnNonexistentTargetIsRejected() {
+        UUID reporter = insertUser();
+        assertThatThrownBy(() -> service.report(reporter,
+            new ReportRequest("post", UUID.randomUUID().toString(), "유령 대상")))
+            .isInstanceOf(ResponseStatusException.class);
+    }
+
+    @Test
     void reportDedupesSameReporter() {
         UUID author = insertUser();
         UUID reporter = insertUser();

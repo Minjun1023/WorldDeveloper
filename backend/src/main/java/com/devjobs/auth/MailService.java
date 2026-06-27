@@ -21,20 +21,32 @@ public class MailService {
     private final JavaMailSender sender; // null 가능
     private final String from;
     private final boolean enabled;
+    private final boolean requireSecure;  // 운영(=true)에선 인증번호를 로그로 노출하지 않음
 
     // Spring 빈 생성용 (JavaMailSender 는 optional — host 미설정 시 없을 수 있음)
     @Autowired
     public MailService(@Nullable JavaMailSender sender,
                        @Value("${app.mail-from}") String from,
-                       @Value("${spring.mail.host:}") String host) {
+                       @Value("${spring.mail.host:}") String host,
+                       @Value("${app.require-secure-secrets:false}") boolean requireSecure) {
         this.sender = sender;
         this.from = from;
         this.enabled = sender != null && host != null && !host.isBlank();
+        this.requireSecure = requireSecure;
+    }
+
+    // 메일 미설정 폴백 로그 — 운영에선 코드를 찍지 않는다(로그 수집 환경에서 코드 유출 = 계정 탈취).
+    private void logDisabled(String kind, String email, String code) {
+        if (requireSecure) {
+            log.warn("[MAIL DISABLED] {} {} 미발송 — 메일 설정 누락(운영). 코드는 로깅하지 않음.", email, kind);
+        } else {
+            log.warn("[MAIL DISABLED] {} 의 {}: {}", email, kind, code);
+        }
     }
 
     public void sendVerificationCode(String email, String code) {
         if (!enabled) {
-            log.warn("[MAIL DISABLED] {} 의 이메일 인증번호: {}", email, code);
+            logDisabled("이메일 인증번호", email, code);
             return;
         }
         SimpleMailMessage msg = new SimpleMailMessage();
@@ -47,7 +59,7 @@ public class MailService {
 
     public void sendPasswordResetCode(String email, String code) {
         if (!enabled) {
-            log.warn("[MAIL DISABLED] {} 의 비밀번호 재설정 인증번호: {}", email, code);
+            logDisabled("비밀번호 재설정 인증번호", email, code);
             return;
         }
         SimpleMailMessage msg = new SimpleMailMessage();
