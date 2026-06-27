@@ -10,7 +10,10 @@ class Settings(BaseSettings):
     # 서비스
     service_name: str = "dev-jobs-ai"
     port: int = 8001
-    internal_auth_token: str = "dev-local-token"
+    # /internal/* 호출 인증 토큰. 빈 값(기본) = 인증 비활성(네트워크 격리에 의존, 로컬/테스트).
+    # 운영에서 INTERNAL_AUTH_TOKEN env 를 설정하면 X-Internal-Token 헤더가 강제된다.
+    # 설정 시 백엔드(AiClient ai.internal-token)도 같은 값을 보내야 한다.
+    internal_auth_token: str = ""
 
     # 요약/프로필 파싱 (OpenAI). .env 또는 OPENAI_API_KEY 환경변수. 미설정 시 해당 기능 비활성.
     openai_api_key: str = ""
