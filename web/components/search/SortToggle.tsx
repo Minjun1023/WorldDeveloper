@@ -13,19 +13,22 @@ const OPTIONS: { value: string | null; key: string; label: string }[] = [
   { value: "salary", key: "salary", label: "연봉순" },
 ];
 
-const RELEVANCE_HINT = "검색어를 입력하면 검색어와 관련된 공고가 먼저 나와요. 검색어가 없으면 최신순으로 정렬돼요.";
+const RELEVANCE_HINT = "검색어와 관련도가 높은 공고부터 보여줘요.";
 
 export function SortToggle() {
   const searchParams = useSearchParams();
   const update = useUpdateQuery();
   const q = searchParams.get("q");
   const sort = searchParams.get("sort");
+  const hasQuery = !!q?.trim();
   // page.tsx 와 동일한 기본값 규칙
-  const effective = sort ?? (q ? "relevance" : "recent");
+  const effective = sort ?? (hasQuery ? "relevance" : "recent");
+  // 검색어가 없으면 관련도순은 최신순과 동일하게 동작하므로 숨긴다(중복 제거).
+  const options = hasQuery ? OPTIONS : OPTIONS.filter((o) => o.key !== "relevance");
 
   return (
     <div className="inline-flex rounded-full border border-border bg-surface p-0.5 text-body-sm">
-      {OPTIONS.map((o) => {
+      {options.map((o) => {
         const active = effective === o.key;
         const button = (
           <button
