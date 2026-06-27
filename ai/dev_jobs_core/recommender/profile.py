@@ -63,5 +63,10 @@ def parse_weights(weights: dict | None) -> ScoringWeights:
     w = ScoringWeights()
     for k, v in weights.items():
         if hasattr(w, k):
-            setattr(w, k, float(v))
+            try:
+                fv = float(v)
+            except (TypeError, ValueError):
+                continue
+            setattr(w, k, max(0.0, fv))  # 음수 거부 — 정규화 후 차원 가중치가 음수가 되어
+            # final_score 의 0~1 보장이 깨지는 것 방지
     return w.normalize()

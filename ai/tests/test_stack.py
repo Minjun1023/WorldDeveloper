@@ -16,6 +16,13 @@ def test_match_resume_unifies_synonyms():
     assert r["match_ratio"] == 1.0
 
 
+def test_extract_tech_tolerates_whitespace_runs():
+    # 다중어 키워드가 이중공백/줄바꿈으로 끊겨도 매칭(스크래핑 본문 흔한 케이스)
+    assert "machine learning" in extract_tech("We do machine  learning")
+    assert "machine learning" in extract_tech("We do machine\nlearning")
+    assert "deep learning" in extract_tech("focus:\tdeep   learning")
+
+
 def test_match_resume_real_gap_still_reported():
     r = match_resume(
         resume_text="I use Python and Django.",
