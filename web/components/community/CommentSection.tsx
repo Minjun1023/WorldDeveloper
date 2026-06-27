@@ -22,11 +22,13 @@ export function CommentSection({
   const [body, setBody] = useState("");
   const [anonymous, setAnonymous] = useState(false);
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     if (!body.trim() || pending) return;
     setPending(true);
+    setError(null);
     try {
       const res = await fetch(`/api/community/posts/${postId}/comments`, {
         method: "POST",
@@ -41,7 +43,11 @@ export function CommentSection({
         const c = (await res.json()) as CommunityComment;
         setComments((prev) => [...prev, c]);
         setBody("");
+      } else {
+        setError("댓글 등록에 실패했어요. 잠시 후 다시 시도해주세요.");
       }
+    } catch {
+      setError("네트워크 오류로 댓글을 등록하지 못했어요.");
     } finally {
       setPending(false);
     }
@@ -94,6 +100,11 @@ export function CommentSection({
               {pending ? "등록 중…" : "댓글 등록"}
             </button>
           </div>
+          {error && (
+            <p role="alert" className="text-caption text-destructive">
+              {error}
+            </p>
+          )}
         </form>
       ) : (
         <p className="rounded-lg border border-border bg-surface-2 p-4 text-center text-body-sm text-muted-foreground">

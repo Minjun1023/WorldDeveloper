@@ -10,6 +10,7 @@ export default async function RecommendPage() {
 
   return (
     <div className="space-y-6">
+      <h1 className="text-h2">맞춤 공고 추천</h1>
       {session ? (
         <MemberRecommend />
       ) : (
