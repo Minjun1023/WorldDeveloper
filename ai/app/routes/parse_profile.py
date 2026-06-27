@@ -21,6 +21,32 @@ router = APIRouter()
 OPENAI_URL = "https://api.openai.com/v1/chat/completions"
 MODEL = "gpt-4o-mini"
 
+# LLM 폴백 응답 위생 처리용 허용값 — SYSTEM 프롬프트가 약속한 enum 만 통과시켜
+# 환각값(seniority:"god-tier", years:-5, salary:99999999 등)이 그대로 반환되는 것을 막는다.
+_LLM_SENIORITY = {"junior", "mid", "senior"}
+_LLM_REMOTE = {"remote"}
+_MAX_YEARS = 60
+_MAX_SALARY = 10_000_000
+
+
+def _sanitize_llm(data: dict) -> dict:
+    """LLM 이 돌려준 필드값을 약속된 범위/enum 으로 위생 처리(이탈값은 제거 → 기본값)."""
+    if data.get("seniority") not in _LLM_SENIORITY:
+        data.pop("seniority", None)
+    if data.get("remote_preference") not in _LLM_REMOTE:
+        data.pop("remote_preference", None)
+    ye = data.get("years_experience")
+    if not isinstance(ye, int) or isinstance(ye, bool) or not (0 <= ye <= _MAX_YEARS):
+        data.pop("years_experience", None)
+    sal = data.get("desired_salary_usd")
+    if not isinstance(sal, int) or isinstance(sal, bool) or not (0 <= sal <= _MAX_SALARY):
+        data.pop("desired_salary_usd", None)
+    for lk in ("skills", "preferred_locations"):
+        if lk in data:
+            vals = data[lk] if isinstance(data[lk], list) else []
+            data[lk] = [s for s in vals if isinstance(s, str) and s.strip()][:50]
+    return data
+
 SYSTEM = (
     "Extract a developer job-search profile from a short Korean/English sentence. "
     'Respond with ONLY JSON with keys: skills (string[]), '
@@ -88,7 +114,7 @@ async def _llm_fallback(text: str) -> ProfilePayload | None:
             return None
         obj = json.loads(resp.json()["choices"][0]["message"]["content"] or "{}")
         data = {k: obj[k] for k in ProfilePayload.model_fields if k in obj and obj[k] is not None}
-        return ProfilePayload(**data)
+        return ProfilePayload(**_sanitize_llm(data))
     except (httpx.HTTPError, KeyError, IndexError, ValueError, ValidationError) as e:
         log.warning("parse llm 실패: %s", e)
         return None

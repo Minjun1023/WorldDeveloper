@@ -88,14 +88,16 @@ def get_summary() -> dict:
             bd = json.loads(r["score_breakdown_json"])
         except (json.JSONDecodeError, TypeError):
             continue
+        # 차원값을 [0,1] 로 클램프 — 호출자가 저장한 score_breakdown 의 비정상값(>1, 음수)이
+        # 평균/보너스를 왜곡하지 않도록(record 시 미검증이라 방어).
         if r["rating"] == "positive":
             pos_count += 1
             for d in dims:
-                pos_sums[d] += float(bd.get(d, 0) or 0)
+                pos_sums[d] += min(1.0, max(0.0, float(bd.get(d, 0) or 0)))
         else:
             neg_count += 1
             for d in dims:
-                neg_sums[d] += float(bd.get(d, 0) or 0)
+                neg_sums[d] += min(1.0, max(0.0, float(bd.get(d, 0) or 0)))
 
     if pos_count == 0:
         return {
@@ -110,7 +112,7 @@ def get_summary() -> dict:
         neg_avg = neg_sums[d] / neg_count if neg_count else 0.0
         diff = pos_avg - neg_avg
         if diff > 0.15:  # 의미있는 차이
-            bonus[d] = round(0.20 * (diff / 1.0), 3)  # 최대 ~+0.20
+            bonus[d] = round(0.20 * min(diff, 1.0), 3)  # 최대 +0.20 (상한 보장)
 
     return {
         "feedback_count": len(rows),
