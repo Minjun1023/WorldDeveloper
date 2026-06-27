@@ -47,7 +47,9 @@ def _to_usd_year(amount: float, currency: str, period: str) -> float | None:
     if p == "YEAR":
         # Sanity: 일부 소스가 시간당 임금을 "YEAR" 로 잘못 보내는 케이스
         # (예: RemoteOK 의 Forge Global $21/h). $5,000 미만이면 시간당으로 재해석.
-        if 0 < usd < 5000:
+        # 단, USD 일 때만 — INR/KRW 등 저액 통화의 '진짜' 연봉이 USD 환산 시 $5,000
+        # 미만이 되어 ×2080 으로 왜곡되는 것을 막는다(휴리스틱 취지가 USD 시급 오발신).
+        if (currency or "USD").upper() == "USD" and 0 < usd < 5000:
             return usd * 40 * 52
         return usd
     if p == "MONTH":
