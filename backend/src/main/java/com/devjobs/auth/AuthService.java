@@ -82,6 +82,7 @@ public class AuthService {
 
     private static final String P_VERIFY = "verify";
     private static final String P_RESET = "reset";
+    private static final int MAX_CODE_ATTEMPTS = 5;  // 코드당 시도 한도(브루트포스 방어)
 
     private void issueAndSendVerification(UserEntity u) {
         String code = TokenHasher.randomCode();
@@ -102,18 +103,35 @@ public class AuthService {
         issueAndSendVerification(u);
     }
 
+    // noRollbackFor: 오답 시 attempts 증가가 예외 롤백에 휩쓸리지 않게 커밋되어야 잠금이 동작한다.
     /** 이메일 + 6자리 인증번호로 검증. 코드 단위 단회용(소비 시 재사용 불가). */
-    @Transactional
+    @Transactional(noRollbackFor = ResponseStatusException.class)
     public void verifyEmail(String email, String rawCode) {
         UserEntity u = userRepo.findByEmail(normalize(email))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code"));
+        consumeActiveCode(u.getId(), rawCode, P_VERIFY);
+        u.markEmailVerified(OffsetDateTime.now());
+    }
+
+    /**
+     * (user, purpose) 의 활성 코드를 검증·소비. 코드 무관하게 활성 토큰을 먼저 찾아
+     * 시도 횟수를 누적하고, 한도 초과 시 잠근다(브루트포스 방어). 실패 시 ResponseStatusException.
+     */
+    private void consumeActiveCode(UUID userId, String rawCode, String purpose) {
         EmailVerificationTokenEntity t = tokenRepo
-            .findByUserIdAndTokenHashAndPurpose(u.getId(), TokenHasher.sha256Hex(rawCode), P_VERIFY)
+            .findFirstByUserIdAndPurposeAndConsumedAtIsNullOrderByIdDesc(userId, purpose)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code"));
-        if (t.getConsumedAt() != null || t.getExpiresAt().isBefore(OffsetDateTime.now())) {
+        if (t.getExpiresAt().isBefore(OffsetDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code");
         }
-        u.markEmailVerified(OffsetDateTime.now());
+        if (t.getAttempts() >= MAX_CODE_ATTEMPTS) {
+            // 시도 초과 — 새 코드를 다시 요청해야 함(현재 코드는 잠김)
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "too_many_attempts");
+        }
+        if (!t.getTokenHash().equals(TokenHasher.sha256Hex(rawCode))) {
+            t.incrementAttempts();   // 실패 누적(한도 도달 시 위에서 잠금)
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code");
+        }
         t.consume(OffsetDateTime.now());
     }
 
@@ -132,20 +150,14 @@ public class AuthService {
     }
 
     /** 이메일+6자리 코드로 비밀번호 재설정. 코드 단회용. 성공 시 해당 사용자의 reset 토큰 정리. */
-    @Transactional
+    @Transactional(noRollbackFor = ResponseStatusException.class)  // 오답 시 attempts 커밋(잠금 동작)
     public void resetPassword(String email, String rawCode, String newPassword) {
         PasswordPolicy.validate(newPassword);
         UserEntity u = userRepo.findByEmail(normalize(email))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code"));
-        EmailVerificationTokenEntity t = tokenRepo
-            .findByUserIdAndTokenHashAndPurpose(u.getId(), TokenHasher.sha256Hex(rawCode), P_RESET)
-            .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code"));
-        if (t.getConsumedAt() != null || t.getExpiresAt().isBefore(OffsetDateTime.now())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_code");
-        }
+        consumeActiveCode(u.getId(), rawCode, P_RESET);
         u.setPasswordHash(passwordEncoder.encode(newPassword));
         u.markEmailVerified(OffsetDateTime.now()); // 코드로 이메일 소유를 증명했으니 미인증이면 함께 인증 처리
-        t.consume(OffsetDateTime.now());
     }
 
     /**
