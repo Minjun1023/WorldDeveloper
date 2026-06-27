@@ -87,6 +87,14 @@ def test_visa_not_needed_is_full():
     assert s == 1.0
 
 
+def test_visa_nonstandard_status_no_keyerror():
+    # 비표준 visa_status 값에도 reason 인덱싱이 KeyError 로 죽지 않아야 함
+    s, reason = scorer.score_visa(_user(needs_visa_sponsorship=True),
+                                  _job(visa_status="pending"))
+    assert s == 0.4
+    assert isinstance(reason, str) and reason
+
+
 # ---------- score_location ----------
 
 def test_location_remote_only_onsite_is_zero():
@@ -246,3 +254,19 @@ def test_recommend_ranks_and_gates():
 
 def test_recommend_empty_pool():
     assert asyncio.run(recommend([], _user())) == []
+
+
+def test_score_job_handles_none_location_and_company():
+    # 외부 소스가 location/company 에 명시적 None 을 넣어도 AttributeError 없이 점수화
+    user = _user(preferred_locations=["Berlin"], excluded_companies=["X"])
+    job = _job(company=None, location=None, is_remote=False)
+    bd = scorer.score_job(job, user, DEFAULT_WEIGHTS)
+    assert 0.0 <= bd.final_score <= 1.0
+
+
+def test_apply_diversity_handles_none_company():
+    user = _user()
+    jobs = [_job(jid=f"test:{i}", company=None) for i in range(3)]
+    scored = [(j, scorer.score_job(j, user, DEFAULT_WEIGHTS)) for j in jobs]
+    chosen = scorer.apply_diversity(scored, top_k=10, max_per_company=2)
+    assert len(chosen) == 2  # None→"" 로 같은 회사 취급, 다양성 제약 적용

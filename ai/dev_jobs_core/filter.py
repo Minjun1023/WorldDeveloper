@@ -13,6 +13,8 @@
 """
 from __future__ import annotations
 
+import re
+
 # 1) 강한 개발 신호 — 있으면 무조건 keep ('engineer' 단어가 없는 개발직 보호)
 _STRONG = (
     "software", "developer", "développeur", "desenvolvedor", "entwickler",
@@ -38,7 +40,8 @@ _STRONG = (
 #     진짜 엔지니어를 살리기 위함)
 _DENY = (
     # 영업/마케팅/BD + 프리세일즈 엔지니어
-    "sales", "account exec", "account manager", "marketing", "social media",
+    # (bare 'sales' 는 _SALES_WORD_RE 로 단어 단위 매칭 — 'salesforce' 오매칭 방지)
+    "account exec", "account manager", "marketing", "social media",
     "business development", "partnership", "community manager", "growth manager",
     "solution engineer", "solutions engineer", "solution engineering",
     "solutions engineering", "sales engineer", "presales", "pre-sales",
@@ -88,6 +91,11 @@ _DENY = (
     "機械設計", "電気設計", "回路設計",
 )
 
+# bare 'sales' 는 단어 경계로만 매칭 — 'salesforce'(정식 개발 플랫폼)의 부분문자열
+# 오매칭으로 'Salesforce Architect/Developer' 가 잘못 drop 되는 것 방지.
+# 'Sales Engineer'·'(Sales)' 등 진짜 영업 직무는 단어 경계로 그대로 잡힌다.
+_SALES_WORD_RE = re.compile(r"\bsales\b")
+
 
 def is_dev_role(title: str, tags: list[str] | None = None, description: str = "") -> bool:
     t = (title or "").lower()
@@ -95,7 +103,7 @@ def is_dev_role(title: str, tags: list[str] | None = None, description: str = ""
     if any(s in t for s in _STRONG):
         return True
     # 2) 비개발/비SW 엔지니어 → drop
-    if any(d in t for d in _DENY):
+    if any(d in t for d in _DENY) or _SALES_WORD_RE.search(t):
         return False
     # 3) generic engineer/architect → keep
     if "engineer" in t or "engineering" in t or "architect" in t or "エンジニア" in t:
