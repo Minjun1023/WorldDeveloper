@@ -1,10 +1,10 @@
 # WorldDeveloper
 
-> 비자 스폰서십이 **검증된** 해외 개발자 채용 공고만 모아, 프로필 기반 6축 매칭과 AI 이력서 코칭으로 한국 개발자의 해외 취업을 돕는 풀스택 서비스.
+> 비자 스폰서십이 **검증된** 해외 개발자 채용 공고만 모아, 프로필 기반 5축 매칭과 AI 이력서 코칭으로 한국 개발자의 해외 취업을 돕는 풀스택 서비스.
 
 **Live:** https://152.67.215.221.sslip.io · Next.js + Spring Boot + FastAPI 폴리글랏 모노레포 · OCI 단일 VM에 Docker Compose 배포(GitHub Actions CD).
 
-![홈](docs/screenshots/v2/home.png)
+![홈](docs/screenshots/v3/home.png)
 
 ---
 
@@ -15,7 +15,7 @@
 WorldDeveloper는 이 지점을 공략한다:
 
 - **정부 명부 교차검증** — 미국 USCIS, 영국 Home Office, 네덜란드 IND 등 공식 비자 스폰서 명부와 기업명을 대조해 "비자 스폰서십 명시" 공고만 신뢰 등급으로 분류한다. 모호하면 추측하지 않고 `unclear`로 표기한다.
-- **6축 매칭** — 스택·비자·지역·레벨·연봉·의미(임베딩) 6개 축으로 프로필과 공고의 적합도를 점수화하고, 각 점수의 근거를 투명하게 공개한다.
+- **5축 매칭** — 스택·지역·레벨·연봉·의미(임베딩) 5개 축으로 프로필과 공고의 적합도를 점수화하고, 각 점수의 근거를 투명하게 공개한다. 비자 스폰서십은 모든 후보가 충족하는 기본 필터다.
 - **AI 이력서 코치** — 공고를 첨부하면 그 회사가 원하는 키워드 기준으로 이력서 문장을 `현재 → 제안` 형태로 다시 써 준다(LLM, 토큰 스트리밍).
 
 매일 자정(KST) ETL이 잡보드 + 7종 ATS(Greenhouse, Lever, Ashby, Workable, SmartRecruiters, HRMOS, Personio)에서 공고를 수집·정규화·임베딩해 약 6천 건의 라이브 공고를 유지한다.
@@ -45,7 +45,7 @@ WorldDeveloper는 이 지점을 공략한다:
 | 서비스 | 스택 | 책임 |
 |---|---|---|
 | **web** | Next.js 14 (App Router), TypeScript, Tailwind | SSR UI + 서버 라우트가 세션·시크릿을 쥐고 백엔드를 프록시(BFF). 클라이언트엔 토큰 비노출 |
-| **backend** | Spring Boot 3, Java 17, JPA, Spring Security | 인증(이메일+OAuth), 공고/추천/코치/커뮤니티 API, 6축 스코어링, 분석 |
+| **backend** | Spring Boot 3, Java 17, JPA, Spring Security | 인증(이메일+OAuth), 공고/추천/코치/커뮤니티 API, 5축 매칭 스코어링, 분석 |
 | **ai** | FastAPI, Python 3.12, sentence-transformers | 임베딩 추론(`paraphrase-multilingual-MiniLM`, 384d), OpenAI 요약/코치 프록시 |
 | **etl-worker** | 위 ai 이미지 재사용 | 수집 스케줄러를 웹 서비스와 분리 — 수집 중에도 API 응답이 멈추지 않게 함 |
 
@@ -77,6 +77,7 @@ WorldDeveloper는 이 지점을 공략한다:
 - 비용/남용 경로(로그인·추천·요약 등) 레이트리밋
 
 **성능**
+- **부하테스트 기반 병목 제거 (k6·Docker)** — 검색 API를 50 VU·60초로 측정, 가설→측정→검증으로 ① 검색당 중복 집계(facet) 60초 캐시 ② 커넥션 풀 적정화(Hikari 10→30) → 응답 **중앙값 −82% · p95 −62% · 처리량 +22%(에러 0%)** ([`.loadtest/RESULTS.md`](.loadtest/RESULTS.md))
 - 임베딩 **배치 인코딩** — 공고/이력서 구절마다 개별 `model.encode` 대신 1회 배치 처리
 - ETL **배치 upsert** — `executemany` + 행별 savepoint 폴백(행 격리를 유지하면서 happy-path 가속)
 - 레퍼런스 데이터(지역·회사 목록) ISR 캐시 + 백엔드→Next JSON gzip
@@ -88,7 +89,7 @@ WorldDeveloper는 이 지점을 공략한다:
 ## 주요 기능
 
 - **공고 검색·필터** — 지역(국가)·기술 스택·비자 등급 필터, Postgres 전문 검색(tsvector)
-- **맞춤 추천** — 프로필 6축 매칭 + pgvector 의미 검색, 점수 근거 공개, 다양성 제약(회사 편중 방지)
+- **맞춤 추천** — 프로필 5축 매칭 + pgvector 의미 검색, 점수 근거 공개, 다양성 제약(회사 편중 방지)
 - **AI 이력서 코치** — 공고 grounding 기반 문장 리라이트, PDF 이력서 업로드 추출, 토큰 스트리밍
 - **인기 TOP 공고** — 조회 로그 기반 지역·직무별 인기 공고(데이터 희소 시 최신순 fallback)
 - **인증** — 이메일(6자리 코드 인증) + GitHub/Google OAuth, JWT 세션
@@ -97,13 +98,13 @@ WorldDeveloper는 이 지점을 공략한다:
 
 ### 화면
 
-| 맞춤 추천 (6축 레이더) | AI 이력서 코치 |
+| 맞춤 추천 (5축 레이더) | AI 이력서 코치 |
 |---|---|
-| ![추천](docs/screenshots/v2/recommend.png) | ![코치](docs/screenshots/v2/coach.png) |
+| ![추천](docs/screenshots/v3/recommend.png) | ![코치](docs/screenshots/v3/coach.png) |
 
 | 공고 검색·필터 | 공고 상세 (매칭도·AI 요약) |
 |---|---|
-| ![검색](docs/screenshots/v2/search.png) | ![공고 상세](docs/screenshots/v2/job-detail.png) |
+| ![검색](docs/screenshots/v3/search.png) | ![공고 상세](docs/screenshots/v3/job-detail.png) |
 
 ---
 
