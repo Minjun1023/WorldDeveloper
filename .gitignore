@@ -75,8 +75,9 @@ huggingface/
 # 로컬 dev 로그
 .dev-logs/
 
-# 부하테스트 산출물 (로그/HTML/스크린샷)
-.loadtest/
+# 부하테스트 무거운 산출물만 무시 — 스크립트·결과(md/json)는 추적 (#366).
+# 로그(*.log)·캡처(*.png)는 전역 규칙으로 이미 무시됨.
+.loadtest/*.html
 
 # 브레인스토밍 비주얼 컴패니언 산출물
 .superpowers/
