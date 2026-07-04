@@ -34,10 +34,17 @@ public class TrackerService {
         if (status == null || !FUNNEL.contains(status)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "유효하지 않은 지원 상태예요");
         }
-        ApplicationEntity app = appRepo.findByUserIdAndJobId(userId, jobId)
-            .map(a -> { a.update(status, notes); return a; })
-            .orElseGet(() -> new ApplicationEntity(userId, jobId, status, notes));
-        return toDto(appRepo.save(app));
+        try {
+            ApplicationEntity app = appRepo.findByUserIdAndJobId(userId, jobId)
+                .map(a -> { a.update(status, notes); return a; })
+                .orElseGet(() -> new ApplicationEntity(userId, jobId, status, notes));
+            return toDto(appRepo.save(app));
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // find→save 사이 동시 요청이 먼저 INSERT 한 경우 — 그 행을 다시 읽어 갱신(멱등 upsert).
+            ApplicationEntity app = appRepo.findByUserIdAndJobId(userId, jobId).orElseThrow(() -> e);
+            app.update(status, notes);
+            return toDto(appRepo.save(app));
+        }
     }
 
     @Transactional(readOnly = true)

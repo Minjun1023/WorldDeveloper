@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const REASONS = ["스팸·광고", "욕설·혐오", "허위·사기 정보", "기타"];
@@ -147,27 +148,22 @@ export function ReportDialog({
         {finished ? (
           <>
             {phase === "error" && (
-              <button type="button" onClick={() => setPhase("form")} className="rounded-lg border border-border px-4 py-2 text-body-sm text-muted-foreground hover:text-foreground">
+              <Button type="button" size="sm" variant="outline" onClick={() => setPhase("form")}>
                 다시 시도
-              </button>
+              </Button>
             )}
-            <button type="button" onClick={handleClose} className="rounded-lg bg-primary px-4 py-2 text-body-sm font-semibold text-primary-foreground hover:opacity-90">
+            <Button type="button" size="sm" onClick={handleClose}>
               확인
-            </button>
+            </Button>
           </>
         ) : (
           <>
-            <button type="button" onClick={handleClose} className="rounded-lg border border-border px-4 py-2 text-body-sm text-muted-foreground hover:text-foreground">
+            <Button type="button" size="sm" variant="outline" onClick={handleClose}>
               취소
-            </button>
-            <button
-              type="button"
-              onClick={submit}
-              disabled={phase === "submitting"}
-              className="rounded-lg bg-primary px-4 py-2 text-body-sm font-semibold text-primary-foreground hover:opacity-90 disabled:opacity-50"
-            >
+            </Button>
+            <Button type="button" size="sm" onClick={submit} disabled={phase === "submitting"}>
               {phase === "submitting" ? "접수 중…" : "신고 제출"}
-            </button>
+            </Button>
           </>
         )}
       </div>

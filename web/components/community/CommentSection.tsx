@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { CommunityAvatar } from "@/components/community/CommunityAvatar";
+import { Button } from "@/components/ui/button";
 import type { CommunityComment } from "@/lib/community";
 import { cn } from "@/lib/utils";
 
@@ -92,13 +93,9 @@ export function CommentSection({
               <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} className="h-3.5 w-3.5" />
               익명
             </label>
-            <button
-              type="submit"
-              disabled={!body.trim() || pending}
-              className="rounded-md bg-primary px-4 py-2 text-body-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
-            >
+            <Button type="submit" size="sm" disabled={!body.trim() || pending}>
               {pending ? "등록 중…" : "댓글 등록"}
-            </button>
+            </Button>
           </div>
           {error && (
             <p role="alert" className="text-caption text-destructive">

@@ -90,12 +90,14 @@ class CoachChatControllerTest {
     private static JobDetailDto minimalJob(String id) {
         // company/visa/remote/salary 등은 buildContext가 null 허용 → 전부 null.
         return new JobDetailDto(id, "Backend Engineer", null, null, null, null, null, null,
+            null, null, null, // department / relocationSupport / languageRequirement
             null, null, null, null, null, null, null, null, null, null);
     }
 
     private static JobDetailDto jobWithDescription(String id, String description) {
         // description(9번째 인자)만 채워 skill-match 경로(jd 비어있지 않음)를 태운다.
         return new JobDetailDto(id, "Backend Engineer", null, null, null, null, null, null,
+            null, null, null, // department / relocationSupport / languageRequirement
             description, null, null, null, null, null, null, null, null, null);
     }
 

@@ -42,8 +42,8 @@ export function CompanyLogo({
       height={size}
       loading="lazy"
       onError={() => setFailed(true)}
-      style={dim}
-      className="shrink-0 rounded-md bg-muted object-contain"
+      // width/height 속성이 크기를 담당 — style 중복 지정은 제거. aspect-square 로 비율 고정(CLS 방지).
+      className="aspect-square shrink-0 rounded-md bg-muted object-contain"
     />
   );
 }

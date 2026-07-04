@@ -18,17 +18,17 @@ const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
       { label: "비자 스폰서 공고", href: "/search?visa=sponsors" },
       { label: "비자 가이드", href: "/visa" },
       { label: "원격 가능 공고", href: "/search?track=remote" },
-      { label: "국가별 공고", href: "/regions" },
       { label: "자주 묻는 질문", href: "/#faq" },
     ],
   },
   {
     title: "회사",
     links: [
-      { label: "소개", href: "/" },
       { label: "문의", href: "/contact" },
       { label: "회원가입", href: "/signup" },
       { label: "로그인", href: "/signin" },
+      { label: "이용약관", href: "/terms" },
+      { label: "개인정보처리방침", href: "/privacy" },
     ],
   },
 ];

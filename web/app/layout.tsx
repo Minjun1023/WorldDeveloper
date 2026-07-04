@@ -2,21 +2,15 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/providers";
 import { ThemeProvider } from "@/components/theme-provider";
-import { Hanken_Grotesk, Noto_Serif_KR } from "next/font/google";
+import { Hanken_Grotesk } from "next/font/google";
 
 // DESIGN.md: 라틴 글리프는 Hanken Grotesk(핀테크 톤). 한글은 Pretendard(CDN) 폴백.
+// Noto Serif KR 은 어떤 화면에서도 사용되지 않아 제거(불필요한 Google Fonts 요청 절감).
 const hankenGrotesk = Hanken_Grotesk({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800"],
   variable: "--font-hanken",
   display: "swap",
-});
-
-const notoSerifKr = Noto_Serif_KR({
-  weight: ["400", "600"],
-  variable: "--font-serif",
-  display: "swap",
-  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -41,7 +35,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${hankenGrotesk.variable} ${notoSerifKr.variable} min-h-screen font-sans antialiased`}
+        className={`${hankenGrotesk.variable} min-h-screen font-sans antialiased`}
       >
         <Providers>
           <ThemeProvider

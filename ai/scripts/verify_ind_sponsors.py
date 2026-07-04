@@ -16,8 +16,8 @@ import json
 import sys
 from pathlib import Path
 
-# UK 스크립트의 정밀 정규화 매칭 재사용(DRY).
-from verify_uk_sponsors import match_company, normalize
+# 공유 매칭 모듈(이름 + 위치 disambiguation + confidence). UK/H-1B 와 동일.
+from sponsor_match import company_names, find_candidates
 
 REGISTRY_PATH = Path(__file__).parent.parent / "dev_jobs_core" / "data" / "companies.json"
 
@@ -40,32 +40,25 @@ def main():
     if len(sys.argv) < 2:
         raise SystemExit("사용: python scripts/verify_ind_sponsors.py /path/to/ind_register.txt")
     orgs = load_org_names(sys.argv[1])
+    # IND 명부는 위치 컬럼이 없어 위치는 빈 값(동명 시 low 로만 구분, 가점 없음).
+    register = [(o, "") for o in orgs]
 
     with open(REGISTRY_PATH, encoding="utf-8") as f:
         data = json.load(f)
     cos = {k: v for k, v in data.items() if not k.startswith("_")}
 
-    org_index: dict[str, str] = {}
-    for o in orgs:
-        org_index.setdefault(normalize(o), o)
-
     hits = []
     for name, info in cos.items():
-        matched = None
-        for brand in {name, info.get("token", "")}:
-            for o in org_index.values():
-                if match_company(brand, o):
-                    matched = o
-                    break
-            if matched:
-                break
-        if matched:
-            hits.append((name, info.get("ats"), matched, info.get("ind_sponsor") is True))
+        cands = find_candidates(company_names(name, info), info.get("hq"), register)
+        if cands:
+            hits.append((name, info, cands[0]))
 
     print(f"=== IND 매칭 후보: {len(hits)}/{len(cos)} (검토 후 companies.json 반영) ===")
-    for name, ats, org, already in sorted(hits):
-        flag = " [이미 플래그됨]" if already else ""
-        print(f"  {name:<16} [{ats}] -> {org}{flag}")
+    print("    confidence: medium=단독 이름일치 / low=동명 모호(검토 필수). IND 명부엔 위치 없음.")
+    for name, info, c in sorted(hits, key=lambda h: ({"high": 0, "medium": 1, "low": 2}[h[2].confidence], h[0])):
+        already = " [이미 플래그됨]" if info.get("ind_sponsor") is True else ""
+        dom = f" <{info['domain']}>" if info.get("domain") else ""
+        print(f"  [{c.confidence:<6}] {name:<16}{dom} [{info.get('ats')}] -> {c.org}{already}")
 
 
 if __name__ == "__main__":

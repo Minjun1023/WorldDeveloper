@@ -14,8 +14,8 @@ export function MobileApplyBar({ jobId, applyUrl, loggedIn }: { jobId: string; a
           jobId={jobId}
           applyUrl={applyUrl}
           loggedIn={loggedIn}
-          className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-[10px] bg-primary text-body-sm font-bold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          disabledClassName="flex h-11 flex-1 cursor-not-allowed items-center justify-center rounded-[10px] bg-surface-2 text-body-sm font-semibold text-muted-foreground"
+          className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary text-body-sm font-bold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          disabledClassName="flex h-11 flex-1 cursor-not-allowed items-center justify-center rounded-lg bg-surface-2 text-body-sm font-semibold text-muted-foreground"
         />
       </div>
     </div>

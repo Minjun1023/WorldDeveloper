@@ -31,6 +31,9 @@ def _to_posting(company: str, item: dict) -> JobPosting | None:
     description = html_lib.unescape(item.get("content", "") or "")
     location = (item.get("location") or {}).get("name", "")
     is_remote = "remote" in location.lower()
+    # 부서: departments 배열의 첫 항목 (예: "Engineering – Infrastructure").
+    departments = item.get("departments") or []
+    department = (departments[0].get("name") or "") if departments else ""
     return JobPosting(
         job_id=f"greenhouse:{company}:{job_id}",
         source="greenhouse",
@@ -41,9 +44,11 @@ def _to_posting(company: str, item: dict) -> JobPosting | None:
         employment_type="FULLTIME",
         description=description,
         apply_url=item.get("absolute_url", ""),
-        posted_at=item.get("updated_at", ""),
+        # first_published 우선 — updated_at 은 공고 수정만 해도 갱신돼 "최신순"을 왜곡한다.
+        posted_at=item.get("first_published") or item.get("updated_at", ""),
         # Greenhouse 만 마감일 필드를 줌 (대부분 null). 문자열/객체 모두 방어적으로.
         closes_at=_parse_deadline(item.get("application_deadline")),
+        department=department,
     )
 
 

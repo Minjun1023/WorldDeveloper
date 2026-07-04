@@ -1,2623 +1,2551 @@
 {
   "_meta": {
-    "description": "회사명 → ATS 매핑. 추가 가능. ats: greenhouse / lever / ashby / smartrecruiters / personio",
-    "last_updated": "2026-06-13"
+    "description": "회사명 → ATS 매핑. 추가 가능. ats: greenhouse / lever / ashby / smartrecruiters / personio. 선택 필드: hq(본사 도시), domain(공식 도메인·검토 표시용), aliases(공식 법인명 등 명부 매칭용 별칭 목록), uk_sponsor/h1b_sponsor/ind_sponsor(bool, 명부 대조 검증 결과), size(직원 규모 밴드: 1-50/51-200/201-1000/1001-5000/5000+, LLM+웹검증 추정 — web/lib/company-size.ts 로 노출).",
+    "last_updated": "2026-07-01"
   },
   "wolt": {
     "ats": "greenhouse",
     "token": "wolt",
     "tags": ["delivery", "marketplace", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "size": "5000+"
   },
   "deliveroo": {
     "ats": "ashby",
     "token": "deliveroo",
-    "tags": ["delivery", "marketplace", "europe"]
+    "tags": ["delivery", "marketplace", "europe"],
+    "domain": "deliveroo.com",
+    "aliases": ["Roofoods Ltd."],
+    "hq": "London",
+    "uk_sponsor": true,
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "graphcore": {
     "ats": "greenhouse",
     "token": "graphcore",
     "tags": ["ai", "hardware", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "domain": "graphcore.ai",
+    "hq": "Bristol",
+    "size": "201-1000"
   },
   "alan": {
     "ats": "ashby",
     "token": "alan",
-    "tags": ["healthtech", "insurance", "europe"]
+    "tags": ["healthtech", "insurance", "europe"],
+    "size": "201-1000"
   },
   "pennylane": {
     "ats": "ashby",
     "token": "pennylane",
-    "tags": ["fintech", "saas", "europe"]
+    "tags": ["fintech", "saas", "europe"],
+    "size": "201-1000"
   },
   "getyourguide": {
     "ats": "greenhouse",
     "token": "getyourguide",
-    "tags": ["travel", "marketplace", "europe"]
+    "tags": ["travel", "marketplace", "europe"],
+    "domain": "getyourguide.com",
+    "aliases": ["Get Your Guide"],
+    "hq": "Berlin",
+    "size": "1001-5000"
   },
   "lendable": {
     "ats": "ashby",
     "token": "lendable",
     "tags": ["fintech", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "catawiki": {
     "ats": "greenhouse",
     "token": "catawiki",
-    "tags": ["marketplace", "ecommerce", "europe"]
+    "tags": ["marketplace", "ecommerce", "europe"],
+    "ind_sponsor": true,
+    "size": "201-1000"
   },
   "bitpanda": {
     "ats": "greenhouse",
     "token": "bitpanda",
     "tags": ["fintech", "crypto", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "domain": "bitpanda.com",
+    "hq": "Vienna",
+    "ind_sponsor": true,
+    "size": "201-1000"
   },
   "multiverse": {
     "ats": "ashby",
     "token": "multiverse",
     "tags": ["edtech", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "cabify": {
     "ats": "greenhouse",
     "token": "cabify",
-    "tags": ["mobility", "europe"]
+    "tags": ["mobility", "europe"],
+    "domain": "cabify.com",
+    "hq": "calle de Pradillo",
+    "size": "1001-5000"
   },
   "supercell": {
     "ats": "ashby",
     "token": "supercell",
-    "tags": ["gaming", "europe"]
+    "tags": ["gaming", "europe"],
+    "domain": "supercell.com",
+    "aliases": ["Supercell Oy"],
+    "hq": "Helsinki",
+    "size": "201-1000"
   },
   "gostudent": {
     "ats": "greenhouse",
     "token": "gostudent",
-    "tags": ["edtech", "europe"]
+    "tags": ["edtech", "europe"],
+    "domain": "gostudent.org",
+    "size": "1001-5000"
   },
   "thought-machine": {
     "ats": "ashby",
     "token": "thought-machine",
     "tags": ["fintech", "devtools", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "domain": "thoughtmachine.net",
+    "size": "1001-5000"
   },
   "tide": {
     "ats": "greenhouse",
     "token": "tide",
-    "tags": ["fintech", "europe"]
+    "tags": ["fintech", "europe"],
+    "size": "1001-5000"
   },
   "paddle": {
     "ats": "ashby",
     "token": "paddle",
     "tags": ["fintech", "saas", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "complyadvantage": {
     "ats": "greenhouse",
     "token": "complyadvantage",
-    "tags": ["fintech", "regtech", "europe"]
+    "tags": ["fintech", "regtech", "europe"],
+    "domain": "complyadvantage.com",
+    "hq": "Ballymena",
+    "size": "201-1000"
   },
   "backmarket": {
     "ats": "ashby",
     "token": "backmarket",
-    "tags": ["ecommerce", "marketplace", "europe"]
+    "tags": ["ecommerce", "marketplace", "europe"],
+    "size": "1001-5000"
   },
   "refurbed": {
     "ats": "greenhouse",
     "token": "refurbed",
-    "tags": ["ecommerce", "marketplace", "europe"]
+    "tags": ["ecommerce", "marketplace", "europe"],
+    "domain": "refurbed.at",
+    "hq": "Vienna",
+    "size": "201-1000"
   },
   "forto": {
     "ats": "ashby",
     "token": "forto",
     "tags": ["logistics", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "marshmallow": {
     "ats": "ashby",
     "token": "marshmallow",
     "tags": ["fintech", "insurance", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "quantexa": {
     "ats": "ashby",
     "token": "quantexa",
     "tags": ["data", "ai", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "tines": {
     "ats": "greenhouse",
     "token": "tines",
-    "tags": ["security", "automation", "europe"]
+    "tags": ["security", "automation", "europe"],
+    "domain": "tines.com",
+    "hq": "Dublin",
+    "size": "201-1000"
   },
   "freetrade": {
     "ats": "ashby",
     "token": "freetrade",
     "tags": ["fintech", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "domain": "freetrade.io",
+    "size": "201-1000"
   },
   "truelayer": {
     "ats": "greenhouse",
     "token": "truelayer",
     "tags": ["fintech", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "size": "51-200"
   },
   "staffbase": {
     "ats": "greenhouse",
     "token": "staffbase",
-    "tags": ["saas", "communication", "europe"]
+    "tags": ["saas", "communication", "europe"],
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "wayflyer": {
     "ats": "ashby",
     "token": "wayflyer",
     "tags": ["fintech", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "hq": "Dublin",
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "storyblok": {
     "ats": "greenhouse",
     "token": "storyblok",
     "tags": ["devtools", "cms", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "domain": "storyblok.com",
+    "size": "201-1000"
   },
   "form3": {
     "ats": "greenhouse",
     "token": "form3",
     "tags": ["fintech", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "flipdish": {
     "ats": "greenhouse",
     "token": "flipdish",
     "tags": ["saas", "food-tech", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "improbable": {
     "ats": "ashby",
     "token": "improbable",
     "tags": ["gaming", "metaverse", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "domain": "improbable.io",
+    "hq": "London",
+    "size": "201-1000"
   },
   "cleo": {
     "ats": "greenhouse",
     "token": "cleo",
     "tags": ["fintech", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "grover": {
     "ats": "greenhouse",
     "token": "grover",
-    "tags": ["ecommerce", "rental", "europe"]
+    "tags": ["ecommerce", "rental", "europe"],
+    "size": "201-1000"
   },
   "letsgetchecked": {
     "ats": "greenhouse",
     "token": "letsgetchecked",
-    "tags": ["healthtech", "europe"]
+    "tags": ["healthtech", "europe"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "ledger": {
     "ats": "ashby",
     "token": "ledger",
     "tags": ["crypto", "hardware", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "domain": "ledger.com",
+    "hq": "Paris",
+    "size": "201-1000"
   },
   "ankorstore": {
     "ats": "ashby",
     "token": "ankorstore",
     "tags": ["ecommerce", "marketplace", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "bitmovin": {
     "ats": "greenhouse",
     "token": "bitmovin",
-    "tags": ["video", "devtools", "europe"]
+    "tags": ["video", "devtools", "europe"],
+    "domain": "bitmovin.net",
+    "hq": "Klagenfurt am Wörthersee",
+    "size": "51-200"
   },
   "beamery": {
     "ats": "ashby",
     "token": "beamery",
     "tags": ["hr-tech", "saas", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "domain": "beamery.com",
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "sorare": {
     "ats": "ashby",
     "token": "sorare",
-    "tags": ["gaming", "crypto", "europe"]
+    "tags": ["gaming", "crypto", "europe"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "tractable": {
     "ats": "ashby",
     "token": "tractable",
     "tags": ["ai", "insurance", "europe"],
-    "uk_sponsor": true
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "traderepublic": {
     "ats": "greenhouse",
     "token": "traderepublic",
-    "tags": ["fintech", "europe"]
+    "tags": ["fintech", "europe"],
+    "size": "1001-5000"
   },
   "stripe": {
     "ats": "greenhouse",
     "token": "stripe",
-    "tags": [
-      "fintech",
-      "payments"
-    ],
+    "tags": ["fintech", "payments"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "stripe.com",
+    "hq": "San Francisco",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "anthropic": {
     "ats": "greenhouse",
     "token": "anthropic",
-    "tags": [
-      "ai",
-      "research"
-    ],
+    "tags": ["ai", "research"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "anthropic.com",
+    "hq": "San Francisco",
+    "size": "1001-5000"
   },
   "notion": {
     "ats": "greenhouse",
     "token": "notion",
-    "tags": [
-      "productivity",
-      "saas"
-    ],
-    "h1b_sponsor": true
+    "tags": ["productivity", "saas"],
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "airbnb": {
     "ats": "greenhouse",
     "token": "airbnb",
-    "tags": [
-      "marketplace",
-      "travel"
-    ],
+    "tags": ["marketplace", "travel"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "airbnb.com",
+    "hq": "New York City",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "coinbase": {
     "ats": "greenhouse",
     "token": "coinbase",
-    "tags": [
-      "fintech",
-      "crypto"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech", "crypto"],
+    "h1b_sponsor": true,
+    "domain": "coinbase.com",
+    "aliases": ["Coinbase Global, Inc."],
+    "hq": "San Francisco",
+    "size": "5000+"
   },
   "discord": {
     "ats": "greenhouse",
     "token": "discord",
-    "tags": [
-      "consumer",
-      "social"
-    ],
-    "h1b_sponsor": true
+    "tags": ["consumer", "social"],
+    "h1b_sponsor": true,
+    "domain": "discordapp.com",
+    "hq": "San Francisco",
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "asana": {
     "ats": "greenhouse",
     "token": "asana",
-    "tags": [
-      "productivity",
-      "saas"
-    ],
-    "h1b_sponsor": true
+    "tags": ["productivity", "saas"],
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "robinhood": {
     "ats": "greenhouse",
     "token": "robinhood",
-    "tags": [
-      "fintech"
-    ],
+    "tags": ["fintech"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "robinhood.com",
+    "aliases": ["Robinhood Markets Inc."],
+    "hq": "Palo Alto",
+    "size": "1001-5000"
   },
   "instacart": {
     "ats": "greenhouse",
     "token": "instacart",
-    "tags": [
-      "delivery",
-      "marketplace"
-    ],
-    "h1b_sponsor": true
+    "tags": ["delivery", "marketplace"],
+    "h1b_sponsor": true,
+    "domain": "instacart.com",
+    "aliases": ["Maplebear, Inc."],
+    "hq": "San Francisco",
+    "size": "5000+"
   },
   "doordash": {
     "ats": "greenhouse",
     "token": "doordash",
-    "tags": [
-      "delivery",
-      "marketplace"
-    ],
-    "h1b_sponsor": true
+    "tags": ["delivery", "marketplace"],
+    "h1b_sponsor": true,
+    "domain": "doordash.com",
+    "hq": "San Francisco",
+    "size": "5000+"
   },
   "dropbox": {
     "ats": "greenhouse",
     "token": "dropbox",
-    "tags": [
-      "productivity",
-      "storage"
-    ],
-    "h1b_sponsor": true
+    "tags": ["productivity", "storage"],
+    "h1b_sponsor": true,
+    "domain": "dropbox.com",
+    "size": "1001-5000"
   },
   "reddit": {
     "ats": "greenhouse",
     "token": "reddit",
-    "tags": [
-      "consumer",
-      "social"
-    ],
+    "tags": ["consumer", "social"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "redditinc.com",
+    "hq": "San Francisco",
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "pinterest": {
     "ats": "greenhouse",
     "token": "pinterest",
-    "tags": [
-      "consumer",
-      "social"
-    ],
+    "tags": ["consumer", "social"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "pinterest.com",
+    "hq": "Palo Alto",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "twitch": {
     "ats": "greenhouse",
     "token": "twitch",
-    "tags": [
-      "consumer",
-      "streaming"
-    ],
-    "h1b_sponsor": true
+    "tags": ["consumer", "streaming"],
+    "h1b_sponsor": true,
+    "domain": "twitch.tv",
+    "aliases": ["TwitchTV"],
+    "hq": "San Francisco",
+    "size": "1001-5000"
   },
   "lyft": {
     "ats": "greenhouse",
     "token": "lyft",
-    "tags": [
-      "mobility",
-      "marketplace"
-    ],
-    "h1b_sponsor": true
+    "tags": ["mobility", "marketplace"],
+    "h1b_sponsor": true,
+    "domain": "lyft.com",
+    "hq": "San Francisco",
+    "size": "5000+"
   },
   "datadog": {
     "ats": "greenhouse",
     "token": "datadog",
-    "tags": [
-      "devtools",
-      "monitoring"
-    ],
+    "tags": ["devtools", "monitoring"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "datadoghq.com",
+    "hq": "New York City",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "snowflake": {
     "ats": "greenhouse",
     "token": "snowflake",
-    "tags": [
-      "data",
-      "saas"
-    ],
+    "tags": ["data", "saas"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "databricks": {
     "ats": "greenhouse",
     "token": "databricks",
-    "tags": [
-      "data",
-      "ml",
-      "saas"
-    ],
+    "tags": ["data", "ml", "saas"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "databricks.com",
+    "hq": "San Francisco",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "elastic": {
     "ats": "greenhouse",
     "token": "elastic",
-    "tags": [
-      "devtools",
-      "search"
-    ],
-    "h1b_sponsor": true
+    "tags": ["devtools", "search"],
+    "h1b_sponsor": true,
+    "domain": "elastic.co",
+    "aliases": ["Elasticsearch BV", "Elastic NV", "Elastic BV"],
+    "hq": "Mountain View",
+    "size": "1001-5000"
   },
   "gitlab": {
     "ats": "greenhouse",
     "token": "gitlab",
-    "tags": [
-      "devtools",
-      "remote-first"
-    ],
-    "h1b_sponsor": true
+    "tags": ["devtools", "remote-first"],
+    "h1b_sponsor": true,
+    "domain": "about.gitlab.com",
+    "aliases": ["Gitlab B.V."],
+    "hq": "San Francisco",
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "huggingface": {
     "ats": "greenhouse",
     "token": "huggingface",
-    "tags": [
-      "ai",
-      "ml",
-      "open-source"
-    ]
+    "tags": ["ai", "ml", "open-source"],
+    "size": "201-1000"
   },
   "openai": {
     "ats": "greenhouse",
     "token": "openai",
-    "tags": [
-      "ai",
-      "research"
-    ],
+    "tags": ["ai", "research"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "openai.com",
+    "hq": "San Francisco",
+    "size": "5000+"
   },
   "scaleai": {
     "ats": "greenhouse",
     "token": "scaleai",
-    "tags": [
-      "ai",
-      "data"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "data"],
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "mongodb": {
     "ats": "greenhouse",
     "token": "mongodb",
-    "tags": [
-      "devtools",
-      "database"
-    ],
+    "tags": ["devtools", "database"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "mongodb.com",
+    "aliases": ["10gen"],
+    "hq": "New York City",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "twilio": {
     "ats": "greenhouse",
     "token": "twilio",
-    "tags": [
-      "devtools",
-      "communications"
-    ],
+    "tags": ["devtools", "communications"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "twilio.com",
+    "hq": "San Francisco",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "okta": {
     "ats": "greenhouse",
     "token": "okta",
-    "tags": [
-      "security",
-      "saas"
-    ],
-    "h1b_sponsor": true
+    "tags": ["security", "saas"],
+    "h1b_sponsor": true,
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "cloudflare": {
     "ats": "greenhouse",
     "token": "cloudflare",
-    "tags": [
-      "devtools",
-      "infra"
-    ],
+    "tags": ["devtools", "infra"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "cloudflare.com",
+    "hq": "San Francisco",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "atlassian": {
     "ats": "greenhouse",
     "token": "atlassian",
-    "tags": [
-      "productivity",
-      "saas"
-    ],
+    "tags": ["productivity", "saas"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "atlassian.com",
+    "aliases": ["Atlassian. Pty Ltd"],
+    "hq": "341 George Street, Sydney",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "shopify": {
     "ats": "greenhouse",
     "token": "shopify",
-    "tags": [
-      "ecommerce",
-      "remote-first"
-    ],
+    "tags": ["ecommerce", "remote-first"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "shopify.com",
+    "hq": "Ottawa",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "wise": {
     "ats": "greenhouse",
     "token": "wise",
-    "tags": [
-      "fintech",
-      "europe"
-    ],
-    "uk_sponsor": true
+    "tags": ["fintech", "europe"],
+    "uk_sponsor": true,
+    "domain": "wise.com",
+    "aliases": ["TransferWise"],
+    "hq": "London",
+    "size": "5000+"
   },
   "klarna": {
     "ats": "greenhouse",
     "token": "klarna",
-    "tags": [
-      "fintech",
-      "europe"
-    ],
+    "tags": ["fintech", "europe"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "klarna.com",
+    "aliases": ["Klarna Bank AB"],
+    "hq": "Stockholm",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "revolut": {
     "ats": "greenhouse",
     "token": "revolut",
-    "tags": [
-      "fintech",
-      "europe"
-    ],
-    "uk_sponsor": true
+    "tags": ["fintech", "europe"],
+    "uk_sponsor": true,
+    "domain": "revolut.com",
+    "size": "5000+"
   },
   "n26": {
     "ats": "greenhouse",
     "token": "n26",
-    "tags": [
-      "fintech",
-      "europe"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech", "europe"],
+    "h1b_sponsor": true,
+    "domain": "n26.com",
+    "aliases": ["N26 Bank AG", "N26 Bank SE"],
+    "hq": "Berlin",
+    "size": "1001-5000"
   },
   "delivery_hero": {
     "ats": "greenhouse",
     "token": "deliveryhero",
-    "tags": [
-      "delivery",
-      "europe"
-    ]
+    "tags": ["delivery", "europe"],
+    "domain": "deliveryhero.com",
+    "aliases": ["Delivery Hero Australia", "Delivery Hero AG"],
+    "hq": "Berlin",
+    "size": "5000+"
   },
   "spotify": {
     "ats": "lever",
     "token": "spotify",
-    "tags": [
-      "consumer",
-      "music",
-      "europe"
-    ],
+    "tags": ["consumer", "music", "europe"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "spotify.com",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "netflix": {
     "ats": "lever",
     "token": "netflix",
-    "tags": [
-      "consumer",
-      "streaming"
-    ],
+    "tags": ["consumer", "streaming"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "netflix.com",
+    "hq": "Los Gatos",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "github": {
     "ats": "lever",
     "token": "github",
-    "tags": [
-      "devtools",
-      "microsoft"
-    ],
+    "tags": ["devtools", "microsoft"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "github.com",
+    "aliases": ["Logical Awesome LLC"],
+    "hq": "San Francisco",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "duolingo": {
     "ats": "lever",
     "token": "duolingo",
-    "tags": [
-      "consumer",
-      "edtech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["consumer", "edtech"],
+    "h1b_sponsor": true,
+    "domain": "en.duolingo.com",
+    "size": "1001-5000"
   },
   "miro": {
     "ats": "lever",
     "token": "miro",
-    "tags": [
-      "productivity",
-      "europe"
-    ],
-    "uk_sponsor": true
+    "tags": ["productivity", "europe"],
+    "uk_sponsor": true,
+    "size": "1001-5000"
   },
   "linear": {
     "ats": "ashby",
     "token": "linear",
-    "tags": [
-      "productivity",
-      "devtools"
-    ]
+    "tags": ["productivity", "devtools"],
+    "size": "201-1000"
   },
   "vercel": {
     "ats": "ashby",
     "token": "vercel",
-    "tags": [
-      "devtools",
-      "frontend"
-    ],
+    "tags": ["devtools", "frontend"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "vercel.com",
+    "aliases": ["Zeit"],
+    "hq": "San Francisco",
+    "size": "201-1000"
   },
   "posthog": {
     "ats": "ashby",
     "token": "posthog",
-    "tags": [
-      "devtools",
-      "analytics",
-      "remote-first"
-    ]
+    "tags": ["devtools", "analytics", "remote-first"],
+    "size": "51-200"
   },
   "ramp": {
     "ats": "ashby",
     "token": "ramp",
-    "tags": [
-      "fintech",
-      "saas"
-    ],
+    "tags": ["fintech", "saas"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "supabase": {
     "ats": "ashby",
     "token": "supabase",
-    "tags": [
-      "devtools",
-      "database",
-      "remote-first"
-    ],
-    "h1b_sponsor": true
+    "tags": ["devtools", "database", "remote-first"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "modal": {
     "ats": "ashby",
     "token": "modal",
-    "tags": [
-      "devtools",
-      "ai",
-      "infra"
-    ],
-    "h1b_sponsor": true
+    "tags": ["devtools", "ai", "infra"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "replicate": {
     "ats": "ashby",
     "token": "replicate",
-    "tags": [
-      "ai",
-      "ml",
-      "remote-first"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "ml", "remote-first"],
+    "h1b_sponsor": true,
+    "size": "51-200"
   },
   "warp": {
     "ats": "ashby",
     "token": "warp",
-    "tags": [
-      "devtools"
-    ]
+    "tags": ["devtools"],
+    "size": "51-200"
   },
   "retool": {
     "ats": "ashby",
     "token": "retool",
-    "tags": [
-      "devtools",
-      "saas"
-    ],
+    "tags": ["devtools", "saas"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "mercury": {
     "ats": "ashby",
     "token": "mercury",
-    "tags": [
-      "fintech"
-    ]
+    "tags": ["fintech"],
+    "aliases": ["Ford Motor Company. Mercury Division", "Mercury Division", "Mercury automobile"],
+    "hq": "Dearborn",
+    "size": "1001-5000"
   },
   "pleo": {
     "ats": "ashby",
     "token": "pleo",
-    "tags": [
-      "fintech",
-      "europe"
-    ],
-    "uk_sponsor": true
+    "tags": ["fintech", "europe"],
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "qonto": {
     "ats": "ashby",
     "token": "qonto",
-    "tags": [
-      "fintech",
-      "europe"
-    ]
+    "tags": ["fintech", "europe"],
+    "domain": "qonto.com",
+    "aliases": ["OLINDA", "Olinda SAS", "Qonto SA"],
+    "hq": "Paris",
+    "size": "1001-5000"
   },
   "deel": {
     "ats": "ashby",
     "token": "deel",
-    "tags": [
-      "hr",
-      "remote-first"
-    ],
-    "h1b_sponsor": true
+    "tags": ["hr", "remote-first"],
+    "h1b_sponsor": true,
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "remote": {
     "ats": "ashby",
     "token": "remotecom",
-    "tags": [
-      "hr",
-      "remote-first"
-    ]
+    "tags": ["hr", "remote-first"],
+    "size": "1001-5000"
   },
   "visa": {
     "ats": "smartrecruiters",
     "token": "Visa",
-    "tags": [
-      "fintech",
-      "payments"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech", "payments"],
+    "h1b_sponsor": true,
+    "domain": "corporate.visa.com",
+    "hq": "San Francisco",
+    "size": "5000+"
   },
   "uber": {
     "ats": "smartrecruiters",
     "token": "Uber",
-    "tags": [
-      "mobility",
-      "marketplace"
-    ]
+    "tags": ["mobility", "marketplace"],
+    "domain": "uber.com",
+    "aliases": ["UberCab", "Uber Technology"],
+    "hq": "San Francisco",
+    "h1b_sponsor": true,
+    "size": "5000+"
   },
   "asos": {
     "ats": "smartrecruiters",
     "token": "ASOS",
-    "tags": [
-      "ecommerce",
-      "europe"
-    ],
-    "uk_sponsor": true
+    "tags": ["ecommerce", "europe"],
+    "uk_sponsor": true,
+    "domain": "asos.com",
+    "hq": "London",
+    "size": "1001-5000"
   },
   "grab": {
     "ats": "smartrecruiters",
     "token": "Grab",
-    "tags": [
-      "mobility",
-      "fintech",
-      "asia"
-    ]
+    "tags": ["mobility", "fintech", "asia"],
+    "domain": "grab.com",
+    "aliases": ["MyTeksi", "Grab Car", "Grab Taxi", "GrabTaxi", "GrabCar"],
+    "hq": "Singapore",
+    "h1b_sponsor": true,
+    "size": "5000+"
   },
   "servicenow": {
     "ats": "smartrecruiters",
     "token": "ServiceNow",
-    "tags": [
-      "saas",
-      "enterprise"
-    ],
+    "tags": ["saas", "enterprise"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "servicenow.com",
+    "hq": "Santa Clara",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "freshworks": {
     "ats": "smartrecruiters",
     "token": "Freshworks",
-    "tags": [
-      "saas",
-      "crm"
-    ],
-    "uk_sponsor": true
+    "tags": ["saas", "crm"],
+    "uk_sponsor": true,
+    "domain": "freshworks.com",
+    "hq": "San Mateo",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "hibob": {
     "ats": "smartrecruiters",
     "token": "HiBob",
-    "tags": [
-      "hr",
-      "europe"
-    ]
+    "tags": ["hr", "europe"],
+    "domain": "hibob.com",
+    "hq": "London",
+    "size": "1001-5000"
   },
   "affirm": {
     "ats": "greenhouse",
     "token": "affirm",
-    "tags": [
-      "fintech"
-    ],
+    "tags": ["fintech"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "affirm.com",
+    "hq": "San Francisco",
+    "size": "1001-5000"
   },
   "airbyte": {
     "ats": "ashby",
     "token": "airbyte",
-    "tags": [
-      "data",
-      "open-source"
-    ],
-    "h1b_sponsor": true
+    "tags": ["data", "open-source"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "airtable": {
     "ats": "greenhouse",
     "token": "airtable",
-    "tags": [
-      "productivity",
-      "saas"
-    ],
-    "h1b_sponsor": true
+    "tags": ["productivity", "saas"],
+    "h1b_sponsor": true,
+    "domain": "airtable.com",
+    "size": "1001-5000"
   },
   "amplitude": {
     "ats": "greenhouse",
     "token": "amplitude",
-    "tags": [
-      "analytics",
-      "saas"
-    ],
+    "tags": ["analytics", "saas"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "amplitude.com",
+    "ind_sponsor": true,
+    "size": "201-1000"
   },
   "angellist": {
     "ats": "lever",
     "token": "angellist",
-    "tags": [
-      "fintech",
-      "startups"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech", "startups"],
+    "h1b_sponsor": true,
+    "domain": "angel.co",
+    "aliases": ["Angel List", "angelco"],
+    "hq": "San Francisco",
+    "size": "51-200"
   },
   "astronomer": {
     "ats": "ashby",
     "token": "astronomer",
-    "tags": [
-      "data",
-      "devtools"
-    ],
-    "h1b_sponsor": true
+    "tags": ["data", "devtools"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "benchling": {
     "ats": "ashby",
     "token": "benchling",
-    "tags": [
-      "biotech",
-      "saas"
-    ],
+    "tags": ["biotech", "saas"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "benchling.com",
+    "hq": "San Francisco",
+    "size": "1001-5000"
   },
   "betterment": {
     "ats": "greenhouse",
     "token": "betterment",
-    "tags": [
-      "fintech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "brex": {
     "ats": "greenhouse",
     "token": "brex",
-    "tags": [
-      "fintech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech"],
+    "h1b_sponsor": true,
+    "domain": "brex.com",
+    "hq": "San Francisco",
+    "size": "1001-5000"
   },
   "calendly": {
     "ats": "greenhouse",
     "token": "calendly",
-    "tags": [
-      "saas",
-      "productivity"
-    ]
+    "tags": ["saas", "productivity"],
+    "size": "201-1000"
   },
   "carta": {
     "ats": "greenhouse",
     "token": "carta",
-    "tags": [
-      "fintech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech"],
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "checkr": {
     "ats": "greenhouse",
     "token": "checkr",
-    "tags": [
-      "saas"
-    ],
-    "h1b_sponsor": true
+    "tags": ["saas"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "chime": {
     "ats": "greenhouse",
     "token": "chime",
-    "tags": [
-      "fintech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech"],
+    "h1b_sponsor": true,
+    "domain": "chime.com",
+    "hq": "San Francisco",
+    "size": "1001-5000"
   },
   "circleci": {
     "ats": "greenhouse",
     "token": "circleci",
-    "tags": [
-      "devtools",
-      "ci"
-    ],
-    "uk_sponsor": true
+    "tags": ["devtools", "ci"],
+    "uk_sponsor": true,
+    "domain": "circleci.com",
+    "hq": "San Francisco",
+    "ind_sponsor": true,
+    "size": "201-1000"
   },
   "clickhouse": {
     "ats": "greenhouse",
     "token": "clickhouse",
-    "tags": [
-      "database",
-      "open-source"
-    ],
-    "h1b_sponsor": true
+    "tags": ["database", "open-source"],
+    "h1b_sponsor": true,
+    "ind_sponsor": true,
+    "size": "201-1000"
   },
   "clickup": {
     "ats": "ashby",
     "token": "clickup",
-    "tags": [
-      "productivity",
-      "saas"
-    ]
+    "tags": ["productivity", "saas"],
+    "domain": "clickup.com",
+    "hq": "San Diego",
+    "size": "1001-5000"
   },
   "cockroachlabs": {
     "ats": "greenhouse",
     "token": "cockroachlabs",
-    "tags": [
-      "database",
-      "devtools"
-    ]
+    "tags": ["database", "devtools"],
+    "size": "201-1000"
   },
   "cohere": {
     "ats": "ashby",
     "token": "cohere",
-    "tags": [
-      "ai",
-      "ml"
-    ],
+    "tags": ["ai", "ml"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "cohere.com",
+    "aliases": ["Cohere AI", "co:here"],
+    "hq": "Toronto",
+    "size": "201-1000"
   },
   "confluent": {
     "ats": "ashby",
     "token": "confluent",
-    "tags": [
-      "data",
-      "streaming"
-    ],
+    "tags": ["data", "streaming"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "confluent.io",
+    "hq": "Mountain View",
+    "size": "1001-5000"
   },
   "cribl": {
     "ats": "greenhouse",
     "token": "cribl",
-    "tags": [
-      "data",
-      "observability"
-    ],
-    "h1b_sponsor": true
+    "tags": ["data", "observability"],
+    "h1b_sponsor": true,
+    "domain": "cribl.io",
+    "size": "1001-5000"
   },
   "dashlane": {
     "ats": "greenhouse",
     "token": "dashlane",
-    "tags": [
-      "security"
-    ],
-    "h1b_sponsor": true
+    "tags": ["security"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "drata": {
     "ats": "ashby",
     "token": "drata",
-    "tags": [
-      "security",
-      "compliance"
-    ],
-    "h1b_sponsor": true
+    "tags": ["security", "compliance"],
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "faire": {
     "ats": "greenhouse",
     "token": "faire",
-    "tags": [
-      "marketplace"
-    ],
+    "tags": ["marketplace"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "figma": {
     "ats": "greenhouse",
     "token": "figma",
-    "tags": [
-      "design",
-      "saas"
-    ],
+    "tags": ["design", "saas"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "figma.com",
+    "hq": "San Francisco",
+    "size": "1001-5000"
   },
   "fivetran": {
     "ats": "greenhouse",
     "token": "fivetran",
-    "tags": [
-      "data"
-    ],
+    "tags": ["data"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "fivetran.com",
+    "aliases": ["5-Tran"],
+    "size": "1001-5000"
   },
   "flexport": {
     "ats": "greenhouse",
     "token": "flexport",
-    "tags": [
-      "logistics",
-      "saas"
-    ],
+    "tags": ["logistics", "saas"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "flexport.com",
+    "hq": "San Francisco",
+    "size": "1001-5000"
   },
   "fullstory": {
     "ats": "ashby",
     "token": "fullstory",
-    "tags": [
-      "analytics"
-    ],
+    "tags": ["analytics"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "gusto": {
     "ats": "greenhouse",
     "token": "gusto",
-    "tags": [
-      "hr",
-      "fintech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["hr", "fintech"],
+    "h1b_sponsor": true,
+    "domain": "gusto.com",
+    "aliases": ["ZenPayroll"],
+    "hq": "San Francisco",
+    "size": "1001-5000"
   },
   "hightouch": {
     "ats": "greenhouse",
     "token": "hightouch",
-    "tags": [
-      "data"
-    ]
+    "tags": ["data"],
+    "size": "201-1000"
   },
   "lattice": {
     "ats": "greenhouse",
     "token": "lattice",
-    "tags": [
-      "hr",
-      "saas"
-    ]
+    "tags": ["hr", "saas"],
+    "size": "201-1000"
   },
   "launchdarkly": {
     "ats": "greenhouse",
     "token": "launchdarkly",
-    "tags": [
-      "devtools"
-    ],
-    "uk_sponsor": true
+    "tags": ["devtools"],
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "marqeta": {
     "ats": "greenhouse",
     "token": "marqeta",
-    "tags": [
-      "fintech"
-    ],
+    "tags": ["fintech"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "marqeta.com",
+    "hq": "Oakland",
+    "size": "1001-5000"
   },
   "mistral": {
     "ats": "lever",
     "token": "mistral",
-    "tags": [
-      "ai",
-      "ml"
-    ],
-    "uk_sponsor": true
+    "tags": ["ai", "ml"],
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "mixpanel": {
     "ats": "greenhouse",
     "token": "mixpanel",
-    "tags": [
-      "analytics"
-    ],
+    "tags": ["analytics"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "mixpanel.com",
+    "hq": "San Francisco",
+    "size": "201-1000"
   },
   "neon": {
     "ats": "lever",
     "token": "neon",
-    "tags": [
-      "database",
-      "devtools"
-    ]
+    "tags": ["database", "devtools"],
+    "domain": "neonrated.com",
+    "hq": "New York",
+    "size": "201-1000"
   },
   "nextdoor": {
     "ats": "greenhouse",
     "token": "nextdoor",
-    "tags": [
-      "consumer",
-      "social"
-    ],
+    "tags": ["consumer", "social"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "nextdoor.com",
+    "hq": "San Francisco",
+    "size": "201-1000"
   },
   "outreach": {
     "ats": "lever",
     "token": "outreach",
-    "tags": [
-      "sales",
-      "saas"
-    ],
-    "h1b_sponsor": true
+    "tags": ["sales", "saas"],
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "pagerduty": {
     "ats": "greenhouse",
     "token": "pagerduty",
-    "tags": [
-      "devtools"
-    ],
+    "tags": ["devtools"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "pagerduty.com",
+    "hq": "San Francisco",
+    "size": "1001-5000"
   },
   "palantir": {
     "ats": "lever",
     "token": "palantir",
-    "tags": [
-      "data",
-      "enterprise"
-    ],
+    "tags": ["data", "enterprise"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "palantir.com",
+    "aliases": ["Palantir Technologies Inc."],
+    "hq": "Palo Alto",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "patreon": {
     "ats": "ashby",
     "token": "patreon",
-    "tags": [
-      "consumer",
-      "creator"
-    ],
-    "h1b_sponsor": true
+    "tags": ["consumer", "creator"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "pendo": {
     "ats": "greenhouse",
     "token": "pendo",
-    "tags": [
-      "analytics",
-      "saas"
-    ],
+    "tags": ["analytics", "saas"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "perplexity": {
     "ats": "ashby",
     "token": "perplexity",
-    "tags": [
-      "ai",
-      "search"
-    ],
+    "tags": ["ai", "search"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "pinecone": {
     "ats": "ashby",
     "token": "pinecone",
-    "tags": [
-      "ai",
-      "database"
-    ]
+    "tags": ["ai", "database"],
+    "size": "51-200"
   },
   "plaid": {
     "ats": "ashby",
     "token": "plaid",
-    "tags": [
-      "fintech",
-      "devtools"
-    ],
+    "tags": ["fintech", "devtools"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "plaid.com",
+    "hq": "San Francisco",
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "planetscale": {
     "ats": "greenhouse",
     "token": "planetscale",
-    "tags": [
-      "database",
-      "devtools"
-    ],
-    "h1b_sponsor": true
+    "tags": ["database", "devtools"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "postman": {
     "ats": "greenhouse",
     "token": "postman",
-    "tags": [
-      "devtools",
-      "api"
-    ],
-    "h1b_sponsor": true
+    "tags": ["devtools", "api"],
+    "h1b_sponsor": true,
+    "domain": "postman.com",
+    "size": "1001-5000"
   },
   "prefect": {
     "ats": "ashby",
     "token": "prefect",
-    "tags": [
-      "data",
-      "devtools"
-    ]
+    "tags": ["data", "devtools"],
+    "size": "51-200"
   },
   "render": {
     "ats": "ashby",
     "token": "render",
-    "tags": [
-      "devtools",
-      "infra"
-    ]
+    "tags": ["devtools", "infra"],
+    "size": "201-1000"
   },
   "samsara": {
     "ats": "greenhouse",
     "token": "samsara",
-    "tags": [
-      "iot",
-      "saas"
-    ],
+    "tags": ["iot", "saas"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "sentry": {
     "ats": "ashby",
     "token": "sentry",
-    "tags": [
-      "devtools",
-      "open-source"
-    ],
-    "h1b_sponsor": true
+    "tags": ["devtools", "open-source"],
+    "h1b_sponsor": true,
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "sofi": {
     "ats": "greenhouse",
     "token": "sofi",
-    "tags": [
-      "fintech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech"],
+    "h1b_sponsor": true,
+    "domain": "sofi.com",
+    "aliases": ["SoFi Technologies, Inc.", "Social Finance, Inc."],
+    "hq": "San Francisco",
+    "size": "5000+"
   },
   "sysdig": {
     "ats": "lever",
     "token": "sysdig",
-    "tags": [
-      "security",
-      "devtools"
-    ],
+    "tags": ["security", "devtools"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "tailscale": {
     "ats": "greenhouse",
     "token": "tailscale",
-    "tags": [
-      "infra",
-      "security"
-    ]
+    "tags": ["infra", "security"],
+    "domain": "tailscale.com",
+    "hq": "Toronto",
+    "size": "201-1000"
   },
   "thumbtack": {
     "ats": "ashby",
     "token": "thumbtack",
-    "tags": [
-      "marketplace"
-    ],
-    "h1b_sponsor": true
+    "tags": ["marketplace"],
+    "h1b_sponsor": true,
+    "domain": "thumbtack.com",
+    "aliases": ["Thumbtack, incorporated."],
+    "hq": "San Francisco",
+    "size": "1001-5000"
   },
   "upstart": {
     "ats": "greenhouse",
     "token": "upstart",
-    "tags": [
-      "fintech",
-      "ai"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech", "ai"],
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "vanta": {
     "ats": "ashby",
     "token": "vanta",
-    "tags": [
-      "security",
-      "compliance"
-    ],
+    "tags": ["security", "compliance"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "verkada": {
     "ats": "greenhouse",
     "token": "verkada",
-    "tags": [
-      "security"
-    ],
+    "tags": ["security"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "verkada.com",
+    "hq": "San Mateo",
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "weaviate": {
     "ats": "ashby",
     "token": "weaviate",
-    "tags": [
-      "ai",
-      "database"
-    ]
+    "tags": ["ai", "database"],
+    "ind_sponsor": true,
+    "size": "51-200"
   },
   "webflow": {
     "ats": "greenhouse",
     "token": "webflow",
-    "tags": [
-      "devtools",
-      "nocode"
-    ],
-    "uk_sponsor": true
+    "tags": ["devtools", "nocode"],
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "whatnot": {
     "ats": "ashby",
     "token": "whatnot",
-    "tags": [
-      "marketplace",
-      "consumer"
-    ],
+    "tags": ["marketplace", "consumer"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "whatnot.com",
+    "hq": "Los Angeles",
+    "size": "201-1000"
   },
   "zapier": {
     "ats": "ashby",
     "token": "zapier",
-    "tags": [
-      "automation",
-      "remote-first"
-    ]
+    "tags": ["automation", "remote-first"],
+    "domain": "zapier.com",
+    "size": "201-1000"
   },
   "zed": {
     "ats": "ashby",
     "token": "zed",
-    "tags": [
-      "devtools"
-    ]
+    "tags": ["devtools"],
+    "size": "1-50"
   },
   "personio": {
     "ats": "personio",
     "token": "personio",
-    "tags": [
-      "hr-tech",
-      "saas",
-      "europe"
-    ],
+    "tags": ["hr-tech", "saas", "europe"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "personio.de",
+    "aliases": ["Personio SE & Co. KG"],
+    "hq": "Munich",
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "adyen": {
     "ats": "greenhouse",
     "token": "adyen",
-    "tags": [
-      "fintech",
-      "payments",
-      "europe"
-    ],
+    "tags": ["fintech", "payments", "europe"],
     "uk_sponsor": true,
     "h1b_sponsor": true,
-    "ind_sponsor": true
+    "ind_sponsor": true,
+    "domain": "adyen.com",
+    "aliases": ["Adyen N.V."],
+    "hq": "Amsterdam",
+    "size": "1001-5000"
   },
   "mollie": {
     "ats": "ashby",
     "token": "mollie",
-    "tags": [
-      "fintech",
-      "payments",
-      "europe"
-    ],
-    "uk_sponsor": true
+    "tags": ["fintech", "payments", "europe"],
+    "uk_sponsor": true,
+    "size": "1001-5000"
   },
   "deepl": {
     "ats": "ashby",
     "token": "deepl",
-    "tags": [
-      "ai",
-      "nlp",
-      "europe"
-    ],
-    "uk_sponsor": true
+    "tags": ["ai", "nlp", "europe"],
+    "uk_sponsor": true,
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "doctolib": {
     "ats": "greenhouse",
     "token": "doctolib",
-    "tags": [
-      "healthtech",
-      "saas",
-      "europe"
-    ]
+    "tags": ["healthtech", "saas", "europe"],
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "dataiku": {
     "ats": "greenhouse",
     "token": "dataiku",
-    "tags": [
-      "ai",
-      "data",
-      "europe"
-    ],
+    "tags": ["ai", "data", "europe"],
     "uk_sponsor": true,
     "h1b_sponsor": true,
-    "ind_sponsor": true
+    "ind_sponsor": true,
+    "domain": "dataiku.com",
+    "hq": "Paris",
+    "size": "1001-5000"
   },
   "algolia": {
     "ats": "greenhouse",
     "token": "algolia",
-    "tags": [
-      "devtools",
-      "search",
-      "europe"
-    ],
+    "tags": ["devtools", "search", "europe"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "algolia.com",
+    "hq": "Paris",
+    "size": "1001-5000"
   },
   "sumup": {
     "ats": "greenhouse",
     "token": "sumup",
-    "tags": [
-      "fintech",
-      "payments",
-      "europe"
-    ],
-    "uk_sponsor": true
+    "tags": ["fintech", "payments", "europe"],
+    "uk_sponsor": true,
+    "domain": "sumup.com",
+    "hq": "London",
+    "ind_sponsor": true,
+    "size": "5000+"
   },
   "gocardless": {
     "ats": "greenhouse",
     "token": "gocardless",
-    "tags": [
-      "fintech",
-      "payments",
-      "europe"
-    ],
+    "tags": ["fintech", "payments", "europe"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "gocardless.com",
+    "size": "1001-5000"
   },
   "scout24": {
     "ats": "greenhouse",
     "token": "scout24",
-    "tags": [
-      "marketplace",
-      "europe"
-    ]
+    "tags": ["marketplace", "europe"],
+    "size": "1001-5000"
   },
   "monzo": {
     "ats": "greenhouse",
     "token": "monzo",
-    "tags": [
-      "fintech",
-      "europe"
-    ],
-    "uk_sponsor": true
+    "tags": ["fintech", "europe"],
+    "uk_sponsor": true,
+    "domain": "monzo.com",
+    "aliases": ["Monzo Bank"],
+    "hq": "United Kingdom",
+    "size": "1001-5000"
   },
   "trustpilot": {
     "ats": "greenhouse",
     "token": "trustpilot",
-    "tags": [
-      "saas",
-      "consumer",
-      "europe"
-    ],
-    "uk_sponsor": true
+    "tags": ["saas", "consumer", "europe"],
+    "uk_sponsor": true,
+    "domain": "trustpilot.com",
+    "aliases": ["account access som one"],
+    "hq": "Copenhagen",
+    "size": "1001-5000"
   },
   "celonis": {
     "ats": "greenhouse",
     "token": "celonis",
-    "tags": [
-      "data",
-      "process-mining",
-      "europe"
-    ],
+    "tags": ["data", "process-mining", "europe"],
     "uk_sponsor": true,
     "h1b_sponsor": true,
-    "ind_sponsor": true
+    "ind_sponsor": true,
+    "domain": "celonis.com",
+    "hq": "Munich",
+    "size": "1001-5000"
   },
   "lifen": {
     "ats": "ashby",
     "token": "lifen",
-    "tags": [
-      "healthtech",
-      "europe"
-    ]
+    "tags": ["healthtech", "europe"],
+    "size": "51-200"
   },
   "runway": {
     "ats": "ashby",
     "token": "runway",
-    "tags": [
-      "ai",
-      "ml"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "ml"],
+    "h1b_sponsor": true,
+    "domain": "runwayml.com",
+    "hq": "Manhattan",
+    "size": "201-1000"
   },
   "synthesia": {
     "ats": "ashby",
     "token": "synthesia",
-    "tags": [
-      "ai",
-      "video",
-      "europe"
-    ],
-    "uk_sponsor": true
+    "tags": ["ai", "video", "europe"],
+    "uk_sponsor": true,
+    "domain": "synthesia.io",
+    "hq": "London",
+    "size": "201-1000"
   },
   "poolside": {
     "ats": "ashby",
     "token": "poolside",
-    "tags": [
-      "ai",
-      "ml",
-      "europe"
-    ],
-    "uk_sponsor": true
+    "tags": ["ai", "ml", "europe"],
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "n8n": {
     "ats": "ashby",
     "token": "n8n",
-    "tags": [
-      "devtools",
-      "automation",
-      "europe"
-    ]
+    "tags": ["devtools", "automation", "europe"],
+    "size": "201-1000"
   },
   "blablacar": {
     "ats": "lever",
     "token": "blablacar",
-    "tags": [
-      "mobility",
-      "marketplace",
-      "europe"
-    ]
+    "tags": ["mobility", "marketplace", "europe"],
+    "size": "201-1000"
   },
   "voodoo": {
     "ats": "lever",
     "token": "voodoo",
-    "tags": [
-      "gaming",
-      "consumer",
-      "europe"
-    ],
-    "uk_sponsor": true
+    "tags": ["gaming", "consumer", "europe"],
+    "uk_sponsor": true,
+    "ind_sponsor": true,
+    "size": "201-1000"
   },
   "paypay": {
     "ats": "greenhouse",
     "token": "paypay",
-    "tags": [
-      "fintech",
-      "payments",
-      "japan",
-      "asia"
-    ],
-    "hq": "Tokyo, Japan"
+    "tags": ["fintech", "payments", "japan", "asia"],
+    "hq": "Tokyo, Japan",
+    "domain": "about.paypay.ne.jp",
+    "aliases": ["Pay株式会社", "PayPay Corporation"],
+    "size": "1001-5000"
   },
   "woven-by-toyota": {
     "ats": "lever",
     "token": "woven-by-toyota",
-    "tags": [
-      "automotive",
-      "ai",
-      "robotics",
-      "japan",
-      "asia"
-    ],
-    "hq": "Tokyo, Japan"
+    "tags": ["automotive", "ai", "robotics", "japan", "asia"],
+    "hq": "Tokyo, Japan",
+    "domain": "woven-planet.global",
+    "size": "1001-5000"
   },
   "airwallex": {
     "ats": "ashby",
     "token": "airwallex",
-    "tags": [
-      "fintech",
-      "payments",
-      "asia"
-    ],
-    "uk_sponsor": true
+    "tags": ["fintech", "payments", "asia"],
+    "uk_sponsor": true,
+    "domain": "airwallex.com",
+    "hq": "Hong Kong",
+    "h1b_sponsor": true,
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "agoda": {
     "ats": "greenhouse",
     "token": "agoda",
-    "tags": [
-      "travel",
-      "asia"
-    ],
-    "uk_sponsor": true
+    "tags": ["travel", "asia"],
+    "uk_sponsor": true,
+    "size": "5000+"
   },
   "xai": {
     "ats": "greenhouse",
     "token": "xai",
-    "tags": [
-      "ai",
-      "research"
-    ]
+    "tags": ["ai", "research"],
+    "size": "5000+"
   },
   "glean": {
     "ats": "greenhouse",
     "token": "gleanwork",
-    "tags": [
-      "ai",
-      "enterprise-search"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "enterprise-search"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "elevenlabs": {
     "ats": "ashby",
     "token": "elevenlabs",
-    "tags": [
-      "ai",
-      "audio"
-    ]
+    "tags": ["ai", "audio"],
+    "domain": "elevenlabs.io",
+    "size": "201-1000"
   },
   "sierra": {
     "ats": "ashby",
     "token": "sierra",
-    "tags": [
-      "ai",
-      "agents"
-    ]
+    "tags": ["ai", "agents"],
+    "size": "201-1000"
   },
   "grafana": {
     "ats": "greenhouse",
     "token": "grafanalabs",
-    "tags": [
-      "devtools",
-      "observability"
-    ],
+    "tags": ["devtools", "observability"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "toast": {
     "ats": "greenhouse",
     "token": "toast",
-    "tags": [
-      "fintech",
-      "restaurant"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech", "restaurant"],
+    "h1b_sponsor": true,
+    "size": "5000+"
   },
   "harvey": {
     "ats": "ashby",
     "token": "harvey",
-    "tags": [
-      "ai",
-      "legal"
-    ]
+    "tags": ["ai", "legal"],
+    "size": "201-1000"
   },
   "cresta": {
     "ats": "greenhouse",
     "token": "cresta",
-    "tags": [
-      "ai",
-      "cx"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "cx"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "decagon": {
     "ats": "ashby",
     "token": "decagon",
-    "tags": [
-      "ai",
-      "agents"
-    ],
-    "uk_sponsor": true
+    "tags": ["ai", "agents"],
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "gong": {
     "ats": "greenhouse",
     "token": "gongio",
-    "tags": [
-      "saas",
-      "sales"
-    ],
-    "h1b_sponsor": true
+    "tags": ["saas", "sales"],
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "cursor": {
     "ats": "ashby",
     "token": "cursor",
-    "tags": [
-      "ai",
-      "devtools"
-    ]
+    "tags": ["ai", "devtools"],
+    "size": "201-1000"
   },
   "contentful": {
     "ats": "greenhouse",
     "token": "contentful",
-    "tags": [
-      "saas",
-      "cms"
-    ],
+    "tags": ["saas", "cms"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "contentful.com",
+    "hq": "Berlin",
+    "size": "201-1000"
   },
   "1password": {
     "ats": "ashby",
     "token": "1password",
-    "tags": [
-      "security",
-      "saas"
-    ],
-    "h1b_sponsor": true
+    "tags": ["security", "saas"],
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "togetherai": {
     "ats": "greenhouse",
     "token": "togetherai",
-    "tags": [
-      "ai",
-      "infra"
-    ]
+    "tags": ["ai", "infra"],
+    "size": "201-1000"
   },
   "writer": {
     "ats": "ashby",
     "token": "writer",
-    "tags": [
-      "ai",
-      "enterprise"
-    ],
+    "tags": ["ai", "enterprise"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "temporal": {
     "ats": "greenhouse",
     "token": "temporaltechnologies",
-    "tags": [
-      "devtools",
-      "infra"
-    ],
-    "h1b_sponsor": true
+    "tags": ["devtools", "infra"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "polymarket": {
     "ats": "ashby",
     "token": "polymarket",
-    "tags": [
-      "crypto",
-      "markets"
-    ]
+    "tags": ["crypto", "markets"],
+    "size": "51-200"
   },
   "lucid": {
     "ats": "greenhouse",
     "token": "lucidsoftware",
-    "tags": [
-      "saas",
-      "productivity"
-    ]
+    "tags": ["saas", "productivity"],
+    "size": "1001-5000"
   },
   "wealthsimple": {
     "ats": "ashby",
     "token": "wealthsimple",
-    "tags": [
-      "fintech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech"],
+    "h1b_sponsor": true,
+    "domain": "wealthsimple.com",
+    "hq": "Toronto",
+    "size": "1001-5000"
   },
   "typeform": {
     "ats": "greenhouse",
     "token": "typeform",
-    "tags": [
-      "saas"
-    ],
+    "tags": ["saas"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "characterai": {
     "ats": "ashby",
     "token": "character",
-    "tags": [
-      "ai"
-    ]
+    "tags": ["ai"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "rubrik": {
     "ats": "greenhouse",
     "token": "rubrik",
-    "tags": [
-      "security",
-      "data"
-    ],
+    "tags": ["security", "data"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "rubrik.com",
+    "hq": "Palo Alto",
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "abnormal": {
     "ats": "greenhouse",
     "token": "abnormalsecurity",
-    "tags": [
-      "security",
-      "ai"
-    ],
+    "tags": ["security", "ai"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "replit": {
     "ats": "ashby",
     "token": "replit",
-    "tags": [
-      "devtools",
-      "ai"
-    ],
-    "h1b_sponsor": true
+    "tags": ["devtools", "ai"],
+    "h1b_sponsor": true,
+    "domain": "repl.it",
+    "hq": "San Francisco",
+    "size": "201-1000"
   },
   "newrelic": {
     "ats": "greenhouse",
     "token": "newrelic",
-    "tags": [
-      "devtools",
-      "observability",
-      "asia"
-    ]
+    "tags": ["devtools", "observability", "asia"],
+    "size": "1001-5000"
   },
   "baseten": {
     "ats": "ashby",
     "token": "baseten",
-    "tags": [
-      "ai",
-      "infra"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "infra"],
+    "h1b_sponsor": true,
+    "size": "51-200"
   },
   "nium": {
     "ats": "lever",
     "token": "nium",
-    "tags": [
-      "fintech",
-      "payments",
-      "asia"
-    ],
+    "tags": ["fintech", "payments", "asia"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "nium.com",
+    "aliases": ["Instant Remittance", "InstaReM"],
+    "hq": "Singapore",
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "mercor": {
     "ats": "ashby",
     "token": "mercor",
-    "tags": [
-      "ai",
-      "hiring"
-    ]
+    "tags": ["ai", "hiring"],
+    "size": "51-200"
   },
   "sumologic": {
     "ats": "greenhouse",
     "token": "sumologic",
-    "tags": [
-      "devtools",
-      "observability"
-    ],
-    "uk_sponsor": true
+    "tags": ["devtools", "observability"],
+    "uk_sponsor": true,
+    "size": "1001-5000"
   },
   "fireblocks": {
     "ats": "greenhouse",
     "token": "fireblocks",
-    "tags": [
-      "crypto",
-      "infra"
-    ],
+    "tags": ["crypto", "infra"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "fireblocks.com",
+    "hq": "Tel Aviv",
+    "size": "1001-5000"
   },
   "suno": {
     "ats": "ashby",
     "token": "suno",
-    "tags": [
-      "ai",
-      "audio"
-    ]
+    "tags": ["ai", "audio"],
+    "size": "51-200"
   },
   "fal": {
     "ats": "greenhouse",
     "token": "fal",
-    "tags": [
-      "ai",
-      "infra"
-    ]
+    "tags": ["ai", "infra"],
+    "size": "201-1000"
   },
   "gemini": {
     "ats": "greenhouse",
     "token": "gemini",
-    "tags": [
-      "crypto",
-      "fintech"
-    ]
+    "tags": ["crypto", "fintech"],
+    "size": "1001-5000"
   },
   "vannevar": {
     "ats": "greenhouse",
     "token": "vannevarlabs",
-    "tags": [
-      "ai",
-      "defense"
-    ]
+    "tags": ["ai", "defense"],
+    "size": "51-200"
   },
   "squarespace": {
     "ats": "greenhouse",
     "token": "squarespace",
-    "tags": [
-      "saas",
-      "web"
-    ],
+    "tags": ["saas", "web"],
     "uk_sponsor": true,
-    "h1b_sponsor": true
+    "h1b_sponsor": true,
+    "domain": "squarespace.com",
+    "hq": "New York City",
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "bill": {
     "ats": "greenhouse",
     "token": "billcom",
-    "tags": [
-      "fintech",
-      "saas"
-    ]
+    "tags": ["fintech", "saas"],
+    "size": "1001-5000"
   },
   "honeycomb": {
     "ats": "greenhouse",
     "token": "honeycomb",
-    "tags": [
-      "devtools",
-      "observability"
-    ]
+    "tags": ["devtools", "observability"],
+    "size": "201-1000"
   },
   "zego": {
     "ats": "workable",
     "token": "zego",
-    "tags": [
-      "insurtech",
-      "fintech"
-    ]
+    "tags": ["insurtech", "fintech"],
+    "ind_sponsor": true,
+    "size": "201-1000"
   },
   "workmotion": {
     "ats": "workable",
     "token": "workmotion",
-    "tags": [
-      "hr",
-      "eor",
-      "remote"
-    ]
+    "tags": ["hr", "eor", "remote"],
+    "size": "201-1000"
   },
   "yapily": {
     "ats": "workable",
     "token": "yapily",
-    "tags": [
-      "fintech",
-      "api"
-    ]
+    "tags": ["fintech", "api"],
+    "uk_sponsor": true,
+    "size": "51-200"
   },
   "kroo": {
     "ats": "workable",
     "token": "kroo",
-    "tags": [
-      "fintech",
-      "banking"
-    ]
+    "tags": ["fintech", "banking"],
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "doist": {
     "ats": "workable",
     "token": "doist",
-    "tags": [
-      "saas",
-      "productivity",
-      "remote"
-    ]
+    "tags": ["saas", "productivity", "remote"],
+    "domain": "doist.io",
+    "hq": "Santiago",
+    "size": "51-200"
   },
   "canva": {
     "ats": "smartrecruiters",
     "token": "canva",
-    "tags": [
-      "design",
-      "saas"
-    ]
+    "tags": ["design", "saas"],
+    "domain": "canva.com",
+    "size": "5000+"
   },
   "singlestore": {
     "ats": "greenhouse",
     "token": "singlestore",
-    "tags": [
-      "data",
-      "database"
-    ],
-    "h1b_sponsor": true
+    "tags": ["data", "database"],
+    "h1b_sponsor": true,
+    "domain": "singlestore.com",
+    "aliases": ["MemSQL"],
+    "hq": "San Francisco",
+    "size": "201-1000"
   },
   "sigmacomputing": {
     "ats": "greenhouse",
     "token": "sigmacomputing",
-    "tags": [
-      "data",
-      "analytics"
-    ],
-    "h1b_sponsor": true
+    "tags": ["data", "analytics"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "intercom": {
     "ats": "greenhouse",
     "token": "intercom",
-    "tags": [
-      "saas",
-      "support"
-    ],
-    "h1b_sponsor": true
+    "tags": ["saas", "support"],
+    "h1b_sponsor": true,
+    "domain": "intercom.com",
+    "uk_sponsor": true,
+    "size": "1001-5000"
   },
   "crusoe": {
     "ats": "ashby",
     "token": "crusoe",
-    "tags": [
-      "ai",
-      "infra",
-      "cloud"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "infra", "cloud"],
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "deepgram": {
     "ats": "ashby",
     "token": "deepgram",
-    "tags": [
-      "ai",
-      "speech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "speech"],
+    "h1b_sponsor": true,
+    "domain": "deepgram.com",
+    "hq": "San Francisco",
+    "size": "201-1000"
   },
   "coreweave": {
     "ats": "greenhouse",
     "token": "coreweave",
-    "tags": [
-      "ai",
-      "infra",
-      "cloud"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "infra", "cloud"],
+    "h1b_sponsor": true,
+    "domain": "coreweave.com",
+    "hq": "Roseland",
+    "size": "1001-5000"
   },
   "nebius": {
     "ats": "greenhouse",
     "token": "nebius",
-    "tags": [
-      "ai",
-      "infra",
-      "cloud"
-    ]
+    "tags": ["ai", "infra", "cloud"],
+    "uk_sponsor": true,
+    "ind_sponsor": true,
+    "size": "1001-5000"
   },
   "chainguard": {
     "ats": "greenhouse",
     "token": "chainguard",
-    "tags": [
-      "security",
-      "devtools"
-    ],
-    "h1b_sponsor": true
+    "tags": ["security", "devtools"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "fireworksai": {
     "ats": "greenhouse",
     "token": "fireworksai",
-    "tags": [
-      "ai",
-      "infra"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "infra"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "justworks": {
     "ats": "greenhouse",
     "token": "justworks",
-    "tags": [
-      "hr-tech",
-      "saas"
-    ],
-    "h1b_sponsor": true
+    "tags": ["hr-tech", "saas"],
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "salesloft": {
     "ats": "greenhouse",
     "token": "salesloft",
-    "tags": [
-      "saas",
-      "sales"
-    ],
-    "h1b_sponsor": true
+    "tags": ["saas", "sales"],
+    "h1b_sponsor": true,
+    "domain": "salesloft.com",
+    "hq": "Atlanta",
+    "size": "1001-5000"
   },
   "semgrep": {
     "ats": "ashby",
     "token": "semgrep",
-    "tags": [
-      "security",
-      "devtools"
-    ],
-    "h1b_sponsor": true
+    "tags": ["security", "devtools"],
+    "h1b_sponsor": true,
+    "domain": "semgrep.dev",
+    "size": "201-1000"
   },
   "mesh": {
     "ats": "greenhouse",
     "token": "mesh",
-    "tags": [
-      "fintech"
-    ]
+    "tags": ["fintech"],
+    "size": "51-200"
   },
   "anyscale": {
     "ats": "ashby",
     "token": "anyscale",
-    "tags": [
-      "ai",
-      "infra"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "infra"],
+    "h1b_sponsor": true,
+    "domain": "anyscale.com",
+    "hq": "San Francisco",
+    "size": "201-1000"
   },
   "runpod": {
     "ats": "greenhouse",
     "token": "runpod",
-    "tags": [
-      "ai",
-      "infra"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "infra"],
+    "h1b_sponsor": true,
+    "size": "51-200"
   },
   "coder": {
     "ats": "ashby",
     "token": "coder",
-    "tags": [
-      "devtools"
-    ]
+    "tags": ["devtools"],
+    "uk_sponsor": true,
+    "size": "201-1000"
   },
   "socket": {
     "ats": "ashby",
     "token": "socket",
-    "tags": [
-      "security",
-      "devtools"
-    ]
+    "tags": ["security", "devtools"],
+    "size": "1-50"
   },
   "railway": {
     "ats": "ashby",
     "token": "railway",
-    "tags": [
-      "devtools",
-      "infra"
-    ]
+    "tags": ["devtools", "infra"],
+    "size": "1-50"
   },
   "alchemy": {
     "ats": "ashby",
     "token": "alchemy",
-    "tags": [
-      "crypto",
-      "infra"
-    ]
+    "tags": ["crypto", "infra"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "mavenclinic": {
     "ats": "greenhouse",
     "token": "mavenclinic",
-    "tags": [
-      "health-tech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["health-tech"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "lithic": {
     "ats": "greenhouse",
     "token": "lithic",
-    "tags": [
-      "fintech"
-    ]
+    "tags": ["fintech"],
+    "size": "51-200"
   },
   "highnote": {
     "ats": "greenhouse",
     "token": "highnote",
-    "tags": [
-      "fintech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech"],
+    "h1b_sponsor": true,
+    "size": "51-200"
   },
   "includedhealth": {
     "ats": "lever",
     "token": "includedhealth",
-    "tags": [
-      "health-tech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["health-tech"],
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "infisical": {
     "ats": "ashby",
     "token": "infisical",
-    "tags": [
-      "security",
-      "devtools"
-    ],
-    "h1b_sponsor": true
+    "tags": ["security", "devtools"],
+    "h1b_sponsor": true,
+    "size": "1-50"
   },
   "unit": {
     "ats": "ashby",
     "token": "unit",
-    "tags": [
-      "fintech"
-    ]
+    "tags": ["fintech"],
+    "size": "51-200"
   },
   "oscar": {
     "ats": "greenhouse",
     "token": "oscar",
-    "tags": [
-      "health-tech",
-      "insurance"
-    ],
-    "h1b_sponsor": true
+    "tags": ["health-tech", "insurance"],
+    "h1b_sponsor": true,
+    "size": "1001-5000"
   },
   "assemblyai": {
     "ats": "greenhouse",
     "token": "assemblyai",
-    "tags": [
-      "ai",
-      "speech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "speech"],
+    "h1b_sponsor": true,
+    "size": "51-200"
   },
   "rho": {
     "ats": "ashby",
     "token": "rho",
-    "tags": [
-      "fintech"
-    ]
+    "tags": ["fintech"],
+    "size": "201-1000"
   },
   "stabilityai": {
     "ats": "greenhouse",
     "token": "stabilityai",
-    "tags": [
-      "ai",
-      "ml"
-    ]
+    "tags": ["ai", "ml"],
+    "size": "201-1000"
   },
   "browserbase": {
     "ats": "ashby",
     "token": "browserbase",
-    "tags": [
-      "ai",
-      "devtools"
-    ]
+    "tags": ["ai", "devtools"],
+    "size": "51-200"
   },
   "moderntreasury": {
     "ats": "ashby",
     "token": "moderntreasury",
-    "tags": [
-      "fintech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "finix": {
     "ats": "lever",
     "token": "finix",
-    "tags": [
-      "fintech",
-      "payments"
-    ],
-    "h1b_sponsor": true
+    "tags": ["fintech", "payments"],
+    "h1b_sponsor": true,
+    "domain": "finix.com",
+    "aliases": ["Finix Payments, Inc."],
+    "hq": "San Francisco",
+    "size": "201-1000"
   },
   "betterup": {
     "ats": "ashby",
     "token": "betterup",
-    "tags": [
-      "hr-tech"
-    ],
-    "h1b_sponsor": true
+    "tags": ["hr-tech"],
+    "h1b_sponsor": true,
+    "domain": "betterup.com",
+    "hq": "San Francisco",
+    "size": "201-1000"
   },
   "imbue": {
     "ats": "greenhouse",
     "token": "imbue",
-    "tags": [
-      "ai",
-      "ml"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "ml"],
+    "h1b_sponsor": true,
+    "size": "51-200"
   },
   "descript": {
     "ats": "greenhouse",
     "token": "descript",
-    "tags": [
-      "ai",
-      "media"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ai", "media"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "materialize": {
     "ats": "ashby",
     "token": "materialize",
-    "tags": [
-      "data",
-      "database"
-    ],
-    "h1b_sponsor": true
+    "tags": ["data", "database"],
+    "h1b_sponsor": true,
+    "size": "51-200"
   },
   "montecarlodata": {
     "ats": "ashby",
     "token": "montecarlodata",
-    "tags": [
-      "data",
-      "observability"
-    ],
-    "h1b_sponsor": true
+    "tags": ["data", "observability"],
+    "h1b_sponsor": true,
+    "size": "201-1000"
   },
   "mercari": {
     "ats": "greenhouse",
     "token": "mercari",
-    "tags": [
-      "ecommerce",
-      "japan",
-      "asia"
-    ],
-    "h1b_sponsor": true
+    "tags": ["ecommerce", "japan", "asia"],
+    "h1b_sponsor": true,
+    "domain": "mercari.jp",
+    "aliases": ["Merpay"],
+    "hq": "Tokyo",
+    "size": "1001-5000"
   },
   "modernhealth": {
     "ats": "greenhouse",
     "token": "modernhealth",
-    "tags": [
-      "health-tech"
-    ]
+    "tags": ["health-tech"],
+    "size": "201-1000"
   },
   "appier": {
     "ats": "greenhouse",
     "token": "appier",
-    "tags": [
-      "ai",
-      "adtech",
-      "asia"
-    ]
+    "tags": ["ai", "adtech", "asia"],
+    "domain": "appier.com",
+    "hq": "Taipei",
+    "uk_sponsor": true,
+    "ind_sponsor": true,
+    "size": "201-1000"
   },
   "alpaca": {
     "ats": "greenhouse",
     "token": "alpaca",
-    "tags": [
-      "fintech",
-      "brokerage",
-      "japan",
-      "asia"
-    ]
+    "tags": ["fintech", "brokerage", "japan", "asia"],
+    "size": "201-1000"
   },
   "aiand": {
     "ats": "ashby",
     "token": "aiand",
-    "tags": [
-      "ai",
-      "japan",
-      "asia"
-    ]
+    "tags": ["ai", "japan", "asia"],
+    "size": "1-50"
   },
   "ai-robot-association": {
     "ats": "workable",
     "token": "ai-robot-association",
-    "tags": [
-      "robotics",
-      "ai",
-      "japan",
-      "asia"
-    ],
-    "hq": "Tokyo, Japan"
+    "tags": ["robotics", "ai", "japan", "asia"],
+    "hq": "Tokyo, Japan",
+    "size": "1-50"
   },
   "caddi": {
     "ats": "workable",
     "token": "caddi",
-    "tags": [
-      "manufacturing",
-      "ai",
-      "japan",
-      "asia"
-    ],
-    "hq": "Tokyo, Japan"
+    "tags": ["manufacturing", "ai", "japan", "asia"],
+    "hq": "Tokyo, Japan",
+    "domain": "caddi.com",
+    "size": "201-1000"
   },
   "speak": {
     "ats": "ashby",
     "token": "speak",
-    "tags": [
-      "ai",
-      "edtech"
-    ]
+    "tags": ["ai", "edtech"],
+    "size": "201-1000"
   },
   "drivemode": {
     "ats": "lever",
     "token": "drivemode",
-    "tags": [
-      "mobility",
-      "japan",
-      "asia"
-    ],
-    "hq": "Tokyo, Japan"
+    "tags": ["mobility", "japan", "asia"],
+    "hq": "Tokyo, Japan",
+    "size": "51-200"
   },
   "mantra": {
     "ats": "lever",
     "token": "mantra",
-    "tags": [
-      "ai",
-      "translation",
-      "japan",
-      "asia"
-    ],
-    "hq": "Tokyo, Japan"
+    "tags": ["ai", "translation", "japan", "asia"],
+    "hq": "Tokyo, Japan",
+    "size": "51-200"
   },
   "build": {
     "ats": "ashby",
     "token": "build",
-    "tags": [
-      "ai",
-      "devtools"
-    ]
+    "tags": ["ai", "devtools"]
   },
   "orb": {
     "ats": "ashby",
     "token": "orb",
-    "tags": [
-      "fintech",
-      "devtools"
-    ]
+    "tags": ["fintech", "devtools"],
+    "size": "51-200"
   },
   "toku": {
     "ats": "ashby",
     "token": "toku",
-    "tags": [
-      "fintech",
-      "crypto"
-    ]
+    "tags": ["fintech", "crypto"],
+    "size": "51-200"
   },
   "tektome": {
     "ats": "lever",
     "token": "tektome",
-    "tags": [
-      "ai",
-      "construction",
-      "japan",
-      "asia"
-    ],
-    "hq": "Tokyo, Japan"
+    "tags": ["ai", "construction", "japan", "asia"],
+    "hq": "Tokyo, Japan",
+    "size": "1-50"
   },
   "micoworks": {
     "ats": "greenhouse",
     "token": "micoworks",
-    "tags": [
-      "marketing",
-      "saas",
-      "japan",
-      "asia"
-    ],
-    "hq": "Tokyo, Japan"
+    "tags": ["marketing", "saas", "japan", "asia"],
+    "hq": "Tokyo, Japan",
+    "size": "51-200"
   },
   "moneyforward": {
     "ats": "hrmos",
     "token": "moneyforward",
     "tags": ["fintech", "saas", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "1001-5000"
   },
   "chatwork": {
     "ats": "hrmos",
     "token": "chatwork",
     "tags": ["saas", "communication", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "201-1000"
   },
   "givery": {
     "ats": "hrmos",
     "token": "givery",
     "tags": ["ai", "dev-consulting", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "51-200"
   },
   "timee": {
     "ats": "hrmos",
     "token": "timee",
     "tags": ["hr-tech", "gig-work", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "timee.co.jp",
+    "size": "1001-5000"
   },
   "studist": {
     "ats": "hrmos",
     "token": "studist",
     "tags": ["saas", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "51-200"
   },
   "pixiv": {
     "ats": "hrmos",
     "token": "pixiv",
     "tags": ["creative", "platform", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "pixiv.co.jp",
+    "aliases": ["Crooc Inc."],
+    "size": "201-1000"
   },
   "colopl": {
     "ats": "hrmos",
     "token": "colopl",
     "tags": ["gaming", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "colopl.co.jp",
+    "size": "1001-5000"
   },
   "abeja": {
     "ats": "hrmos",
     "token": "abeja",
     "tags": ["ai", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "51-200"
   },
   "visional": {
     "ats": "hrmos",
     "token": "visional",
     "tags": ["hr-tech", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "1001-5000"
   },
   "kakaku": {
     "ats": "hrmos",
     "token": "kakaku",
     "tags": ["media", "ecommerce", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "1001-5000"
   },
   "cygames": {
     "ats": "hrmos",
     "token": "cygames",
     "tags": ["gaming", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "cygames.co.jp",
+    "size": "1001-5000"
   },
   "medley": {
     "ats": "hrmos",
     "token": "medley",
     "tags": ["healthtech", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "1001-5000"
   },
   "sega": {
     "ats": "hrmos",
     "token": "sega",
     "tags": ["gaming", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "sega.com",
+    "aliases": ["SEGA Games Co., Ltd."],
+    "size": "5000+"
   },
   "aiming": {
     "ats": "hrmos",
     "token": "aiming",
     "tags": ["gaming", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "aiming-inc.com",
+    "size": "201-1000"
   },
   "estie": {
     "ats": "hrmos",
     "token": "estie",
     "tags": ["proptech", "saas", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "51-200"
   },
   "square-enix": {
     "ats": "hrmos",
     "token": "square-enix",
     "tags": ["gaming", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "square-enix.com",
+    "aliases": ["Square Enix Holdings Co., Ltd."],
+    "size": "5000+"
   },
   "netprotections": {
     "ats": "hrmos",
     "token": "netprotections",
     "tags": ["fintech", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "201-1000"
   },
   "bitbank": {
     "ats": "hrmos",
     "token": "bitbank",
     "tags": ["crypto", "fintech", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "51-200"
   },
   "beex": {
     "ats": "hrmos",
     "token": "beex",
     "tags": ["data", "consulting", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "beex-inc.com",
+    "size": "51-200"
   },
   "smartround": {
     "ats": "hrmos",
     "token": "smartround",
     "tags": ["fintech", "saas", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "1-50"
   },
   "zozo": {
     "ats": "hrmos",
     "token": "zozo",
     "tags": ["ecommerce", "fashion", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "corp.zozo.com",
+    "aliases": ["START TODAY CO., LTD.", "Zozotown", "Start Today"],
+    "size": "5000+"
   },
   "micin": {
     "ats": "hrmos",
     "token": "micin",
     "tags": ["healthtech", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "51-200"
   },
   "paiza": {
     "ats": "hrmos",
     "token": "paiza",
     "tags": ["hr-tech", "devtools", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "paiza.co.jp",
+    "size": "201-1000"
   },
   "klab": {
     "ats": "hrmos",
     "token": "klab",
     "tags": ["gaming", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "klab.jp",
+    "size": "201-1000"
   },
   "moneytree": {
     "ats": "hrmos",
     "token": "moneytree",
     "tags": ["fintech", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "moneytreeinc.com",
+    "size": "51-200"
   },
   "uzabase": {
     "ats": "hrmos",
     "token": "uzabase",
     "tags": ["saas", "data", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "uzabase.com",
+    "size": "1001-5000"
   },
   "sumzap": {
     "ats": "hrmos",
     "token": "sumzap",
     "tags": ["gaming", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "51-200"
   },
   "gunosy": {
     "ats": "hrmos",
     "token": "gunosy",
     "tags": ["media", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "gunosy.co.jp",
+    "size": "201-1000"
   },
   "dwango": {
     "ats": "hrmos",
     "token": "dwango",
     "tags": ["media", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "dwango.co.jp",
+    "aliases": ["DWANGO Co., Ltd."],
+    "size": "1001-5000"
   },
   "socious": {
     "ats": "smartrecruiters",
     "token": "socious",
-    "tags": [
-      "tech"
-    ]
+    "tags": ["tech"],
+    "size": "1-50"
   },
   "cyberagent": {
     "ats": "hrmos",
     "token": "cyberagent-group",
     "tags": ["tech", "media", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "cyberagent.co.jp",
+    "aliases": ["Cyber Agent"],
+    "size": "5000+"
   },
   "members": {
     "ats": "hrmos",
     "token": "members-group",
     "tags": ["dx", "consulting", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "1001-5000"
   },
   "bizreach": {
     "ats": "hrmos",
     "token": "hrmos",
     "tags": ["hr-tech", "saas", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "domain": "bizreach.co.jp",
+    "size": "1001-5000"
   },
   "highreso": {
     "ats": "hrmos",
     "token": "highreso",
     "tags": ["cloud", "infrastructure", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "51-200"
   },
   "pivot": {
     "ats": "hrmos",
     "token": "pivot",
     "tags": ["media", "japan", "asia"],
-    "hq": "Tokyo, Japan"
+    "hq": "Tokyo, Japan",
+    "size": "51-200"
   }
 }

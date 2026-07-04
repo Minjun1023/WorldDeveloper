@@ -70,4 +70,21 @@ public class MailService {
             + "본인이 요청하지 않았다면 이 메일을 무시하세요.");
         sender.send(msg);
     }
+
+    /**
+     * 저장 검색 신규 공고 다이제스트. body 는 호출부(SearchAlertScheduler)가 조립한 평문.
+     * 미설정 환경에선 제목만 로그(본문은 개인 검색 조건 포함이라 찍지 않음).
+     */
+    public void sendSearchDigest(String email, String subject, String body) {
+        if (!enabled) {
+            log.warn("[MAIL DISABLED] {} 다이제스트 미발송: {}", email, subject);
+            return;
+        }
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setFrom(from);
+        msg.setTo(email);
+        msg.setSubject(subject);
+        msg.setText(body);
+        sender.send(msg);
+    }
 }

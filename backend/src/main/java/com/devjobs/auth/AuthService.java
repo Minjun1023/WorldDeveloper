@@ -50,6 +50,9 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_email");
         }
         String name = displayName == null ? null : displayName.trim();
+        if (name != null && name.length() > 40) { // 표시이름 길이 상한 — 무제한 문자열 저장 방지
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "name_too_long");
+        }
         if (name != null && !name.isEmpty() && userRepo.existsByDisplayNameIgnoreCase(name)) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "name_taken");
         }

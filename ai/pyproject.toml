@@ -12,6 +12,8 @@ dependencies = [
     "pgvector>=0.3",
     "apscheduler>=3.10",
     "python-dotenv>=1.0",
+    "pycountry>=24.6",
+    "sentence-transformers>=5.5.0",
 ]
 
 [project.optional-dependencies]
@@ -41,6 +43,11 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[dependency-groups]
+dev = [
+    "openpyxl>=3.1.5",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["app", "dev_jobs_core"]

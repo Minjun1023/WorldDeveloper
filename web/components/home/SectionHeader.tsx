@@ -3,7 +3,7 @@ import Link from "next/link";
 export function SectionHeader({
   title,
   href,
-  hrefLabel = "전체 보기",
+  hrefLabel = "더보기",
   count,
   overline,
   subtitle,

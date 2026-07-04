@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 
-import { BackButton } from "@/components/BackButton";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { InterviewPrepSection } from "@/components/job/InterviewPrepSection";
 import { VisaGuideSection } from "@/components/job/VisaGuideSection";
-import { JobCard } from "@/components/job/JobCard";
+import { OtherJobsCarousel } from "@/components/job/OtherJobsCarousel";
 import { JobDescription } from "@/components/job/JobDescription";
 import { JobFactCards } from "@/components/job/JobFactCards";
 import { JobSidebar } from "@/components/job/JobSidebar";
@@ -27,9 +27,22 @@ import { filterTechTags } from "@/lib/techTags";
 
 export const dynamic = "force-dynamic";
 
+// fetchJob 은 no-store 라 generateMetadata + 본문에서 두 번 때리지 않도록 요청 단위 dedupe.
+const getJob = cache((id: string) => fetchJob(id));
+
+// 공유·검색 유입용 페이지별 메타 — "직함 — 회사 | WorldDev".
+export async function generateMetadata({ params }: { params: { id: string } }) {
+  const result = await getJob(params.id);
+  if (!result.ok) return {};
+  const job = result.data;
+  const title = `${job.title_ko ?? job.title} — ${job.company.display_name} | WorldDev`;
+  const description = `${job.company.display_name}의 ${job.title_ko ?? job.title} 채용 공고. 비자 스폰서십 여부와 연봉·기술 스택을 확인하세요.`;
+  return { title, description, openGraph: { title, description } };
+}
+
 export default async function JobDetailPage({ params }: { params: { id: string } }) {
   const [result, prep, visaGuide, session, initialSummary] = await Promise.all([
-    fetchJob(params.id),
+    getJob(params.id),
     fetchInterviewPrep(params.id),
     fetchVisaGuide(params.id),
     getSession(),
@@ -54,12 +67,13 @@ export default async function JobDetailPage({ params }: { params: { id: string }
 
   const job = result.data;
   const companyData = await fetchCompany(job.company.slug);
-  const otherJobs = (companyData?.jobs ?? []).filter((j) => j.id !== job.id).slice(0, 4);
+  const otherJobs = (companyData?.jobs ?? []).filter((j) => j.id !== job.id).slice(0, 12);
   const techTags = filterTechTags(job.tags, job.company);
 
   return (
     <>
-      <div className="mx-auto max-w-6xl pb-24 lg:pb-0">
+      {/* 모바일 하단 고정바(≈68px)+safe-area 만큼 본문 하단 보정 — 정적 pb-24 는 노치 기기에서 겹쳤다. */}
+      <div className="mx-auto max-w-6xl pb-[calc(5.5rem+env(safe-area-inset-bottom))] lg:pb-0">
         <RecordRecentJob
           id={job.id}
           title={job.title_ko ?? job.title}
@@ -67,10 +81,6 @@ export default async function JobDetailPage({ params }: { params: { id: string }
           slug={job.company.slug}
         />
         <RecordJobView jobId={job.id} />
-
-        <div className="mb-4">
-          <BackButton fallbackHref="/search" label="공고 목록으로" />
-        </div>
 
         <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-8">
           <article className="min-w-0 space-y-5">
@@ -100,14 +110,10 @@ export default async function JobDetailPage({ params }: { params: { id: string }
             {prep && <InterviewPrepSection prep={prep} />}
 
             {otherJobs.length > 0 && (
-              <section className="space-y-3 border-t border-border pt-6">
-                <h2 className="text-h3">{job.company.display_name}의 다른 공고</h2>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {otherJobs.map((j) => (
-                    <JobCard key={j.id} job={j} />
-                  ))}
-                </div>
-              </section>
+              <OtherJobsCarousel
+                title={`${job.company.display_name}의 다른 공고`}
+                jobs={otherJobs}
+              />
             )}
           </article>
 

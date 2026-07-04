@@ -219,7 +219,18 @@ def extract_salary_from_description(text: str | None) -> dict | None:
         # 앵커 탐색 구간은 금액 시작 +8자까지 포함 — "Compensation $X" 처럼 연봉어 바로 뒤에
         # 금액이 오는 형태를 인식하려면(앵커의 금액 lookahead) 금액 앞부분이 보여야 한다.
         if not _SAL_ANCHOR.search(text[max(0, m.start() - 80): m.start() + 8]):
-            continue
+            # 폴백: 미국 pay transparency 공시 포맷 "…location is: $165,200 — $223,600 USD".
+            # 지역 나열이 길어 연봉어가 80자 밖으로 밀리는 케이스 — '양쪽 기호 + ISO 코드 접미'라는
+            # 강한 통화 증거가 있고 연봉 규모(50k~1M)면 앵커 없이 인정한다.
+            # (지분/펀딩 금액은 이 표기 관행을 쓰지 않아 오탐 위험 낮음 + _SAL_EXCLUDE 가 재차 방어.)
+            strong_cur = (
+                m.group("sym") and m.group("sym2")
+                and _SAL_CUR_WORD.search(text[m.end(): m.end() + 6].upper())
+            )
+            lo_p = _sal_num(m.group("min"), m.group("mdec"), m.group("munit"))
+            hi_p = _sal_num(m.group("max"), m.group("xdec"), m.group("xunit") or m.group("munit"))
+            if not (strong_cur and 50_000 <= min(lo_p, hi_p) and max(lo_p, hi_p) <= 1_000_000):
+                continue
         # 금액 직전 25자에 지분/펀딩/매출 등 비-연봉 단서가 있으면 스킵(앵커가 통과해도).
         if _SAL_EXCLUDE.search(text[max(0, m.start() - 25): m.start()]):
             continue

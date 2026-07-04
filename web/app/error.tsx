@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useEffect } from "react";
 
+import { Button } from "@/components/ui/button";
+
 // 라우트 세그먼트 에러 바운더리 — 서버/클라이언트 컴포넌트 렌더 throw 를
 // 흰 화면 대신 한국어 폴백으로. reset() 으로 해당 세그먼트 재시도.
 export default function Error({
@@ -24,16 +26,12 @@ export default function Error({
         일시적인 오류로 페이지를 표시하지 못했어요. 잠시 후 다시 시도해주세요.
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-        <button
-          type="button"
-          onClick={reset}
-          className="rounded-md bg-primary px-4 py-2 text-body-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-        >
+        <Button type="button" size="sm" onClick={reset}>
           다시 시도
-        </button>
+        </Button>
         <Link
           href="/"
-          className="rounded-md border border-border px-4 py-2 text-body-sm font-medium text-foreground transition-colors hover:bg-surface-2"
+          className="inline-flex h-12 items-center rounded-lg border border-border px-4 text-body-sm font-bold text-foreground transition-colors hover:bg-accent"
         >
           홈으로
         </Link>

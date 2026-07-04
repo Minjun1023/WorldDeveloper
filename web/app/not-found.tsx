@@ -13,7 +13,7 @@ export default function NotFound() {
       <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
         <Link
           href="/"
-          className="rounded-md bg-primary px-4 py-2 text-body-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          className="rounded-lg bg-primary px-4 py-2 text-body-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
         >
           홈으로
         </Link>

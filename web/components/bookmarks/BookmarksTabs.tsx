@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
 import { JobTrackerBoard } from "@/components/bookmarks/JobTrackerBoard";
@@ -22,7 +23,7 @@ type TabKey = (typeof TABS)[number]["key"];
 
 // 로그인 안 한 상태: 해당 탭의 실제 화면을 블러 처리해 뒤에 깔고, 그 위에 로그인 안내를 띄움.
 // backdrop 은 인증 호출/상호작용 없는 정적 스켈레톤(블러라 디테일은 불필요, 레이아웃만 재현).
-function LockedPreview({ backdrop }: { backdrop: React.ReactNode }) {
+function LockedPreview({ backdrop, tab }: { backdrop: React.ReactNode; tab: string }) {
   return (
     <div className="relative">
       <div className="pointer-events-none select-none blur-[3px]" aria-hidden="true">
@@ -32,8 +33,8 @@ function LockedPreview({ backdrop }: { backdrop: React.ReactNode }) {
         <div className="rounded-lg border border-border bg-surface p-10 text-center shadow-md">
           <p className="text-body-sm text-muted-foreground">로그인하면 이용할 수 있어요.</p>
           <Link
-            href="/signin?callbackUrl=/bookmarks"
-            className="mt-3 inline-block rounded-md bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground"
+            href={`/signin?callbackUrl=${encodeURIComponent(`/bookmarks?tab=${tab}`)}`}
+            className="mt-3 inline-block rounded-lg bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground"
           >
             로그인
           </Link>
@@ -83,8 +84,21 @@ function CardsSkeleton() {
   );
 }
 
+const TAB_KEYS = new Set<string>(TABS.map((t) => t.key));
+
 export function BookmarksTabs({ loggedIn }: { loggedIn: boolean }) {
-  const [tab, setTab] = useState<TabKey>("tracker");
+  const router = useRouter();
+  const pathname = usePathname();
+  const sp = useSearchParams();
+  // 탭을 URL(?tab=)과 동기화 — 딥링크(/bookmarks?tab=tracker)·로그인 복귀 시 탭 유지.
+  const urlTab = sp.get("tab");
+  const [tab, setTab] = useState<TabKey>(
+    urlTab && TAB_KEYS.has(urlTab) ? (urlTab as TabKey) : "tracker",
+  );
+  const selectTab = (key: TabKey) => {
+    setTab(key);
+    router.replace(`${pathname}?tab=${key}`, { scroll: false }); // 히스토리 오염 없이 URL 만 갱신
+  };
 
   return (
     <div className="space-y-4">
@@ -95,7 +109,7 @@ export function BookmarksTabs({ loggedIn }: { loggedIn: boolean }) {
             type="button"
             role="tab"
             aria-selected={tab === t.key}
-            onClick={() => setTab(t.key)}
+            onClick={() => selectTab(t.key)}
             className={cn(
               "relative -mb-px shrink-0 border-b-2 px-1 py-3 text-body-sm font-medium transition-colors",
               tab === t.key
@@ -109,11 +123,11 @@ export function BookmarksTabs({ loggedIn }: { loggedIn: boolean }) {
       </div>
 
       {tab === "tracker" &&
-        (loggedIn ? <JobTrackerBoard /> : <LockedPreview backdrop={<TrackerSkeleton />} />)}
+        (loggedIn ? <JobTrackerBoard /> : <LockedPreview tab="tracker" backdrop={<TrackerSkeleton />} />)}
       {tab === "all" &&
-        (loggedIn ? <SavedJobsList /> : <LockedPreview backdrop={<CardsSkeleton />} />)}
+        (loggedIn ? <SavedJobsList /> : <LockedPreview tab="all" backdrop={<CardsSkeleton />} />)}
       {tab === "companies" &&
-        (loggedIn ? <FavoriteCompaniesList /> : <LockedPreview backdrop={<CardsSkeleton />} />)}
+        (loggedIn ? <FavoriteCompaniesList /> : <LockedPreview tab="companies" backdrop={<CardsSkeleton />} />)}
       {tab === "recent" && <RecentJobsTab />}
     </div>
   );

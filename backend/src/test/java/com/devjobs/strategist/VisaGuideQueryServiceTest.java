@@ -35,6 +35,7 @@ class VisaGuideQueryServiceTest {
         return new JobDetailDto("j1", "Backend Engineer", null,
             new CompanyDto("acme", "Acme", List.of()),
             location, null, false, "full_time",
+            null, null, null, // department / relocationSupport / languageRequirement
             "JD", null, null, null, List.of(), null, null, null, null, "senior");
     }
 

@@ -40,4 +40,18 @@ public interface JobViewRepository extends JpaRepository<JobViewEntity, Long> {
         + "WHERE created_at > now() - make_interval(days => :days) "
         + "GROUP BY job_id ORDER BY c DESC LIMIT :limit", nativeQuery = true)
     List<Object[]> topJobsSince(@Param("days") int days, @Param("limit") int limit);
+
+    /** 로그인 유저의 최근 본(열람) 활성 공고(공고당 최신 1건, 최신순): [id, title, slug, display_name, ts(ms)]. */
+    @Query(value = """
+        SELECT j.id, j.title, j.company_slug, c.display_name,
+               EXTRACT(EPOCH FROM MAX(v.created_at)) * 1000 AS ts
+        FROM job_views v
+        JOIN jobs j ON j.id = v.job_id
+        LEFT JOIN companies c ON c.slug = j.company_slug
+        WHERE v.user_id = :uid AND j.is_active = true
+        GROUP BY j.id, j.title, j.company_slug, c.display_name
+        ORDER BY MAX(v.created_at) DESC
+        LIMIT :limit
+        """, nativeQuery = true)
+    List<Object[]> recentViewedByUser(@Param("uid") UUID uid, @Param("limit") int limit);
 }

@@ -30,8 +30,8 @@ export function JobSidebar({ job, loggedIn, companyJobCount }: {
           jobId={job.id}
           applyUrl={job.apply_url}
           loggedIn={loggedIn}
-          className="flex h-11 w-full items-center justify-center gap-1.5 rounded-[10px] bg-primary px-6 text-body-sm font-bold text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          disabledClassName="flex h-11 w-full items-center justify-center rounded-[10px] bg-surface-2 px-6 text-body-sm font-semibold text-muted-foreground"
+          className="flex h-11 w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-6 text-body-sm font-bold text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          disabledClassName="flex h-11 w-full items-center justify-center rounded-lg bg-surface-2 px-6 text-body-sm font-semibold text-muted-foreground"
         />
         <div className="mt-2 flex gap-2">
           <SaveJobButton jobId={job.id} loggedIn={loggedIn} />
@@ -63,7 +63,7 @@ export function JobSidebar({ job, loggedIn, companyJobCount }: {
           ) : (
             <span />
           )}
-          <span className="text-caption font-medium text-primary">회사 페이지 보기 →</span>
+          <span className="text-caption font-medium text-primary">더보기</span>
         </div>
       </Link>
 

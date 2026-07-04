@@ -20,7 +20,7 @@ export function MemberLandingRecommend() {
     return (
       <div className="rounded-lg border border-border bg-surface p-6 text-center">
         <p className="text-body-sm text-muted-foreground">프로필을 작성하면 맞춤 공고를 받을 수 있어요.</p>
-        <Link href="/me/profile" className="mt-3 inline-block rounded-md bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground">
+        <Link href="/me/profile" className="mt-3 inline-block rounded-lg bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground">
           프로필 작성하기
         </Link>
       </div>
@@ -36,7 +36,7 @@ export function MemberLandingRecommend() {
         href="/recommend"
         hrefLabel="추천 전체 보기"
       />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {visible.map((item, i) => (
           <InteractiveJobCard
             key={item.job.id}

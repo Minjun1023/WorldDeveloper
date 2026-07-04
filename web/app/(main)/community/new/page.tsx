@@ -18,7 +18,7 @@ export default async function CommunityNewPage({ searchParams }: { searchParams:
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         라운지로
       </Link>
-      <h1 className="text-h2">글쓰기</h1>
+      <h1 className="text-h1">글쓰기</h1>
 
       {session ? (
         <PostComposer
@@ -32,7 +32,7 @@ export default async function CommunityNewPage({ searchParams }: { searchParams:
           <p className="text-body-sm text-muted-foreground">로그인하면 글을 쓸 수 있어요.</p>
           <Link
             href="/signin?callbackUrl=/community/new"
-            className="mt-3 inline-block rounded-md bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground hover:opacity-90"
+            className="mt-3 inline-block rounded-lg bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground hover:opacity-90"
           >
             로그인
           </Link>

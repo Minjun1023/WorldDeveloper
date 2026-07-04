@@ -17,7 +17,7 @@ const NAV_LINKS = [
   { href: "/search", label: "공고 검색" },
   { href: "/recommend", label: "맞춤 추천" },
   { href: "/bookmarks", label: "북마크" },
-  { href: "/community", label: "커뮤니티" },
+  // 커뮤니티: 콘텐츠가 쌓일 때까지 내비에서 숨김(라우트는 유지 — 직접 URL 접근 가능).
   { href: "/companies", label: "기업" },
   { href: "/coach", label: "이력서 코치" },
 ];
@@ -94,13 +94,13 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
               <>
                 <Link
                   href="/signin"
-                  className="rounded-md border border-border px-3.5 py-2 text-[13px] font-medium text-primary transition-colors hover:bg-accent"
+                  className="rounded-lg border border-border px-3.5 py-2 text-[13px] font-medium text-primary transition-colors hover:bg-accent"
                 >
                   로그인
                 </Link>
                 <Link
                   href="/signup"
-                  className="rounded-md bg-primary px-3.5 py-2 text-[13px] font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+                  className="rounded-lg bg-primary px-3.5 py-2 text-[13px] font-semibold text-primary-foreground transition-opacity hover:opacity-90"
                 >
                   회원가입
                 </Link>
@@ -117,15 +117,23 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
               aria-expanded={open}
               aria-controls="mobile-nav"
               aria-label="메뉴"
-              className="flex h-9 w-9 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
+              className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
             >
               <Menu className="h-5 w-5" aria-hidden="true" />
             </button>
+            {/* 스크림 — 메뉴 열림 상태를 시각적으로 분명히 하고 바깥 탭으로 닫기 */}
+            {open && (
+              <div
+                className="fixed inset-0 z-40 bg-black/30"
+                onClick={() => setOpen(false)}
+                aria-hidden="true"
+              />
+            )}
             {open && (
               <div
                 id="mobile-nav"
                 role="menu"
-                className="absolute right-0 mt-2 w-56 rounded-lg border border-border bg-surface p-2 shadow-lg"
+                className="absolute right-0 z-50 mt-2 w-56 rounded-lg border border-border bg-surface p-2 shadow-lg"
               >
                 {NAV_LINKS.map((l) => {
                   const active = isActive(l.href);
@@ -157,6 +165,14 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
                     >
                       프로필 정보
                     </Link>
+                    <Link
+                      href="/bookmarks?tab=tracker"
+                      role="menuitem"
+                      onClick={() => setOpen(false)}
+                      className="block rounded-md px-3 py-2 text-body-sm text-muted-foreground hover:bg-muted hover:text-foreground"
+                    >
+                      지원 현황
+                    </Link>
                     <form action="/api/auth/logout" method="post">
                       <button
                         type="submit"
@@ -180,7 +196,7 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
                       href="/signup"
                       role="menuitem"
                       onClick={() => setOpen(false)}
-                      className="mt-1 block rounded-md bg-primary px-3 py-2 text-center text-body-sm font-bold text-primary-foreground"
+                      className="mt-1 block rounded-lg bg-primary px-3 py-2 text-center text-body-sm font-bold text-primary-foreground"
                     >
                       회원가입
                     </Link>

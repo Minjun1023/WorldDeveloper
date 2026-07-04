@@ -135,12 +135,8 @@ public class CommunityController {
     }
 
     private static String clientIp(HttpServletRequest request) {
-        String xff = request.getHeader("X-Forwarded-For");
-        if (xff != null && !xff.isBlank()) return xff.split(",")[0].trim();
-        String real = request.getHeader("X-Real-IP");
-        if (real != null && !real.isBlank()) return real.trim();
-        String addr = request.getRemoteAddr();
-        return addr == null ? "" : addr;
+        // XFF/X-Real-IP 수동 파싱 금지 — 위조 가능. forward-headers-strategy 반영값만 사용.
+        return com.devjobs.config.ClientIp.of(request);
     }
 
     private static String sha256Short(String s) {

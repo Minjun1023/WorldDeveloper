@@ -11,7 +11,18 @@ import type { Job } from "@/lib/types";
 
 // 검색/최신 공고 행 — Figma 카드: 아바타 + 한글제목·영문 + 🏢회사·📍위치·연봉 + 기술칩 + 우측 게시일·하트.
 // 전체 행 클릭 = 상세 이동(stretched link), 우측 하트 = 관심 저장.
-export function JobRow({ job, loggedIn = false, saved = false }: { job: Job; loggedIn?: boolean; saved?: boolean }) {
+export function JobRow({
+  job,
+  loggedIn = false,
+  saved = false,
+  extraLocations = 0,
+}: {
+  job: Job;
+  loggedIn?: boolean;
+  saved?: boolean;
+  /** 같은 회사·직함의 다른 지역 공고 수(인접 그룹핑) — "외 N개 지역"으로 접어 표기. */
+  extraLocations?: number;
+}) {
   const posted = postedRelativeLabel(job.posted_at);
   const loc = locationDisplayParts(job).join(" · ");
   const salary = formatSalaryKrw(job.salary) ?? formatSalary(job.salary);
@@ -27,10 +38,13 @@ export function JobRow({ job, loggedIn = false, saved = false }: { job: Job; log
       <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={44} />
 
       <div className="min-w-0 flex-1">
-        <h3 className="truncate text-body-sm font-bold text-foreground group-hover:text-primary">
+        {/* 영어 원제 반복은 제거(리스트 밀도·중복) — title 툴팁과 상세 페이지가 담당. */}
+        <h3
+          title={job.title_ko ? job.title : undefined}
+          className="truncate text-body-sm font-bold text-foreground group-hover:text-primary"
+        >
           {job.title_ko ?? job.title}
         </h3>
-        {job.title_ko && <p className="truncate text-caption text-muted-foreground">{job.title}</p>}
 
         {/* 회사·위치·연봉 한 줄 고정: 줄바꿈 없이, 길면 위치만 말줄임. */}
         <div className="mt-2 flex min-w-0 items-center gap-x-3 text-caption text-muted-foreground">
@@ -42,6 +56,11 @@ export function JobRow({ job, loggedIn = false, saved = false }: { job: Job; log
             <span className="flex min-w-0 items-center gap-1">
               <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
               <span className="truncate">{loc}</span>
+              {extraLocations > 0 && (
+                <span className="shrink-0 whitespace-nowrap text-muted-foreground">
+                  외 {extraLocations}개 지역
+                </span>
+              )}
             </span>
           )}
           {salary && <span className="shrink-0 font-bold tabular-nums text-primary">{salary}</span>}

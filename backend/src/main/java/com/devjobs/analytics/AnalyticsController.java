@@ -46,6 +46,15 @@ public class AnalyticsController {
         return ResponseEntity.noContent().build();
     }
 
+    /** 로그인 유저의 최근 본 공고(계정 기준). 비로그인은 401 → web 은 localStorage 로 폴백. */
+    @GetMapping("/my-recent")
+    public ResponseEntity<?> myRecent(@AuthenticationPrincipal String userId) {
+        if (userId == null || "anonymousUser".equals(userId)) {
+            return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
+        }
+        return ResponseEntity.ok(analytics.recentViews(UUID.fromString(userId), 30));
+    }
+
     /** 분석 퍼널 요약(운영자 전용 — app.admin-emails 화이트리스트). */
     @GetMapping("/summary")
     public ResponseEntity<?> summary(@AuthenticationPrincipal String userId) {

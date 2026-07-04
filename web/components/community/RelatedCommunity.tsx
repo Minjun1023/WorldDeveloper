@@ -41,44 +41,36 @@ export function RelatedCommunity({
     "/community/new" +
     (writeParams && Object.keys(writeParams).length ? `?${new URLSearchParams(writeParams).toString()}` : "");
 
+  // 관련 글이 없으면 섹션 자체를 렌더하지 않는다 — 빈 커뮤니티 박스("아직 글이 없어요")는
+  // 신규 방문자에게 죽은 기능 신호라서, 콘텐츠가 생기면 자동으로 나타나는 쪽이 낫다.
+  if (items === null || items.length === 0) return null;
+
   return (
     <section className="rounded-xl border border-border bg-surface p-5">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-h3">
           {title}
-          {items && items.length > 0 && <span className="ml-1.5 text-muted-foreground">{items.length}</span>}
+          <span className="ml-1.5 text-muted-foreground">{items.length}</span>
         </h2>
         <Link href={writeHref} className="shrink-0 text-body-sm font-medium text-primary hover:underline">
           {writeLabel}
         </Link>
       </div>
 
-      {items === null ? (
-        <p className="mt-3 text-body-sm text-muted-foreground">불러오는 중…</p>
-      ) : items.length === 0 ? (
-        <p className="mt-3 text-body-sm text-muted-foreground">
-          아직 글이 없어요.{" "}
-          <Link href={writeHref} className="font-medium text-primary hover:underline">
-            첫 글
-          </Link>
-          을 남겨보세요.
-        </p>
-      ) : (
-        <ul className="mt-3 divide-y divide-border">
-          {items.slice(0, 5).map((p) => (
-            <li key={p.id} className="py-2.5 first:pt-0 last:pb-0">
-              <Link href={`/community/${p.id}`} className="group block">
-                <span className="block truncate text-body-sm font-medium text-foreground group-hover:text-primary">
-                  {p.title}
-                </span>
-                <span className="mt-0.5 block text-caption text-muted-foreground">
-                  {p.author_handle} · 추천 {p.score} · 댓글 {p.comment_count}
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
+      <ul className="mt-3 divide-y divide-border">
+        {items.slice(0, 5).map((p) => (
+          <li key={p.id} className="py-2.5 first:pt-0 last:pb-0">
+            <Link href={`/community/${p.id}`} className="group block">
+              <span className="block truncate text-body-sm font-medium text-foreground group-hover:text-primary">
+                {p.title}
+              </span>
+              <span className="mt-0.5 block text-caption text-muted-foreground">
+                {p.author_handle} · 추천 {p.score} · 댓글 {p.comment_count}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

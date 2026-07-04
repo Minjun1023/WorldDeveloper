@@ -102,6 +102,7 @@ export function ForgotPasswordForm() {
         <label htmlFor="reset-code" className="text-body-sm font-medium">인증번호</label>
         <Input
           id="reset-code"
+          autoFocus
           inputMode="numeric"
           autoComplete="one-time-code"
           maxLength={6}
@@ -115,7 +116,8 @@ export function ForgotPasswordForm() {
         <label htmlFor="reset-pw" className="text-body-sm font-medium">새 비밀번호</label>
         <PasswordInput
           id="reset-pw"
-          placeholder="영문 대/소문자, 숫자, 특수문자 조합 10자 이상"
+          autoComplete="new-password"
+          placeholder="영문 대·소문자, 숫자 포함 10자 이상"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="h-11"
@@ -126,6 +128,7 @@ export function ForgotPasswordForm() {
         <label htmlFor="reset-confirm" className="text-body-sm font-medium">새 비밀번호 확인</label>
         <PasswordInput
           id="reset-confirm"
+          autoComplete="new-password"
           placeholder="새 비밀번호를 다시 입력"
           value={confirm}
           onChange={(e) => setConfirm(e.target.value)}

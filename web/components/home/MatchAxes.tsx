@@ -39,11 +39,12 @@ export function MatchAxes() {
           검색은 키워드로 찾고, 추천은 내 프로필을 5가지로 매칭합니다. 비자 스폰서십은 기본으로 거르고,
           시니어리티는 항상 반영해 ‘지원할 만한지’부터 확실하게 합니다.
         </p>
-        <div className="mt-8 grid gap-3 sm:grid-cols-2">
+        {/* 5개(홀수)를 2열 그리드에 넣으면 마지막 칩이 홀로 남아 어색 — 유동 칩(flex-wrap)으로. */}
+        <div className="mt-8 flex flex-wrap gap-2.5">
           {AXES.map((a) => (
             <div
               key={a.label}
-              className="rounded-lg border border-border bg-surface px-4 py-3.5 text-body"
+              className="rounded-full border border-border bg-surface px-4 py-2.5 text-body-sm"
             >
               <span className="font-bold text-primary">{a.label}</span>
               <span className="text-muted-foreground"> · {a.desc}</span>

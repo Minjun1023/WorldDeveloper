@@ -31,8 +31,12 @@ public class FeedbackService {
 
     @Transactional
     public void save(UUID userId, String jobId) {
-        if (!savedRepo.existsById(new SavedJobEntity.Key(userId, jobId))) {
-            savedRepo.save(new SavedJobEntity(userId, jobId));
+        try {
+            if (!savedRepo.existsById(new SavedJobEntity.Key(userId, jobId))) {
+                savedRepo.save(new SavedJobEntity(userId, jobId));
+            }
+        } catch (org.springframework.dao.DataIntegrityViolationException e) {
+            // exists→save 사이 동시 요청(더블클릭)이 먼저 저장한 경우 — 이미 저장됨이 목표 상태라 멱등 처리.
         }
     }
 

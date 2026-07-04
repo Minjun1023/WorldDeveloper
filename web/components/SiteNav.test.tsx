@@ -15,13 +15,14 @@ describe("SiteNav", () => {
       ["공고 검색", "/search"],
       ["맞춤 추천", "/recommend"],
       ["북마크", "/bookmarks"],
-      ["커뮤니티", "/community"],
       ["기업", "/companies"],
       ["이력서 코치", "/coach"],
     ];
     for (const [name, href] of links) {
       expect(screen.getByRole("link", { name })).toHaveAttribute("href", href);
     }
+    // 커뮤니티: 콘텐츠가 쌓일 때까지 내비에서 숨김(라우트는 유지).
+    expect(screen.queryByRole("link", { name: "커뮤니티" })).not.toBeInTheDocument();
   });
 
   it("비로그인 시 로그인·회원가입 CTA 를 보여준다", () => {

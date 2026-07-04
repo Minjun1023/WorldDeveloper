@@ -50,6 +50,22 @@ public class AnalyticsService {
         viewRepo.record(jobId, viewerKey, userId);
     }
 
+    /** 로그인 유저의 최근 본 공고(계정 기준). web RecentJob 형태로 반환. */
+    public record RecentViewedJob(String id, String title, String company, String slug, long ts) {}
+
+    @Transactional(readOnly = true)
+    public List<RecentViewedJob> recentViews(UUID userId, int limit) {
+        List<RecentViewedJob> out = new ArrayList<>();
+        for (Object[] r : viewRepo.recentViewedByUser(userId, limit)) {
+            String slug = (String) r[2];
+            String name = (String) r[3];
+            out.add(new RecentViewedJob(
+                (String) r[0], (String) r[1], name != null ? name : slug, slug,
+                ((Number) r[4]).longValue()));
+        }
+        return out;
+    }
+
     @Transactional(readOnly = true)
     public Summary summary() {
         List<Object[]> top = viewRepo.topJobsSince(WINDOW_DAYS, TOP_LIMIT);

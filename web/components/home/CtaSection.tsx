@@ -7,7 +7,7 @@ export function CtaSection({ loggedIn = false }: { loggedIn?: boolean }) {
 
   return (
     <section className="rounded-xl bg-primary px-7 py-14 text-center sm:px-12">
-      <h2 className="text-2xl font-extrabold tracking-tight text-white sm:text-[1.75rem]">
+      <h2 className="text-h2 text-white sm:text-h1">
         지금 바로 시작하세요
       </h2>
       <p className="mx-auto mt-3 max-w-md text-body-sm leading-relaxed text-white/85">
@@ -16,13 +16,13 @@ export function CtaSection({ loggedIn = false }: { loggedIn?: boolean }) {
       <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
         <Link
           href={primaryHref}
-          className="inline-flex items-center justify-center rounded-[10px] bg-white px-6 py-3 text-body-sm font-bold text-primary transition-opacity hover:opacity-90"
+          className="inline-flex items-center justify-center rounded-lg bg-white px-6 py-3 text-body-sm font-bold text-primary transition-opacity hover:opacity-90"
         >
           {primaryLabel}
         </Link>
         <Link
           href="/search"
-          className="inline-flex items-center justify-center rounded-[10px] border border-white/50 bg-transparent px-6 py-3 text-body-sm font-medium text-white transition-colors hover:bg-white/10"
+          className="inline-flex items-center justify-center rounded-lg border border-white/50 bg-transparent px-6 py-3 text-body-sm font-medium text-white transition-colors hover:bg-white/10"
         >
           공고 둘러보기
         </Link>

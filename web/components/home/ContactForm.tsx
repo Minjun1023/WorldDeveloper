@@ -34,6 +34,7 @@ export function ContactForm() {
         </label>
         <Input
           id="contact-email"
+          autoComplete="email"
           type="email"
           required
           value={email}

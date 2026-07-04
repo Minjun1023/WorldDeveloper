@@ -9,8 +9,14 @@ import { OAuthButtons } from "@/components/auth/OAuthButtons";
 // 빌드 타임 env(미설정)로 localhost 가 박히므로, 동적 렌더 + 함수 내부에서 런타임 env 로 읽는다.
 export const dynamic = "force-dynamic";
 
-export default function SignUpPage() {
+export default function SignUpPage({
+  searchParams,
+}: {
+  searchParams: { callbackUrl?: string };
+}) {
   const BACKEND_PUBLIC_URL = process.env.BACKEND_PUBLIC_URL ?? "http://localhost:8080";
+  // 로그인과 동일하게 callbackUrl 을 존중 — 공고 상세에서 가입으로 갈아탄 유저가 보던 곳으로 돌아가게.
+  const callbackUrl = searchParams.callbackUrl;
   return (
     <div className="grid min-h-screen md:grid-cols-2">
       <AuthBrandPanel
@@ -24,11 +30,11 @@ export default function SignUpPage() {
         <div className="w-full max-w-sm">
           <h1 className="text-h1">회원가입</h1>
           <p className="mt-2 text-body-sm text-muted-foreground">
-            EU 테크 커리어를 위한 첫걸음을 시작하세요.
+            해외 테크 커리어를 위한 첫걸음을 시작하세요.
           </p>
 
           <div className="mt-6">
-            <CredentialsForm mode="register" />
+            <CredentialsForm mode="register" callbackUrl={callbackUrl} />
           </div>
 
           <div className="my-5 flex items-center gap-3 text-caption text-muted-foreground">

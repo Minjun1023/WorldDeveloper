@@ -6,6 +6,9 @@ import {
 } from "@/lib/company-facts-format";
 import { companyBlurb } from "@/lib/company-blurb";
 import { companyProfile } from "@/lib/company-profiles";
+import { COMPANY_SIZE, SIZE_LABEL } from "@/lib/company-size";
+import { USD_TO_KRW } from "@/lib/salary";
+import type { CompanyH1bWage } from "@/lib/types";
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -24,15 +27,25 @@ export function CompanyInfo({
   slug,
   tags,
   location,
+  h1bWage,
 }: {
   slug: string;
   tags?: string[];
   location?: string;
+  h1bWage?: CompanyH1bWage | null;
 }) {
   const profile = companyProfile(slug);
   const facts = COMPANY_FACTS[slug];
 
   const hqText = headquartersLabel(facts?.hq, facts?.country, profile?.location);
+
+  // 직원 규모: 정확 숫자(Wikidata) 우선, 없으면 밴드(company-size) 폴백 → 316곳 전부 표시.
+  const sizeBand = COMPANY_SIZE[slug];
+  const sizeText = facts?.employees
+    ? employeesLabel(facts.employees, facts.employeesYear)
+    : sizeBand
+      ? SIZE_LABEL[sizeBand]
+      : null;
 
   const hasFacts = Boolean(
     facts && (facts.employees || facts.industry || facts.founded || facts.hq),
@@ -44,7 +57,14 @@ export function CompanyInfo({
       ? companyBlurb(slug, { tags, location: profile?.location ?? location })
       : null;
 
-  if (!profile?.description && !hasFacts && !hqText && !fallbackBlurb) return null;
+  // H-1B 신고 연봉(중앙값) — "$264,514 (약 3.7억 원)" 형태. 데이터 없으면 행 생략.
+  const h1bText = h1bWage
+    ? `$${h1bWage.median_wage.toLocaleString()} (약 ${((h1bWage.median_wage * USD_TO_KRW) / 1e8).toFixed(1)}억 원)`
+    : null;
+
+  if (!profile?.description && !hasFacts && !hqText && !fallbackBlurb && !sizeText && !h1bText) {
+    return null;
+  }
 
   const description = profile?.description ?? fallbackBlurb;
 
@@ -60,11 +80,17 @@ export function CompanyInfo({
 
       <dl className="mt-4 grid gap-2 sm:grid-cols-2">
         {facts?.industry && <Row label="업종">{industryLabel(facts.industry)}</Row>}
-        {facts?.employees ? (
-          <Row label="직원 규모">{employeesLabel(facts.employees, facts.employeesYear)}</Row>
-        ) : null}
+        {sizeText && <Row label="기업 규모">{sizeText}</Row>}
         {facts?.founded && <Row label="설립">{facts.founded}년</Row>}
         {hqText && <Row label="본사">{hqText}</Row>}
+        {h1bText && h1bWage && (
+          <Row label="H-1B 연봉">
+            <span className="font-semibold text-primary">{h1bText}</span>
+            <span className="ml-1.5 text-caption text-muted-foreground">
+              중앙값 · 미 노동부 공시 {h1bWage.cases}건
+            </span>
+          </Row>
+        )}
         {facts?.website && (
           <Row label="웹사이트">
             <a

@@ -11,6 +11,8 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import javax.crypto.SecretKey;
 import io.jsonwebtoken.security.Keys;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -23,6 +25,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
  */
 @Component
 public class JwtAuthFilter extends OncePerRequestFilter {
+
+    private static final Logger log = LoggerFactory.getLogger(JwtAuthFilter.class);
 
     private final SecretKey key;
 
@@ -43,8 +47,10 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     var auth = new UsernamePasswordAuthenticationToken(userId, null, List.of());
                     SecurityContextHolder.getContext().setAuthentication(auth);
                 }
-            } catch (Exception ignored) {
-                // 무효 토큰 → 인증 미설정
+            } catch (Exception e) {
+                // 무효 토큰 → 인증 미설정(익명 진행). 완전 무음이면 시크릿 불일치·만료 폭주 같은
+                // 운영 문제를 눈치챌 수 없어 debug 로 남긴다(토큰 원문은 로깅하지 않음).
+                log.debug("invalid JWT ({}): {}", e.getClass().getSimpleName(), e.getMessage());
             }
         }
         chain.doFilter(request, response);

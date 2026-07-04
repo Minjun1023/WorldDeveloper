@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils";
 // 공고 상세/모바일바 저장 토글 — 아이콘만(하트). 공유 스토어(useSaveJob)를 단일 소스로 사용해
 // 상세에서 저장하면 검색·추천 하트도 즉시 동기화된다(새로고침 불필요).
 const ICON_BTN =
-  "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function SaveJobButton({ jobId, loggedIn, className }: { jobId: string; loggedIn: boolean; className?: string }) {
   const { saved, toggle } = useSaveJob(jobId, loggedIn);

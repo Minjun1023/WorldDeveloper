@@ -36,15 +36,17 @@ _COMPANY_UPSERT = """
 
 _JOB_UPSERT = """
     INSERT INTO jobs (
-        id, source, title, company_slug, location, is_remote, employment_type,
+        id, source, title, company_slug, location, country, city, is_remote, employment_type,
+        department, relocation_support, language_requirement,
         description, description_text, apply_url, posted_at, closes_at, tags,
         salary_min, salary_max, salary_currency, salary_period,
         salary_min_usd, salary_max_usd, experience_years, seniority, visa_status, visa_evidence,
         remote_eligibility, remote_evidence, embedding,
         first_seen_at, last_seen_at, is_active
     ) VALUES (
-        %(id)s, %(source)s, %(title)s, %(company_slug)s, %(location)s, %(is_remote)s,
-        %(employment_type)s, %(description)s, %(description_text)s, %(apply_url)s,
+        %(id)s, %(source)s, %(title)s, %(company_slug)s, %(location)s, %(country)s, %(city)s, %(is_remote)s,
+        %(employment_type)s, %(department)s, %(relocation_support)s, %(language_requirement)s,
+        %(description)s, %(description_text)s, %(apply_url)s,
         %(posted_at)s, %(closes_at)s, %(tags)s,
         %(salary_min)s, %(salary_max)s, %(salary_currency)s, %(salary_period)s,
         %(salary_min_usd)s, %(salary_max_usd)s, %(experience_years)s, %(seniority)s,
@@ -55,8 +57,13 @@ _JOB_UPSERT = """
     ON CONFLICT (id) DO UPDATE SET
         title           = EXCLUDED.title,
         location        = EXCLUDED.location,
+        country         = EXCLUDED.country,
+        city            = EXCLUDED.city,
         is_remote       = EXCLUDED.is_remote,
         employment_type = EXCLUDED.employment_type,
+        department      = EXCLUDED.department,
+        relocation_support   = EXCLUDED.relocation_support,
+        language_requirement = EXCLUDED.language_requirement,
         description     = EXCLUDED.description,
         description_text= EXCLUDED.description_text,
         apply_url       = EXCLUDED.apply_url,
@@ -84,6 +91,11 @@ _JOB_UPSERT = """
 def _job_params(job: dict[str, Any]) -> dict[str, Any]:
     """upsert 파라미터 정규화 — jsonb 컬럼(evidence)을 Json 래핑."""
     p = dict(job)
+    p.setdefault("country", None)  # 구버전 호출부 호환(named param 누락 방지)
+    p.setdefault("city", None)
+    p.setdefault("department", None)
+    p.setdefault("relocation_support", None)
+    p.setdefault("language_requirement", None)
     p["visa_evidence"] = Json(job.get("visa_evidence") or [])
     p["remote_evidence"] = Json(job.get("remote_evidence") or [])
     return p
@@ -162,6 +174,24 @@ def sponsor_company_slugs(conn: psycopg.Connection) -> set[str]:
         "SELECT DISTINCT company_slug FROM jobs WHERE is_active = true AND visa_status = 'sponsors'"
     ).fetchall()
     return {r[0] for r in rows if r[0]}
+
+
+def fetch_sponsor_jobs_for_companies(
+    conn: psycopg.Connection, slugs: list[str]
+) -> list[dict[str, Any]]:
+    """이미 sponsors 로 분류된 활성 공고 중 주어진 회사들의 것(명부 근거 stamp 대상)."""
+    if not slugs:
+        return []
+    rows = conn.execute(
+        "SELECT id, company_slug, location, is_remote, visa_evidence FROM jobs "
+        "WHERE is_active = true AND visa_status = 'sponsors' AND company_slug = ANY(%s)",
+        (list(slugs),),
+    ).fetchall()
+    return [
+        {"id": r[0], "company_slug": r[1], "location": r[2],
+         "is_remote": r[3], "visa_evidence": r[4] or []}
+        for r in rows
+    ]
 
 
 def update_visa(conn: psycopg.Connection, job_id: str, status: str, evidence: list[str]) -> None:

@@ -1,3 +1,8 @@
+export const metadata = {
+  title: "AI 이력서 코치 | WorldDev",
+  description: "해외 지원용 이력서를 공고에 맞춰 AI 가 코치해드려요.",
+};
+
 import { CoachShell } from "@/components/coach/CoachShell";
 import { SiteNav } from "@/components/SiteNav";
 import { getSession } from "@/lib/session-server";

@@ -62,12 +62,8 @@ const config: Config = {
           "Consolas",
           "monospace",
         ],
-        serif: [
-          "var(--font-serif)",
-          "Noto Serif KR",
-          "Nanum Myeongjo",
-          "serif",
-        ],
+        // serif 웹폰트(Noto Serif KR) 로드는 제거 — 사용처 없음. 시스템 명조 폴백만 유지.
+        serif: ["Nanum Myeongjo", "serif"],
       },
       fontSize: {
         // DESIGN.md 타입 스케일 — 헤드라인 타이트 트래킹(-0.02 ~ -0.04em)

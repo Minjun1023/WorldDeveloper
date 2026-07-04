@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import { useEffect, useId, useRef } from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export function Dialog({
@@ -52,13 +53,9 @@ export function Dialog({
       </div>
       <div tabIndex={0} className="max-h-[60vh] overflow-y-auto p-4">{children}</div>
       <div className="flex justify-end border-t border-border p-4">
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-md bg-primary px-4 py-2 text-body-sm font-medium text-primary-foreground hover:opacity-90"
-        >
+        <Button type="button" size="sm" onClick={onClose}>
           닫기
-        </button>
+        </Button>
       </div>
     </dialog>
   );

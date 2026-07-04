@@ -46,6 +46,8 @@ def _to_posting(token: str, item: dict, detail: dict | None) -> JobPosting | Non
         description=description,
         apply_url=apply_url,
         posted_at=str(item.get("releasedDate", "") or ""),
+        # function(직군 분류, 예: "Software Engineering") — 부서 정보로 활용.
+        department=(item.get("function") or {}).get("label", "") or "",
     )
 
 

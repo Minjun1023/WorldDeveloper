@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { CATEGORIES, SOURCE_TYPES } from "@/lib/community";
 import { cn } from "@/lib/utils";
 
@@ -200,13 +201,9 @@ export function PostComposer({
       {error && <p className="text-body-sm text-destructive">{error}</p>}
 
       <div className="flex items-center gap-3">
-        <button
-          type="submit"
-          disabled={!canSubmit}
-          className="rounded-lg bg-primary px-5 py-2.5 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-40"
-        >
+        <Button type="submit" size="sm" disabled={!canSubmit}>
           {pending ? "올리는 중…" : "올리기"}
-        </button>
+        </Button>
         <button type="button" onClick={() => router.back()} className="text-body-sm text-muted-foreground hover:text-foreground">
           취소
         </button>

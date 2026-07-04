@@ -1,5 +1,7 @@
 "use client";
 
+import { Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { ProfileFields } from "@/components/profile/ProfileFields";
@@ -18,7 +20,8 @@ const EMPTY: RecommendProfile = {
   preferred_locations: [],
 };
 
-export function ProfileEditor() {
+export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
+  const router = useRouter();
   const [profile, setProfile] = useState<RecommendProfile>(EMPTY);
   const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -45,6 +48,16 @@ export function ProfileEditor() {
     setError(null);
   }
 
+  // 저장 안 된 변경이 있을 때 탭 닫기/새로고침 이탈 경고 (클라 내비게이션은 App Router 제약상 미커버).
+  useEffect(() => {
+    if (!dirty) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [dirty]);
+
   async function save() {
     setSaving(true);
     setSaved(false);
@@ -67,6 +80,11 @@ export function ProfileEditor() {
       if (h) setCommunityHandle(h);
       setSaved(true);
       setDirty(false);
+      // 환영 모드(가입 직후): 저장 즉시 첫 가치 경험(맞춤 추천)으로 이동.
+      if (welcome) {
+        router.push("/recommend");
+        return;
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -78,6 +96,30 @@ export function ProfileEditor() {
 
   return (
     <div className="space-y-6">
+      {/* 가입 직후 환영 배너 — 프로필의 '왜'를 설명하고, 건너뛸 자유도 함께 준다. */}
+      {welcome && (
+        <div className="flex flex-col gap-3 rounded-2xl border border-primary/20 bg-primary-tint px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Sparkles className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <div>
+              <p className="text-body font-bold text-foreground">환영합니다! 프로필을 채우면 5축 매칭 추천이 시작돼요</p>
+              <p className="mt-0.5 text-body-sm text-muted-foreground">
+                스택·지역 정도만 넣어도 충분해요. 저장하면 바로 맞춤 공고를 보여드려요.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => router.push("/search")}
+            className="shrink-0 self-start text-body-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline sm:self-center"
+          >
+            나중에 하고 둘러보기
+          </button>
+        </div>
+      )}
+
       <header className="flex flex-wrap items-end justify-end gap-4">
         {ready && (
           <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-2.5 shadow-sm">

@@ -48,6 +48,8 @@ services:
     environment:
       DATABASE_URL: postgresql://devjobs:${POSTGRES_PASSWORD}@postgres:5432/devjobs
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      # JSearch(RapidAPI) 보강 소스 — 없으면 해당 소스만 비활성
+      RAPIDAPI_KEY: ${RAPIDAPI_KEY:-}
       ETL_ENABLED: "true"          # 스케줄러 on
       ETL_TIMEZONE: Asia/Seoul     # 매일 00:00 KST
       # 부트스트랩: 새 환경을 첫 자정 기다리지 않고 바로 채우려면 .env 에 ETL_RUN_ON_START=1

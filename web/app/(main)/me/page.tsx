@@ -6,7 +6,7 @@ export default function MeHomePage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-h2">내 정보</h1>
+        <h1 className="text-h1">내 정보</h1>
         <p className="mt-1 text-body-sm text-muted-foreground">추천 정확도를 높이는 프로필을 관리하세요.</p>
       </div>
 
