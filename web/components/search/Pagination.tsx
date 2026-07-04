@@ -9,7 +9,7 @@ import { useUpdateQuery } from "@/lib/use-update-query";
 const BLOCK = 5; // 페이지 번호 버튼 묶음 단위(5개씩 노출)
 
 const ARROW =
-  "inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40";
+  "inline-flex h-10 w-10 items-center justify-center rounded-lg border border-border text-muted-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40";
 
 export function Pagination({
   page,
@@ -65,7 +65,7 @@ export function Pagination({
             aria-current={p === current ? "page" : undefined}
             onClick={() => goTo(p)}
             className={cn(
-              "h-9 w-9 rounded-lg border text-body-sm font-medium tabular-nums transition-colors",
+              "h-10 w-10 rounded-lg border text-body-sm font-medium tabular-nums transition-colors",
               p === current
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border text-foreground hover:bg-accent",

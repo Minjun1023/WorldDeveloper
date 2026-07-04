@@ -16,8 +16,8 @@ import json
 import sys
 from pathlib import Path
 
-# UK 스크립트의 정밀 정규화 매칭 재사용(DRY). 둘 다 main()에서 사용.
-from verify_uk_sponsors import match_company, normalize
+# 공유 매칭 모듈(이름 + 위치 disambiguation + confidence). UK/IND 와 동일.
+from sponsor_match import company_names, find_candidates
 
 REGISTRY_PATH = Path(__file__).parent.parent / "dev_jobs_core" / "data" / "companies.json"
 
@@ -30,16 +30,18 @@ def _find_col(fieldnames: list[str], *needles: str) -> str | None:
     return None
 
 
-def parse_approved_employers(fp) -> list[str]:
-    """CSV(파일객체)에서 승인 이력(initial+continuing approval 합 >= 1) 있는 고용주명 목록.
+def parse_approved_employers(fp) -> list[tuple[str, str]]:
+    """CSV(파일객체)에서 승인 이력(initial+continuing approval 합 >= 1) 있는 (고용주명, 위치).
 
-    연도별 헤더 변형에 견디도록 컬럼명을 부분일치로 탐지한다.
+    연도별 헤더 변형에 견디도록 컬럼명을 부분일치로 탐지한다. 위치=City + State.
     """
     reader = csv.DictReader(fp)
     fields = reader.fieldnames or []
     name_col = _find_col(fields, "employer") or _find_col(fields, "petitioner")
     init_col = _find_col(fields, "initial", "approval")
     cont_col = _find_col(fields, "continuing", "approval")
+    city_col = _find_col(fields, "city")
+    state_col = _find_col(fields, "state")
     if not name_col:
         raise SystemExit(f"고용주명 컬럼을 못 찾음. 헤더: {fields}")
     if not init_col and not cont_col:
@@ -61,7 +63,10 @@ def parse_approved_employers(fp) -> list[str]:
         if approvals >= 1:
             name = (row.get(name_col) or "").strip()
             if name:
-                out.append(name)
+                loc = " ".join(
+                    (row.get(c) or "").strip() for c in (city_col, state_col) if c
+                ).strip()
+                out.append((name, loc))
     return out
 
 
@@ -69,33 +74,25 @@ def main():
     if len(sys.argv) < 2:
         raise SystemExit("사용: python scripts/verify_h1b_sponsors.py /path/to/h1b_datahub.csv")
     with open(sys.argv[1], newline="", encoding="utf-8", errors="replace") as f:
-        employers = parse_approved_employers(f)
+        register = parse_approved_employers(f)
 
     with open(REGISTRY_PATH, encoding="utf-8") as f:
         data = json.load(f)
     cos = {k: v for k, v in data.items() if not k.startswith("_")}
 
-    emp_index: dict[str, str] = {}
-    for e in employers:
-        emp_index.setdefault(normalize(e), e)
-
     hits = []
     for name, info in cos.items():
-        matched = None
-        for brand in {name, info.get("token", "")}:
-            for e in emp_index.values():
-                if match_company(brand, e):
-                    matched = e
-                    break
-            if matched:
-                break
-        if matched:
-            hits.append((name, info.get("ats"), matched, info.get("h1b_sponsor") is True))
+        cands = find_candidates(company_names(name, info), info.get("hq"), register)
+        if cands:
+            hits.append((name, info, cands[0]))
 
     print(f"=== H-1B 매칭 후보: {len(hits)}/{len(cos)} (검토 후 companies.json 반영) ===")
-    for name, ats, emp, already in sorted(hits):
-        flag = " [이미 플래그됨]" if already else ""
-        print(f"  {name:<16} [{ats}] -> {emp}{flag}")
+    print("    confidence: high=이름+위치일치 / medium=단독 이름일치 / low=동명 모호(검토 필수)")
+    for name, info, c in sorted(hits, key=lambda h: ({"high": 0, "medium": 1, "low": 2}[h[2].confidence], h[0])):
+        already = " [이미 플래그됨]" if info.get("h1b_sponsor") is True else ""
+        dom = f" <{info['domain']}>" if info.get("domain") else ""
+        loc = f" @{c.loc}" if c.loc else ""
+        print(f"  [{c.confidence:<6}] {name:<16}{dom} [{info.get('ats')}] -> {c.org}{loc}{already}")
 
 
 if __name__ == "__main__":

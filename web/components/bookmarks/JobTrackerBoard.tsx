@@ -17,6 +17,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { LoadError } from "@/components/ui/LoadError";
 import type { Job } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -53,6 +54,8 @@ function columnKeyForStatus(status: string | null | undefined): string {
 
 export function JobTrackerBoard() {
   const [jobs, setJobs] = useState<Job[] | null>(null);
+  const [loadError, setLoadError] = useState(false); // 실패를 '빈 보드'로 위장하지 않기 위한 구분
+  const [reloadKey, setReloadKey] = useState(0);
   const [statusByJob, setStatusByJob] = useState<Record<string, string | null>>({});
   // 드래그 중인 공고 id — DragOverlay(포털)로 떠 있는 카드를 그린다. overflow 클리핑을 벗어나기 위함.
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -65,21 +68,29 @@ export function JobTrackerBoard() {
 
   useEffect(() => {
     let alive = true;
+    setJobs(null);
+    setLoadError(false);
     Promise.all([
-      fetch("/api/me/saved").then((r) => (r.ok ? r.json() : [])).catch(() => []),
+      // 저장 공고 로드 실패는 '빈 보드'가 아니라 오류로 표시해야 한다(카드가 통째로 사라져 보임).
+      fetch("/api/me/saved").then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))),
+      // 지원 상태는 부가 정보 — 실패해도 보드는 띄운다(카드가 풀에 모일 뿐).
       fetch("/api/me/applications").then((r) => (r.ok ? r.json() : null)).catch(() => null),
-    ]).then(([saved, apps]) => {
-      if (!alive) return;
-      setJobs(Array.isArray(saved) ? saved : []);
-      const map: Record<string, string | null> = {};
-      const items = (apps as { items?: { job_id: string; status: string }[] } | null)?.items;
-      if (Array.isArray(items)) for (const a of items) map[a.job_id] = a.status;
-      setStatusByJob(map);
-    });
+    ])
+      .then(([saved, apps]) => {
+        if (!alive) return;
+        setJobs(Array.isArray(saved) ? saved : []);
+        const map: Record<string, string | null> = {};
+        const items = (apps as { items?: { job_id: string; status: string }[] } | null)?.items;
+        if (Array.isArray(items)) for (const a of items) map[a.job_id] = a.status;
+        setStatusByJob(map);
+      })
+      .catch(() => {
+        if (alive) setLoadError(true);
+      });
     return () => {
       alive = false;
     };
-  }, []);
+  }, [reloadKey]);
 
   function handleDragEnd(e: DragEndEvent) {
     setActiveId(null);
@@ -107,6 +118,9 @@ export function JobTrackerBoard() {
     fetch(`/api/me/saved/${encodeURIComponent(jobId)}`, { method: "DELETE" }).catch(() => {});
   }
 
+  if (loadError) {
+    return <LoadError message="공고 관리 보드를 불러오지 못했어요" onRetry={() => setReloadKey((k) => k + 1)} />;
+  }
   if (jobs === null) return <p className="text-body-sm text-muted-foreground">불러오는 중…</p>;
 
   const poolJobs = jobs.filter((j) => columnKeyForStatus(statusByJob[j.id]) === POOL);
@@ -194,10 +208,20 @@ const CARD_CHROME = "rounded-lg border border-border bg-surface p-3";
 
 function CardContent({ job }: { job: Job }) {
   return (
-    <div className="flex items-center gap-2 pr-5">
+    <div className={cn("flex items-center gap-2 pr-5", job.closed && "opacity-60")}>
       <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={28} />
       <div className="min-w-0">
-        <div className="truncate text-body-sm font-semibold text-foreground">{job.title_ko ?? job.title}</div>
+        <div className="flex items-center gap-1.5">
+          <span className="truncate text-body-sm font-semibold text-foreground">
+            {job.title_ko ?? job.title}
+          </span>
+          {/* 마감 배지 — 지원 준비하던 공고가 내려갔음을 즉시 인지시킨다(카드 조용히 삭제 금지). */}
+          {job.closed && (
+            <span className="shrink-0 rounded-full bg-destructive/10 px-1.5 py-0.5 text-[10px] font-bold text-destructive">
+              마감됨
+            </span>
+          )}
+        </div>
         <div className="truncate text-caption text-muted-foreground">{job.company.display_name}</div>
       </div>
     </div>

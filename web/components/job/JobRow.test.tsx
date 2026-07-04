@@ -22,12 +22,20 @@ describe("JobRow", () => {
     expect(screen.getByText(/약 2\.8억~3\.5억 원/)).toBeInTheDocument();
   });
 
-  it("제목(한글)·영문·회사·위치를 표시한다", () => {
+  it("제목(한글)·회사·위치를 표시하고, 영어 원제는 툴팁으로만 제공한다", () => {
     render(<JobRow job={salariedJob} />);
-    expect(screen.getByText("백엔드 엔지니어")).toBeInTheDocument();
-    expect(screen.getByText("Backend Engineer")).toBeInTheDocument();
+    const title = screen.getByText("백엔드 엔지니어");
+    expect(title).toBeInTheDocument();
+    // 영어 원제 반복 노출은 제거(밀도·중복) — title 속성으로만 남긴다.
+    expect(screen.queryByText("Backend Engineer")).not.toBeInTheDocument();
+    expect(title).toHaveAttribute("title", "Backend Engineer");
     expect(screen.getByText(/Acme/)).toBeInTheDocument();
     expect(screen.getByText(/Berlin, Germany/)).toBeInTheDocument();
+  });
+
+  it("extraLocations 가 있으면 '외 N개 지역'으로 접어 표기한다", () => {
+    render(<JobRow job={salariedJob} extraLocations={2} />);
+    expect(screen.getByText("외 2개 지역")).toBeInTheDocument();
   });
 
   it("관심(저장) 하트 버튼을 렌더한다", () => {

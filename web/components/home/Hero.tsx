@@ -31,7 +31,7 @@ export function Hero({
               비자 스폰서십 검증 · 5축 매칭
             </span>
 
-            <h1 className="mt-5 max-w-2xl text-[2.5rem] font-extrabold leading-[1.08] tracking-[-0.03em] sm:text-[3.25rem]">
+            <h1 className="mt-5 max-w-2xl text-display-sm sm:text-display">
               해외 취업,
               <br />
               <span className="text-gradient-brand">비자부터 확인하세요.</span>

@@ -15,10 +15,10 @@ import com.devjobs.scout.dto.JobDtos.SalaryDto;
 import com.devjobs.scout.dto.JobDtos.VisaDto;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -37,7 +37,23 @@ public class JobService {
         "fullstack", "fullstack",
         "mobile", "mobile | ios | android | swift | kotlin | flutter",
         "data-ml", "ml | ai | nlp | scientist | analytics",
-        "devops", "devops | sre | kubernetes | infrastructure | terraform | platform");
+        "devops", "devops | sre | kubernetes | infrastructure | terraform | platform",
+        "qa", "qa | sdet | tester | 品質保証",
+        "embedded", "embedded | firmware | rtos | 組込 | 制御",
+        "game", "unity | unreal | gameplay | ゲーム | game");
+
+    // '기타'(other): 위 직무 어디에도 안 맞는 공고. 전체 텀의 OR 을 NOT 매칭.
+    private static final String DISCIPLINE_ALL = String.join(" | ", DISCIPLINE_TERMS.values());
+
+    /** 직무 key → tsquery 텀. 'other'/미정의는 null(인기공고 등 다른 서비스와 공유). */
+    public String disciplineTerms(String key) {
+        return key == null ? null : DISCIPLINE_TERMS.get(key);
+    }
+
+    /** '기타'(other) 판정용 — 전체 직무 텀의 OR(NOT 매칭에 사용). */
+    public String disciplineExcludeAll() {
+        return DISCIPLINE_ALL;
+    }
 
     // 한국어 자유검색어 → 영어 키워드 치환. 공고 제목/설명이 영어라(english tsvector) 한국어로
     // 타이핑하면 0건이던 문제 해결. 긴 키 우선 치환 위해 키 길이 내림차순으로 적용한다.
@@ -130,61 +146,112 @@ public class JobService {
             new City("palo-alto", "팔로알토", "palo alto"), new City("mountain-view", "마운틴뷰", "mountain view"),
             new City("san-mateo", "샌머테이오", "san mateo"), new City("chicago", "시카고", "chicago"),
             new City("denver", "덴버", "denver"))),
-        Map.entry("japan", List.of(
+        Map.entry("jp", List.of(
             new City("tokyo", "도쿄", "tokyo|東京"), new City("osaka", "오사카", "osaka|大阪"),
             // 京都(교토)는 東京都(도쿄도)의 부분문자열이라 행정구 접미사로 한정(오매칭 방지).
             new City("kyoto", "교토", "kyoto|京都府|京都市"), new City("fukuoka", "후쿠오카", "fukuoka|福岡"),
             new City("yokohama", "요코하마", "yokohama|横浜"), new City("nagoya", "나고야", "nagoya|名古屋"))),
-        Map.entry("germany", List.of(
+        Map.entry("de", List.of(
             new City("berlin", "베를린", "berlin"), new City("munich", "뮌헨", "munich|münchen"),
             new City("hamburg", "함부르크", "hamburg"), new City("frankfurt", "프랑크푸르트", "frankfurt"),
             new City("cologne", "쾰른", "cologne|köln"), new City("stuttgart", "슈투트가르트", "stuttgart"),
             new City("dusseldorf", "뒤셀도르프", "düsseldorf|dusseldorf"))),
-        Map.entry("uk", List.of(
+        Map.entry("gb", List.of(
             new City("london", "런던", "london"), new City("manchester", "맨체스터", "manchester"),
             new City("edinburgh", "에든버러", "edinburgh"))),
-        Map.entry("netherlands", List.of(
+        Map.entry("nl", List.of(
             new City("amsterdam", "암스테르담", "amsterdam"), new City("rotterdam", "로테르담", "rotterdam"),
             new City("utrecht", "위트레흐트", "utrecht"), new City("eindhoven", "에인트호번", "eindhoven"))),
-        Map.entry("ireland", List.of(
+        Map.entry("ie", List.of(
             new City("dublin", "더블린", "dublin"), new City("cork", "코크", "cork"))),
-        Map.entry("canada", List.of(
+        Map.entry("ca", List.of(
             new City("toronto", "토론토", "toronto"), new City("vancouver", "밴쿠버", "vancouver"),
             new City("montreal", "몬트리올", "montreal|montréal"), new City("ottawa", "오타와", "ottawa"),
             new City("waterloo", "워털루", "waterloo"))),
-        Map.entry("france", List.of(
+        Map.entry("fr", List.of(
             new City("paris", "파리", "paris"), new City("lyon", "리옹", "lyon"),
             new City("toulouse", "툴루즈", "toulouse"))),
-        Map.entry("spain", List.of(
+        Map.entry("es", List.of(
             new City("madrid", "마드리드", "madrid"), new City("barcelona", "바르셀로나", "barcelona"),
             new City("valencia", "발렌시아", "valencia"))),
-        Map.entry("poland", List.of(
+        Map.entry("pl", List.of(
             new City("warsaw", "바르샤바", "warsaw|warszawa"), new City("krakow", "크라쿠프", "kraków|krakow"),
             new City("wroclaw", "브로츠와프", "wrocław|wroclaw"), new City("gdansk", "그단스크", "gdańsk|gdansk"))),
-        Map.entry("portugal", List.of(
+        Map.entry("pt", List.of(
             new City("lisbon", "리스본", "lisbon|lisboa"), new City("porto", "포르투", "porto"))),
-        Map.entry("sweden", List.of(
+        Map.entry("se", List.of(
             new City("stockholm", "스톡홀름", "stockholm"), new City("gothenburg", "예테보리", "gothenburg|göteborg"),
             new City("malmo", "말뫼", "malmö|malmo"))),
-        Map.entry("denmark", List.of(
+        Map.entry("dk", List.of(
             new City("copenhagen", "코펜하겐", "copenhagen|københavn|kobenhavn"),
             new City("aarhus", "오르후스", "aarhus|århus"))),
-        Map.entry("italy", List.of(
+        Map.entry("it", List.of(
             // roma 는 Romania 의 부분문자열이라 단어경계(\y)로 한정.
             new City("milan", "밀라노", "milan|milano"), new City("rome", "로마", "rome|\\yroma\\y"),
             new City("turin", "토리노", "turin|torino"))),
-        Map.entry("austria", List.of(
+        Map.entry("at", List.of(
             new City("vienna", "빈", "vienna|wien"), new City("graz", "그라츠", "graz"))),
-        Map.entry("czech", List.of(
+        Map.entry("cz", List.of(
             new City("prague", "프라하", "prague|praha"), new City("brno", "브르노", "brno"))),
-        Map.entry("switzerland", List.of(
+        Map.entry("ch", List.of(
             new City("zurich", "취리히", "zurich|zürich"), new City("geneva", "제네바", "geneva|genève|geneve"),
-            new City("lausanne", "로잔", "lausanne"), new City("basel", "바젤", "basel"))));
+            new City("lausanne", "로잔", "lausanne"), new City("basel", "바젤", "basel"))),
+        Map.entry("in", List.of(
+            new City("bengaluru", "벵갈루루", "bengaluru|bangalore"), new City("gurugram", "구루그람", "gurugram|gurgaon"),
+            new City("hyderabad", "하이데라바드", "hyderabad"), new City("delhi", "델리", "delhi"),
+            new City("mumbai", "뭄바이", "mumbai"), new City("pune", "푸네", "pune"),
+            new City("chennai", "첸나이", "chennai"))),
+        Map.entry("au", List.of(
+            new City("sydney", "시드니", "sydney"), new City("melbourne", "멜버른", "melbourne"),
+            new City("brisbane", "브리즈번", "brisbane"), new City("perth", "퍼스", "perth"),
+            new City("canberra", "캔버라", "canberra"))),
+        Map.entry("il", List.of(
+            new City("tel-aviv", "텔아비브", "tel aviv"), new City("petah-tikva", "페타티크바", "petah tikva"),
+            new City("jerusalem", "예루살렘", "jerusalem"), new City("herzliya", "헤르츨리야", "herzliya"))),
+        Map.entry("rs", List.of(
+            new City("belgrade", "베오그라드", "belgrade|beograd"), new City("novi-sad", "노비사드", "novi sad"))),
+        Map.entry("br", List.of(
+            new City("sao-paulo", "상파울루", "são paulo|sao paulo"), new City("rio", "리우데자네이루", "rio de janeiro"),
+            new City("florianopolis", "플로리아노폴리스", "florianópolis|florianopolis"))),
+        Map.entry("tw", List.of(
+            new City("taipei", "타이베이", "taipei|台北|臺北"), new City("hsinchu", "신주", "hsinchu"))),
+        Map.entry("th", List.of(
+            new City("bangkok", "방콕", "bangkok"))),
+        Map.entry("mx", List.of(
+            new City("mexico-city", "멕시코시티", "mexico city|ciudad de méxico|cdmx"),
+            new City("guadalajara", "과달라하라", "guadalajara"))),
+        Map.entry("cn", List.of(
+            new City("beijing", "베이징", "beijing|北京"), new City("shanghai", "상하이", "shanghai|上海"),
+            new City("shenzhen", "선전", "shenzhen|深圳"))),
+        Map.entry("bg", List.of(
+            new City("sofia", "소피아", "sofia"))),
+        Map.entry("lt", List.of(
+            new City("vilnius", "빌뉴스", "vilnius"))),
+        Map.entry("sg", List.of(
+            new City("singapore", "싱가포르", "singapore"))),
+        Map.entry("fi", List.of(
+            new City("helsinki", "헬싱키", "helsinki"), new City("espoo", "에스포", "espoo"),
+            new City("tampere", "탐페레", "tampere"))));
 
-    // 도시 key → regex (지역 파라미터에서 도시 선택을 매칭하기 위한 평면 조회).
-    private static final Map<String, String> CITY_REGEX = CITIES.values().stream()
+    // 도시 slug → 한국어 라벨(기존 큐레이션 재사용). 데이터 파생 GROUP BY 결과의 표시용.
+    // 신규 도시(맵에 없음)는 slug 를 보기 좋게 변환해 폴백 → 도시 집합은 데이터에서 자동 동기화.
+    private static final Map<String, String> CITY_KO = CITIES.values().stream()
         .flatMap(List::stream)
-        .collect(java.util.stream.Collectors.toMap(City::key, City::regex, (a, b) -> a));
+        .collect(java.util.stream.Collectors.toMap(City::key, City::label, (a, b) -> a));
+
+    /** 도시 slug → 표시 라벨. 큐레이션 한국어 우선, 없으면 slug 를 Title Case 로. */
+    static String cityLabel(String slug) {
+        String ko = CITY_KO.get(slug);
+        if (ko != null) return ko;
+        String[] parts = slug.split("-");
+        StringBuilder sb = new StringBuilder();
+        for (String p : parts) {
+            if (p.isEmpty()) continue;
+            if (sb.length() > 0) sb.append(' ');
+            sb.append(Character.toUpperCase(p.charAt(0))).append(p.substring(1));
+        }
+        return sb.length() == 0 ? slug : sb.toString();
+    }
 
     private final JobRepository repository;
 
@@ -192,40 +259,48 @@ public class JobService {
         this.repository = repository;
     }
 
+    /** 지역 드롭다운 — 하드코딩 목록이 아니라 공고 country 를 GROUP BY 로 집계(데이터 파생).
+     * 공고가 있는 국가만 자동 등장/소멸한다. 라벨은 ISO2→한국어(java Locale). remote 는 별도 상단. */
     public List<RegionCount> regionCounts() {
-        return REGIONS.stream().map(r -> {
-            long count = "remote".equals(r.key())
-                ? repository.countActiveRemote()
-                : repository.countActiveByLocationRegex(r.regex());
-            return new RegionCount(r.key(), r.label(), count);
-        }).toList();
+        List<RegionCount> out = new ArrayList<>();
+        long remote = repository.countActiveRemote();
+        if (remote > 0) {
+            out.add(new RegionCount("remote", "원격", remote));
+        }
+        for (Object[] row : repository.countActiveByCountry()) {
+            String iso = (String) row[0];
+            long count = ((Number) row[1]).longValue();
+            out.add(new RegionCount(iso, countryLabel(iso), count));
+        }
+        return out;
+    }
+
+    /** ISO2 국가코드 → 한국어 국가명(java Locale). 실패 시 대문자 코드로 폴백. */
+    static String countryLabel(String iso2) {
+        if (iso2 == null || iso2.isBlank()) return iso2;
+        String up = iso2.toUpperCase(Locale.ROOT);
+        String label = new Locale("", up).getDisplayCountry(Locale.KOREAN);
+        return (label == null || label.isBlank() || label.equalsIgnoreCase(iso2)) ? up : label;
     }
 
     // 특정 국가의 도시별 활성 공고 건수. 파티션: 공고를 선언 순서(주요 도시 우선)의 첫 매칭 도시
     // 1곳에만 배정 → 도시 합 + '그 외 지역' = 국가 전체와 정확히 일치(예 "Yokohama; Tokyo"는 도쿄로만).
     // 어느 도시에도 안 잡히는 공고(국가 단위/원격/소도시)는 '그 외 지역'으로 묶는다. 건수 0은 제외.
+    /** 국가 안 도시 상세(데이터 파생) — 하드코딩 목록이 아니라 city 를 GROUP BY(상위 20).
+     * 라벨은 큐레이션 한국어(CITY_KO) 우선, 신규 도시는 slug Title Case 폴백 → 자동 동기화. */
     public List<RegionCount> cityCounts(String countryKey) {
-        List<City> cities = CITIES.get(countryKey);
-        String countryRegex = REGIONS.stream().filter(r -> r.key().equals(countryKey))
-            .findFirst().map(Region::regex).filter(Objects::nonNull).orElse(null);
-        if (cities == null || countryRegex == null) {
-            return List.of();
-        }
+        if (countryKey == null || countryKey.isBlank()) return List.of();
         List<RegionCount> rows = new ArrayList<>();
-        List<String> assigned = new ArrayList<>(); // 이미 배정된 상위 도시들 — 다음 도시 집계 시 제외
-        for (City c : cities) {
-            long n = assigned.isEmpty()
-                ? repository.countActiveByLocationRegex(c.regex())
-                : repository.countActiveByLocationRegexExcluding(c.regex(), String.join("|", assigned));
-            if (n > 0) {
-                rows.add(new RegionCount(c.key(), c.label(), n));
-            }
-            assigned.add(c.regex());
+        long shown = 0;
+        for (Object[] r : repository.countActiveCityByCountry(countryKey)) {
+            String slug = (String) r[0];
+            long n = ((Number) r[1]).longValue();
+            rows.add(new RegionCount(slug, cityLabel(slug), n));
+            shown += n;
         }
-        rows.sort(Comparator.comparingLong(RegionCount::count).reversed());
-        // '그 외 지역'은 "국가 ∖ 도시"라 단일 location 필터로 정확히 못 잡으므로 value 를 비워
-        // 프런트에서 비클릭 정보 행으로 표시(합계 표시는 하되 오해 소지 있는 이동은 막음).
-        long other = repository.countActiveByLocationRegexExcluding(countryRegex, String.join("|", assigned));
+        // '그 외 지역' = 국가 전체 ∖ (표시된 상위 도시). city NULL(도시 미상) + 상위 20 밖 도시 포함.
+        // value 를 비워 프런트에서 비클릭 정보 행으로 표시.
+        long other = repository.countActiveInCountry(countryKey) - shown;
         if (other > 0) {
             rows.add(new RegionCount("", "그 외 지역", other));
         }
@@ -240,20 +315,26 @@ public class JobService {
     }
 
     // search() 와 countMatchesSince() 공유 매핑(정렬 priority 제외).
-    private record MappedQuery(String q, String disc, String regionRegex, String visa, String loc,
+    private record MappedQuery(String q, String disc, String excludeDisc, String regionRegex,
+                               String countries, String cities, String visa, String loc,
                                Boolean remote, String gateMode) {}
 
     private MappedQuery mapQuery(String q, String visa, String location, Boolean remote,
                                  String discipline, String region, String track, boolean includeUnclear) {
         boolean hasQuery = q != null && !q.isBlank();
-        String discTerms = discipline == null ? null : DISCIPLINE_TERMS.get(discipline);
+        // '기타'(other) = 모든 직무 텀에 안 맞는 공고 → excludeDisc 로 NOT 매칭. 그 외는 해당 텀.
+        String discTerms = "other".equals(discipline) ? null
+            : (discipline == null ? null : DISCIPLINE_TERMS.get(discipline));
+        String excludeDisc = "other".equals(discipline) ? DISCIPLINE_ALL : null;
         // region: 콤마 구분 다중 지역(예: "us,germany,japan"). 국가들은 각 지역 정규식을 '|'로
         // 결합해 location ~* 에 OR 매칭. 단일 "remote"만 선택 시엔 기존대로 원격 플래그로 처리.
         // (UI는 국가만 다중 선택 — remote 는 근무형태라 제외)
         Boolean remoteParam = remote;
-        String regionRegex = null;
+        String countries = null;
+        String cities = null;
         if (region != null && !region.isBlank()) {
-            List<String> regexes = new ArrayList<>();
+            List<String> countryKeys = new ArrayList<>(); // 국가 코드(ISO2) → country 컬럼 필터
+            List<String> cityKeys = new ArrayList<>();     // 도시 slug → city 컬럼 필터
             boolean hasRemote = false;
             int validKeys = 0;
             for (String raw : region.split(",")) {
@@ -261,18 +342,17 @@ public class JobService {
                 if (key.isEmpty()) continue;
                 validKeys++;
                 if ("remote".equals(key)) { hasRemote = true; continue; }
-                // 국가 key 면 국가 regex, 아니면 도시 key(예: tokyo) → 도시 regex(별칭 포함).
-                String rx = REGIONS.stream().filter(x -> x.key().equals(key)).findFirst()
-                    .map(Region::regex).filter(Objects::nonNull).orElse(null);
-                if (rx == null) rx = CITY_REGEX.get(key);
-                if (rx != null) regexes.add(rx);
+                // 2글자 = 국가 코드(ISO2), 그 외 = 도시 slug(bengaluru, san-francisco…).
+                if (key.matches("[a-z]{2}")) countryKeys.add(key);
+                else cityKeys.add(key);
             }
-            if (!regexes.isEmpty()) {
-                regionRegex = String.join("|", regexes);
-            } else if (hasRemote && validKeys == 1) {
+            if (!countryKeys.isEmpty()) countries = String.join(",", countryKeys);
+            if (!cityKeys.isEmpty()) cities = String.join(",", cityKeys);
+            if (countries == null && cities == null && hasRemote && validKeys == 1) {
                 remoteParam = Boolean.TRUE;
             }
         }
+        String regionRegex = null;  // location regex 필터는 country/city 컬럼 필터로 대체됨
         String gateMode;
         if (includeUnclear) {
             gateMode = "remote".equals(track) ? "remote_unclear"
@@ -285,7 +365,7 @@ public class JobService {
         String visaParam = (visa != null && !visa.isBlank()) ? visa.trim() : null;
         String locParam = (location != null && !location.isBlank())
             ? "%" + location.trim().toLowerCase() + "%" : null;
-        return new MappedQuery(qParam, discTerms, regionRegex, visaParam, locParam, remoteParam, gateMode);
+        return new MappedQuery(qParam, discTerms, excludeDisc, regionRegex, countries, cities, visaParam, locParam, remoteParam, gateMode);
     }
 
     public JobListResponse search(
@@ -309,25 +389,25 @@ public class JobService {
         int offset = (safePage - 1) * safeSize;
 
         List<String> ids = repository.searchIds(
-            m.q(), m.disc(), m.regionRegex(), m.visa(), m.loc(), m.remote(),
-            m.gateMode(), verifiedOnly, minSalary, completeOnly, remotePriority, visaPriority, byRelevance,
-            salarySort, completeRank, safeSize, offset);
+            m.q(), m.disc(), m.excludeDisc(), m.regionRegex(), m.countries(), m.cities(), m.visa(), m.loc(),
+            m.remote(), m.gateMode(), verifiedOnly, minSalary, completeOnly, remotePriority, visaPriority,
+            byRelevance, salarySort, completeRank, safeSize, offset);
         long total = repository.countSearch(
-            m.q(), m.disc(), m.regionRegex(), m.visa(), m.loc(), m.remote(), m.gateMode(), verifiedOnly,
-            minSalary, completeOnly);
+            m.q(), m.disc(), m.excludeDisc(), m.regionRegex(), m.countries(), m.cities(), m.visa(), m.loc(),
+            m.remote(), m.gateMode(), verifiedOnly, minSalary, completeOnly);
 
         Map<String, JobEntity> byId = new HashMap<>();
         for (JobEntity j : repository.findAllById(ids)) byId.put(j.getId(), j);
         List<JobDto> items = ids.stream().map(byId::get).filter(Objects::nonNull).map(this::toDto).toList();
-        return new JobListResponse(items, safePage, safeSize, total, computeFacets());
+        return new JobListResponse(items, safePage, safeSize, total, facets());
     }
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public long countMatchesSince(com.devjobs.search.SavedSearchParams p, java.time.OffsetDateTime since) {
         MappedQuery m = mapQuery(p.q(), p.visa(), p.location(), p.remote(), p.discipline(),
             p.region(), p.track(), p.includeUnclear());
-        return repository.countSearchSince(m.q(), m.disc(), m.regionRegex(), m.visa(), m.loc(),
-            m.remote(), m.gateMode(), since);
+        return repository.countSearchSince(m.q(), m.disc(), m.excludeDisc(), m.regionRegex(), m.countries(),
+            m.cities(), m.visa(), m.loc(), m.remote(), m.gateMode(), since);
     }
 
     /** 주어진 id 목록을 JobDto 로 변환(입력 순서 보존, 노출 대상 공고만, 없는 건 제외). 저장 공고 목록용. */
@@ -336,6 +416,25 @@ public class JobService {
         Map<String, JobEntity> byId = new HashMap<>();
         for (JobEntity j : repository.findAllById(ids)) {
             if (isLive(j)) byId.put(j.getId(), j);
+        }
+        List<JobDto> out = new ArrayList<>();
+        for (String id : ids) {
+            JobEntity j = byId.get(id);
+            if (j != null) out.add(toDto(j));
+        }
+        return out;
+    }
+
+    /**
+     * 저장 목록(칸반)용 — 마감 공고도 closed=true 로 포함한다.
+     * byIds(live 만)와 달리, 유저가 지원 준비하던 공고가 마감돼도 카드가 조용히 사라지지 않고
+     * "마감됨" 배지로 알 수 있게 한다. DB 에서 완전히 사라진 id 만 제외.
+     */
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<JobDto> byIdsIncludingClosed(List<String> ids) {
+        Map<String, JobEntity> byId = new HashMap<>();
+        for (JobEntity j : repository.findAllById(ids)) {
+            byId.put(j.getId(), j);
         }
         List<JobDto> out = new ArrayList<>();
         for (String id : ids) {
@@ -356,7 +455,7 @@ public class JobService {
         int remote = (int) all.stream().filter(JobService::isRemoteCapable).count();
         Integer sponsorRatio = total > 0 ? Math.round(sponsors * 100f / total) : null;
 
-        int size = Math.max(1, pageSize);
+        int size = Math.min(Math.max(1, pageSize), MAX_PAGE_SIZE); // 상한 — page_size 폭탄 방지(검색과 동일 정책)
         int totalPages = Math.max(1, (int) Math.ceil(total / (double) size));
         int p = Math.min(Math.max(1, page), totalPages);
         int from = Math.min((p - 1) * size, total);
@@ -432,6 +531,9 @@ public class JobService {
             LocationLocalizer.localize(j.getLocation()),
             j.getIsRemote(),
             j.getEmploymentType(),
+            j.getDepartment(),
+            j.getRelocationSupport(),
+            j.getLanguageRequirement(),
             description,
             j.getApplyUrl(),
             j.getPostedAt(),
@@ -442,6 +544,25 @@ public class JobService {
             salary,
             j.getExperienceYears(),
             j.getSeniority());
+    }
+
+    // facet 분포는 쿼리와 무관한 전역 집계라 모든 검색에 동일하고, 값은 ETL(일 단위)로만 변한다.
+    // 검색마다 3개 GROUP BY 를 반복하던 것을 짧은 TTL 캐시로 제거 — 동시성 부하에서 DB 경합을 줄인다.
+    // 만료 경계에서 소수 스레드가 중복 계산할 수 있으나 멱등이라 무해(락 없이 throughput 우선).
+    private static final long FACETS_TTL_MS = 60_000;
+    private volatile FacetsDto cachedFacets;
+    private volatile long facetsExpiryMs;
+
+    private FacetsDto facets() {
+        long now = System.currentTimeMillis();
+        FacetsDto cached = cachedFacets;
+        if (cached != null && now < facetsExpiryMs) {
+            return cached;
+        }
+        FacetsDto fresh = computeFacets();
+        cachedFacets = fresh;
+        facetsExpiryMs = now + FACETS_TTL_MS;
+        return fresh;
     }
 
     private FacetsDto computeFacets() {
@@ -502,7 +623,8 @@ public class JobService {
             visa,
             remote,
             salary,
-            j.getSeniority());
+            j.getSeniority(),
+            isLive(j) ? null : true); // closed: live 면 null(직렬화 생략), 마감이면 true
     }
 
     private String preview(String text) {

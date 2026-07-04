@@ -3,7 +3,10 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+import sponsor_match as sm
 import verify_h1b_sponsors as v
+for _n in ('normalize', 'match_company', 'company_names'):
+    if not hasattr(v, _n) and hasattr(sm, _n): setattr(v, _n, getattr(sm, _n))
 
 CSV = (
     "Fiscal Year,Employer (Petitioner) Name,Initial Approval,Initial Denial,"
@@ -15,8 +18,9 @@ CSV = (
 
 
 def test_parse_approved_employers_filters_zero_approvals():
+    # 반환은 (고용주명, 위치) 튜플 — 승인 0건(SOME RANDOM LLC)은 제외된다.
     emps = v.parse_approved_employers(io.StringIO(CSV))
-    names = {e.lower() for e in emps}
+    names = {name.lower() for name, _loc in emps}
     assert any("stripe" in n for n in names)
     assert any("databricks" in n for n in names)
     assert not any("some random" in n for n in names)

@@ -15,9 +15,11 @@ import org.springframework.stereotype.Service;
 public class CompanyService {
 
     private final CompanyRepository repository;
+    private final H1bWageRepository h1bWageRepository;
 
-    public CompanyService(CompanyRepository repository) {
+    public CompanyService(CompanyRepository repository, H1bWageRepository h1bWageRepository) {
         this.repository = repository;
+        this.h1bWageRepository = h1bWageRepository;
     }
 
     public CompanyListResponse list(String tag) {
@@ -101,12 +103,18 @@ public class CompanyService {
     }
 
     public Optional<CompanyDetail> detail(String slug) {
+        // LCA 공시 연봉 — 없는 회사가 다수라 null 허용(웹은 null 이면 섹션 생략).
+        var wage = h1bWageRepository.findById(slug)
+            .map(w -> new com.devjobs.company.dto.CompanyDtos.H1bWage(
+                w.getCases(), w.getMedianWage(), w.getP25Wage(), w.getP75Wage(), w.getPeriod()))
+            .orElse(null);
         return repository.findById(slug).map(c -> new CompanyDetail(
             c.getSlug(),
             c.getDisplayName(),
             c.getAts(),
             c.getTags(),
             c.getWebsiteUrl(),
-            repository.countActiveJobs(slug)));
+            repository.countActiveJobs(slug),
+            wage));
     }
 }

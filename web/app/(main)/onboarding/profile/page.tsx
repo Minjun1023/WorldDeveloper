@@ -1,27 +1,7 @@
-import { Code2 } from "lucide-react";
 import { redirect } from "next/navigation";
 
-import { OnboardingProfile } from "@/components/profile/OnboardingProfile";
-import { getSession } from "@/lib/session-server";
-
-export const dynamic = "force-dynamic";
-
-export default async function OnboardingProfilePage() {
-  const session = await getSession();
-  if (!session) redirect("/signin");
-
-  return (
-    <div className="mx-auto max-w-md py-10">
-      <div className="space-y-6 rounded-lg border border-border bg-surface p-6 sm:p-8 shadow-sm">
-        <div className="flex flex-col items-center gap-3">
-          <Code2 className="h-8 w-8 text-primary" aria-hidden />
-          <h1 className="text-center text-h3 font-bold">환영합니다! 거의 다 됐어요.</h1>
-        </div>
-        <OnboardingProfile />
-        <p className="text-center text-caption text-muted-foreground">
-          비자 스폰서십은 기본 포함돼요.
-        </p>
-      </div>
-    </div>
-  );
+// 별도 온보딩 페이지 폐기 — 완성형 프로필 편집(/me/profile)의 환영 모드로 통합.
+// 구 링크(메일·북마크) 호환을 위해 라우트는 리다이렉트로 유지한다.
+export default function OnboardingProfilePage() {
+  redirect("/me/profile?welcome=1");
 }

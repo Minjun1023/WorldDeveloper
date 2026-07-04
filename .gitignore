@@ -75,6 +75,9 @@ huggingface/
 # 로컬 dev 로그
 .dev-logs/
 
+# 부하테스트 산출물 (로그/HTML/스크린샷)
+.loadtest/
+
 # 브레인스토밍 비주얼 컴패니언 산출물
 .superpowers/
 

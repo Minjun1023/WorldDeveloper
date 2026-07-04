@@ -3,6 +3,7 @@
 // slug(ATS 토큰/슬러그화된 회사명)가 실제 도메인 루트와 다른 경우 보정. 대부분 {slug}.com 이 맞다.
 const DOMAIN_OVERRIDES: Record<string, string> = {
   scaleai: "scale.com",
+  crusoe: "crusoe.ai", // crusoe.com 은 동명의 다른 회사라 엉뚱한 로고가 뜬다
   // 잡보드 자유텍스트 회사(주로 독일 GmbH) — 공식 도메인 웹검색 확인 + Logo.dev 실제 로고(fallback=404=200) 검증.
   "neural-frames": "neuralframes.com",
   "quantum-systems-gmbh": "quantum-systems.com",

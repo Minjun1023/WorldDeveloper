@@ -1,3 +1,8 @@
+export const metadata = {
+  title: "북마크 | WorldDev",
+  description: "저장한 공고와 관심 기업을 한곳에서 관리하세요.",
+};
+
 import { BookmarksTabs } from "@/components/bookmarks/BookmarksTabs";
 import { getSession } from "@/lib/session-server";
 

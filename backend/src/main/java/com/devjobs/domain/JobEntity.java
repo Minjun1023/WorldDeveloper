@@ -38,6 +38,17 @@ public class JobEntity {
     @Column(name = "employment_type")
     private String employmentType;
 
+    /** 부서/팀 (greenhouse departments, lever team, SR function). 표시용. */
+    private String department;
+
+    /** 이주 지원 명시 여부 — 본문 정규식(job_meta.py). true=지원, false=거부, null=무언급. */
+    @Column(name = "relocation_support")
+    private Boolean relocationSupport;
+
+    /** 어학 요건 — 'german' 등 현지어 요구 | 'english_only' | null. */
+    @Column(name = "language_requirement")
+    private String languageRequirement;
+
     private String description;
 
     @Column(name = "description_text")
@@ -109,6 +120,9 @@ public class JobEntity {
     public String getLocation() { return location; }
     public Boolean getIsRemote() { return isRemote; }
     public String getEmploymentType() { return employmentType; }
+    public String getDepartment() { return department; }
+    public Boolean getRelocationSupport() { return relocationSupport; }
+    public String getLanguageRequirement() { return languageRequirement; }
     public String getDescription() { return description; }
     public String getDescriptionText() { return descriptionText; }
     public String getApplyUrl() { return applyUrl; }

@@ -46,6 +46,15 @@ class JobSearchSelectorsTest {
                 : new Object[]{ id, title, slug, descText, tagsCsv, location, remote });
     }
 
+    /** country(ISO2)/city(슬러그) 지정 버전 — 지역 검색·집계는 ETL 이 채우는 이 컬럼 기반이다. */
+    private void job(String id, String title, String slug, String location,
+                     String country, String city) {
+        jdbc.update(
+            "INSERT INTO jobs(id, source, title, company_slug, description_text, location, country, city, "
+          + "is_remote, posted_at, is_active) VALUES (?, 'test', ?, ?, 'x', ?, ?, ?, false, now(), true)",
+            id, title, slug, location, country, city);
+    }
+
     @Test
     void disciplineFiltersByCategory() {
         company("c1", "C1");
@@ -85,34 +94,34 @@ class JobSearchSelectorsTest {
     @Test
     void regionCountsCorrect() {
         company("c5", "C5");
-        // 도시-only (국가명 없음) → 독일 지역 패턴에 berlin 이 포함되므로 잡혀야 함
-        job("g0", "Eng", "c5", "x", null, "Berlin", false);
-        job("g1", "Eng", "c5", "x", null, "Berlin, Germany", false);
-        job("g2", "Eng", "c5", "x", null, "Munich, Germany", false);
-        job("n1", "Eng", "c5", "x", null, "Amsterdam, Netherlands", false);
+        // 지역 집계는 country(ISO2) 컬럼 GROUP BY — 도시-only location 의 국가 판정은
+        // ETL(geo.detect_country)이 country 를 채우는 방식으로 책임이 이동했다.
+        job("g0", "Eng", "c5", "Berlin", "de", "berlin");
+        job("g1", "Eng", "c5", "Berlin, Germany", "de", "berlin");
+        job("g2", "Eng", "c5", "Munich, Germany", "de", "munich");
+        job("n1", "Eng", "c5", "Amsterdam, Netherlands", "nl", "amsterdam");
         List<RegionCount> rc = service.regionCounts();
-        // germany 패턴에 "berlin" 포함 → city-only "Berlin" 도 매칭 → count = 3
         long germanyCount = rc.stream()
-            .filter(r -> r.value().equals("germany")).findFirst().orElseThrow().count();
-        assertTrue(germanyCount >= 3,
-            "도시-only 'Berlin' 이 독일 지역 패턴에 매칭되어야 함 (실제: " + germanyCount + ")");
+            .filter(r -> r.value().equals("de")).findFirst().orElseThrow().count();
+        assertEquals(3L, germanyCount, "country=de 3건 집계");
         long netherlandsCount = rc.stream()
-            .filter(r -> r.value().equals("netherlands")).findFirst().orElseThrow().count();
+            .filter(r -> r.value().equals("nl")).findFirst().orElseThrow().count();
         assertEquals(1L, netherlandsCount);
     }
 
     @Test
     void regionSearchMatchesCityOnlyLocation() {
         company("c6", "C6");
-        // location='Berlin' (국가명 없음) — region=germany 선택 시 잡혀야 함
-        job("city", "Engineer", "c6", "x", null, "Berlin", false);
-        job("country", "Engineer", "c6", "x", null, "Berlin, Germany", false);
-        // region=germany → regionRegex 에 "berlin" 포함 → 도시-only 도 매칭
-        JobListResponse res = service.search(null, null, null, null, null, null, "germany", 1, 20);
-        assertTrue(res.items().stream().anyMatch(j -> j.id().equals("city")),
-            "city-only 'Berlin' 이 region=germany 검색에 매칭");
-        assertTrue(res.items().stream().anyMatch(j -> j.id().equals("country")),
-            "'Berlin, Germany' 도 매칭");
+        // region 값은 ISO2 국가("de") 또는 도시 슬러그("berlin") — country/city 컬럼과 매칭.
+        job("city", "Engineer", "c6", "Berlin", "de", "berlin");
+        job("country", "Engineer", "c6", "Berlin, Germany", "de", "berlin");
+        JobListResponse byCountry = service.search(null, null, null, null, null, null, "de", 1, 20);
+        assertTrue(byCountry.items().stream().anyMatch(j -> j.id().equals("city")),
+            "country=de 검색이 도시-only location 공고도 반환(country 컬럼 기준)");
+        assertTrue(byCountry.items().stream().anyMatch(j -> j.id().equals("country")));
+        JobListResponse byCity = service.search(null, null, null, null, null, null, "berlin", 1, 20);
+        assertTrue(byCity.items().stream().anyMatch(j -> j.id().equals("city")),
+            "도시 슬러그 검색은 city 컬럼과 매칭");
     }
 
     @Test
@@ -131,31 +140,30 @@ class JobSearchSelectorsTest {
     @Test
     void newCountriesAppearInRegionCounts() {
         company("c8", "C8");
-        job("es", "Eng", "c8", "x", null, "Madrid, Spain", false);
-        job("pl", "Eng", "c8", "x", null, "Warsaw, Poland", false);
-        job("se", "Eng", "c8", "x", null, "Stockholm, Sweden", false);
-        job("it", "Eng", "c8", "x", null, "Milan, Italy", false);
+        // 데이터 파생 설계: country 값이 있는 나라는 목록 고정 없이 전부 집계에 나타난다.
+        job("es", "Eng", "c8", "Madrid, Spain", "es", "madrid");
+        job("pl", "Eng", "c8", "Warsaw, Poland", "pl", "warsaw");
+        job("se", "Eng", "c8", "Stockholm, Sweden", "se", "stockholm");
+        job("it", "Eng", "c8", "Milan, Italy", "it", "milan");
         List<RegionCount> rc = service.regionCounts();
-        // 확장된 9개국이 /regions 응답에 포함되어야 함
-        for (String key : List.of("spain", "poland", "portugal", "sweden",
-                "denmark", "italy", "austria", "czech", "switzerland")) {
-            assertTrue(rc.stream().anyMatch(r -> r.value().equals(key)),
-                "확장 국가 '" + key + "' 가 regionCounts 에 있어야 함");
+        for (String iso : List.of("es", "pl", "se", "it")) {
+            assertTrue(rc.stream().anyMatch(r -> r.value().equals(iso)),
+                "국가 '" + iso + "' 가 regionCounts 에 있어야 함");
         }
         long spainCount = rc.stream()
-            .filter(r -> r.value().equals("spain")).findFirst().orElseThrow().count();
-        assertEquals(1L, spainCount, "Madrid 가 spain 패턴에 매칭");
+            .filter(r -> r.value().equals("es")).findFirst().orElseThrow().count();
+        assertEquals(1L, spainCount, "Madrid 1건이 es 로 집계");
     }
 
     @Test
     void multiRegionSearchUnionsCountries() {
         company("c10", "C10");
-        job("us1", "Eng", "c10", "x", null, "San Francisco, USA", false);
-        job("de1", "Eng", "c10", "x", null, "Berlin, Germany", false);
-        job("jp1", "Eng", "c10", "x", null, "Tokyo, Japan", false);
-        job("uk1", "Eng", "c10", "x", null, "London, United Kingdom", false);
-        // region="us,germany" → 두 지역 정규식을 '|'로 결합해 OR 매칭(일본·영국 제외).
-        JobListResponse res = service.search(null, null, null, null, null, null, "us,germany", 1, 20);
+        job("us1", "Eng", "c10", "San Francisco, USA", "us", "san-francisco");
+        job("de1", "Eng", "c10", "Berlin, Germany", "de", "berlin");
+        job("jp1", "Eng", "c10", "Tokyo, Japan", "jp", "tokyo");
+        job("uk1", "Eng", "c10", "London, United Kingdom", "gb", "london");
+        // region="us,de"(ISO2 콤마) → country IN (us, de) 유니온.
+        JobListResponse res = service.search(null, null, null, null, null, null, "us,de", 1, 20);
         assertTrue(res.items().stream().anyMatch(j -> j.id().equals("us1")), "미국 포함");
         assertTrue(res.items().stream().anyMatch(j -> j.id().equals("de1")), "독일 포함");
         assertTrue(res.items().stream().noneMatch(j -> j.id().equals("jp1")), "일본 제외");
@@ -165,10 +173,13 @@ class JobSearchSelectorsTest {
     @Test
     void regionSearchMatchesNewCountryCityOnly() {
         company("c9", "C9");
-        // 도시-only(국가명 없음) 도 region 검색에 잡혀야 함
-        job("bcn", "Engineer", "c9", "x", null, "Barcelona", false);
-        JobListResponse res = service.search(null, null, null, null, null, null, "spain", 1, 20);
+        // 도시-only location 도 ETL 이 country/city 를 채우므로 국가·도시 검색 모두에 잡힌다.
+        job("bcn", "Engineer", "c9", "Barcelona", "es", "barcelona");
+        JobListResponse res = service.search(null, null, null, null, null, null, "es", 1, 20);
         assertTrue(res.items().stream().anyMatch(j -> j.id().equals("bcn")),
-            "city-only 'Barcelona' 가 region=spain 검색에 매칭");
+            "country=es 검색이 도시-only 'Barcelona' 공고 반환");
+        JobListResponse byCity = service.search(null, null, null, null, null, null, "barcelona", 1, 20);
+        assertTrue(byCity.items().stream().anyMatch(j -> j.id().equals("bcn")),
+            "도시 슬러그 'barcelona' 검색 매칭");
     }
 }

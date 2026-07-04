@@ -65,15 +65,17 @@ export function JobCard({
         <div className={`flex items-start gap-3 ${showSave ? "pr-8" : ""}`}>
           <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={40} />
           <div className="min-w-0 flex-1">
-            {/* 제목은 2줄 높이를 고정 — 1줄/2줄 제목이 섞여도 아래 회사·배지·태그 줄이 카드 간 정렬되게. */}
-            <h3 className="line-clamp-2 min-h-[2.6rem] text-body font-semibold leading-snug transition-colors group-hover:text-primary">
+            {/* 제목은 2줄 높이를 고정 — 1줄/2줄 제목이 섞여도 아래 회사·배지·태그 줄이 카드 간 정렬되게.
+                영어 원제는 카드에서 반복하지 않는다(공간 낭비·어수선함) — title 툴팁과 상세 페이지가 담당. */}
+            <h3
+              title={job.title_ko ? job.title : undefined}
+              className="line-clamp-2 min-h-[2.6rem] text-body font-semibold leading-snug transition-colors group-hover:text-primary"
+            >
               {job.title_ko ?? job.title}
             </h3>
-            {job.title_ko && (
-              <p className="mt-0.5 line-clamp-1 text-caption text-muted-foreground">{job.title}</p>
-            )}
             <p className="mt-1 flex min-w-0 items-center gap-1 text-body-sm text-muted-foreground">
-              <span className="truncate">{job.company.display_name}</span>
+              {/* 회사명은 자르지 않는다(가장 중요한 메타) — 대신 덜 중요한 위치가 truncate. */}
+              <span className="shrink-0">{job.company.display_name}</span>
               {locText && (
                 <>
                   <span aria-hidden="true">·</span>
@@ -82,7 +84,7 @@ export function JobCard({
                       {flag}
                     </span>
                   )}
-                  <span className="truncate">{locText}</span>
+                  <span className="truncate" title={locText}>{locText}</span>
                 </>
               )}
             </p>
@@ -138,7 +140,8 @@ export function JobCard({
 
         <div className="min-h-4 flex-1" aria-hidden="true" />
 
-        {/* 푸터: 연봉 + 게시일 (구분선 위, 하단 정렬) */}
+        {/* 푸터 — 슬롯 고정: 좌=연봉(없으면 회색 '연봉 미기재'), 우=실마감(D-N)+게시일.
+            '상시채용'은 대다수 공고의 기본값이라 카드에선 생략 — 자리 이동으로 그리드 시선이 튀는 것 방지. */}
         <div className="flex items-end justify-between gap-2 border-t border-border pt-3">
           <div className="min-w-0">
             {salary ? (
@@ -149,21 +152,18 @@ export function JobCard({
                 </div>
               </>
             ) : (
-              <div className="text-caption text-muted-foreground">{deadline.text}</div>
+              <div className="text-caption text-muted-foreground">연봉 미기재</div>
             )}
           </div>
-          {(salary || posted) && (
-            <div className="flex shrink-0 flex-col items-end gap-0.5 text-caption text-muted-foreground">
-              {/* 연봉이 왼쪽을 차지하면 마감 문구가 사라지므로, 연봉 카드에선 마감을 오른쪽에 표기 */}
-              {salary && <span className="whitespace-nowrap">{deadline.text}</span>}
-              {posted && (
-                <span className="flex items-center gap-1 whitespace-nowrap">
-                  <Clock className="h-3 w-3" aria-hidden="true" />
-                  {posted}
-                </span>
-              )}
-            </div>
-          )}
+          <div className="flex shrink-0 flex-col items-end gap-0.5 text-caption text-muted-foreground">
+            {deadline.text !== "상시채용" && <span className="whitespace-nowrap">{deadline.text}</span>}
+            {posted && (
+              <span className="flex items-center gap-1 whitespace-nowrap">
+                <Clock className="h-3 w-3" aria-hidden="true" />
+                {posted}
+              </span>
+            )}
+          </div>
         </div>
       </Card>
       </Link>

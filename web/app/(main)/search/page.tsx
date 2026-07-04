@@ -1,5 +1,12 @@
+export const metadata = {
+  title: "공고 검색 — 비자 스폰서십 해외 개발자 채용 | WorldDev",
+  description: "비자 스폰서십이 검증된 해외 개발자 공고를 국가·직무·연봉으로 검색하세요.",
+};
+
 import { JobRow } from "@/components/job/JobRow";
-import { FilterSidebar } from "@/components/search/FilterSidebar";
+import { groupAdjacentJobs } from "@/lib/group-jobs";
+import { SearchAlertButton } from "@/components/search/SearchAlertButton";
+import { SearchFilterLayout } from "@/components/search/SearchFilterLayout";
 import { Pagination } from "@/components/search/Pagination";
 import { RecentSearches } from "@/components/search/RecentSearches";
 import { RecordSearch } from "@/components/search/RecordSearch";
@@ -12,7 +19,7 @@ import { getSession, getSessionToken } from "@/lib/session-server";
 // 동적 렌더된다. force-dynamic 은 모든 fetch 를 no-store 로 덮어써 fetchRegions 의 revalidate 를
 // 무력화했으므로 제거. 검색 결과(fetchJobs)·저장 ID(fetchSavedJobIds)는 각자 no-store 라 신선 유지,
 // 레퍼런스(fetchRegions)만 캐시된다.
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 20;
 
 type SearchParams = { [key: string]: string | string[] | undefined };
 
@@ -59,19 +66,20 @@ export default async function SearchPage({
         <RecentSearches />
       </section>
 
-      <div className="grid gap-6 lg:grid-cols-[260px_1fr]">
-        <FilterSidebar regions={regions} />
-
+      <SearchFilterLayout regions={regions}>
         <section className="min-w-0 space-y-4">
-          <div className="flex flex-wrap items-baseline justify-between gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
             {result.ok ? (
               <p className="text-body-sm text-muted-foreground">
-                총 <span className="font-semibold text-foreground">{result.data.total}</span>개 공고
+                총 <span className="font-semibold text-foreground">{result.data.total.toLocaleString()}</span>개 공고
               </p>
             ) : (
               <span />
             )}
-            <SortToggle />
+            <div className="flex items-center gap-2">
+              <SearchAlertButton regions={regions} />
+              <SortToggle />
+            </div>
           </div>
 
           {!result.ok ? (
@@ -88,8 +96,14 @@ export default async function SearchPage({
           ) : (
             <>
               <div className="space-y-3">
-                {result.data.items.map((job) => (
-                  <JobRow key={job.id} job={job} loggedIn={loggedIn} saved={savedIds.has(job.id)} />
+                {groupAdjacentJobs(result.data.items).map(({ job, extraLocations }) => (
+                  <JobRow
+                    key={job.id}
+                    job={job}
+                    loggedIn={loggedIn}
+                    saved={savedIds.has(job.id)}
+                    extraLocations={extraLocations}
+                  />
                 ))}
               </div>
               <Pagination
@@ -100,7 +114,7 @@ export default async function SearchPage({
             </>
           )}
         </section>
-      </div>
+      </SearchFilterLayout>
     </div>
   );
 }

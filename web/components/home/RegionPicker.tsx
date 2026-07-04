@@ -42,11 +42,15 @@ export function RegionPicker({
     if (!active || cities[active]) return;
     let cancelled = false;
     setLoading(true);
-    fetchRegionCities(active).then((cs) => {
-      if (cancelled) return;
-      setCities((m) => ({ ...m, [active]: cs }));
-      setLoading(false);
-    });
+    fetchRegionCities(active)
+      .then((cs) => {
+        if (cancelled) return;
+        setCities((m) => ({ ...m, [active]: cs }));
+      })
+      // 실패해도 로딩은 해제 — 없으면 "불러오는 중…"에 영구 고착된다.
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
     return () => {
       cancelled = true;
     };

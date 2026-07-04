@@ -10,11 +10,13 @@ from datetime import UTC, datetime
 from typing import Any
 
 from dev_jobs_core.analyzers.experience import extract_experience_years
+from dev_jobs_core.analyzers.job_meta import extract_language, extract_relocation
 from dev_jobs_core.analyzers.remote_geo import classify_remote_eligibility
 from dev_jobs_core.analyzers.salary import _to_usd_year, extract_salary_from_description
 from dev_jobs_core.analyzers.seniority import extract_seniority
 from dev_jobs_core.analyzers.stack import extract_tech, normalize_tech_tags
 from dev_jobs_core.analyzers.visa import classify_visa
+from dev_jobs_core.geo import detect_city, detect_country
 from dev_jobs_core.models import JobPosting
 from dev_jobs_core.recommender.embeddings import build_embed_text, embed_text
 from dev_jobs_core.registry import resolve as resolve_company
@@ -34,10 +36,23 @@ _GENERIC_LOC = {
 }
 
 
+def _clean_location(loc: str | None) -> str | None:
+    """소스 location 의 빈 세그먼트 정리 — 'Tokyo, , Japan' → 'Tokyo, Japan'.
+    ATS 가 city/state/country 를 콤마로 join 하며 빈 state 가 ', ,' 로 남는 경우가 흔하다.
+    """
+    if not loc:
+        return loc
+    cleaned = re.sub(r"\s*,(\s*,)+", ",", loc)          # 연속 콤마 병합
+    cleaned = re.sub(r"^\s*,\s*|\s*,\s*$", "", cleaned)  # 앞뒤 고아 콤마 제거
+    cleaned = re.sub(r"\s*,\s*", ", ", cleaned).strip()  # 콤마 간격 표준화
+    return cleaned or None
+
+
 def _enrich_location(loc: str | None, hq: str | None) -> str | None:
     """location 이 근무형태만 있는 generic 값이고 회사 HQ 가 있으면 HQ 로 지역을 보정.
     실제 도시/국가가 있으면 그대로 둔다(예: 'Hybrid-Palo Alto, CA' 는 미국 유지).
     """
+    loc = _clean_location(loc)
     if not hq:
         return loc
     norm = re.sub(r"\s+", " ", (loc or "").strip().lower())
@@ -171,14 +186,20 @@ def transform(j: JobPosting, *, defer_embedding: bool = False) -> tuple[dict[str
             raw_min, raw_max = ext["min"], ext["max"]
             raw_cur, raw_period = ext["currency"], ext["period"]
 
+    location = _enrich_location(j.location, hq)
     job_row = {
         "id": j.job_id,
         "source": j.source,
         "title": j.title,
         "company_slug": slug,
-        "location": _enrich_location(j.location, hq),
+        "location": location,
+        "country": detect_country(location),  # 지역 필터/집계용 ISO2(불명확 None)
+        "city": detect_city(location),        # 도시 필터/집계용 slug(불명확 None)
         "is_remote": bool(j.is_remote),
         "employment_type": j.employment_type or None,
+        "department": j.department or None,
+        "relocation_support": extract_relocation(plain),   # True/False/None(무언급)
+        "language_requirement": extract_language(plain),   # 'german'|'english_only'|None
         "description": clean_structured_html(j.description) or None,
         "description_text": plain or None,
         "apply_url": j.apply_url or None,

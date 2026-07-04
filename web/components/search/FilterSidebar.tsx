@@ -1,7 +1,8 @@
 "use client";
 
-import { RotateCcw, X } from "lucide-react";
+import { ChevronDown, ChevronUp, PanelLeftClose, RotateCcw, X } from "lucide-react";
 import { useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 import type { RegionCount } from "@/lib/api";
 import { DISCIPLINES } from "@/lib/disciplines";
@@ -43,14 +44,25 @@ function CheckRow({
         />
         <span className="truncate text-foreground">{label}</span>
       </span>
-      {count !== undefined && <span className="shrink-0 text-caption tabular-nums text-muted-foreground">{count}</span>}
+      {count !== undefined && <span className="shrink-0 text-caption tabular-nums text-muted-foreground">{count.toLocaleString()}</span>}
     </label>
   );
 }
 
-export function FilterSidebar({ regions }: { regions: RegionCount[] }) {
+export function FilterSidebar({
+  regions,
+  onCollapse,
+  plain = false,
+}: {
+  regions: RegionCount[];
+  onCollapse?: () => void;
+  /** 바텀시트 등 자체 chrome 이 있는 컨테이너 안에서 테두리·"필터" 헤더를 생략. */
+  plain?: boolean;
+}) {
   const sp = useSearchParams();
   const update = useUpdateQuery();
+  // 국가 목록은 50+개라 상위 10개만 기본 노출, 나머지는 "더보기"로 접는다.
+  const [showAllCountries, setShowAllCountries] = useState(false);
 
   const countries = regions.filter((r) => r.value !== "remote" && r.count > 0);
   const countryValues = new Set(countries.map((c) => c.value));
@@ -88,15 +100,42 @@ export function FilterSidebar({ regions }: { regions: RegionCount[] }) {
   const reset = () => update({ region: null, discipline: null, remote: null, rc: null });
 
   return (
-    <aside className="h-fit rounded-2xl border border-border bg-surface p-4 lg:sticky lg:top-4">
-      <div className="mb-3 flex items-center justify-between border-b border-border pb-3">
-        <span className="text-body-sm font-bold text-foreground">필터</span>
+    <aside
+      className={
+        plain
+          ? "h-fit"
+          : "h-fit rounded-2xl border border-border bg-surface p-4 lg:sticky lg:top-4"
+      }
+    >
+      <div
+        className={
+          plain
+            ? "mb-3 flex items-center justify-end gap-2"
+            : "mb-3 flex items-center justify-between gap-2 border-b border-border pb-3"
+        }
+      >
+        {!plain && (
+          <div className="flex items-center gap-1">
+            {onCollapse && (
+              <button
+                type="button"
+                onClick={onCollapse}
+                aria-label="필터 접기"
+                title="필터 접기"
+                className="inline-flex items-center justify-center rounded-md p-0.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+              >
+                <PanelLeftClose className="h-4 w-4" aria-hidden="true" />
+              </button>
+            )}
+            <span className="text-body-sm font-bold text-foreground">필터</span>
+          </div>
+        )}
         <button
           type="button"
           onClick={reset}
           aria-label="필터 갱신"
           title="필터 갱신"
-          className="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-caption font-medium text-primary transition-colors hover:bg-primary/5"
+          className="inline-flex min-h-9 items-center gap-1 rounded-md px-2 py-1 text-caption font-medium text-primary transition-colors hover:bg-primary/5"
         >
           <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
           갱신
@@ -121,15 +160,42 @@ export function FilterSidebar({ regions }: { regions: RegionCount[] }) {
               ))}
             </div>
           )}
-          {countries.map((c) => (
-            <CheckRow
-              key={c.value}
-              checked={selectedRegions.has(c.value) || regionCountry === c.value}
-              onToggle={() => toggleRegion(c.value)}
-              label={c.label}
-              count={c.count}
-            />
-          ))}
+          {countries
+            // 접힌 상태에서도 선택된 국가는 항상 보이게(상위 10 밖이어도 유지).
+            .filter(
+              (c, i) =>
+                showAllCountries ||
+                i < 10 ||
+                selectedRegions.has(c.value) ||
+                regionCountry === c.value,
+            )
+            .map((c) => (
+              <CheckRow
+                key={c.value}
+                checked={selectedRegions.has(c.value) || regionCountry === c.value}
+                onToggle={() => toggleRegion(c.value)}
+                label={c.label}
+                count={c.count}
+              />
+            ))}
+          {countries.length > 10 && (
+            <button
+              type="button"
+              onClick={() => setShowAllCountries((v) => !v)}
+              className="inline-flex items-center gap-1 text-body-sm font-medium text-primary transition-colors hover:underline"
+            >
+              {showAllCountries ? (
+                <>
+                  접기 <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
+                </>
+              ) : (
+                <>
+                  더보기 ({(countries.length - 10).toLocaleString()})
+                  <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+                </>
+              )}
+            </button>
+          )}
         </Group>
       )}
 

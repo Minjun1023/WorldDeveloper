@@ -123,7 +123,9 @@ public class AuthController {
 
     @PostMapping("/exchange")
     public AuthResult exchange(@RequestHeader(value = "X-Internal-Auth", required = false) String secret,
-                               @RequestBody ExchangeRequest r) {
+                               @RequestBody ExchangeRequest r,
+                               HttpServletRequest req) {
+        rateLimit("exchange", req); // 내부 시크릿·핸드오프 코드 브루트포스 방지(다른 auth 엔드포인트와 동일 정책)
         if (internalSecret == null || internalSecret.isBlank() || !internalSecret.equals(secret)) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "forbidden");
         }

@@ -47,7 +47,8 @@ public class FeedbackController {
 
     @GetMapping("/saved")
     public List<JobDto> saved(@AuthenticationPrincipal String userId) {
-        return jobService.byIds(feedback.savedJobIds(uid(userId)));
+        // 마감 공고 포함(closed=true) — 칸반에서 카드가 조용히 사라지는 대신 "마감됨" 배지로 안내.
+        return jobService.byIdsIncludingClosed(feedback.savedJobIds(uid(userId)));
     }
 
     @PutMapping("/reactions/{jobId}")

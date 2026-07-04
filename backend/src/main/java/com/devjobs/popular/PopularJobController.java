@@ -20,8 +20,8 @@ public class PopularJobController {
 
     @GetMapping
     public List<PopularJob> popular(@RequestParam(required = false) String region,
-                                    @RequestParam(name = "function", required = false) String function,
+                                    @RequestParam(name = "discipline", required = false) String discipline,
                                     @RequestParam(defaultValue = "6") int limit) {
-        return svc.popular(region, function, Math.min(Math.max(limit, 1), 24));
+        return svc.popular(region, discipline, Math.min(Math.max(limit, 1), 24));
     }
 }

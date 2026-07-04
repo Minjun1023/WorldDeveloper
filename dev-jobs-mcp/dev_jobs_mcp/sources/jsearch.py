@@ -36,12 +36,13 @@ async def fetch(query: str, location: str = "", remote_only: bool = False, limit
     }
 
     async with httpx.AsyncClient(timeout=30) as client:
-        resp = await client.get(f"{BASE}/search", headers=headers, params=params)
+        # v2: 응답이 {"data": {"jobs": [...], "cursor": ...}} 구조 (구 /search 는 폐지됨)
+        resp = await client.get(f"{BASE}/search-v2", headers=headers, params=params)
         resp.raise_for_status()
         data = resp.json()
 
     postings: list[JobPosting] = []
-    for job in data.get("data", [])[:limit]:
+    for job in (data.get("data") or {}).get("jobs", [])[:limit]:
         postings.append(JobPosting(
             job_id=f"jsearch:{job.get('job_id', '')}",
             source="jsearch",

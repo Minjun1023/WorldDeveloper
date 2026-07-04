@@ -39,25 +39,28 @@ export default async function HomePage() {
   const session = await getSession();
   const [sponsorRes, verifiedRes, companies, regions, popularSearches] = await Promise.all([
     // 최신 비자 스폰서십 공고(근거 문장 포함) + 통계(스폰서·명부검증 총수) + 히어로 미리보기 공고에 함께 사용.
-    fetchJobs({ visa: "sponsors", pageSize: 6, sort: "newest" }),
+    // 크롤링이 회사 단위 배치라 최신순은 한 회사로 뭉치기 쉬움 → 넉넉히 받아 회사당 2개 캡 후 6개.
+    fetchJobs({ visa: "sponsors", pageSize: 18, sort: "newest" }),
     fetchJobs({ verifiedOnly: true, pageSize: 1 }), // 정부 명부 검증 공고 총수(통계 띠)
     fetchCompanies(),
     fetchRegions(),
     fetchPopularSearches(8), // 인기 검색어(실측). 데이터 부족 시 Hero가 큐레이션 fallback.
   ]);
 
-  const sponsorJobs = sponsorRes.ok ? sponsorRes.data.items : [];
+  // 홈 노출은 회사당 최대 2개로 다양성 확보(검색 결과는 캡 없음).
+  const perCompany = new Map<string, number>();
+  const sponsorJobs = (sponsorRes.ok ? sponsorRes.data.items : [])
+    .filter((j) => {
+      const n = perCompany.get(j.company.slug) ?? 0;
+      if (n >= 2) return false;
+      perCompany.set(j.company.slug, n + 1);
+      return true;
+    })
+    .slice(0, 6);
   // 히어로 카드용 대표 공고 — 활성 비자 스폰서 공고 중 명부검증된 것 우선(없으면 최신 1건).
   const featuredJob = sponsorJobs.find((j) => j.visa?.register_verified) ?? sponsorJobs[0] ?? null;
   const visaTotal = sponsorRes.ok ? sponsorRes.data.total : 0;
   const verifiedTotal = verifiedRes.ok ? verifiedRes.data.total : 0;
-
-  // 비로그인 홈의 "당신을 위한 5축 매칭 공고" 예시 섹션용(로그인 시엔 실제 추천을 부른다).
-  // page:2 로 위 최신 공고(page:1)와 겹치지 않게 한다.
-  const sampleRes = session
-    ? null
-    : await fetchJobs({ visa: "sponsors", pageSize: 6, page: 2, sort: "newest" });
-  const sampleJobs = sampleRes?.ok ? sampleRes.data.items : [];
 
   // "검증된 회사들" 섹션은 헤더가 "정부 명부 검증을 통과한 회사"라고 단언하므로, 실제로 명부 검증
   // (verified=Home Office/USCIS 근거 보유)된 회사만 노출한다. 공고 수 상위라도 미검증(Anthropic 등)은 제외.
@@ -85,18 +88,10 @@ export default async function HomePage() {
       {/* 디렉터리에 수록된 비자 스폰서 기업 — 로고 마퀴 */}
       <CompanyMarquee companies={marqueeCompanies} />
 
-      {/* 맞춤 추천 미리보기 (흰색) */}
-      {session ? (
-        <Section>
-          <MemberLandingRecommend />
-        </Section>
-      ) : (
-        sampleJobs.length > 0 && (
-          <Section>
-            <SampleRecommend jobs={sampleJobs} />
-          </Section>
-        )
-      )}
+      {/* 맞춤 추천 — 로그인: 실제 추천, 비로그인: 컴팩트 CTA 배너 */}
+      <Section>
+        {session ? <MemberLandingRecommend /> : <SampleRecommend />}
+      </Section>
 
       {/* 인기 TOP 공고 (연회색) — 지역·직무 드롭다운별 인기(최근 7일 조회수) 정렬. 데이터 적으면 최신순 fallback. */}
       <Section muted>
@@ -105,7 +100,7 @@ export default async function HomePage() {
           href="/search?visa=sponsors&sort=newest"
           subtitle="지역·직무별로 지금 많이 보는 공고"
         />
-        <PopularJobs loggedIn={!!session} />
+        <PopularJobs loggedIn={!!session} regions={regions} />
       </Section>
 
       {/* 최신 공고 (흰색) */}
@@ -114,7 +109,7 @@ export default async function HomePage() {
           <SectionHeader
             title="최신 공고"
             href="/search?visa=sponsors&sort=newest"
-            hrefLabel="전체 공고 보기"
+            hrefLabel="더보기"
             subtitle="검증된 공고만 수록"
           />
           <div className="space-y-3">
@@ -142,7 +137,7 @@ export default async function HomePage() {
           <SectionHeader
             title="검증된 기업들"
             href="/companies"
-            hrefLabel="모든 기업 보기"
+            hrefLabel="더보기"
             subtitle="정부 명부 검증을 통과한 해외 테크 기업들이에요."
           />
           <CompanySpotlight companies={spotlight} />

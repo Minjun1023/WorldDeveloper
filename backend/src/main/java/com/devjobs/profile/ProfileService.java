@@ -38,19 +38,40 @@ public class ProfileService {
         return new ProfileDto.ProfileResponse(true, toDto(e.get()), communityHandle);
     }
 
+    // 입력 상한 — 무제한 배열/텍스트 저장(행 비대·저장 폭탄) 방지. 실사용 최대치의 넉넉한 배수.
+    private static final int MAX_SKILLS = 50;
+    private static final int MAX_LOCATIONS = 30;
+    private static final int MAX_ITEM_LEN = 60;   // 스킬·지역 항목 하나의 길이
+    private static final int MAX_BIO_LEN = 1000;
+
     @Transactional
     public void upsert(UUID userId, ProfileDto.Profile p) {
         UserProfileEntity e = repo.findById(userId).orElseGet(() -> new UserProfileEntity(userId));
-        e.setSkills(p.skills() == null ? List.of() : p.skills());
+        e.setSkills(capList(p.skills(), MAX_SKILLS));
         e.setSeniority(p.seniority());
         e.setYearsExperience(p.yearsExperience());
-        e.setPreferredLocations(p.preferredLocations() == null ? List.of() : p.preferredLocations());
+        e.setPreferredLocations(capList(p.preferredLocations(), MAX_LOCATIONS));
         e.setRemotePreference(p.remotePreference());
         e.setDesiredSalaryUsd(p.desiredSalaryUsd());
-        e.setBio(p.bio());
+        e.setBio(capText(p.bio(), MAX_BIO_LEN));
         e.setHandle(normalizeHandle(userId, p.handle()));
         e.setUpdatedAt(OffsetDateTime.now());
         repo.save(e);
+    }
+
+    /** 리스트 상한 + 항목별 길이 상한 (초과분은 조용히 절단 — 프로필 저장은 관용적으로). */
+    private static List<String> capList(List<String> in, int maxItems) {
+        if (in == null) return List.of();
+        return in.stream()
+            .filter(s -> s != null && !s.isBlank())
+            .map(s -> capText(s.trim(), MAX_ITEM_LEN))
+            .limit(maxItems)
+            .toList();
+    }
+
+    private static String capText(String s, int max) {
+        if (s == null) return null;
+        return s.length() <= max ? s : s.substring(0, max);
     }
 
     /** 닉네임 정규화·검증. 빈 값이면 null(자동 닉네임). 형식 오류 400, 중복 409. */

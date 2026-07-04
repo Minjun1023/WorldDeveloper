@@ -24,10 +24,7 @@ export default function VisaGuideCountryPage({ params }: { params: { country: st
 
   return (
     <article className="mx-auto max-w-3xl space-y-6">
-      <Link href="/visa" className="inline-block text-body-sm text-muted-foreground hover:text-foreground">
-        ← 비자 가이드
-      </Link>
-
+      {/* 뒤로가기 링크는 브레드크럼("홈 > 비자 가이드 > 국가")으로 대체 — 다른 상세 페이지와 일관. */}
       <header className="space-y-2">
         <div className="flex items-center gap-3">
           <span className="text-3xl leading-none" aria-hidden="true">{g.flag}</span>
@@ -92,7 +89,7 @@ export default function VisaGuideCountryPage({ params }: { params: { country: st
       <div className="border-t border-border pt-5">
         <Link
           href={`/search?region=${g.slug}&visa=sponsors`}
-          className="inline-flex items-center gap-1.5 rounded-[10px] bg-primary px-5 py-2.5 text-body-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2.5 text-body-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
         >
           {g.country} 스폰서 공고 보기 →
         </Link>

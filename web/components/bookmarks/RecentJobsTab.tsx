@@ -20,7 +20,7 @@ export function RecentJobsTab() {
   if (jobs === null) return null;
   if (jobs.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-surface p-8 text-center">
+      <div className="rounded-lg border border-border bg-surface p-6 text-center">
         <p className="text-body-sm text-muted-foreground">아직 열어본 공고가 없어요.</p>
         <Link href="/search" className="mt-3 inline-block text-body-sm text-primary">
           공고 둘러보러 가기 →

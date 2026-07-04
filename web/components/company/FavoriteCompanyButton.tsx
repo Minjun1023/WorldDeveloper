@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 // 클라이언트 내비게이션(목록→상세→목록) 동안 유지돼 '돌아오면 ★ 가 풀리는' 현상이 없다.
 // 로그아웃 시 로그인 유도 링크. 의미는 aria-label/title 로 제공.
 const ICON_BTN =
-  "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-[10px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
 
 export function FavoriteCompanyButton({
   slug,

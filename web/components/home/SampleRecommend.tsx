@@ -1,68 +1,31 @@
-import { Lock } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import Link from "next/link";
 
-import { SectionHeader } from "@/components/home/SectionHeader";
-import { RecommendationCard } from "@/components/recommend/RecommendationCard";
-import type { Job, RecommendationItem } from "@/lib/types";
-
-// 로그인 전 데모용 예시 점수 — 실제 개인화 점수 아님. 카드는 블러 배경으로만 노출(잠금 상태).
-const SAMPLE_SCORES = [
-  {
-    final_score: 0.92, stack: 0.95, visa: 1, location: 0.9, seniority: 0.86, salary: 0.78, semantic: 0.9,
-    penalty_applied: 0, reasons: ["보유 스택과 정확히 일치", "비자 스폰서 명시됨"], deal_breakers: [],
-  },
-  {
-    final_score: 0.88, stack: 0.9, visa: 1, location: 0.84, seniority: 0.82, salary: 0.8, semantic: 0.85,
-    penalty_applied: 0, reasons: ["원격 근무 가능", "기술 키워드 다수 일치"], deal_breakers: [],
-  },
-  {
-    final_score: 0.85, stack: 0.82, visa: 1, location: 0.88, seniority: 0.8, salary: 0.74, semantic: 0.83,
-    penalty_applied: 0, reasons: ["희망 지역과 일치", "시니어 레벨 부합"], deal_breakers: [],
-  },
-];
-
-// 비로그인 홈: "당신을 위한 5축 매칭 공고"를 블러 처리한 잠금 미리보기로 노출.
-// 카드는 장식용 배경(블러·비활성)이고, 중앙 CTA로 프로필 작성을 유도한다.
+// 비로그인 홈: 맞춤 추천은 블러 카드 3장(~500px) 대신 컴팩트한 1줄 CTA 배너로.
+// 큰 블러 영역은 첫 방문자에게 '고장/쓸모없음' 신호를 줘서 인기 공고에 공간을 양보한다.
 // 로그인 시엔 page.tsx 가 <MemberLandingRecommend/>(실제 추천)로 교체한다.
-export function SampleRecommend({ jobs }: { jobs: Job[] }) {
-  if (jobs.length === 0) return null;
-
-  const items = jobs.slice(0, 3).map((job, i) => ({
-    job,
-    score: SAMPLE_SCORES[i % SAMPLE_SCORES.length],
-  })) as unknown as RecommendationItem[];
-
+export function SampleRecommend() {
   return (
-    <div>
-      <SectionHeader
-        title="맞춤 추천 공고"
-        subtitle="프로필 기반 5축 매칭"
-      />
-      <div className="relative">
-        {/* 잠금된 미리보기 — 카드를 블러 처리한 배경(장식, 상호작용 비활성) */}
-        <div
-          aria-hidden="true"
-          className="grid select-none gap-4 blur-[5px] pointer-events-none sm:grid-cols-2 lg:grid-cols-3"
-        >
-          {items.map((item, i) => (
-            <RecommendationCard key={item.job.id} item={item} rank={i + 1} />
-          ))}
-        </div>
-
-        {/* 중앙 CTA 오버레이 */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-surface/40 px-4 text-center">
-          <Link
-            href="/signin?callbackUrl=/recommend"
-            className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-body-sm font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <Lock className="h-4 w-4" aria-hidden="true" />
-            프로필 작성 시 이용 가능
-          </Link>
-          <p className="text-body-sm font-medium text-foreground">
-            스택·지역·연봉 기준으로 맞춤 추천을 받아보세요
+    <div className="flex flex-col items-center justify-between gap-4 rounded-2xl border border-primary/20 bg-primary-tint px-6 py-5 sm:flex-row">
+      <div className="flex items-center gap-3">
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+          <Sparkles className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <div>
+          <p className="text-body font-bold text-foreground">
+            프로필을 작성하면 5축 매칭 추천을 받을 수 있어요
+          </p>
+          <p className="mt-0.5 text-body-sm text-muted-foreground">
+            스택·지역·레벨·연봉·의미 기준으로 승인 확률 높은 공고를 골라드려요.
           </p>
         </div>
       </div>
+      <Link
+        href="/signin?callbackUrl=/recommend"
+        className="shrink-0 rounded-xl bg-primary px-5 py-2.5 text-body-sm font-bold text-primary-foreground shadow-sm transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        맞춤 추천 받기 →
+      </Link>
     </div>
   );
 }

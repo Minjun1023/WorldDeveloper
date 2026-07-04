@@ -8,12 +8,10 @@ import { useRouter } from "next/navigation";
 import { PasswordChecklist } from "@/components/auth/PasswordChecklist";
 import { PasswordInput } from "@/components/auth/PasswordInput";
 import { TermsAgreement } from "@/components/auth/TermsAgreement";
-import { ProfileForm } from "@/components/recommend/ProfileForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { checkPassword, isPasswordValid } from "@/lib/password";
 import { safeInternalPath } from "@/lib/safe-redirect";
-import type { RecommendProfile } from "@/lib/types";
 
 type Mode = "login" | "register";
 type Avail = "idle" | "checking" | "ok" | "taken" | "invalid" | "error";
@@ -36,7 +34,6 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
   const [verifyPending, setVerifyPending] = useState(false);
   const [verifyError, setVerifyError] = useState<string | null>(null);
   const [resent, setResent] = useState(false);
-  const [verified, setVerified] = useState(false);
 
   // 이름 실시간 확인 (register, debounce 500ms)
   useEffect(() => {
@@ -193,7 +190,13 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
         router.push("/signin"); // 자동 로그인 실패 시 로그인 화면으로
         return;
       }
-      setVerified(true); // 인증·자동로그인 완료 → 프로필 작성 단계로
+      // 인증·자동로그인 완료 → 입장. 인라인 프로필 단계는 폐기 —
+      // 특정 페이지에서 온 유저(callbackUrl)는 보던 곳으로, 그 외엔 완성형 프로필 편집(환영 모드)으로.
+      const dest = callbackUrl && callbackUrl !== "/"
+        ? safeInternalPath(callbackUrl)
+        : "/me/profile?welcome=1";
+      router.push(dest);
+      router.refresh();
     } catch (err) {
       setVerifyError(err instanceof Error ? err.message : "오류가 발생했어요.");
     } finally {
@@ -201,28 +204,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
     }
   }
 
-  // 인증·로그인 완료 후 프로필 저장(선택) → 입장. 실패해도 로그인은 됐으므로 그냥 입장시킨다.
-  async function saveProfileAndFinish(profile?: RecommendProfile) {
-    setError(null);
-    setPending(true);
-    try {
-      if (profile) {
-        await fetch("/api/me/profile", {
-          method: "PUT",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify(profile),
-        });
-      }
-    } catch {
-      // 무시 — 아래에서 입장 처리
-    } finally {
-      setPending(false);
-    }
-    router.push(callbackUrl);
-    router.refresh();
-  }
-
-  if (mode === "register" && registered && !verified) {
+  if (mode === "register" && registered) {
     return (
       <div className="space-y-4">
         <p className="text-body-sm">
@@ -232,6 +214,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
           <label htmlFor="verify-code" className="text-body-sm font-medium">인증번호</label>
           <Input
             id="verify-code"
+            autoFocus
             inputMode="numeric"
             autoComplete="one-time-code"
             maxLength={6}
@@ -283,6 +266,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
             />
             <Input
               id="login-email"
+              autoComplete="email"
               type="email"
               placeholder="hello@example.com"
               value={email}
@@ -309,7 +293,8 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
             />
             <PasswordInput
               id="login-password"
-              placeholder="8자 이상 입력"
+              autoComplete="current-password"
+              placeholder="비밀번호를 입력하세요"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -333,31 +318,6 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
           {pending ? "처리 중…" : "로그인"}
         </Button>
       </form>
-    );
-  }
-
-  if (mode === "register" && verified) {
-    return (
-      <div className="space-y-3">
-        <p className="text-body-sm text-muted-foreground">
-          이메일 인증 완료! 맞춤 공고 추천을 위한 프로필을 작성해 주세요 (선택 — 건너뛰어도 시작할 수 있어요).
-        </p>
-        <ProfileForm
-          loading={pending}
-          submitLabel="프로필 저장하고 시작하기"
-          onSubmit={(profile) => saveProfileAndFinish(profile)}
-          secondaryAction={
-            <button
-              type="button"
-              onClick={() => saveProfileAndFinish(undefined)}
-              className="text-body-sm text-muted-foreground hover:text-foreground"
-            >
-              건너뛰기
-            </button>
-          }
-        />
-        {error && <p className="text-destructive text-body-sm">{error}</p>}
-      </div>
     );
   }
 
@@ -392,6 +352,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
           />
           <Input
             id="reg-email"
+            autoComplete="email"
             type="email"
             placeholder="hello@example.com"
             value={email}
@@ -412,7 +373,8 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
           />
           <PasswordInput
             id="reg-password"
-            placeholder="영문, 숫자, 특수문자 조합 8자 이상"
+            autoComplete="new-password"
+            placeholder="영문 대·소문자, 숫자 포함 10자 이상"
             minLength={10}
             maxLength={72}
             value={password}
@@ -433,6 +395,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
           />
           <PasswordInput
             id="reg-confirm"
+            autoComplete="new-password"
             placeholder="비밀번호를 다시 입력해주세요"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}

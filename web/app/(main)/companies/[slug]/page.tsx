@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cache } from "react";
 
 import { BackButton } from "@/components/BackButton";
 import { CompanyInfo } from "@/components/company/CompanyInfo";
@@ -8,16 +9,35 @@ import { RelatedCommunity } from "@/components/community/RelatedCommunity";
 import { CompanyStats } from "@/components/company/CompanyStats";
 import { FavoriteCompanyButton } from "@/components/company/FavoriteCompanyButton";
 import { JobCard } from "@/components/job/JobCard";
-import { RegisterVerifiedBadge } from "@/components/job/RegisterVerifiedBadge";
 import { Pagination } from "@/components/search/Pagination";
 import { Badge } from "@/components/ui/badge";
 import { fetchCompany } from "@/lib/api";
 import { COMPANY_LOCATIONS } from "@/lib/company-locations";
+import { NON_DISCIPLINE_TAGS, tagLabel } from "@/lib/company-tags";
 import { getSession } from "@/lib/session-server";
 
 export const dynamic = "force-dynamic";
 
 const PAGE_SIZE = 12; // 공고 12개(3열 × 4행) 단위로 페이지네이션
+
+// fetchCompany 는 no-store 라 generateMetadata + 본문 이중 호출을 요청 단위로 dedupe.
+const getCompany = cache((slug: string, page: number) => fetchCompany(slug, page));
+
+// 공유·검색 유입용 페이지별 메타 — "회사명 채용 공고 | WorldDev".
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: { slug: string };
+  searchParams: { [key: string]: string | string[] | undefined };
+}) {
+  const page = Math.max(1, Number(searchParams.page) || 1);
+  const data = await getCompany(params.slug, page);
+  if (!data) return {};
+  const title = `${data.company.display_name} 채용 공고 ${data.total.toLocaleString()}개 | WorldDev`;
+  const description = `${data.company.display_name}의 비자 스폰서십 검증 공고와 기업 정보를 확인하세요.`;
+  return { title, description, openGraph: { title, description } };
+}
 
 function cleanUrl(url: string): string {
   return url.replace(/^https?:\/\/(www\.)?/, "").replace(/\/$/, "");
@@ -31,12 +51,11 @@ export default async function CompanyDetailPage({
   searchParams: { [key: string]: string | string[] | undefined };
 }) {
   const page = Math.max(1, Number(searchParams.page) || 1);
-  const [data, session] = await Promise.all([fetchCompany(params.slug, page), getSession()]);
+  const [data, session] = await Promise.all([getCompany(params.slug, page), getSession()]);
   if (!data) notFound();
 
   // 백엔드가 해당 페이지의 공고 + 전체 집계 통계를 함께 준다(통계는 모든 공고 기준).
   const { company, jobs: pageJobs, total, stats } = data;
-  const registerVerified = stats.verifiedCount > 0;
 
   return (
     <div className="space-y-8">
@@ -48,7 +67,6 @@ export default async function CompanyDetailPage({
           <div className="min-w-0 flex-1 space-y-3">
             <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
               <h1 className="text-h1">{company.display_name}</h1>
-              {registerVerified && <RegisterVerifiedBadge />}
             </div>
 
             {company.website_url && (
@@ -66,13 +84,15 @@ export default async function CompanyDetailPage({
 
             {company.tags && company.tags.length > 0 && (
               <div className="flex flex-wrap gap-1.5">
-                {company.tags.map((t) => (
-                  <Link key={t} href={`/companies?tag=${encodeURIComponent(t)}`}>
-                    <Badge variant="outline" className="hover:border-primary/40">
-                      {t}
-                    </Badge>
-                  </Link>
-                ))}
+                {company.tags
+                  .filter((t) => !NON_DISCIPLINE_TAGS.has(t))
+                  .map((t) => (
+                    <Link key={t} href={`/companies?tag=${encodeURIComponent(t)}`}>
+                      <Badge variant="outline" className="hover:border-primary/40">
+                        {tagLabel(t)}
+                      </Badge>
+                    </Link>
+                  ))}
               </div>
             )}
           </div>
@@ -86,6 +106,7 @@ export default async function CompanyDetailPage({
         slug={company.slug}
         tags={company.tags}
         location={COMPANY_LOCATIONS[company.slug]?.location}
+        h1bWage={company.h1b_wage}
       />
 
       {/* 통계 행 (백엔드가 전체 공고로 집계) */}
@@ -108,7 +129,7 @@ export default async function CompanyDetailPage({
           </p>
         ) : (
           <>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {pageJobs.map((job) => (
                 <JobCard key={job.id} job={job} showRestrictedRemote showSave loggedIn={!!session} />
               ))}

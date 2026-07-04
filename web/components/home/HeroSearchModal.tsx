@@ -18,11 +18,17 @@ export function HeroSearchModal({
   onClose,
   anchorRect = null,
   initialQuery = "",
+  onApply,
 }: {
   regions: RegionCount[];
   onClose: () => void;
   anchorRect?: DOMRect | null;
   initialQuery?: string;
+  // 있으면 /search 이동 대신 현재 화면에서 필터 적용(인기 TOP 공고 등 인플레이스 사용).
+  onApply?: (sel: {
+    region: { value: string; label: string } | null;
+    discipline: { value: string; label: string } | null;
+  }) => void;
 }) {
   const router = useRouter();
   const [q, setQ] = useState(initialQuery);
@@ -42,9 +48,17 @@ export function HeroSearchModal({
   const [citiesLoading, setCitiesLoading] = useState(false);
   // 직무별 공고 수(지연 로드)
   const [discCounts, setDiscCounts] = useState<Record<string, number | null> | null>(null);
+  // 국가 목록 필터(많은 국가 중 이스라엘 등 빠르게 찾기)
+  const [countryQuery, setCountryQuery] = useState("");
 
   // 원격은 근무형태라 지역에서 제외. 공고 있는 국가만.
-  const countries = regions.filter((r) => r.value !== "remote" && r.count > 0);
+  const allCountries = regions.filter((r) => r.value !== "remote" && r.count > 0);
+  const countries = countryQuery.trim()
+    ? allCountries.filter((c) => {
+        const t = countryQuery.trim().toLowerCase();
+        return c.label.toLowerCase().includes(t) || c.value.toLowerCase().includes(t);
+      })
+    : allCountries;
 
   useEffect(() => {
     // 열기 직전 포커스(트리거)를 기억했다가 닫을 때 되돌린다.
@@ -94,21 +108,29 @@ export function HeroSearchModal({
     if (!activeCountry || cities[activeCountry]) return;
     let cancelled = false;
     setCitiesLoading(true);
-    fetchRegionCities(activeCountry).then((cs) => {
-      if (cancelled) return;
-      setCities((m) => ({ ...m, [activeCountry]: cs }));
-      setCitiesLoading(false);
-    });
+    fetchRegionCities(activeCountry)
+      .then((cs) => {
+        if (cancelled) return;
+        setCities((m) => ({ ...m, [activeCountry]: cs }));
+      })
+      // 실패해도 로딩은 해제 — 없으면 "불러오는 중…"에 영구 고착된다.
+      .finally(() => {
+        if (!cancelled) setCitiesLoading(false);
+      });
     return () => {
       cancelled = true;
     };
   }, [activeCountry, cities]);
 
-  // 직무 패널 첫 오픈 시 공고 수 로드
+  // 직무 패널 오픈 시(또는 선택 지역 변경 시) 공고 수 로드 — 선택한 지역으로 스코프.
+  const regionKey = region?.value ?? "";
   useEffect(() => {
-    if (panel !== "discipline" || discCounts) return;
+    if (panel !== "discipline") return;
     let cancelled = false;
-    fetch("/api/jobs/discipline-counts")
+    setDiscCounts(null); // 지역/패널 변경 시 로딩 표시
+    const p = new URLSearchParams();
+    if (regionKey) p.set("region", regionKey);
+    fetch(`/api/jobs/discipline-counts?${p.toString()}`)
       .then((r) => (r.ok ? r.json() : {}))
       .then((d) => {
         if (!cancelled) setDiscCounts(d as Record<string, number | null>);
@@ -119,9 +141,35 @@ export function HeroSearchModal({
     return () => {
       cancelled = true;
     };
-  }, [panel, discCounts]);
+  }, [panel, regionKey]);
+
+  // 인플레이스(onApply) 모드: 지역·직무 선택 즉시 반영(적용 버튼 없음). 초기 마운트는 스킵.
+  // onApply 는 ref 로 참조해 부모 리렌더로 인한 재실행/루프를 막고, 실제 선택 변경에만 반응.
+  const onApplyRef = useRef(onApply);
+  onApplyRef.current = onApply;
+  const appliedOnce = useRef(false);
+  useEffect(() => {
+    if (!onApplyRef.current) return;
+    if (!appliedOnce.current) {
+      appliedOnce.current = true;
+      return;
+    }
+    onApplyRef.current({
+      region: region ? { value: region.value, label: region.label } : null,
+      discipline: discipline ? { value: discipline.value, label: discipline.label } : null,
+    });
+  }, [region, discipline]);
 
   function submit() {
+    // 인플레이스 모드(onApply): 현재 화면에서 지역·직무만 적용(검색어 미사용).
+    if (onApply) {
+      onApply({
+        region: region ? { value: region.value, label: region.label } : null,
+        discipline: discipline ? { value: discipline.value, label: discipline.label } : null,
+      });
+      onClose();
+      return;
+    }
     const params = new URLSearchParams();
     if (q.trim()) params.set("q", q.trim());
     if (region) params.set("region", region.value);
@@ -162,26 +210,28 @@ export function HeroSearchModal({
         style={panelStyle}
         onMouseDown={(e) => e.stopPropagation()}
       >
-        {/* 검색 바 */}
+        {/* 검색 바 — 인플레이스 모드(onApply)에선 검색어 입력 없이 지역·직무만 고르는 선택 모달. */}
         <div className="flex flex-col gap-2 p-3 sm:flex-row sm:items-stretch">
-          <div className="flex flex-1 items-center gap-2 rounded-lg border-2 border-transparent bg-surface-2 px-4 transition-colors focus-within:border-primary focus-within:bg-surface">
-            <Search className="h-5 w-5 shrink-0 text-hint" aria-hidden="true" />
-            <input
-              ref={inputRef}
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && submit()}
-              placeholder="검색어를 입력하세요"
-              aria-label="검색어"
-              className="h-12 w-full bg-transparent text-body text-foreground placeholder:text-hint focus:outline-none"
-            />
-          </div>
-
+          {!onApply && (
+            <div className="flex flex-1 items-center gap-2 rounded-lg border-2 border-transparent bg-surface-2 px-4 transition-colors focus-within:border-primary focus-within:bg-surface">
+              <Search className="h-5 w-5 shrink-0 text-hint" aria-hidden="true" />
+              <input
+                ref={inputRef}
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && submit()}
+                placeholder="검색어를 입력하세요"
+                aria-label="검색어"
+                className="h-12 w-full bg-transparent text-body text-foreground placeholder:text-hint focus:outline-none"
+              />
+            </div>
+          )}
           <FieldButton
             icon={<MapPin className="h-4 w-4" aria-hidden="true" />}
             label={region ? region.label : "지역을 선택해주세요"}
             selected={!!region}
             open={panel === "region"}
+            grow={!!onApply}
             onClick={() => setPanel((p) => (p === "region" ? null : "region"))}
           />
           <FieldButton
@@ -189,17 +239,21 @@ export function HeroSearchModal({
             label={discipline ? discipline.label : "직무를 선택해주세요"}
             selected={!!discipline}
             open={panel === "discipline"}
+            grow={!!onApply}
             onClick={() => setPanel((p) => (p === "discipline" ? null : "discipline"))}
           />
 
-          <Button
-            type="button"
-            size="lg"
-            onClick={submit}
-            className="shrink-0 justify-center text-white sm:w-28"
-          >
-            검색
-          </Button>
+          {/* 검색 모드에서만 검색 버튼. 인플레이스(onApply)는 선택 즉시 반영이라 버튼 없음. */}
+          {!onApply && (
+            <Button
+              type="button"
+              size="lg"
+              onClick={submit}
+              className="shrink-0 justify-center text-white sm:w-28"
+            >
+              검색
+            </Button>
+          )}
           <button
             type="button"
             onClick={onClose}
@@ -223,18 +277,36 @@ export function HeroSearchModal({
             />
             <div className="grid grid-cols-2">
               {/* 국가 리스트 */}
-              <ul className="max-h-72 overflow-y-auto border-r border-border p-2">
-                {countries.map((c) => (
-                  <li key={c.value}>
-                    <Row
-                      label={c.label}
-                      meta={c.count}
-                      selected={activeCountry === c.value}
-                      onClick={() => setActiveCountry(c.value)}
-                    />
-                  </li>
-                ))}
-              </ul>
+              <div className="border-r border-border">
+                <div className="p-2 pb-1">
+                  <input
+                    type="text"
+                    value={countryQuery}
+                    onChange={(e) => setCountryQuery(e.target.value)}
+                    placeholder="국가 검색 (예: 미국)"
+                    aria-label="국가 검색"
+                    className="h-9 w-full rounded-lg border border-border bg-surface px-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                </div>
+                <ul className="max-h-64 overflow-y-auto p-2 pt-1">
+                  {countries.length === 0 ? (
+                    <li className="px-3 py-4 text-caption text-muted-foreground">
+                      일치하는 국가가 없어요.
+                    </li>
+                  ) : (
+                    countries.map((c) => (
+                      <li key={c.value}>
+                        <Row
+                          label={c.label}
+                          meta={c.count}
+                          selected={activeCountry === c.value}
+                          onClick={() => setActiveCountry(c.value)}
+                        />
+                      </li>
+                    ))
+                  )}
+                </ul>
+              </div>
               {/* 선택한 국가의 도시 */}
               <ul className="max-h-72 overflow-y-auto p-2">
                 {!activeCountryObj ? (
@@ -335,12 +407,14 @@ function FieldButton({
   selected,
   open,
   onClick,
+  grow = false,
 }: {
   icon: React.ReactNode;
   label: string;
   selected: boolean;
   open: boolean;
   onClick: () => void;
+  grow?: boolean;
 }) {
   return (
     <button
@@ -348,7 +422,8 @@ function FieldButton({
       onClick={onClick}
       aria-expanded={open}
       className={cn(
-        "flex h-12 items-center justify-between gap-2 rounded-lg border-2 px-4 text-body transition-colors sm:w-52",
+        "flex h-12 items-center justify-between gap-2 rounded-lg border-2 px-4 text-body transition-colors",
+        grow ? "flex-1" : "sm:w-52",
         open ? "border-primary bg-surface" : "border-transparent bg-surface-2 hover:bg-accent",
       )}
     >

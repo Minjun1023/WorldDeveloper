@@ -89,7 +89,19 @@ export function JobSummary({ jobId, initialData }: { jobId: string; initialData?
         </div>
       </div>
 
-      {error && <p className="mt-2 text-body-sm text-destructive">{error}</p>}
+      {error && (
+        <p className="mt-2 flex items-center gap-2 text-body-sm text-destructive">
+          {error}
+          <button
+            type="button"
+            onClick={load}
+            disabled={loading}
+            className="font-medium text-primary hover:underline disabled:text-muted-foreground"
+          >
+            다시 시도
+          </button>
+        </p>
+      )}
 
       {data && nonEmpty.length === 0 && (
         <p className="mt-2 text-body-sm text-muted-foreground">요약할 핵심 정보를 찾지 못했습니다.</p>

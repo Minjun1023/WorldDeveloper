@@ -32,9 +32,15 @@ public class PopularJobService {
 
     @Transactional(readOnly = true)
     @SuppressWarnings("unchecked")
-    public List<PopularJob> popular(String region, String functionKey, int limit) {
-        String regionRx = jobService.regionRegex(region);
-        JobFunction fn = JobFunction.byKey(functionKey);
+    public List<PopularJob> popular(String region, String discipline, int limit) {
+        // 지역 필터(데이터 파생): 2글자=국가 ISO2(country 컬럼), 그 외=도시 slug(city 컬럼).
+        String reg = (region == null || region.isBlank()) ? null : region.trim();
+        boolean regCountry = reg != null && reg.matches("[a-z]{2}");
+        boolean regCity = reg != null && !regCountry && !"remote".equals(reg);
+        // 직무 필터(Hero 와 동일한 discipline 시스템): 텀 tsquery, 'other'=전체 텀 NOT 매칭.
+        boolean discOther = "other".equals(discipline);
+        String discTerms = discOther ? null : jobService.disciplineTerms(discipline);
+        String discExclude = discOther ? jobService.disciplineExcludeAll() : null;
 
         StringBuilder sql = new StringBuilder(
             "SELECT j.id, COALESCE(v.cnt, 0) AS vc FROM jobs j "
@@ -44,16 +50,16 @@ public class PopularJobService {
             + "  AND NOT is_agency(j.company_slug) "
             // 인기 섹션은 비자 스폰서십 검증 공고만 노출(제품 핵심). unclear/no_sponsor 제외.
             + "  AND j.visa_status = 'sponsors' ");
-        if (regionRx != null) sql.append("AND j.location ~* :regionRx ");
-        if (fn != null) sql.append("AND (j.title ~* :titleRx OR j.tags && CAST(:tagArr AS text[])) ");
+        if (regCountry) sql.append("AND j.country = :reg ");
+        else if (regCity) sql.append("AND j.city = :reg ");
+        if (discTerms != null) sql.append("AND j.search_tsv @@ to_tsquery('english', :discTerms) ");
+        if (discExclude != null) sql.append("AND NOT (j.search_tsv @@ to_tsquery('english', :discExclude)) ");
         sql.append("ORDER BY vc DESC, j.posted_at DESC NULLS LAST LIMIT :lim");
 
         var q = em.createNativeQuery(sql.toString());
-        if (regionRx != null) q.setParameter("regionRx", regionRx);
-        if (fn != null) {
-            q.setParameter("titleRx", fn.titleRegex);
-            q.setParameter("tagArr", fn.tagArrayLiteral());
-        }
+        if (regCountry || regCity) q.setParameter("reg", reg);
+        if (discTerms != null) q.setParameter("discTerms", discTerms);
+        if (discExclude != null) q.setParameter("discExclude", discExclude);
         q.setParameter("lim", limit);
 
         List<Object[]> rows = q.getResultList();

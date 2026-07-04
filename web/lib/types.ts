@@ -53,6 +53,8 @@ export interface Job {
   remote?: JobRemote;
   salary?: JobSalary;
   seniority?: string | null;
+  /** 마감(비활성/기한 경과) — 저장 목록(/api/me/saved)에서만 실림. 칸반 "마감됨" 배지용. */
+  closed?: boolean;
 }
 
 export interface JobDetail {
@@ -64,6 +66,11 @@ export interface JobDetail {
   location_ko?: string;
   is_remote?: boolean;
   employment_type?: string;
+  department?: string;
+  /** 이주 지원 명시 — true=지원, false=명시 거부, 없음=무언급. */
+  relocation_support?: boolean | null;
+  /** 어학 요건 — 'german' 등 현지어 | 'english_only'. */
+  language_requirement?: string | null;
   description?: string;
   apply_url?: string;
   posted_at?: string;
@@ -141,6 +148,15 @@ export interface CompanySummary {
   location?: string;
 }
 
+/** 미 노동부 LCA 공시 기반 H-1B 신고 연봉(소프트웨어 직군, USD/년). */
+export interface CompanyH1bWage {
+  cases: number;
+  median_wage: number;
+  p25_wage?: number | null;
+  p75_wage?: number | null;
+  period: string;
+}
+
 export interface CompanyDetail {
   slug: string;
   display_name: string;
@@ -148,6 +164,7 @@ export interface CompanyDetail {
   tags?: string[];
   website_url?: string;
   job_count: number;
+  h1b_wage?: CompanyH1bWage | null;
 }
 
 export interface CompanyListResponse {

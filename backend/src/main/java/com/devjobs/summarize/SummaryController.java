@@ -45,10 +45,7 @@ public class SummaryController {
     }
 
     private String clientKey(HttpServletRequest http) {
-        String fwd = http.getHeader("X-Forwarded-For");
-        if (fwd != null && !fwd.isBlank()) {
-            return fwd.split(",")[0].trim();
-        }
-        return http.getRemoteAddr();
+        // XFF 수동 파싱 금지 — 위조 가능. forward-headers-strategy 가 반영한 remoteAddr 만 사용.
+        return com.devjobs.config.ClientIp.of(http);
     }
 }

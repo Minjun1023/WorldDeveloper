@@ -2,7 +2,11 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
+import sponsor_match as sm
 import verify_uk_sponsors as v
+# 리팩터링으로 매처가 sponsor_match 로 이동 — 테스트는 동일 동작을 sm 에서 검증
+for _n in ('normalize', 'match_company', 'company_names'):
+    if not hasattr(v, _n) and hasattr(sm, _n): setattr(v, _n, getattr(sm, _n))
 
 
 def test_normalize_strips_legal_and_geo_suffixes_only():

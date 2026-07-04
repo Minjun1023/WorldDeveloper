@@ -1,4 +1,11 @@
 spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  task:
+    scheduling:
+      # @Scheduled 기본은 스레드 1개 — 알림 다이제스트가 오래 돌면 다른 스케줄 작업이 밀린다.
+      pool:
+        size: 2
   application:
     name: dev-jobs-backend
 
@@ -7,7 +14,9 @@ spring:
     username: ${DATABASE_USER:devjobs}
     password: ${DATABASE_PASSWORD:devjobs_local}
     hikari:
-      maximum-pool-size: 10
+      # 동시성 부하에서 꼬리 지연(p95/p99) 완화 — 10 은 50 VU 부하에서 커넥션 큐잉 유발.
+      # Postgres 기본 max_connections=100 내라 안전. 환경변수로 운영별 조정 가능.
+      maximum-pool-size: ${DB_POOL_SIZE:30}
 
   jpa:
     # 뷰 렌더(JSON 직렬화)까지 DB 커넥션을 붙들지 않도록 OSIV 끔 — 풀(10) 보유시간 단축.
@@ -93,6 +102,10 @@ jwt:
 
 server:
   port: ${PORT:8080}
+  # 배포/재시작 시 진행 중 요청을 마치고 종료(기본 immediate 는 스트리밍 코치 응답을 끊는다).
+  shutdown: graceful
+  # 리버스 프록시(운영) 뒤에서 X-Forwarded-* 를 해석 — rate limit 의 클라이언트 IP 인식 전제.
+  forward-headers-strategy: framework
   # 응답 gzip 압축 — web↔backend(운영은 별도 서비스) 홉의 JSON 페이로드를 줄인다.
   # 브라우저←Next 홉은 Next 가 이미 압축하므로, 이 설정은 backend→Next 구간에 효과.
   compression:

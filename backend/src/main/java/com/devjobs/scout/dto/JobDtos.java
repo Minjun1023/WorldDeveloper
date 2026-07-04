@@ -39,7 +39,10 @@ public final class JobDtos {
         VisaDto visa,
         RemoteDto remote,
         SalaryDto salary,
-        String seniority
+        String seniority,
+        // 마감(비활성/기한 경과) 여부 — 검색 결과는 항상 false(live 만 노출),
+        // 저장 목록(byIdsIncludingClosed)에서만 true 가 실린다. 칸반 "마감됨" 배지용.
+        Boolean closed
     ) {}
 
     /** 단일 공고 상세 — 목록과 달리 description 전문 포함. */
@@ -52,6 +55,9 @@ public final class JobDtos {
         String locationKo,
         Boolean isRemote,
         String employmentType,
+        String department,
+        Boolean relocationSupport,
+        String languageRequirement,
         String description,
         String applyUrl,
         OffsetDateTime postedAt,

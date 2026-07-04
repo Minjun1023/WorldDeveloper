@@ -71,6 +71,14 @@
 }
 
 @layer base {
+  /* 키보드 포커스 기본값 — 생 <button>/<a> 104곳에 focus 클래스가 없어 전역으로 보장한다.
+     Tailwind 의 focus-visible: 유틸을 쓴 요소는 그쪽 ring 이 이걸 덮어쓴다(@layer base 우선순위 낮음). */
+  :where(button, a, [role="button"], input, select, textarea, summary):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
   /* color-scheme 을 테마에 고정 — UA 위젯(스크롤바·폼 컨트롤)이 라이트로 그려지는 것 방지. */
   :root {
     color-scheme: light;
@@ -182,6 +190,7 @@
 }
 .wd-marquee {
   animation: wd-marquee 45s linear infinite;
+  will-change: transform; /* 무한 애니메이션 — 합성 레이어 승격으로 저사양 모바일 스크롤 jank 방지 */
 }
 .wd-marquee-track:hover .wd-marquee {
   animation-play-state: paused;

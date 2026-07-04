@@ -40,7 +40,7 @@ export function MemberRecommend() {
     return (
       <div className="rounded-lg border border-border bg-surface p-6 text-center">
         <p className="text-body-sm text-muted-foreground">프로필을 작성하면 맞춤 공고를 추천해드려요.</p>
-        <Link href="/me/profile" className="mt-3 inline-block rounded-md bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground">
+        <Link href="/me/profile" className="mt-3 inline-block rounded-lg bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground">
           프로필 작성하기
         </Link>
       </div>
@@ -50,7 +50,7 @@ export function MemberRecommend() {
   return (
     <div className="space-y-6">
       {/* 추천은 내 프로필 기준. 조건 수정은 프로필 페이지에서. */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-6 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-body-sm text-muted-foreground">
           내 프로필(스택·지역·레벨·연봉·관심 도메인) 기준으로 매칭합니다. 조건을 바꾸려면 프로필을 수정하세요.
         </p>
@@ -66,7 +66,7 @@ export function MemberRecommend() {
       {result && !loading && (visible.length === 0
         ? <p className="text-body-sm text-muted-foreground">조건에 맞는 추천이 없습니다.</p>
         : <>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {items.map((item, i) => (
                 <InteractiveJobCard
                   key={item.job.id}

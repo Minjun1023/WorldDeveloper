@@ -10,7 +10,13 @@ from dev_jobs_core.analyzers.us_location import is_us_location
 from dev_jobs_core.analyzers.visa import classify_visa
 from dev_jobs_core.registry import h1b_sponsor_slugs, ind_sponsor_slugs, uk_sponsor_slugs
 
-from ..db import fetch_unclear_jobs, get_conn, sponsor_company_slugs, update_visa
+from ..db import (
+    fetch_sponsor_jobs_for_companies,
+    fetch_unclear_jobs,
+    get_conn,
+    sponsor_company_slugs,
+    update_visa,
+)
 from .visa_local import resolve_visa
 
 log = logging.getLogger(__name__)
@@ -66,6 +72,26 @@ def match_ind_register(jobs: list[dict], ind_slugs: set[str]) -> dict[str, tuple
             j.get("location"), j.get("is_remote", False)
         ):
             out[j["id"]] = ("sponsors", [IND_EVIDENCE])
+    return out
+
+
+def register_evidence_updates(
+    jobs: list[dict], slugs: set[str], isloc, evidence: str
+) -> dict[str, list[str]]:
+    """이미 sponsors 인 명부회사 공고 중 (해당국 소재 + 명부근거 없음)에 근거를 append.
+
+    순수 함수. 키워드로 먼저 sponsors 가 된 공고는 명부 단계를 못 거쳐 register_verified 가
+    아니었다 — 여기서 명부 근거를 덧붙여 정부명부 검증으로 승격한다(멱등: 이미 있으면 skip).
+    """
+    out: dict[str, list[str]] = {}
+    for j in jobs:
+        if j.get("company_slug") not in slugs:
+            continue
+        if not isloc(j.get("location"), j.get("is_remote", False)):
+            continue
+        ev = j.get("visa_evidence") or []
+        if evidence not in ev:
+            out[j["id"]] = [*ev, evidence]
     return out
 
 
@@ -135,9 +161,23 @@ async def reclassify_unclear_visa(limit: int | None = None, use_llm: bool = True
                 results[j["id"]] = ("sponsors", ["같은 회사의 다른 공고에 비자 스폰서 명시"])
                 by_company += 1
 
-        # 4) UPDATE
+        # 4) UPDATE (unclear → 재분류)
         for jid, (status, ev) in results.items():
             update_visa(conn, jid, status, ev)
+        conn.commit()
+
+        # 5) 명부 근거 stamp: 이미 sponsors 인 명부회사 공고(해당국 소재)에 명부 근거 부여.
+        # 키워드로 먼저 sponsors 가 된 공고는 명부 단계를 못 거쳐 register_verified 가 아니었다.
+        by_register_stamp = 0
+        for slugs, isloc, evid in (
+            (uk_slugs, is_uk_location, UK_EVIDENCE),
+            (h1b_sponsor_slugs(), is_us_location, H1B_EVIDENCE),
+            (ind_sponsor_slugs(), is_nl_location, IND_EVIDENCE),
+        ):
+            stamp_jobs = fetch_sponsor_jobs_for_companies(conn, list(slugs))
+            for jid, ev in register_evidence_updates(stamp_jobs, slugs, isloc, evid).items():
+                update_visa(conn, jid, "sponsors", ev)
+                by_register_stamp += 1
         conn.commit()
 
         return {
@@ -149,6 +189,7 @@ async def reclassify_unclear_visa(limit: int | None = None, use_llm: bool = True
             "by_ind_register": by_ind_register,
             "by_llm": by_llm,
             "by_company": by_company,
+            "by_register_stamp": by_register_stamp,
             "still_unclear": len(jobs) - len(results),
         }
     finally:

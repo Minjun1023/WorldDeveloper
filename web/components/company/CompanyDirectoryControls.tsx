@@ -1,10 +1,10 @@
 "use client";
 
-import { ArrowUpDown, Check, ChevronDown, Search, SlidersHorizontal } from "lucide-react";
+import { ArrowUpDown, Check, ChevronDown, Search, SlidersHorizontal, Users } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
-import { Dialog } from "@/components/ui/dialog";
+import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
 import { cn } from "@/lib/utils";
 import { useUpdateQuery } from "@/lib/use-update-query";
 
@@ -18,14 +18,22 @@ const SORT_OPTIONS = [
 // 기업 디렉터리 상단 컨트롤 — 회사명 검색 + 분야(카테고리) + 정렬.
 // 분야·정렬은 OS 기본 <select> 대신 디자인 시스템 모달(Dialog)로 선택 — 일관된 스타일 + 카운트 표기.
 // URL 파라미터(q·tag·sort)가 single source of truth. useUpdateQuery 가 값 변경 시 page 를 1 로 리셋.
-export function CompanyDirectoryControls({ tagOptions }: { tagOptions: TagOption[] }) {
+export function CompanyDirectoryControls({
+  tagOptions,
+  sizeOptions = [],
+}: {
+  tagOptions: TagOption[];
+  sizeOptions?: TagOption[];
+}) {
   const sp = useSearchParams();
   const update = useUpdateQuery();
 
   const tag = sp.get("tag") ?? "";
+  const size = sp.get("size") ?? "";
   const sort = sp.get("sort") ?? "jobs";
   const [q, setQ] = useState(sp.get("q") ?? "");
   const [tagOpen, setTagOpen] = useState(false);
+  const [sizeOpen, setSizeOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
 
   // 입력 디바운스 — 멈춘 뒤 350ms 후에만 q 갱신(키 입력마다 서버 라운드트립 방지).
@@ -42,8 +50,14 @@ export function CompanyDirectoryControls({ tagOptions }: { tagOptions: TagOption
   }, [q]);
 
   const tagLabel = tag ? tagOptions.find((o) => o.value === tag)?.label ?? tag : "분야 전체";
+  const sizeLabel = size ? sizeOptions.find((o) => o.value === size)?.label ?? size : "규모 전체";
   const sortLabel = SORT_OPTIONS.find((o) => o.value === sort)?.label ?? "공고 많은 순";
 
+  const tagBtnRef = useRef<HTMLButtonElement>(null);
+  const sizeBtnRef = useRef<HTMLButtonElement>(null);
+  const sortBtnRef = useRef<HTMLButtonElement>(null);
+
+  const menuCls = "rounded-xl border border-border bg-surface p-1 shadow-lg";
   const triggerCls =
     "relative flex h-11 items-center gap-2 rounded-xl border border-border bg-surface pl-9 pr-3 text-body-sm font-medium text-foreground outline-none hover:bg-surface-2 focus-visible:ring-2 focus-visible:ring-ring";
 
@@ -62,22 +76,25 @@ export function CompanyDirectoryControls({ tagOptions }: { tagOptions: TagOption
         />
       </div>
 
-      {/* 분야(카테고리) — 클릭 시 모달 */}
-      <button type="button" onClick={() => setTagOpen(true)} aria-haspopup="dialog" aria-label="분야 필터" className={triggerCls}>
+      {/* 분야(카테고리) — 트리거 위치에 포털로 렌더되는 드롭다운(조상 overflow/stacking 무관) */}
+      <button
+        ref={tagBtnRef}
+        type="button"
+        onClick={() => {
+          setSortOpen(false);
+          setSizeOpen(false);
+          setTagOpen((o) => !o);
+        }}
+        aria-expanded={tagOpen}
+        aria-label="분야 필터"
+        className={triggerCls}
+      >
         <SlidersHorizontal className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
         <span className="truncate">{tagLabel}</span>
-        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+        <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", tagOpen && "rotate-180")} aria-hidden="true" />
       </button>
-
-      {/* 정렬 — 클릭 시 모달 */}
-      <button type="button" onClick={() => setSortOpen(true)} aria-haspopup="dialog" aria-label="정렬" className={triggerCls}>
-        <ArrowUpDown className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
-        <span className="truncate">{sortLabel}</span>
-        <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
-      </button>
-
-      <Dialog open={tagOpen} onClose={() => setTagOpen(false)} title="분야 선택">
-        <ul className="space-y-0.5">
+      <AnchoredPopover open={tagOpen} onClose={() => setTagOpen(false)} anchorRef={tagBtnRef} width={256}>
+        <ul className={cn("max-h-80 overflow-y-auto", menuCls)}>
           <OptionRow
             selected={tag === ""}
             label="분야 전체"
@@ -99,10 +116,73 @@ export function CompanyDirectoryControls({ tagOptions }: { tagOptions: TagOption
             />
           ))}
         </ul>
-      </Dialog>
+      </AnchoredPopover>
 
-      <Dialog open={sortOpen} onClose={() => setSortOpen(false)} title="정렬">
-        <ul className="space-y-0.5">
+      {/* 기업 규모(직원 수 밴드) */}
+      {sizeOptions.length > 0 && (
+        <>
+          <button
+            ref={sizeBtnRef}
+            type="button"
+            onClick={() => {
+              setTagOpen(false);
+              setSortOpen(false);
+              setSizeOpen((o) => !o);
+            }}
+            aria-expanded={sizeOpen}
+            aria-label="기업 규모 필터"
+            className={triggerCls}
+          >
+            <Users className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+            <span className="truncate">{sizeLabel}</span>
+            <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", sizeOpen && "rotate-180")} aria-hidden="true" />
+          </button>
+          <AnchoredPopover open={sizeOpen} onClose={() => setSizeOpen(false)} anchorRef={sizeBtnRef} width={208}>
+            <ul className={menuCls}>
+              <OptionRow
+                selected={size === ""}
+                label="규모 전체"
+                onClick={() => {
+                  update({ size: null });
+                  setSizeOpen(false);
+                }}
+              />
+              {sizeOptions.map((o) => (
+                <OptionRow
+                  key={o.value}
+                  selected={size === o.value}
+                  label={o.label}
+                  count={o.count}
+                  onClick={() => {
+                    update({ size: o.value });
+                    setSizeOpen(false);
+                  }}
+                />
+              ))}
+            </ul>
+          </AnchoredPopover>
+        </>
+      )}
+
+      {/* 정렬 — 트리거 위치에 포털로 렌더되는 드롭다운 */}
+      <button
+        ref={sortBtnRef}
+        type="button"
+        onClick={() => {
+          setTagOpen(false);
+          setSizeOpen(false);
+          setSortOpen((o) => !o);
+        }}
+        aria-expanded={sortOpen}
+        aria-label="정렬"
+        className={triggerCls}
+      >
+        <ArrowUpDown className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+        <span className="truncate">{sortLabel}</span>
+        <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", sortOpen && "rotate-180")} aria-hidden="true" />
+      </button>
+      <AnchoredPopover open={sortOpen} onClose={() => setSortOpen(false)} anchorRef={sortBtnRef} width={192}>
+        <ul className={menuCls}>
           {SORT_OPTIONS.map((o) => (
             <OptionRow
               key={o.value}
@@ -115,7 +195,7 @@ export function CompanyDirectoryControls({ tagOptions }: { tagOptions: TagOption
             />
           ))}
         </ul>
-      </Dialog>
+      </AnchoredPopover>
     </div>
   );
 }

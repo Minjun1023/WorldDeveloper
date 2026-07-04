@@ -216,6 +216,24 @@ export async function fetchSavedJobIds(token: string): Promise<Set<string>> {
   }
 }
 
+// 로그인 유저의 계정 기준 최근 본 공고(서버 job_views). 비로그인/오류 시 null → localStorage 폴백.
+export async function fetchRecentViews(
+  token: string,
+): Promise<import("@/lib/recent").RecentJob[] | null> {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/v1/analytics/my-recent`, {
+      headers: { Authorization: `Bearer ${token}` },
+      cache: "no-store",
+      signal: AbortSignal.timeout(5000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return Array.isArray(data) ? (data as import("@/lib/recent").RecentJob[]) : [];
+  } catch {
+    return null;
+  }
+}
+
 // 서버 컴포넌트용: 로그인 사용자의 관심 기업 slug 집합. 기업 디렉터리 ★ 초기 상태 표시에 사용
 // (행마다 클라 fetch 하지 않도록 한 번에 받아 prop 으로 내려준다).
 export async function fetchFavoriteCompanySlugs(token: string): Promise<Set<string>> {

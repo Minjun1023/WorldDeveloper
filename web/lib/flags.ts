@@ -67,6 +67,12 @@ const US_STATES = new Set([
 //     ("Livingston, NJ / New York, NY", "Salt Lake City, UT", "US Remote" 등).
 export function isoFromLocation(location?: string | null): string {
   if (!location) return "";
+  // 다중 위치("Dallas, TX; SF, CA; Vancouver, Canada")는 첫 위치(주 근무지) 우선 판정 후 전체 폴백.
+  const primary = location.split(";")[0]?.trim() || location;
+  return isoFromSingle(primary) || (primary !== location ? isoFromSingle(location) : "");
+}
+
+function isoFromSingle(location: string): string {
   const lower = location.toLowerCase();
   // 구분자에 ' - '(대시)도 포함 — "United States - Remote", "Remote - US" 처럼
   // 다단어 국가명이 대시로 붙어 한 조각이 되어 매칭 실패하던 문제를 해소.
@@ -84,6 +90,9 @@ export function isoFromLocation(location?: string | null): string {
   for (const t of tokens) {
     if (US_STATES.has(t)) return "us";
   }
+  // 미국 주(州) 풀네임("California", "Texas", "New York" 등) → 미국. 국가명이 없을 때만.
+  const cleaned = lower.replace(/\./g, "");
+  if (US_STATE_NAMES.some((s) => cleaned.includes(s))) return "us";
   return "";
 }
 

@@ -93,12 +93,19 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
     // visaPriority=true 면 비자 티어(명부검증 sponsors → 일반 sponsors → unclear → no_sponsor)를 1순위로 정렬.
     // verifiedOnly=true 면 정부 명부(UK/US/NL)로 검증된 sponsors 만 남긴다.
     // 명부검증 판정: visa_evidence 에 register 단계가 남기는 고유 문구가 있는가(키워드 스니펫과 충돌 없는 앵커).
-    @Query(value = """
-        SELECT id FROM jobs
+    // ─── 검색 WHERE 조각(컴파일 상수) — searchIds/countSearch/countSearchSince 3벌이 완전히
+    //     동일한 필터를 써야 목록·카운트·알림이 일치한다. 중복 유지보수 사고 방지를 위해 단일 정의.
+    String SEARCH_LIVE_GATE = """
         WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug)
+        """;
+
+    String SEARCH_FILTERS = """
           AND (CAST(:q AS text) IS NULL OR search_tsv @@ websearch_to_tsquery('english', CAST(:q AS text)))
           AND (CAST(:disc AS text) IS NULL OR search_tsv @@ to_tsquery('english', CAST(:disc AS text)))
+          AND (CAST(:excludeDisc AS text) IS NULL OR NOT (search_tsv @@ to_tsquery('english', CAST(:excludeDisc AS text))))
           AND (CAST(:regionRegex AS text) IS NULL OR location ~* CAST(:regionRegex AS text))
+          AND (CAST(:countries AS text) IS NULL OR country = ANY(string_to_array(CAST(:countries AS text), ',')))
+          AND (CAST(:cities AS text) IS NULL OR city = ANY(string_to_array(CAST(:cities AS text), ',')))
           AND (CAST(:visa AS text) IS NULL OR visa_status = CAST(:visa AS text))
           AND (CAST(:loc AS text) IS NULL OR lower(location) LIKE CAST(:loc AS text))
           AND (
@@ -116,6 +123,9 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
             OR (CAST(:gateMode AS text) = 'relocation' AND visa_status = 'sponsors')
             OR (CAST(:gateMode AS text) = 'relocation_unclear' AND visa_status IN ('sponsors','unclear'))
           )
+        """;
+
+    String SEARCH_EXTRAS = """
           AND (:verifiedOnly = false
                OR (visa_status = 'sponsors'
                    AND visa_evidence::text ~ '스폰서 라이선스|Employer Data Hub|erkende referenten'))
@@ -123,6 +133,9 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
           AND (:completeOnly = false
                OR (location IS NOT NULL AND btrim(location) <> ''
                    AND length(coalesce(description_text, '')) >= 600))
+        """;
+
+    @Query(value = "SELECT id FROM jobs " + SEARCH_LIVE_GATE + SEARCH_FILTERS + SEARCH_EXTRAS + """
         ORDER BY
           CASE WHEN :salarySort THEN salary_max_usd END DESC NULLS LAST,
           CASE WHEN :remotePriority THEN
@@ -148,7 +161,9 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         LIMIT :lim OFFSET :off
         """, nativeQuery = true)
     List<String> searchIds(
-        @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
+        @Param("q") String q, @Param("disc") String disc, @Param("excludeDisc") String excludeDisc,
+        @Param("regionRegex") String regionRegex,
+        @Param("countries") String countries, @Param("cities") String cities,
         @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
         @Param("gateMode") String gateMode, @Param("verifiedOnly") boolean verifiedOnly,
         @Param("minSalary") Integer minSalary, @Param("completeOnly") boolean completeOnly,
@@ -157,70 +172,23 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         @Param("salarySort") boolean salarySort, @Param("completeRank") boolean completeRank,
         @Param("lim") int lim, @Param("off") int off);
 
-    @Query(value = """
-        SELECT count(*) FROM jobs
-        WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug)
-          AND (CAST(:q AS text) IS NULL OR search_tsv @@ websearch_to_tsquery('english', CAST(:q AS text)))
-          AND (CAST(:disc AS text) IS NULL OR search_tsv @@ to_tsquery('english', CAST(:disc AS text)))
-          AND (CAST(:regionRegex AS text) IS NULL OR location ~* CAST(:regionRegex AS text))
-          AND (CAST(:visa AS text) IS NULL OR visa_status = CAST(:visa AS text))
-          AND (CAST(:loc AS text) IS NULL OR lower(location) LIKE CAST(:loc AS text))
-          AND (
-            CAST(:remote AS boolean) IS NULL
-            OR (CAST(:remote AS boolean) = true
-                AND is_remote = true
-                AND remote_eligibility IS DISTINCT FROM 'region_restricted')
-            OR (CAST(:remote AS boolean) = false AND is_remote = false)
-          )
-          AND (
-            CAST(:gateMode AS text) = 'all'
-            OR (CAST(:gateMode AS text) = 'both' AND (visa_status = 'sponsors' OR remote_eligibility IN ('worldwide','apac_ok')))
-            OR (CAST(:gateMode AS text) = 'remote' AND remote_eligibility IN ('worldwide','apac_ok'))
-            OR (CAST(:gateMode AS text) = 'remote_unclear' AND remote_eligibility IN ('worldwide','apac_ok','unclear'))
-            OR (CAST(:gateMode AS text) = 'relocation' AND visa_status = 'sponsors')
-            OR (CAST(:gateMode AS text) = 'relocation_unclear' AND visa_status IN ('sponsors','unclear'))
-          )
-          AND (:verifiedOnly = false
-               OR (visa_status = 'sponsors'
-                   AND visa_evidence::text ~ '스폰서 라이선스|Employer Data Hub|erkende referenten'))
-          AND (CAST(:minSalary AS integer) IS NULL OR salary_max_usd >= CAST(:minSalary AS integer))
-          AND (:completeOnly = false
-               OR (location IS NOT NULL AND btrim(location) <> ''
-                   AND length(coalesce(description_text, '')) >= 600))
-        """, nativeQuery = true)
+    @Query(value = "SELECT count(*) FROM jobs " + SEARCH_LIVE_GATE + SEARCH_FILTERS + SEARCH_EXTRAS,
+        nativeQuery = true)
     long countSearch(
-        @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
+        @Param("q") String q, @Param("disc") String disc, @Param("excludeDisc") String excludeDisc,
+        @Param("regionRegex") String regionRegex,
+        @Param("countries") String countries, @Param("cities") String cities,
         @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
         @Param("gateMode") String gateMode, @Param("verifiedOnly") boolean verifiedOnly,
         @Param("minSalary") Integer minSalary, @Param("completeOnly") boolean completeOnly);
 
-    @Query(value = """
-        SELECT count(*) FROM jobs
-        WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug)
-          AND first_seen_at > :since
-          AND (CAST(:q AS text) IS NULL OR search_tsv @@ websearch_to_tsquery('english', CAST(:q AS text)))
-          AND (CAST(:disc AS text) IS NULL OR search_tsv @@ to_tsquery('english', CAST(:disc AS text)))
-          AND (CAST(:regionRegex AS text) IS NULL OR location ~* CAST(:regionRegex AS text))
-          AND (CAST(:visa AS text) IS NULL OR visa_status = CAST(:visa AS text))
-          AND (CAST(:loc AS text) IS NULL OR lower(location) LIKE CAST(:loc AS text))
-          AND (
-            CAST(:remote AS boolean) IS NULL
-            OR (CAST(:remote AS boolean) = true
-                AND is_remote = true
-                AND remote_eligibility IS DISTINCT FROM 'region_restricted')
-            OR (CAST(:remote AS boolean) = false AND is_remote = false)
-          )
-          AND (
-            CAST(:gateMode AS text) = 'all'
-            OR (CAST(:gateMode AS text) = 'both' AND (visa_status = 'sponsors' OR remote_eligibility IN ('worldwide','apac_ok')))
-            OR (CAST(:gateMode AS text) = 'remote' AND remote_eligibility IN ('worldwide','apac_ok'))
-            OR (CAST(:gateMode AS text) = 'remote_unclear' AND remote_eligibility IN ('worldwide','apac_ok','unclear'))
-            OR (CAST(:gateMode AS text) = 'relocation' AND visa_status = 'sponsors')
-            OR (CAST(:gateMode AS text) = 'relocation_unclear' AND visa_status IN ('sponsors','unclear'))
-          )
-        """, nativeQuery = true)
+    @Query(value = "SELECT count(*) FROM jobs " + SEARCH_LIVE_GATE
+        + " AND first_seen_at > :since " + SEARCH_FILTERS,
+        nativeQuery = true)
     long countSearchSince(
-        @Param("q") String q, @Param("disc") String disc, @Param("regionRegex") String regionRegex,
+        @Param("q") String q, @Param("disc") String disc, @Param("excludeDisc") String excludeDisc,
+        @Param("regionRegex") String regionRegex,
+        @Param("countries") String countries, @Param("cities") String cities,
         @Param("visa") String visa, @Param("loc") String loc, @Param("remote") Boolean remote,
         @Param("gateMode") String gateMode, @Param("since") java.time.OffsetDateTime since);
 
@@ -236,4 +204,18 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
     @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug) AND location ~* CAST(:inc AS text) AND location !~* CAST(:exc AS text)",
         nativeQuery = true)
     long countActiveByLocationRegexExcluding(@Param("inc") String inc, @Param("exc") String exc);
+
+    // 지역 드롭다운(데이터 파생): 활성 공고를 country 로 GROUP BY. [country, count] 내림차순.
+    @Query(value = "SELECT country, count(*) FROM jobs WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug) AND country IS NOT NULL GROUP BY country ORDER BY count(*) DESC",
+        nativeQuery = true)
+    List<Object[]> countActiveByCountry();
+
+    // 도시 상세 패널(데이터 파생): 국가 안에서 city 로 GROUP BY. [city, count] 내림차순 상위 20.
+    @Query(value = "SELECT city, count(*) FROM jobs WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug) AND country = CAST(:country AS text) AND city IS NOT NULL GROUP BY city ORDER BY count(*) DESC LIMIT 20",
+        nativeQuery = true)
+    List<Object[]> countActiveCityByCountry(@Param("country") String country);
+
+    @Query(value = "SELECT count(*) FROM jobs WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug) AND country = CAST(:country AS text)",
+        nativeQuery = true)
+    long countActiveInCountry(@Param("country") String country);
 }

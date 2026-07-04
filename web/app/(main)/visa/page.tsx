@@ -27,7 +27,7 @@ export default function VisaGuideIndexPage() {
           <Link
             key={g.slug}
             href={`/visa/${g.slug}`}
-            className="group rounded-2xl border border-border bg-surface p-5 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="group rounded-2xl border border-border bg-surface p-6 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <div className="flex items-center gap-2">
               <span className="text-2xl leading-none" aria-hidden="true">{g.flag}</span>

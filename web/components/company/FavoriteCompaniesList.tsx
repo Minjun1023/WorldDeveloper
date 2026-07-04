@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { LoadError } from "@/components/ui/LoadError";
 
 type FavCompany = {
   slug: string;
@@ -17,9 +18,12 @@ type FavCompany = {
 export function FavoriteCompaniesList() {
   const [items, setItems] = useState<FavCompany[] | null>(null);
   const [error, setError] = useState(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let alive = true;
+    setItems(null);
+    setError(false);
     fetch("/api/me/favorite-companies")
       .then((r) => {
         if (!r.ok) throw new Error(String(r.status));
@@ -30,19 +34,15 @@ export function FavoriteCompaniesList() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [reloadKey]);
 
   if (error) {
-    return (
-      <div className="rounded-lg border border-border bg-surface p-8 text-center">
-        <p className="text-body-sm text-muted-foreground">관심 기업을 불러오지 못했어요. 잠시 후 다시 시도해주세요.</p>
-      </div>
-    );
+    return <LoadError message="관심 기업을 불러오지 못했어요" onRetry={() => setReloadKey((k) => k + 1)} />;
   }
   if (items === null) return <p className="text-body-sm text-muted-foreground">불러오는 중…</p>;
   if (items.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-surface p-8 text-center">
+      <div className="rounded-lg border border-border bg-surface p-6 text-center">
         <p className="text-body-sm text-muted-foreground">아직 관심 기업이 없어요.</p>
         <Link href="/companies" className="mt-3 inline-block text-body-sm text-primary">
           기업 둘러보러 가기 →

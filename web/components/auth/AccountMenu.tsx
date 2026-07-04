@@ -47,7 +47,7 @@ export function AccountMenu({ loggedIn }: { loggedIn: boolean }) {
         </svg>
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 mt-2 w-36 rounded-lg border border-border bg-surface p-1 shadow-lg">
+        <div role="menu" className="absolute right-0 mt-2 w-40 rounded-lg border border-border bg-surface p-1 shadow-lg">
           <Link
             href="/me/profile"
             role="menuitem"
@@ -55,6 +55,14 @@ export function AccountMenu({ loggedIn }: { loggedIn: boolean }) {
             className="block rounded-md px-3 py-2 text-body-sm hover:bg-muted"
           >
             프로필 정보
+          </Link>
+          <Link
+            href="/bookmarks?tab=tracker"
+            role="menuitem"
+            onClick={() => setOpen(false)}
+            className="block rounded-md px-3 py-2 text-body-sm hover:bg-muted"
+          >
+            지원 현황
           </Link>
           <form action="/api/auth/logout" method="post">
             <button

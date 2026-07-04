@@ -19,7 +19,7 @@ export default function SignInPage({
     <div className="grid min-h-screen md:grid-cols-2">
       <AuthBrandPanel
         heading="돌아오신 걸 환영합니다"
-        subtitle="EU 테크 커리어의 모든 가능성이 여기 있어요."
+        subtitle="해외 테크 커리어의 모든 가능성이 여기 있어요."
       />
 
       {/* 우측 폼 */}

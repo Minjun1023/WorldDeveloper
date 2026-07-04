@@ -197,3 +197,18 @@ def test_keeps_symbolless_usd_within_us_range():
     # 통화코드 없어도 미국 현실 범위면 USD 로 유지(Affirm CAN/USA base pay 류).
     r = ex("USA base pay range per year: 153,000 - 213,000")
     assert r == {"min": 153000, "max": 213000, "currency": "USD", "period": "YEAR"}
+
+
+def test_pay_transparency_suffix_no_nearby_anchor():
+    """미국 공시 포맷 — 연봉어가 80자 밖(지역 나열)이어도 '$X — $Y USD'는 인정."""
+    t = ("Below is the annual base salary range for candidates located in California."
+         " Your recruiter can share more. US, CA, San Francisco, New York, Seattle"
+         " compensation zones apply here today: $165,200 — $223,600 USD Twitch is an equal opportunity employer.")
+    r = ex(t)
+    assert r == {"min": 165200, "max": 223600, "currency": "USD", "period": "YEAR"}
+
+
+def test_no_anchor_no_iso_suffix_still_rejected():
+    """강한 통화 증거(기호+ISO 접미) 없으면 여전히 앵커 필수 — 펀딩 금액 오탐 방지."""
+    t = "We raised a huge round. Our valuation grew fast: $150,000 - $200,000 something."
+    assert ex(t) is None

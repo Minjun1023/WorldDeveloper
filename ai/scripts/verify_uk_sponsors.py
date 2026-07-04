@@ -18,37 +18,23 @@ import sys
 from pathlib import Path
 from urllib.request import Request, urlopen
 
+# 정규화·매칭은 공유 모듈(이름 + 위치 disambiguation + confidence)로 통일. h1b/ind 와 동일.
+from sponsor_match import company_names, find_candidates
+
 PUBLICATION = "https://www.gov.uk/government/publications/register-of-licensed-sponsors-workers"
 REGISTRY_PATH = Path(__file__).parent.parent / "dev_jobs_core" / "data" / "companies.json"
 
-# 법인/지역 접미사만 제거(업종어 bank/payments 등은 회사 구분에 필요하므로 유지).
-_SUFFIX = re.compile(
-    r"\b(ltd|limited|plc|inc|llc|gmbh|llp|group|holdings|uk|europe|international|branch|ab|se)\b"
-)
 
-
-def normalize(name: str) -> str:
-    s = (name or "").lower()
-    s = re.sub(r"[^a-z0-9 ]", " ", s)   # 구두점 -> 공백 (N.V. -> n v)
-    s = _SUFFIX.sub(" ", s)
-    return re.sub(r"\s+", " ", s).strip()
-
-
-def match_company(brand: str, org_name: str) -> bool:
-    """우리 회사 brand 가 명부 org_name 의 후보인지(관대). 정밀도는 사람 검토가 책임.
-
-    규칙: 정규화 후 정확 일치, 또는 (brand 길이>=4) org 의 첫 토큰이 brand 와 정확히 같음.
-    4자 미만 브랜드는 정확 일치만(오탐 폭주 방지).
-    """
-    nb = normalize(brand)
-    no = normalize(org_name)
-    if not nb or not no:
-        return False
-    if no == nb:
-        return True
-    if len(nb) >= 4 and no.startswith(nb + " "):
-        return no.split(" ", 1)[0] == nb
-    return False
+def _row_location(row: dict) -> str:
+    """UK 명부 행에서 위치(Town/City + County) 추출. 헤더 변형에 관대하게."""
+    town = county = ""
+    for k, v in row.items():
+        kl = (k or "").lower()
+        if "town" in kl or "city" in kl:
+            town = (v or "").strip()
+        elif "county" in kl:
+            county = (v or "").strip()
+    return " ".join(p for p in (town, county) if p)
 
 
 def _fetch_csv_url() -> str:
@@ -60,44 +46,47 @@ def _fetch_csv_url() -> str:
     return m.group(0)
 
 
-def _load_register(path: str | None) -> list[str]:
+def _rows(path: str | None):
     if path:
         with open(path, newline="", encoding="utf-8", errors="replace") as f:
-            return [row["Organisation Name"].strip() for row in csv.DictReader(f)]
+            yield from csv.DictReader(f)
+        return
     url = _fetch_csv_url()
     req = Request(url, headers={"User-Agent": "Mozilla/5.0"})
     data = urlopen(req, timeout=120).read().decode("utf-8", "replace")
-    return [row["Organisation Name"].strip() for row in csv.DictReader(io.StringIO(data))]
+    yield from csv.DictReader(io.StringIO(data))
+
+
+def _load_register(path: str | None) -> list[tuple[str, str]]:
+    """명부 → (조직명, 위치) 목록. 위치는 Town/City + County."""
+    out = []
+    for row in _rows(path):
+        org = (row.get("Organisation Name") or "").strip()
+        if org:
+            out.append((org, _row_location(row)))
+    return out
 
 
 def main():
     path = sys.argv[1] if len(sys.argv) > 1 else None
-    orgs = _load_register(path)
+    register = _load_register(path)
     with open(REGISTRY_PATH, encoding="utf-8") as f:
         data = json.load(f)
     cos = {k: v for k, v in data.items() if not k.startswith("_")}
 
-    reg_index: dict[str, str] = {}
-    for on in orgs:
-        reg_index.setdefault(normalize(on), on)
-
     hits = []
     for name, info in cos.items():
-        matched = None
-        for brand in {name, info.get("token", "")}:
-            for on in reg_index.values():
-                if match_company(brand, on):
-                    matched = on
-                    break
-            if matched:
-                break
-        if matched:
-            hits.append((name, info.get("ats"), matched, info.get("uk_sponsor") is True))
+        cands = find_candidates(company_names(name, info), info.get("hq"), register)
+        if cands:
+            hits.append((name, info, cands[0]))
 
     print(f"=== UK 명부 매칭 후보: {len(hits)}/{len(cos)} (검토 후 companies.json 반영) ===")
-    for name, ats, org, already in sorted(hits):
-        flag = " [이미 플래그됨]" if already else ""
-        print(f"  {name:<16} [{ats}] -> {org}{flag}")
+    print("    confidence: high=이름+위치일치 / medium=단독 이름일치 / low=동명 모호(검토 필수)")
+    for name, info, c in sorted(hits, key=lambda h: ({"high": 0, "medium": 1, "low": 2}[h[2].confidence], h[0])):
+        already = " [이미 플래그됨]" if info.get("uk_sponsor") is True else ""
+        dom = f" <{info['domain']}>" if info.get("domain") else ""
+        loc = f" @{c.loc}" if c.loc else ""
+        print(f"  [{c.confidence:<6}] {name:<16}{dom} [{info.get('ats')}] -> {c.org}{loc}{already}")
 
 
 if __name__ == "__main__":

@@ -37,7 +37,7 @@ export function ShareButton({ title }: { title?: string } = {}) {
     <button
       type="button"
       onClick={share}
-      className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-[10px] border border-border text-body-sm font-semibold hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border border-border text-body-sm font-semibold hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <Share2 className="h-4 w-4" aria-hidden="true" />
       {copied ? "주소 복사됨" : "공유"}

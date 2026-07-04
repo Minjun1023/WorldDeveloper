@@ -1,3 +1,8 @@
+export const metadata = {
+  title: "기업 디렉터리 — 비자 스폰서 검증 기업 | WorldDev",
+  description: "정부 명부로 검증된 비자 스폰서 기업들을 분야·규모별로 둘러보세요.",
+};
+
 import Link from "next/link";
 
 import { CompanyDirectoryControls } from "@/components/company/CompanyDirectoryControls";
@@ -7,8 +12,10 @@ import { Pagination } from "@/components/search/Pagination";
 import { fetchCompanies, fetchFavoriteCompanySlugs } from "@/lib/api";
 import { getSessionToken } from "@/lib/session-server";
 import { COMPANY_LOCATIONS } from "@/lib/company-locations";
+import { COMPANY_SIZE, SIZE_BANDS, SIZE_LABEL } from "@/lib/company-size";
 import { companyBlurb } from "@/lib/company-blurb";
 import { companyProfile, flagEmoji } from "@/lib/company-profiles";
+import { NON_DISCIPLINE_TAGS, tagLabel } from "@/lib/company-tags";
 import { isoFromLocation } from "@/lib/flags";
 
 // force-dynamic 제거 — searchParams + 쿠키(getSessionToken)로 어차피 요청마다 동적 렌더된다.
@@ -26,6 +33,7 @@ function str(v: string | string[] | undefined): string | undefined {
 export default async function CompaniesPage({ searchParams }: { searchParams: SearchParams }) {
   const tag = str(searchParams.tag);
   const q = str(searchParams.q);
+  const size = str(searchParams.size); // 기업 규모 밴드(예: "1001-5000")
   const sort = str(searchParams.sort) ?? "jobs"; // jobs(공고 많은 순) | name(이름순)
   // 전체를 받아 분야 칩을 집계하고, 선택된 분야/검색/정렬은 서버 JS 로 적용한다.
   const data = await fetchCompanies();
@@ -43,7 +51,8 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
     const countryIso = profile?.country ?? derived?.country;
     const hasTags = !!(c.tags && c.tags.length > 0);
     const description =
-      profile?.description ?? (hasTags ? `${c.tags!.slice(0, 3).join(" · ")} 분야` : null);
+      profile?.description ??
+      (hasTags ? `${c.tags!.slice(0, 3).map(tagLabel).join(" · ")} 분야` : null);
     const iso = countryIso ?? (location ? isoFromLocation(location) : undefined);
     const flag = iso ? flagEmoji(iso) : "";
     const countryCode = profile?.countryLabel ?? iso?.toUpperCase();
@@ -55,19 +64,35 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
   const allVisible = enriched.filter((e) => !e.bare);
 
   // 분야 옵션: 노출 기업들의 태그를 빈도순으로 집계. 카운트 동봉.
+  // 지역·메타 태그(europe/asia/japan 등)는 분야가 아니므로 옵션에서 제외.
   const tagCounts = new Map<string, number>();
   for (const e of allVisible) {
-    for (const t of e.c.tags ?? []) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+    for (const t of e.c.tags ?? []) {
+      if (!NON_DISCIPLINE_TAGS.has(t)) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+    }
   }
   const tagOptions = [...tagCounts.entries()]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .map(([value, count]) => ({ value, label: value, count }));
+    .map(([value, count]) => ({ value, label: tagLabel(value), count }));
   if (tag && !tagOptions.some((o) => o.value === tag)) {
-    tagOptions.unshift({ value: tag, label: tag, count: 0 });
+    tagOptions.unshift({ value: tag, label: tagLabel(tag), count: 0 });
   }
 
-  // 분야 + 회사명 검색으로 좁히기.
+  // 기업 규모 옵션: 노출 기업들의 밴드 집계(밴드 순서 고정).
+  const sizeCounts = new Map<string, number>();
+  for (const e of allVisible) {
+    const s = COMPANY_SIZE[e.c.slug];
+    if (s) sizeCounts.set(s, (sizeCounts.get(s) ?? 0) + 1);
+  }
+  const sizeOptions = SIZE_BANDS.filter((b) => sizeCounts.has(b)).map((b) => ({
+    value: b,
+    label: SIZE_LABEL[b],
+    count: sizeCounts.get(b),
+  }));
+
+  // 분야 + 회사명 검색 + 규모로 좁히기.
   let visible = tag ? allVisible.filter((e) => (e.c.tags ?? []).includes(tag)) : allVisible;
+  if (size) visible = visible.filter((e) => COMPANY_SIZE[e.c.slug] === size);
   if (q) {
     const ql = q.toLowerCase();
     visible = visible.filter((e) => e.c.display_name.toLowerCase().includes(ql));
@@ -94,7 +119,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
       </div>
 
       {/* 검색 + 분야 + 정렬 */}
-      {data && <CompanyDirectoryControls tagOptions={tagOptions} />}
+      {data && <CompanyDirectoryControls tagOptions={tagOptions} sizeOptions={sizeOptions} />}
 
       {!data ? (
         <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
@@ -148,17 +173,23 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                   </div>
                   {/* 분야(태그) — lg+ */}
                   <div className="hidden w-44 shrink-0 gap-1.5 overflow-hidden lg:flex">
-                    {(c.tags ?? []).slice(0, 2).map((t) => (
-                      <span
-                        key={t}
-                        className="truncate rounded-full bg-surface-2 px-2 py-0.5 text-caption text-muted-foreground"
-                      >
-                        {t}
-                      </span>
-                    ))}
+                    {(c.tags ?? [])
+                      .filter((t) => !NON_DISCIPLINE_TAGS.has(t))
+                      .slice(0, 2)
+                      .map((t) => (
+                        <span
+                          key={t}
+                          className="truncate rounded-full bg-surface-2 px-2 py-0.5 text-caption text-muted-foreground"
+                        >
+                          {tagLabel(t)}
+                        </span>
+                      ))}
                   </div>
-                  {/* 지역 — sm+ */}
-                  <div className="hidden w-28 shrink-0 items-center gap-1 text-caption text-muted-foreground sm:flex">
+                  {/* 지역 — sm+. 말줄임될 수 있어 title 로 전체 노출. */}
+                  <div
+                    className="hidden w-28 shrink-0 items-center gap-1 text-caption text-muted-foreground sm:flex"
+                    title={location ?? countryCode ?? undefined}
+                  >
                     {flag && (
                       <span className="leading-none" aria-hidden="true">
                         {flag}
@@ -167,7 +198,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                     <span className="truncate">{location ?? countryCode ?? "-"}</span>
                   </div>
                   {/* 채용중 공고 수 */}
-                  <div className="w-20 shrink-0 text-right text-body-sm">
+                  <div className="w-14 shrink-0 text-right text-body-sm sm:w-20">
                     <span className="font-semibold text-foreground">{c.job_count}</span>
                     <span className="text-caption text-muted-foreground">개</span>
                   </div>
