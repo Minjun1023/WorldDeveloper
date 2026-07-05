@@ -14,6 +14,21 @@ describe("locationDisplayParts", () => {
     expect(locationDisplayParts({ location: "Berlin, Germany", is_remote: true }, "Remote")).toEqual(["Berlin, Germany", "Remote"]);
   });
 
+  it("marks region-restricted remote honestly", () => {
+    // 예: US 거주자만 원격 가능 — 라벨이 그냥 "원격"이면 원격 필터(한국 근무 가능만)와 어긋나 보인다.
+    expect(
+      locationDisplayParts({ location: "San Francisco, CA", is_remote: true, remote: { eligibility: "region_restricted" } }),
+    ).toEqual(["San Francisco, CA", "원격(지역 제한)"]);
+    // worldwide/unclear 는 기존과 동일하게 "원격".
+    expect(
+      locationDisplayParts({ location: "Berlin, Germany", is_remote: true, remote: { eligibility: "worldwide" } }),
+    ).toEqual(["Berlin, Germany", "원격"]);
+    // 위치 텍스트에 이미 원격 표기가 있으면(예: "Remote - US") 그대로 둔다.
+    expect(
+      locationDisplayParts({ location: "Remote - US", is_remote: true, remote: { eligibility: "region_restricted" } }),
+    ).toEqual(["Remote - US"]);
+  });
+
   it("prefers location_ko and dedupes against it", () => {
     expect(locationDisplayParts({ location: "Tokyo", location_ko: "도쿄, 일본", is_remote: false })).toEqual(["도쿄, 일본"]);
   });

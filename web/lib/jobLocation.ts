@@ -10,15 +10,25 @@ export function hasRemoteInText(loc?: string | null): boolean {
 /**
  * 표시용 위치 파츠. location_ko 우선, is_remote 라벨은 위치에 원격 표기가 없을 때만 추가.
  * remoteLabel 기본 "원격"(영문 카드는 "Remote").
+ * 지역 제한 원격(region_restricted)은 "원격(지역 제한)"으로 정직하게 구분 — 원격 필터
+ * (한국에서 근무 가능한 원격만 통과)와 배지가 어긋나 보이던 문제를 막는다. RemoteBadge 와 동일 철학.
  */
 export function locationDisplayParts(
-  job: { location?: string; location_ko?: string | null; is_remote?: boolean },
+  job: {
+    location?: string;
+    location_ko?: string | null;
+    is_remote?: boolean;
+    remote?: { eligibility?: string | null };
+  },
   remoteLabel = "원격",
 ): string[] {
   const loc = job.location_ko ?? job.location ?? null;
   const parts: string[] = [];
   if (loc) parts.push(loc);
-  if (job.is_remote && !hasRemoteInText(loc)) parts.push(remoteLabel);
+  if (job.is_remote && !hasRemoteInText(loc)) {
+    const restricted = job.remote?.eligibility === "region_restricted";
+    parts.push(restricted ? `${remoteLabel}(지역 제한)` : remoteLabel);
+  }
   return parts;
 }
 
