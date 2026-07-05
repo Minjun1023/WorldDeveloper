@@ -13,7 +13,7 @@ import { Pagination } from "@/components/search/Pagination";
 import { Badge } from "@/components/ui/badge";
 import { fetchCompany } from "@/lib/api";
 import { COMPANY_LOCATIONS } from "@/lib/company-locations";
-import { NON_DISCIPLINE_TAGS, tagLabel } from "@/lib/company-tags";
+import { NON_DISCIPLINE_TAGS, tagDesc, tagLabel } from "@/lib/company-tags";
 import { getSession } from "@/lib/session-server";
 
 export const dynamic = "force-dynamic";
@@ -87,7 +87,7 @@ export default async function CompanyDetailPage({
                 {company.tags
                   .filter((t) => !NON_DISCIPLINE_TAGS.has(t))
                   .map((t) => (
-                    <Link key={t} href={`/companies?tag=${encodeURIComponent(t)}`}>
+                    <Link key={t} href={`/companies?tag=${encodeURIComponent(t)}`} title={tagDesc(t)}>
                       <Badge variant="outline" className="hover:border-primary/40">
                         {tagLabel(t)}
                       </Badge>

@@ -8,7 +8,7 @@ import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
 import { cn } from "@/lib/utils";
 import { useUpdateQuery } from "@/lib/use-update-query";
 
-export type TagOption = { value: string; label: string; count?: number };
+export type TagOption = { value: string; label: string; desc?: string; count?: number };
 
 const SORT_OPTIONS = [
   { value: "jobs", label: "공고 많은 순" },
@@ -93,7 +93,7 @@ export function CompanyDirectoryControls({
         <span className="truncate">{tagLabel}</span>
         <ChevronDown className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", tagOpen && "rotate-180")} aria-hidden="true" />
       </button>
-      <AnchoredPopover open={tagOpen} onClose={() => setTagOpen(false)} anchorRef={tagBtnRef} width={256}>
+      <AnchoredPopover open={tagOpen} onClose={() => setTagOpen(false)} anchorRef={tagBtnRef} width={288}>
         <ul className={cn("max-h-80 overflow-y-auto", menuCls)}>
           <OptionRow
             selected={tag === ""}
@@ -108,6 +108,7 @@ export function CompanyDirectoryControls({
               key={o.value}
               selected={tag === o.value}
               label={o.label}
+              desc={o.desc}
               count={o.count}
               onClick={() => {
                 update({ tag: o.value });
@@ -203,11 +204,14 @@ export function CompanyDirectoryControls({
 function OptionRow({
   selected,
   label,
+  desc,
   count,
   onClick,
 }: {
   selected: boolean;
   label: string;
+  // 한국어 보조 설명(영문 라벨 옆 muted 텍스트) — 업계 용어가 낯선 사용자를 위한 병기.
+  desc?: string;
   count?: number;
   onClick: () => void;
 }) {
@@ -221,9 +225,10 @@ function OptionRow({
           selected ? "font-semibold text-primary" : "text-foreground",
         )}
       >
-        <span className="flex min-w-0 items-center gap-1.5">
-          <span className="truncate">{label}</span>
-          {selected && <Check className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />}
+        <span className="flex min-w-0 items-baseline gap-1.5">
+          <span className="shrink-0">{label}</span>
+          {desc && <span className="truncate font-normal text-caption text-muted-foreground">{desc}</span>}
+          {selected && <Check className="h-3.5 w-3.5 shrink-0 self-center text-primary" aria-hidden="true" />}
         </span>
         {count !== undefined && (
           <span className={cn("shrink-0 tabular-nums", selected ? "text-primary/60" : "text-muted-foreground")}>

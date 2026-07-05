@@ -15,7 +15,7 @@ import { COMPANY_LOCATIONS } from "@/lib/company-locations";
 import { COMPANY_SIZE, SIZE_BANDS, SIZE_LABEL } from "@/lib/company-size";
 import { companyBlurb } from "@/lib/company-blurb";
 import { companyProfile, flagEmoji } from "@/lib/company-profiles";
-import { NON_DISCIPLINE_TAGS, tagLabel } from "@/lib/company-tags";
+import { NON_DISCIPLINE_TAGS, tagDesc, tagLabel } from "@/lib/company-tags";
 import { isoFromLocation } from "@/lib/flags";
 
 // force-dynamic 제거 — searchParams + 쿠키(getSessionToken)로 어차피 요청마다 동적 렌더된다.
@@ -73,9 +73,9 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
   }
   const tagOptions = [...tagCounts.entries()]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .map(([value, count]) => ({ value, label: tagLabel(value), count }));
+    .map(([value, count]) => ({ value, label: tagLabel(value), desc: tagDesc(value), count }));
   if (tag && !tagOptions.some((o) => o.value === tag)) {
-    tagOptions.unshift({ value: tag, label: tagLabel(tag), count: 0 });
+    tagOptions.unshift({ value: tag, label: tagLabel(tag), desc: tagDesc(tag), count: 0 });
   }
 
   // 기업 규모 옵션: 노출 기업들의 밴드 집계(밴드 순서 고정).
@@ -179,6 +179,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                       .map((t) => (
                         <span
                           key={t}
+                          title={tagDesc(t)}
                           className="truncate rounded-full bg-surface-2 px-2 py-0.5 text-caption text-muted-foreground"
                         >
                           {tagLabel(t)}
