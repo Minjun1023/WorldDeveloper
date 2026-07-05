@@ -15,7 +15,20 @@ export const NON_DISCIPLINE_TAGS = new Set([
   "microsoft",
 ]);
 
-// 영문 표시 라벨 + 한국어 설명. desc 가 없는 태그는 라벨만 노출.
+// 별칭 표기 → 대표 키. 데이터에 두 표기가 공존해 드롭다운 중복·필터 분산이 생기는 것을
+// 표시 계층에서 정규화한다(라벨·집계·필터 모두 canonicalTag 기준).
+const TAG_ALIAS: Record<string, string> = {
+  "health-tech": "healthtech",
+  communications: "communication",
+  infrastructure: "infra",
+};
+
+/** 별칭을 대표 키로 정규화. 미등록 태그는 원문 그대로. */
+export function canonicalTag(tag: string): string {
+  return TAG_ALIAS[tag] ?? tag;
+}
+
+// 영문 표시 라벨 + 한국어 설명. desc 가 없는 태그는 라벨만 노출. 키는 대표(canonical) 표기만.
 const TAGS: Record<string, { label: string; desc?: string }> = {
   fintech: { label: "Fintech", desc: "금융 기술·결제 서비스" },
   ai: { label: "AI", desc: "인공지능" },
@@ -24,7 +37,6 @@ const TAGS: Record<string, { label: string; desc?: string }> = {
   data: { label: "Data", desc: "데이터 인프라·분석" },
   marketplace: { label: "Marketplace", desc: "중개 플랫폼" },
   infra: { label: "Infra", desc: "클라우드·서버 인프라" },
-  infrastructure: { label: "Infra", desc: "클라우드·서버 인프라" },
   security: { label: "Security", desc: "보안" },
   consumer: { label: "Consumer", desc: "소비자 서비스" },
   gaming: { label: "Gaming", desc: "게임" },
@@ -37,7 +49,6 @@ const TAGS: Record<string, { label: string; desc?: string }> = {
   "hr-tech": { label: "HR Tech", desc: "인사·채용 기술" },
   hr: { label: "HR", desc: "인사·채용" },
   healthtech: { label: "Healthtech", desc: "헬스케어 기술" },
-  "health-tech": { label: "Healthtech", desc: "헬스케어 기술" },
   mobility: { label: "Mobility", desc: "모빌리티·교통" },
   analytics: { label: "Analytics", desc: "데이터 분석" },
   observability: { label: "Observability", desc: "시스템 관측·모니터링" },
@@ -66,7 +77,6 @@ const TAGS: Record<string, { label: string; desc?: string }> = {
   ci: { label: "CI/CD", desc: "빌드·배포 자동화" },
   cms: { label: "CMS", desc: "콘텐츠 관리 시스템" },
   communication: { label: "Communication", desc: "커뮤니케이션" },
-  communications: { label: "Communication", desc: "커뮤니케이션" },
   compliance: { label: "Compliance", desc: "규제 준수" },
   construction: { label: "Construction", desc: "건설 기술" },
   consulting: { label: "Consulting", desc: "컨설팅" },
@@ -110,15 +120,15 @@ const TAGS: Record<string, { label: string; desc?: string }> = {
 };
 
 export function tagLabel(tag: string): string {
-  return TAGS[tag]?.label ?? tag;
+  return TAGS[canonicalTag(tag)]?.label ?? tag;
 }
 
 /** 한국어 보조 설명(미등록 태그는 undefined) — 드롭다운 보조 텍스트·칩 title 용. */
 export function tagDesc(tag: string): string | undefined {
-  return TAGS[tag]?.desc;
+  return TAGS[canonicalTag(tag)]?.desc;
 }
 
 /** 등록된 분야 태그인가 — 분야 드롭다운은 등록 태그만 노출(파생 스택 태그 제외). */
 export function isKnownTag(tag: string): boolean {
-  return tag in TAGS;
+  return canonicalTag(tag) in TAGS;
 }

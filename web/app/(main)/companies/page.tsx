@@ -15,7 +15,7 @@ import { COMPANY_LOCATIONS } from "@/lib/company-locations";
 import { COMPANY_SIZE, SIZE_BANDS, SIZE_LABEL } from "@/lib/company-size";
 import { companyBlurb } from "@/lib/company-blurb";
 import { companyProfile, flagEmoji } from "@/lib/company-profiles";
-import { NON_DISCIPLINE_TAGS, isKnownTag, tagDesc, tagLabel } from "@/lib/company-tags";
+import { NON_DISCIPLINE_TAGS, canonicalTag, isKnownTag, tagDesc, tagLabel } from "@/lib/company-tags";
 import { isoFromLocation } from "@/lib/flags";
 
 // force-dynamic 제거 — searchParams + 쿠키(getSessionToken)로 어차피 요청마다 동적 렌더된다.
@@ -66,17 +66,19 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
   // 분야 옵션: 노출 기업들의 태그를 빈도순으로 집계. 카운트 동봉.
   // 지역·메타 태그(europe/asia/japan 등)와 미등록 파생 태그(공고 기술 스택 폴백 —
   // python/pytorch 등)는 분야가 아니므로 옵션에서 제외. 칩에는 그대로 노출된다.
+  // 별칭 표기(health-tech/healthtech 등)는 대표 키로 정규화해 중복 옵션을 막는다.
   const tagCounts = new Map<string, number>();
   for (const e of allVisible) {
     for (const t of e.c.tags ?? []) {
-      if (!NON_DISCIPLINE_TAGS.has(t) && isKnownTag(t)) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+      const ct = canonicalTag(t);
+      if (!NON_DISCIPLINE_TAGS.has(ct) && isKnownTag(ct)) tagCounts.set(ct, (tagCounts.get(ct) ?? 0) + 1);
     }
   }
   const tagOptions = [...tagCounts.entries()]
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .map(([value, count]) => ({ value, label: tagLabel(value), desc: tagDesc(value), count }));
-  if (tag && !tagOptions.some((o) => o.value === tag)) {
-    tagOptions.unshift({ value: tag, label: tagLabel(tag), desc: tagDesc(tag), count: 0 });
+  if (tag && !tagOptions.some((o) => o.value === canonicalTag(tag))) {
+    tagOptions.unshift({ value: canonicalTag(tag), label: tagLabel(tag), desc: tagDesc(tag), count: 0 });
   }
 
   // 기업 규모 옵션: 노출 기업들의 밴드 집계(밴드 순서 고정).
@@ -91,8 +93,11 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
     count: sizeCounts.get(b),
   }));
 
-  // 분야 + 회사명 검색 + 규모로 좁히기.
-  let visible = tag ? allVisible.filter((e) => (e.c.tags ?? []).includes(tag)) : allVisible;
+  // 분야 + 회사명 검색 + 규모로 좁히기. 태그는 별칭 정규화 후 비교(?tag=health-tech 딥링크 호환).
+  const canonTag = tag ? canonicalTag(tag) : null;
+  let visible = canonTag
+    ? allVisible.filter((e) => (e.c.tags ?? []).some((t) => canonicalTag(t) === canonTag))
+    : allVisible;
   if (size) visible = visible.filter((e) => COMPANY_SIZE[e.c.slug] === size);
   if (q) {
     const ql = q.toLowerCase();
