@@ -15,7 +15,7 @@ import { COMPANY_LOCATIONS } from "@/lib/company-locations";
 import { COMPANY_SIZE, SIZE_BANDS, SIZE_LABEL } from "@/lib/company-size";
 import { companyBlurb } from "@/lib/company-blurb";
 import { companyProfile, flagEmoji } from "@/lib/company-profiles";
-import { NON_DISCIPLINE_TAGS, tagDesc, tagLabel } from "@/lib/company-tags";
+import { NON_DISCIPLINE_TAGS, isKnownTag, tagDesc, tagLabel } from "@/lib/company-tags";
 import { isoFromLocation } from "@/lib/flags";
 
 // force-dynamic 제거 — searchParams + 쿠키(getSessionToken)로 어차피 요청마다 동적 렌더된다.
@@ -64,11 +64,12 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
   const allVisible = enriched.filter((e) => !e.bare);
 
   // 분야 옵션: 노출 기업들의 태그를 빈도순으로 집계. 카운트 동봉.
-  // 지역·메타 태그(europe/asia/japan 등)는 분야가 아니므로 옵션에서 제외.
+  // 지역·메타 태그(europe/asia/japan 등)와 미등록 파생 태그(공고 기술 스택 폴백 —
+  // python/pytorch 등)는 분야가 아니므로 옵션에서 제외. 칩에는 그대로 노출된다.
   const tagCounts = new Map<string, number>();
   for (const e of allVisible) {
     for (const t of e.c.tags ?? []) {
-      if (!NON_DISCIPLINE_TAGS.has(t)) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
+      if (!NON_DISCIPLINE_TAGS.has(t) && isKnownTag(t)) tagCounts.set(t, (tagCounts.get(t) ?? 0) + 1);
     }
   }
   const tagOptions = [...tagCounts.entries()]
