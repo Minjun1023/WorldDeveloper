@@ -56,14 +56,6 @@ export function AccountMenu({ loggedIn }: { loggedIn: boolean }) {
           >
             프로필 정보
           </Link>
-          <Link
-            href="/bookmarks?tab=tracker"
-            role="menuitem"
-            onClick={() => setOpen(false)}
-            className="block rounded-md px-3 py-2 text-body-sm hover:bg-muted"
-          >
-            지원 현황
-          </Link>
           <form action="/api/auth/logout" method="post">
             <button
               type="submit"
