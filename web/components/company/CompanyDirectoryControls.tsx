@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 
 import { AnchoredPopover } from "@/components/ui/AnchoredPopover";
+import { canonicalTag } from "@/lib/company-tags";
 import { cn } from "@/lib/utils";
 import { useUpdateQuery } from "@/lib/use-update-query";
 
@@ -28,7 +29,8 @@ export function CompanyDirectoryControls({
   const sp = useSearchParams();
   const update = useUpdateQuery();
 
-  const tag = sp.get("tag") ?? "";
+  // 별칭 표기(?tag=health-tech 딥링크)도 대표 키 옵션에 매칭되도록 정규화.
+  const tag = canonicalTag(sp.get("tag") ?? "");
   const size = sp.get("size") ?? "";
   const sort = sp.get("sort") ?? "jobs";
   const [q, setQ] = useState(sp.get("q") ?? "");
