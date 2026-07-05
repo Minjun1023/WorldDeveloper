@@ -23,7 +23,7 @@ type Params = {
 
 type Saved = { id: string; label: string; params: Partial<Params> };
 
-export function SearchAlertButton({ regions }: { regions: RegionCount[] }) {
+export function SearchAlertButton({ regions, loggedIn = false }: { regions: RegionCount[]; loggedIn?: boolean }) {
   const sp = useSearchParams();
   const router = useRouter();
   const [subscribedId, setSubscribedId] = useState<string | null>(null);
@@ -63,7 +63,9 @@ export function SearchAlertButton({ regions }: { regions: RegionCount[] }) {
   }, [params, regions]);
 
   // 같은 조건(핵심 필드 기준)의 기존 구독 탐색 → 토글 초기 상태.
+  // 비로그인이면 조회 자체를 건너뜀 — 401 콘솔 에러 노이즈 방지(구독 여부가 있을 수 없음).
   useEffect(() => {
+    if (!loggedIn) return;
     let alive = true;
     fetch("/api/me/searches")
       .then((r) => (r.ok ? r.json() : []))
@@ -82,10 +84,15 @@ export function SearchAlertButton({ regions }: { regions: RegionCount[] }) {
     return () => {
       alive = false;
     };
-  }, [params]);
+  }, [params, loggedIn]);
 
   async function toggle() {
     if (pending) return;
+    // 비로그인은 POST 401 왕복 없이 바로 로그인으로 (콘솔 에러 없이 동일한 UX).
+    if (!loggedIn) {
+      router.push(`/signin?callbackUrl=${encodeURIComponent(`/search?${sp.toString()}`)}`);
+      return;
+    }
     setPending(true);
     try {
       if (subscribedId) {

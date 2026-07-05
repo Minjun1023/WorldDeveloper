@@ -77,7 +77,7 @@ export default async function SearchPage({
               <span />
             )}
             <div className="flex items-center gap-2">
-              <SearchAlertButton regions={regions} />
+              <SearchAlertButton regions={regions} loggedIn={loggedIn} />
               <SortToggle />
             </div>
           </div>
