@@ -211,7 +211,8 @@ export function FilterSidebar({
       </Group>
 
       <Group title="기타">
-        <CheckRow checked={remote} onToggle={() => update({ remote: remote ? null : "true" })} label="원격 가능" />
+        {/* "지역 제한 원격"(예: US 거주자만)은 제외되는 필터 — 라벨로 기준을 드러낸다. */}
+        <CheckRow checked={remote} onToggle={() => update({ remote: remote ? null : "true" })} label="원격 (한국에서 근무 가능)" />
       </Group>
     </aside>
   );
