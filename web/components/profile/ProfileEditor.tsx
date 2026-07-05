@@ -28,14 +28,12 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
   const [saved, setSaved] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [communityHandle, setCommunityHandle] = useState(""); // 현재 표시되는 닉네임(자동 포함)
 
   useEffect(() => {
     fetch("/api/me/profile", { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
         if (d?.exists && d.profile) setProfile({ ...EMPTY, ...d.profile });
-        if (d?.community_handle) setCommunityHandle(d.community_handle);
       })
       .catch(() => {})
       .finally(() => setReady(true));
@@ -70,14 +68,10 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
       });
       if (!res.ok) {
         const msg = (await res.json().catch(() => null))?.message;
-        if (res.status === 409) throw new Error(msg ?? "이미 사용 중인 닉네임이에요.");
         if (res.status === 400) throw new Error(msg ?? "입력값을 확인해주세요.");
         throw new Error(`저장 실패 (HTTP ${res.status})`);
       }
       clearRecommendCache(); // 프로필 변경 → 추천 캐시 무효화(다음 방문 시 신선하게 재계산)
-      // 저장 성공 → 닉네임 표시 갱신(설정값 있으면 그것, 없으면 기존 자동 닉네임 유지)
-      const h = (profile.handle ?? "").trim();
-      if (h) setCommunityHandle(h);
       setSaved(true);
       setDirty(false);
       // 환영 모드(가입 직후): 저장 즉시 첫 가치 경험(맞춤 추천)으로 이동.
@@ -142,27 +136,6 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
         <p className="text-body-sm text-muted-foreground">불러오는 중…</p>
       ) : (
         <>
-          {/* 커뮤니티 닉네임 */}
-          <div className="rounded-xl border border-border bg-surface p-4 shadow-sm sm:p-5">
-            <label htmlFor="handle" className="text-body-sm font-medium">커뮤니티 닉네임</label>
-            <p className="mt-0.5 text-caption text-muted-foreground">
-              해외취업 라운지에 표시될 이름이에요. 비워두면 자동 닉네임이 쓰여요.
-            </p>
-            <div className="mt-2.5 flex flex-wrap items-center gap-3">
-              <input
-                id="handle"
-                value={profile.handle ?? ""}
-                onChange={(e) => update({ ...profile, handle: e.target.value })}
-                maxLength={20}
-                placeholder={communityHandle || "닉네임 (2~20자)"}
-                className="h-10 w-full max-w-xs rounded-md border border-input bg-background px-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-              <span className="text-caption text-muted-foreground">
-                현재 표시: <strong className="font-semibold text-foreground">{(profile.handle ?? "").trim() || communityHandle || "—"}</strong>
-              </span>
-            </div>
-          </div>
-
           <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
             <ProfileFields value={profile} onChange={update} />
           {/* 미리보기 카드 + 저장 버튼을 한 덩어리로 sticky — 카드만 sticky 면 스크롤 시 저장 버튼이
