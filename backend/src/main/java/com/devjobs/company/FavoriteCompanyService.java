@@ -9,10 +9,14 @@ import org.springframework.stereotype.Service;
 public class FavoriteCompanyService {
 
     private final FavoriteCompanyRepository repo;
+    private final FavoriteCompanyAlertRepository alertRepo;
     private final CompanyService companyService;
 
-    public FavoriteCompanyService(FavoriteCompanyRepository repo, CompanyService companyService) {
+    public FavoriteCompanyService(FavoriteCompanyRepository repo,
+                                  FavoriteCompanyAlertRepository alertRepo,
+                                  CompanyService companyService) {
         this.repo = repo;
+        this.alertRepo = alertRepo;
         this.companyService = companyService;
     }
 
@@ -21,6 +25,11 @@ public class FavoriteCompanyService {
         var key = new FavoriteCompanyEntity.Key(userId, slug);
         if (!repo.existsById(key)) {
             repo.save(new FavoriteCompanyEntity(userId, slug));
+        }
+        // 첫 관심기업 등록 시 알림 상태 자동 생성(기본 켬) — 워터마크는 지금부터라 과거 공고 스팸 없음.
+        // 유저가 껐던(notify=false) 상태는 덮어쓰지 않는다.
+        if (!alertRepo.existsById(userId)) {
+            alertRepo.save(new FavoriteCompanyAlertEntity(userId));
         }
     }
 

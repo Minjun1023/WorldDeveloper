@@ -22,6 +22,19 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
         """, nativeQuery = true)
     List<JobEntity> findLiveByCompanySlug(@Param("slug") String slug);
 
+    // 관심 기업 다이제스트: 워터마크(since) 이후 게시된 관심 기업들의 live 공고.
+    // 비자 게이트는 걸지 않는다 — 유저가 직접 고른 회사의 신규 공고는 전부 알릴 가치가 있다.
+    @Query(value = """
+        SELECT * FROM jobs
+        WHERE company_slug IN (:slugs) AND is_active = true
+          AND (closes_at IS NULL OR closes_at > now())
+          AND NOT is_agency(company_slug)
+          AND posted_at > :since
+        ORDER BY posted_at DESC
+        """, nativeQuery = true)
+    List<JobEntity> findNewByCompanySlugs(@Param("slugs") java.util.Collection<String> slugs,
+                                          @Param("since") java.time.OffsetDateTime since);
+
     @Query(value = "SELECT visa_status, count(*) FROM jobs WHERE is_active = true AND (closes_at IS NULL OR closes_at > now()) AND NOT is_agency(company_slug) GROUP BY visa_status",
         nativeQuery = true)
     List<Object[]> countByVisaStatus();

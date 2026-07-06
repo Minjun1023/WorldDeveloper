@@ -5,7 +5,6 @@ export const metadata = {
 
 import { JobRow } from "@/components/job/JobRow";
 import { groupAdjacentJobs } from "@/lib/group-jobs";
-import { SearchAlertButton } from "@/components/search/SearchAlertButton";
 import { SearchFilterLayout } from "@/components/search/SearchFilterLayout";
 import { Pagination } from "@/components/search/Pagination";
 import { RecentSearches } from "@/components/search/RecentSearches";
@@ -76,8 +75,9 @@ export default async function SearchPage({
             ) : (
               <span />
             )}
+            {/* 검색 조건 알림(SearchAlertButton)은 관심 기업 알림으로 대체되어 UI 에서 내림 —
+                백엔드 구독/발송 인프라와 기존 구독자 메일은 유지된다. */}
             <div className="flex items-center gap-2">
-              <SearchAlertButton regions={regions} loggedIn={loggedIn} />
               <SortToggle />
             </div>
           </div>

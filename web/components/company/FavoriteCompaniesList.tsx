@@ -1,10 +1,71 @@
 "use client";
 
+import { Bell, BellOff } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { LoadError } from "@/components/ui/LoadError";
+import { tagLabel } from "@/lib/company-tags";
+
+// 관심 기업 새 공고 이메일 알림 on/off — 유저당 1개 전역 설정(/api/me/company-alerts).
+function AlertToggle() {
+  const [notify, setNotify] = useState<boolean | null>(null); // null = 로딩
+  const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    fetch("/api/me/company-alerts")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => alive && setNotify(typeof d?.notify === "boolean" ? d.notify : true))
+      .catch(() => alive && setNotify(true));
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  async function toggle() {
+    if (pending || notify === null) return;
+    setPending(true);
+    const next = !notify;
+    try {
+      const res = await fetch("/api/me/company-alerts", {
+        method: "PUT",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ enabled: next }),
+      });
+      if (res.ok) setNotify(next);
+    } finally {
+      setPending(false);
+    }
+  }
+
+  const on = notify === true;
+  return (
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3">
+      <div className="min-w-0">
+        <p className="text-body-sm font-medium text-foreground">새 공고 이메일 알림</p>
+        <p className="mt-0.5 text-caption text-muted-foreground">
+          관심 기업에 새 공고가 올라오면 매일 아침 이메일로 알려드려요.
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={toggle}
+        disabled={pending || notify === null}
+        aria-pressed={on}
+        className={
+          on
+            ? "inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-primary/40 bg-primary-tint px-3 py-2 text-body-sm font-medium text-primary transition-colors hover:opacity-80 disabled:opacity-50"
+            : "inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-body-sm font-medium text-muted-foreground transition-colors hover:bg-accent disabled:opacity-50"
+        }
+      >
+        {on ? <Bell className="h-4 w-4" aria-hidden="true" /> : <BellOff className="h-4 w-4" aria-hidden="true" />}
+        {notify === null ? "…" : on ? "알림 켜짐" : "알림 꺼짐"}
+      </button>
+    </div>
+  );
+}
 
 type FavCompany = {
   slug: string;
@@ -52,7 +113,9 @@ export function FavoriteCompaniesList() {
   }
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border">
+    <div>
+      <AlertToggle />
+      <div className="overflow-hidden rounded-lg border border-border">
       {items.map((c, i) => (
         <Link
           key={c.slug}
@@ -76,7 +139,7 @@ export function FavoriteCompaniesList() {
                 key={t}
                 className="truncate rounded-full bg-surface-2 px-2 py-0.5 text-caption text-muted-foreground"
               >
-                {t}
+                {tagLabel(t)}
               </span>
             ))}
           </div>
@@ -86,6 +149,7 @@ export function FavoriteCompaniesList() {
           </div>
         </Link>
       ))}
+      </div>
     </div>
   );
 }
