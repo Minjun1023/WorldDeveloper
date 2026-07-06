@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { AlertToggleCard } from "@/components/alerts/AlertToggleCard";
 import { InteractiveJobCard } from "@/components/recommend/InteractiveJobCard";
 import { RecommendationSkeleton } from "@/components/recommend/RecommendationSkeleton";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -61,6 +62,13 @@ export function MemberRecommend() {
           프로필 수정
         </Link>
       </div>
+      {/* 옵트인 알림 — 프로필 저장은 구독 의사가 아니므로 기본 꺼짐(defaultOn=false). */}
+      <AlertToggleCard
+        endpoint="/api/me/match-alerts"
+        title="맞춤 공고 이메일 알림"
+        description="프로필과 잘 맞는 새 공고(매칭 60% 이상)가 올라오면 매일 아침 이메일로 알려드려요."
+        defaultOn={false}
+      />
       {loading && <RecommendationSkeleton count={9} message="프로필로 5축 점수를 계산하는 중…" />}
       {error && <p className="text-body-sm text-destructive">추천 실패: {error}</p>}
       {result && !loading && (visible.length === 0

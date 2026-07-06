@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { AlertToggleCard } from "@/components/alerts/AlertToggleCard";
 import { JobCard } from "@/components/job/JobCard";
 import { LoadError } from "@/components/ui/LoadError";
 import type { Job } from "@/lib/types";
@@ -41,10 +42,17 @@ export function SavedJobsList() {
     );
   }
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {jobs.map((job) => (
-        <JobCard key={job.id} job={job} />
-      ))}
+    <div>
+      <AlertToggleCard
+        endpoint="/api/me/saved-job-alerts"
+        title="마감 이메일 알림"
+        description="저장한 공고가 마감되면 이메일로 알려드려요. 헛지원을 막아드립니다."
+      />
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {jobs.map((job) => (
+          <JobCard key={job.id} job={job} />
+        ))}
+      </div>
     </div>
   );
 }
