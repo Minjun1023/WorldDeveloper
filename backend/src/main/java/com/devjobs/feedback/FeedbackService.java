@@ -19,13 +19,16 @@ public class FeedbackService {
     private static final int MAX_EVENTS = 100;
 
     private final SavedJobRepository savedRepo;
+    private final SavedJobCloseAlertRepository closeAlertRepo;
     private final JobReactionRepository reactionRepo;
     private final RecommendationFeedbackRepository feedbackRepo;
     private final EntityManager em;
 
-    public FeedbackService(SavedJobRepository savedRepo, JobReactionRepository reactionRepo,
+    public FeedbackService(SavedJobRepository savedRepo, SavedJobCloseAlertRepository closeAlertRepo,
+                           JobReactionRepository reactionRepo,
                            RecommendationFeedbackRepository feedbackRepo, EntityManager em) {
-        this.savedRepo = savedRepo; this.reactionRepo = reactionRepo;
+        this.savedRepo = savedRepo; this.closeAlertRepo = closeAlertRepo;
+        this.reactionRepo = reactionRepo;
         this.feedbackRepo = feedbackRepo; this.em = em;
     }
 
@@ -37,6 +40,10 @@ public class FeedbackService {
             }
         } catch (org.springframework.dao.DataIntegrityViolationException e) {
             // exists→save 사이 동시 요청(더블클릭)이 먼저 저장한 경우 — 이미 저장됨이 목표 상태라 멱등 처리.
+        }
+        // 첫 저장 시 마감 알림 설정 자동 생성(기본 켬) — 유저가 꺼둔 설정은 덮어쓰지 않는다.
+        if (!closeAlertRepo.existsById(userId)) {
+            closeAlertRepo.save(new SavedJobCloseAlertEntity(userId));
         }
     }
 
