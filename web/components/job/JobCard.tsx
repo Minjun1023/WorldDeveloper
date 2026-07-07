@@ -22,6 +22,7 @@ export function JobCard({
   showRestrictedRemote = false,
   showSave = false,
   loggedIn = false,
+  matchScore,
 }: {
   job: Job;
   hideVisaBadge?: boolean;
@@ -30,6 +31,8 @@ export function JobCard({
   // 우상단 북마크(저장) 노출 — 인기 TOP 공고 등 opt-in.
   showSave?: boolean;
   loggedIn?: boolean;
+  // 맞춤 추천 맥락에서 카드 안에 매칭 점수(0~100)를 표기 — 홈 추천 미리보기 등 opt-in.
+  matchScore?: number;
 }) {
   const salary = formatSalary(job.salary);
   const salaryKrw = formatSalaryKrw(job.salary);
@@ -89,6 +92,11 @@ export function JobCard({
               )}
             </p>
           </div>
+          {typeof matchScore === "number" && (
+            <span className="shrink-0 rounded-full bg-primary/10 px-2 py-0.5 text-caption font-semibold text-primary">
+              매칭 {matchScore}점
+            </span>
+          )}
           {deadline.urgent && (
             <span
               className="shrink-0 rounded-full px-2 py-0.5 text-caption font-medium text-warning"
