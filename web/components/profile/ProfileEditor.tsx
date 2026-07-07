@@ -104,13 +104,14 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
               </p>
             </div>
           </div>
-          <button
+          <Button
             type="button"
+            variant="link"
             onClick={() => router.push("/search")}
-            className="shrink-0 self-start text-body-sm text-muted-foreground underline-offset-2 hover:text-foreground hover:underline sm:self-center"
+            className="h-auto shrink-0 self-start p-0 text-muted-foreground hover:text-foreground sm:self-center"
           >
             나중에 하고 둘러보기
-          </button>
+          </Button>
         </div>
       )}
 

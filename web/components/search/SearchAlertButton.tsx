@@ -4,8 +4,10 @@ import { Bell, BellRing } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import type { RegionCount } from "@/lib/api";
 import { DISCIPLINES } from "@/lib/disciplines";
+import { cn } from "@/lib/utils";
 
 // 현재 검색 조건을 저장하고 매일 신규 공고를 이메일로 받는 구독 토글.
 // 백엔드 SavedSearchParams 와 1:1 매핑(JSONB) — 같은 조건의 구독이 이미 있으면 '구독 중'으로 표시.
@@ -120,20 +122,20 @@ export function SearchAlertButton({ regions, loggedIn = false }: { regions: Regi
 
   const on = !!subscribedId;
   return (
-    <button
+    <Button
       type="button"
+      variant="outline"
       onClick={toggle}
       disabled={pending}
       aria-pressed={on}
       title={on ? "매일 새 공고 알림을 받는 중 — 눌러서 해제" : "이 검색의 새 공고를 매일 이메일로 받기"}
-      className={
-        on
-          ? "inline-flex items-center gap-1.5 rounded-lg border border-primary/40 bg-primary-tint px-3 py-2 text-body-sm font-medium text-primary transition-colors hover:opacity-80 disabled:opacity-50"
-          : "inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-body-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-50"
-      }
+      className={cn(
+        // 구독 중(on) 상태 표시는 variant 에 없어 tint 오버라이드로 유지.
+        on && "border-primary/40 bg-primary-tint text-primary hover:bg-primary-tint hover:text-primary",
+      )}
     >
-      {on ? <BellRing className="h-4 w-4" aria-hidden="true" /> : <Bell className="h-4 w-4" aria-hidden="true" />}
+      {on ? <BellRing aria-hidden="true" /> : <Bell aria-hidden="true" />}
       {on ? "알림 받는 중" : "알림 받기"}
-    </button>
+    </Button>
   );
 }

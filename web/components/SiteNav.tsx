@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 
 import { AccountMenu } from "@/components/auth/AccountMenu";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 // 전역 헤더 — Figma 디자인(table-fax-94005204.figma.site)의 내비를 그대로 반영.
@@ -92,16 +93,10 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
               <AccountMenu loggedIn />
             ) : (
               <>
-                <Link
-                  href="/signin"
-                  className="rounded-lg border border-border px-3.5 py-2 text-[13px] font-medium text-primary transition-colors hover:bg-accent"
-                >
+                <Link href="/signin" className={cn(buttonVariants({ variant: "outline" }))}>
                   로그인
                 </Link>
-                <Link
-                  href="/signup"
-                  className="rounded-lg bg-primary px-3.5 py-2 text-[13px] font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-                >
+                <Link href="/signup" className={cn(buttonVariants())}>
                   회원가입
                 </Link>
               </>
@@ -110,17 +105,19 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
 
           {/* 모바일 메뉴 */}
           <div ref={ref} className="relative md:hidden">
-            <button
+            <Button
               type="button"
+              variant="ghost"
+              size="icon"
               onClick={() => setOpen((v) => !v)}
               aria-haspopup="menu"
               aria-expanded={open}
               aria-controls="mobile-nav"
               aria-label="메뉴"
-              className="flex h-10 w-10 items-center justify-center rounded-md text-muted-foreground hover:text-foreground"
+              className="[&_svg]:size-5"
             >
-              <Menu className="h-5 w-5" aria-hidden="true" />
-            </button>
+              <Menu aria-hidden="true" />
+            </Button>
             {/* 스크림 — 메뉴 열림 상태를 시각적으로 분명히 하고 바깥 탭으로 닫기 */}
             {open && (
               <div
@@ -188,7 +185,7 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
                       href="/signup"
                       role="menuitem"
                       onClick={() => setOpen(false)}
-                      className="mt-1 block rounded-lg bg-primary px-3 py-2 text-center text-body-sm font-bold text-primary-foreground"
+                      className={cn(buttonVariants(), "mt-1 w-full")}
                     >
                       회원가입
                     </Link>

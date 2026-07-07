@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import { CoachJobModal, type PickJob } from "./CoachJobModal";
@@ -278,18 +279,20 @@ export function CoachChat({
   const composer = (
     <div ref={composerWrapRef} className="relative w-full">
       <div className="flex items-center gap-2 rounded-[1.75rem] border border-border bg-surface px-2 py-2 pl-3 shadow-sm">
-        <button
+        <Button
           type="button"
+          variant="secondary"
+          size="icon"
           onClick={openMenu}
           aria-label="공고·이력서 첨부"
           aria-haspopup="menu"
           className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors",
-            attachmentCount ? "bg-primary/10 text-primary" : "bg-surface-2 text-foreground hover:bg-border",
+            "shrink-0 [&_svg]:size-5",
+            attachmentCount > 0 && "bg-primary/10 text-primary hover:bg-primary/15",
           )}
         >
-          <Plus className="h-5 w-5" aria-hidden="true" />
-        </button>
+          <Plus aria-hidden="true" />
+        </Button>
         <textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -309,18 +312,16 @@ export function CoachChat({
           }
           className="block max-h-40 min-h-[40px] flex-1 resize-none bg-transparent py-2 text-body-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
-        <button
+        <Button
           type="button"
+          size="icon"
           onClick={send}
           disabled={pending}
           aria-label="보내기"
-          className={cn(
-            "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-opacity",
-            pending ? "bg-surface-2 text-muted-foreground" : "bg-brand-gradient text-white hover:opacity-90",
-          )}
+          className="shrink-0 [&_svg]:size-5"
         >
-          <ArrowUp className="h-5 w-5" aria-hidden="true" />
-        </button>
+          <ArrowUp aria-hidden="true" />
+        </Button>
       </div>
 
       {/* ＋ 팝오버 메뉴 */}
@@ -389,7 +390,7 @@ export function CoachChat({
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 top-12 -z-10 mx-auto h-72 max-w-3xl blur-3xl"
-        style={{ background: "radial-gradient(60% 60% at 50% 0%, color-mix(in srgb, var(--primary) 11%, transparent), transparent)" }}
+        style={{ background: "radial-gradient(60% 60% at 50% 0%, color-mix(in srgb, hsl(var(--primary)) 11%, transparent), transparent)" }}
       />
 
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -404,7 +405,7 @@ export function CoachChat({
               {selectedJob ? (
                 <span
                   className="inline-flex min-w-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-caption font-medium text-primary"
-                  style={{ backgroundColor: "color-mix(in srgb, var(--primary) 12%, transparent)" }}
+                  style={{ backgroundColor: "color-mix(in srgb, hsl(var(--primary)) 12%, transparent)" }}
                 >
                   <Briefcase className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                   <span className="truncate">
@@ -414,14 +415,10 @@ export function CoachChat({
               ) : (
                 <span />
               )}
-              <button
-                type="button"
-                onClick={reset}
-                className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-body-sm text-foreground transition-colors hover:bg-accent"
-              >
-                <RefreshCw className="h-4 w-4" aria-hidden="true" />
+              <Button type="button" variant="outline" size="sm" onClick={reset} className="shrink-0">
+                <RefreshCw aria-hidden="true" />
                 새 상담
-              </button>
+              </Button>
             </div>
 
             <div ref={threadRef} className="min-h-[260px] flex-1 space-y-4 overflow-y-auto">
@@ -467,7 +464,7 @@ export function CoachChat({
               {error && (
                 <div
                   className="rounded-lg border border-destructive/30 px-3.5 py-2.5 text-body-sm text-destructive"
-                  style={{ backgroundColor: "color-mix(in srgb, var(--destructive) 7%, transparent)" }}
+                  style={{ backgroundColor: "color-mix(in srgb, hsl(var(--destructive)) 7%, transparent)" }}
                 >
                   {error}
                 </div>
@@ -541,7 +538,7 @@ function AttachedChip({ icon: Icon, children }: { icon: typeof Briefcase; childr
   return (
     <span
       className="inline-flex min-w-0 max-w-full items-center gap-1.5 rounded-full px-2.5 py-1 text-caption font-medium text-primary"
-      style={{ backgroundColor: "color-mix(in srgb, var(--primary) 12%, transparent)" }}
+      style={{ backgroundColor: "color-mix(in srgb, hsl(var(--primary)) 12%, transparent)" }}
     >
       <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
       <span className="truncate">{children}</span>

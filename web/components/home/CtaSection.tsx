@@ -1,5 +1,8 @@
 import Link from "next/link";
 
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
 // 랜딩 하단 전환 유도(CTA). Figma: 솔리드 파랑 배너, 가운데 정렬, 2버튼.
 export function CtaSection({ loggedIn = false }: { loggedIn?: boolean }) {
   const primaryHref = loggedIn ? "/me/profile" : "/signup";
@@ -16,13 +19,16 @@ export function CtaSection({ loggedIn = false }: { loggedIn?: boolean }) {
       <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
         <Link
           href={primaryHref}
-          className="inline-flex items-center justify-center rounded-lg bg-white px-6 py-3 text-body-sm font-bold text-primary transition-opacity hover:opacity-90"
+          className={cn(buttonVariants({ size: "lg" }), "bg-white text-primary hover:bg-white/90")}
         >
           {primaryLabel}
         </Link>
         <Link
           href="/search"
-          className="inline-flex items-center justify-center rounded-lg border border-white/50 bg-transparent px-6 py-3 text-body-sm font-medium text-white transition-colors hover:bg-white/10"
+          className={cn(
+            buttonVariants({ variant: "outline", size: "lg" }),
+            "border-white/50 bg-transparent text-white hover:bg-white/10 hover:text-white",
+          )}
         >
           공고 둘러보기
         </Link>

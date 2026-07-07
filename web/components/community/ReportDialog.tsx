@@ -148,20 +148,20 @@ export function ReportDialog({
         {finished ? (
           <>
             {phase === "error" && (
-              <Button type="button" size="sm" variant="outline" onClick={() => setPhase("form")}>
+              <Button type="button" variant="outline" onClick={() => setPhase("form")}>
                 다시 시도
               </Button>
             )}
-            <Button type="button" size="sm" onClick={handleClose}>
+            <Button type="button" onClick={handleClose}>
               확인
             </Button>
           </>
         ) : (
           <>
-            <Button type="button" size="sm" variant="outline" onClick={handleClose}>
+            <Button type="button" variant="outline" onClick={handleClose}>
               취소
             </Button>
-            <Button type="button" size="sm" onClick={submit} disabled={phase === "submitting"}>
+            <Button type="button" onClick={submit} disabled={phase === "submitting"}>
               {phase === "submitting" ? "접수 중…" : "신고 제출"}
             </Button>
           </>

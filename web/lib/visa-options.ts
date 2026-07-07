@@ -1,4 +1,5 @@
-import type { DropdownOption } from "@/components/ui/dropdown";
+// 옛 ui/dropdown 삭제(shadcn 전환)로 옵션 타입을 로컬 정의.
+type DropdownOption = { value: string; label: string; count?: number };
 
 // "전체"(null)는 Dropdown 이 자동 제공.
 // 비자 미확인("정보 없음")·스폰서 불가는 필터 가치가 낮아 제외. "원격근무"는 visa 가 아니라

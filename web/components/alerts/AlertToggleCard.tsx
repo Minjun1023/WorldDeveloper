@@ -3,6 +3,9 @@
 import { Bell, BellOff } from "lucide-react";
 import { useEffect, useState } from "react";
 
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
 /**
  * 이메일 알림 on/off 토글 카드 — 유저당 1개 전역 설정을 갖는 알림들의 공용 UI.
  * endpoint 는 GET { notify } / PUT { enabled } 계약을 따르는 BFF 라우트
@@ -57,20 +60,21 @@ export function AlertToggleCard({
         <p className="text-body-sm font-medium text-foreground">{title}</p>
         <p className="mt-0.5 text-caption text-muted-foreground">{description}</p>
       </div>
-      <button
+      {/* 구독 중(on) 상태는 variant 에 없는 시맨틱이라 tint 오버라이드 — SearchAlertButton 과 동일 패턴 */}
+      <Button
         type="button"
+        variant="outline"
         onClick={toggle}
         disabled={pending || notify === null}
         aria-pressed={on}
-        className={
-          on
-            ? "inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-primary/40 bg-primary-tint px-3 py-2 text-body-sm font-medium text-primary transition-colors hover:opacity-80 disabled:opacity-50"
-            : "inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-body-sm font-medium text-muted-foreground transition-colors hover:bg-accent disabled:opacity-50"
-        }
+        className={cn(
+          "shrink-0",
+          on && "border-primary/40 bg-primary-tint text-primary hover:bg-primary-tint hover:text-primary",
+        )}
       >
-        {on ? <Bell className="h-4 w-4" aria-hidden="true" /> : <BellOff className="h-4 w-4" aria-hidden="true" />}
+        {on ? <Bell aria-hidden="true" /> : <BellOff aria-hidden="true" />}
         {notify === null ? "…" : on ? "알림 켜짐" : "알림 꺼짐"}
-      </button>
+      </Button>
     </div>
   );
 }

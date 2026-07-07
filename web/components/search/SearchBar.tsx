@@ -34,7 +34,7 @@ export function SearchBar() {
         aria-label="공고 검색"
         className="h-11 w-full min-w-0 flex-1 bg-transparent text-body placeholder:text-muted-foreground focus:outline-none"
       />
-      <Button type="submit" size="lg" className="shrink-0 rounded-xl">
+      <Button type="submit" size="lg" className="shrink-0">
         검색
       </Button>
     </form>

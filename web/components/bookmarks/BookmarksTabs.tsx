@@ -8,6 +8,7 @@ import { JobTrackerBoard } from "@/components/bookmarks/JobTrackerBoard";
 import { RecentJobsTab } from "@/components/bookmarks/RecentJobsTab";
 import { FavoriteCompaniesList } from "@/components/company/FavoriteCompaniesList";
 import { SavedJobsList } from "@/components/saved/SavedJobsList";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 // 북마크 탭 — 직행 북마크 영역 구조: 공고 관리(칸반) / 북마크 전체 / 관심 기업 / 최근 본 공고.
@@ -34,7 +35,7 @@ function LockedPreview({ backdrop, tab }: { backdrop: React.ReactNode; tab: stri
           <p className="text-body-sm text-muted-foreground">로그인하면 이용할 수 있어요.</p>
           <Link
             href={`/signin?callbackUrl=${encodeURIComponent(`/bookmarks?tab=${tab}`)}`}
-            className="mt-3 inline-block rounded-lg bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground"
+            className={cn(buttonVariants(), "mt-3")}
           >
             로그인
           </Link>
@@ -102,7 +103,11 @@ export function BookmarksTabs({ loggedIn }: { loggedIn: boolean }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-5 overflow-x-auto overflow-y-hidden border-b border-border" role="tablist">
+      {/* shadcn Tabs 트리거 룩 — muted 트랙 + 활성 탭은 background 로 떠오름 */}
+      <div
+        className="inline-flex max-w-full items-center overflow-x-auto rounded-lg bg-muted p-1 text-muted-foreground"
+        role="tablist"
+      >
         {TABS.map((t) => (
           <button
             key={t.key}
@@ -111,10 +116,10 @@ export function BookmarksTabs({ loggedIn }: { loggedIn: boolean }) {
             aria-selected={tab === t.key}
             onClick={() => selectTab(t.key)}
             className={cn(
-              "relative -mb-px shrink-0 border-b-2 px-1 py-3 text-body-sm font-medium transition-colors",
+              "shrink-0 whitespace-nowrap px-3 py-1 text-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
               tab === t.key
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground",
+                ? "rounded-md bg-background font-medium text-foreground shadow"
+                : "hover:text-foreground",
             )}
           >
             {t.label}

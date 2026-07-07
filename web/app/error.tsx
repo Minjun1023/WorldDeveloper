@@ -26,7 +26,7 @@ export default function Error({
         일시적인 오류로 페이지를 표시하지 못했어요. 잠시 후 다시 시도해주세요.
       </p>
       <div className="mt-6 flex flex-wrap items-center justify-center gap-2">
-        <Button type="button" size="sm" onClick={reset}>
+        <Button type="button" onClick={reset}>
           다시 시도
         </Button>
         <Link

@@ -2,7 +2,9 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
 import { PostComposer } from "@/components/community/PostComposer";
+import { buttonVariants } from "@/components/ui/button";
 import { getSession } from "@/lib/session-server";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -30,10 +32,7 @@ export default async function CommunityNewPage({ searchParams }: { searchParams:
       ) : (
         <div className="rounded-xl border border-border bg-surface p-10 text-center">
           <p className="text-body-sm text-muted-foreground">로그인하면 글을 쓸 수 있어요.</p>
-          <Link
-            href="/signin?callbackUrl=/community/new"
-            className="mt-3 inline-block rounded-lg bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground hover:opacity-90"
-          >
+          <Link href="/signin?callbackUrl=/community/new" className={cn(buttonVariants(), "mt-3")}>
             로그인
           </Link>
         </div>

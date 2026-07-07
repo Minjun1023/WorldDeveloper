@@ -41,7 +41,7 @@ export function MemberRecommend() {
     return (
       <div className="rounded-lg border border-border bg-surface p-6 text-center">
         <p className="text-body-sm text-muted-foreground">프로필을 작성하면 맞춤 공고를 추천해드려요.</p>
-        <Link href="/me/profile" className="mt-3 inline-block rounded-lg bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground">
+        <Link href="/me/profile" className={cn(buttonVariants(), "mt-3")}>
           프로필 작성하기
         </Link>
       </div>
@@ -57,7 +57,7 @@ export function MemberRecommend() {
         </p>
         <Link
           href="/me/profile"
-          className={cn(buttonVariants({ variant: "primary", size: "sm" }), "shrink-0")}
+          className={cn(buttonVariants({ variant: "default" }), "shrink-0")}
         >
           프로필 수정
         </Link>

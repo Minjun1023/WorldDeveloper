@@ -308,7 +308,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
             type="checkbox"
             checked={remember}
             onChange={(e) => setRemember(e.target.checked)}
-            className="h-4 w-4 rounded border-border accent-[var(--primary)]"
+            className="h-4 w-4 rounded border-border accent-[hsl(var(--primary))]"
           />
           로그인 상태 유지
         </label>

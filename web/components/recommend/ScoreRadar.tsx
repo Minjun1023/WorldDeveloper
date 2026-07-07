@@ -44,24 +44,24 @@ export function ScoreRadar({ score, size = 150 }: { score: ScoreBreakdown; size?
     >
       {/* 동심 오각형 그리드 */}
       {ringPaths.map((d, k) => (
-        <path key={k} d={d} fill="none" style={{ stroke: "var(--border)" }} strokeWidth={1} />
+        <path key={k} d={d} fill="none" style={{ stroke: "hsl(var(--border))" }} strokeWidth={1} />
       ))}
       {/* 축 선 */}
       {DIMS.map((_, i) => {
         const [x, y] = point(i, R);
-        return <line key={i} x1={C} y1={C} x2={x} y2={y} style={{ stroke: "var(--border)" }} strokeWidth={1} />;
+        return <line key={i} x1={C} y1={C} x2={x} y2={y} style={{ stroke: "hsl(var(--border))" }} strokeWidth={1} />;
       })}
       {/* 점수 영역 */}
       <path
         d={dataPath}
-        style={{ fill: "color-mix(in srgb, var(--primary) 15%, transparent)", stroke: "var(--primary)" }}
+        style={{ fill: "color-mix(in srgb, hsl(var(--primary)) 15%, transparent)", stroke: "hsl(var(--primary))" }}
         strokeWidth={1.5}
         strokeLinejoin="round"
       />
       {/* 데이터 포인트 */}
       {DIMS.map((d, i) => {
         const [x, y] = point(i, R * clamp01(score[d.key] as number));
-        return <circle key={d.key} cx={x} cy={y} r={2.4} style={{ fill: "var(--primary)" }} />;
+        return <circle key={d.key} cx={x} cy={y} r={2.4} style={{ fill: "hsl(var(--primary))" }} />;
       })}
       {/* 축 라벨 */}
       {DIMS.map((d, i) => {
@@ -74,7 +74,7 @@ export function ScoreRadar({ score, size = 150 }: { score: ScoreBreakdown; size?
             fontSize={9}
             textAnchor={anchorFor(i)}
             dominantBaseline="middle"
-            style={{ fill: "var(--muted-foreground)" }}
+            style={{ fill: "hsl(var(--muted-foreground))" }}
           >
             {d.label}
           </text>

@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { TERMS, type TermsKey } from "@/lib/terms";
 
 type Terms = {
@@ -37,7 +42,7 @@ export function TermsAgreement({ onChange }: { onChange: (requiredAccepted: bool
       <p className="text-body-sm font-medium">서비스 이용을 위해 약관에 동의해 주세요</p>
       <div className="space-y-3 rounded-lg border border-border p-4">
         <label className="flex cursor-pointer items-center gap-2 font-medium">
-          <Checkbox checked={allChecked} onChange={toggleAll} />
+          <Checkbox checked={allChecked} onCheckedChange={toggleAll} />
           <span>모두 동의합니다.</span>
         </label>
 
@@ -49,21 +54,22 @@ export function TermsAgreement({ onChange }: { onChange: (requiredAccepted: bool
         </div>
       </div>
 
-      <Dialog
-        open={openDoc !== null}
-        onClose={() => setOpenDoc(null)}
-        title={openDoc ? TERMS[openDoc].title : ""}
-      >
-        {openDoc && (
-          <div className="space-y-4">
-            {TERMS[openDoc].sections.map((s) => (
-              <section key={s.heading} className="space-y-1">
-                <h3 className="text-body-sm font-semibold">{s.heading}</h3>
-                <p className="whitespace-pre-line text-body-sm text-muted-foreground">{s.body}</p>
-              </section>
-            ))}
-          </div>
-        )}
+      <Dialog open={openDoc !== null} onOpenChange={(open) => !open && setOpenDoc(null)}>
+        <DialogContent className="max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{openDoc ? TERMS[openDoc].title : ""}</DialogTitle>
+          </DialogHeader>
+          {openDoc && (
+            <div className="space-y-4">
+              {TERMS[openDoc].sections.map((s) => (
+                <section key={s.heading} className="space-y-1">
+                  <h3 className="text-body-sm font-semibold">{s.heading}</h3>
+                  <p className="whitespace-pre-line text-body-sm text-muted-foreground">{s.body}</p>
+                </section>
+              ))}
+            </div>
+          )}
+        </DialogContent>
       </Dialog>
     </div>
   );
@@ -85,7 +91,7 @@ function TermsRow({
   return (
     <div className="flex items-center justify-between gap-2 text-body-sm">
       <label className="flex cursor-pointer items-center gap-2">
-        <Checkbox checked={checked} onChange={onToggle} />
+        <Checkbox checked={checked} onCheckedChange={onToggle} />
         <span>{label}</span>
       </label>
       {docKey && onView && (

@@ -11,27 +11,51 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        surface: {
-          DEFAULT: "var(--surface)",
-          2: "var(--surface-2)",
+        // shadcn 표준 스킴 — HSL 채널 변수 + <alpha-value> 로 bg-primary/90 같은 알파 모디파이어 지원.
+        background: "hsl(var(--background) / <alpha-value>)",
+        foreground: "hsl(var(--foreground) / <alpha-value>)",
+        card: {
+          DEFAULT: "hsl(var(--card) / <alpha-value>)",
+          foreground: "hsl(var(--card-foreground) / <alpha-value>)",
         },
-        foreground: "var(--foreground)",
-        "muted-foreground": "var(--muted-foreground)",
-        hint: "var(--hint)",
-        border: "var(--border)",
-        input: "var(--input)",
+        popover: {
+          DEFAULT: "hsl(var(--popover) / <alpha-value>)",
+          foreground: "hsl(var(--popover-foreground) / <alpha-value>)",
+        },
         primary: {
-          DEFAULT: "var(--primary)",
-          foreground: "var(--primary-foreground)",
+          DEFAULT: "hsl(var(--primary) / <alpha-value>)",
+          foreground: "hsl(var(--primary-foreground) / <alpha-value>)",
           tint: "var(--primary-tint)",
         },
-        ring: "var(--ring)",
-        accent: "var(--accent)",
+        secondary: {
+          DEFAULT: "hsl(var(--secondary) / <alpha-value>)",
+          foreground: "hsl(var(--secondary-foreground) / <alpha-value>)",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted) / <alpha-value>)",
+          foreground: "hsl(var(--muted-foreground) / <alpha-value>)",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent) / <alpha-value>)",
+          foreground: "hsl(var(--accent-foreground) / <alpha-value>)",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive) / <alpha-value>)",
+          foreground: "hsl(var(--destructive-foreground) / <alpha-value>)",
+        },
+        border: "hsl(var(--border) / <alpha-value>)",
+        input: "hsl(var(--input) / <alpha-value>)",
+        ring: "hsl(var(--ring) / <alpha-value>)",
+        // 레거시 별칭(bg-surface 등) — 사용처 소진 후 제거 예정.
+        surface: {
+          DEFAULT: "hsl(var(--surface) / <alpha-value>)",
+          2: "hsl(var(--surface-2) / <alpha-value>)",
+        },
+        // 앱 전용 토큰 — hex 변수 직참조(알파 모디파이어 미지원, 기존과 동일).
+        hint: "var(--hint)",
         section: "var(--section-muted)",
         success: "var(--success)",
         warning: "var(--warning)",
-        destructive: "var(--destructive)",
         verified: "var(--verified)",
         score: {
           stack: "var(--score-stack)",
@@ -80,15 +104,11 @@ const config: Config = {
         mono: ["0.8125rem", { lineHeight: "1.5" }],
       },
       borderRadius: {
-        // DESIGN.md rounded 토큰을 그대로: sm .25 / DEFAULT .5 / md .75 / lg 1 / xl 1.5 / full.
-        // 표준 요소 16px(lg), 컨테이너 24px(xl), 칩 pill(full).
-        sm: "0.25rem",
-        DEFAULT: "0.5rem",
-        md: "0.75rem",
-        lg: "1rem",
-        xl: "1.5rem",
-        "2xl": "1.5rem", // 앱 카드(rounded-2xl)도 컨테이너 24px로 맞춤
-        full: "9999px",
+        // shadcn 표준 스킴 — --radius(0.5rem=8px) 기준. 기존 16/24px 스쿼클에서 컴팩트하게.
+        // xl(0.75rem)/2xl(1rem)은 Tailwind 기본값으로 복귀 → 카드류도 자동으로 축소.
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
       boxShadow: {
         // DESIGN.md elevation — 초연성(ambient) 소프트 섀도우.
@@ -101,7 +121,7 @@ const config: Config = {
       },
     },
   },
-  plugins: [],
+  plugins: [require("tailwindcss-animate")],
 };
 
 export default config;

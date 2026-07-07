@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { RelatedCommunity } from "@/components/community/RelatedCommunity";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { GUIDE_DISCLAIMER, VISA_GUIDES, getVisaGuide } from "@/lib/visa-guide";
 
 export function generateStaticParams() {
@@ -87,10 +89,7 @@ export default function VisaGuideCountryPage({ params }: { params: { country: st
       )}
 
       <div className="border-t border-border pt-5">
-        <Link
-          href={`/search?region=${g.slug}&visa=sponsors`}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-5 py-2.5 text-body-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
-        >
+        <Link href={`/search?region=${g.slug}&visa=sponsors`} className={cn(buttonVariants())}>
           {g.country} 스폰서 공고 보기 →
         </Link>
       </div>

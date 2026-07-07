@@ -94,19 +94,20 @@ export function PostComposer({
         <span className="text-body-sm font-medium">카테고리</span>
         <div className="flex flex-wrap gap-2">
           {CATEGORIES.map((c) => (
-            <button
+            <Button
               key={c.key}
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => setCategory(c.key)}
               className={cn(
-                "rounded-full border px-3 py-1.5 text-caption font-medium transition-colors",
                 category === c.key
-                  ? "border-primary bg-primary/5 text-primary"
-                  : "border-border text-muted-foreground hover:text-foreground",
+                  ? "border-primary bg-primary/5 text-primary hover:bg-primary/10 hover:text-primary"
+                  : "text-muted-foreground",
               )}
             >
               {c.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -140,19 +141,20 @@ export function PostComposer({
         </span>
         <div className="flex flex-wrap gap-2">
           {SOURCE_TYPES.map((s) => (
-            <button
+            <Button
               key={s.key}
               type="button"
+              variant="outline"
+              size="sm"
               onClick={() => setSourceType(s.key)}
               className={cn(
-                "rounded-full border px-3 py-1.5 text-caption font-medium transition-colors",
                 sourceType === s.key
-                  ? "border-primary bg-primary/5 text-primary"
-                  : "border-border text-muted-foreground hover:text-foreground",
+                  ? "border-primary bg-primary/5 text-primary hover:bg-primary/10 hover:text-primary"
+                  : "text-muted-foreground",
               )}
             >
               {s.label}
-            </button>
+            </Button>
           ))}
         </div>
         {sourceType === "secondhand" && (
@@ -201,12 +203,12 @@ export function PostComposer({
       {error && <p className="text-body-sm text-destructive">{error}</p>}
 
       <div className="flex items-center gap-3">
-        <Button type="submit" size="sm" disabled={!canSubmit}>
+        <Button type="submit" disabled={!canSubmit}>
           {pending ? "올리는 중…" : "올리기"}
         </Button>
-        <button type="button" onClick={() => router.back()} className="text-body-sm text-muted-foreground hover:text-foreground">
+        <Button type="button" variant="ghost" onClick={() => router.back()} className="text-muted-foreground">
           취소
-        </button>
+        </Button>
       </div>
     </form>
   );

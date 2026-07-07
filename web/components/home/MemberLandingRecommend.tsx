@@ -4,7 +4,9 @@ import Link from "next/link";
 
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { InteractiveJobCard } from "@/components/recommend/InteractiveJobCard";
+import { buttonVariants } from "@/components/ui/button";
 import { useCachedRecommend } from "@/lib/use-recommend";
+import { cn } from "@/lib/utils";
 
 // 홈은 "미리보기" 역할만: 1행(3개) 티저, 전체 목록·조건 입력은 /recommend. (역할 분리)
 // 결과는 캐시(useCachedRecommend) — 재방문 시 즉시 표시, 첫 방문에만 로딩.
@@ -20,7 +22,7 @@ export function MemberLandingRecommend() {
     return (
       <div className="rounded-lg border border-border bg-surface p-6 text-center">
         <p className="text-body-sm text-muted-foreground">프로필을 작성하면 맞춤 공고를 받을 수 있어요.</p>
-        <Link href="/me/profile" className="mt-3 inline-block rounded-lg bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground">
+        <Link href="/me/profile" className={cn(buttonVariants(), "mt-3")}>
           프로필 작성하기
         </Link>
       </div>

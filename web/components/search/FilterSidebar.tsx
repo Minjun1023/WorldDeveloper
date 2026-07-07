@@ -4,6 +4,7 @@ import { ChevronDown, ChevronUp, PanelLeftClose, RotateCcw, X } from "lucide-rea
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import type { RegionCount } from "@/lib/api";
 import { DISCIPLINES } from "@/lib/disciplines";
 import { useUpdateQuery } from "@/lib/use-update-query";
@@ -117,29 +118,24 @@ export function FilterSidebar({
         {!plain && (
           <div className="flex items-center gap-1">
             {onCollapse && (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={onCollapse}
                 aria-label="필터 접기"
                 title="필터 접기"
-                className="inline-flex items-center justify-center rounded-md p-0.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
               >
-                <PanelLeftClose className="h-4 w-4" aria-hidden="true" />
-              </button>
+                <PanelLeftClose aria-hidden="true" />
+              </Button>
             )}
             <span className="text-body-sm font-bold text-foreground">필터</span>
           </div>
         )}
-        <button
-          type="button"
-          onClick={reset}
-          aria-label="필터 갱신"
-          title="필터 갱신"
-          className="inline-flex min-h-9 items-center gap-1 rounded-md px-2 py-1 text-caption font-medium text-primary transition-colors hover:bg-primary/5"
-        >
-          <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+        <Button type="button" variant="ghost" size="sm" onClick={reset} aria-label="필터 갱신" title="필터 갱신">
+          <RotateCcw aria-hidden="true" />
           갱신
-        </button>
+        </Button>
       </div>
       {countries.length > 0 && (
         <Group title="국가">
@@ -147,16 +143,19 @@ export function FilterSidebar({
           {cityRegions.length > 0 && (
             <div className="-mt-0.5 mb-1 flex flex-wrap gap-1.5">
               {cityRegions.map((v) => (
-                <button
+                <Button
                   key={v}
                   type="button"
+                  variant="secondary"
+                  size="sm"
                   onClick={() => removeRegion(v)}
-                  className="inline-flex items-center gap-1 rounded-full bg-primary-tint px-2.5 py-1 text-caption font-semibold text-primary transition-colors hover:opacity-80"
+                  // 활성 필터임을 나타내는 tint 는 variant 에 없어 오버라이드로 유지.
+                  className="bg-primary-tint text-primary hover:bg-primary-tint hover:text-primary"
                   aria-label={`${prettyRegion(v)} 지역 필터 제거`}
                 >
                   {prettyRegion(v)}
-                  <X className="h-3 w-3" aria-hidden="true" />
-                </button>
+                  <X aria-hidden="true" />
+                </Button>
               ))}
             </div>
           )}
@@ -179,22 +178,24 @@ export function FilterSidebar({
               />
             ))}
           {countries.length > 10 && (
-            <button
+            <Button
               type="button"
+              variant="link"
+              size="sm"
               onClick={() => setShowAllCountries((v) => !v)}
-              className="inline-flex items-center gap-1 text-body-sm font-medium text-primary transition-colors hover:underline"
+              className="h-auto p-0"
             >
               {showAllCountries ? (
                 <>
-                  접기 <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
+                  접기 <ChevronUp aria-hidden="true" />
                 </>
               ) : (
                 <>
                   더보기 ({(countries.length - 10).toLocaleString()})
-                  <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+                  <ChevronDown aria-hidden="true" />
                 </>
               )}
-            </button>
+            </Button>
           )}
         </Group>
       )}

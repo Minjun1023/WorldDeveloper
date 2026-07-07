@@ -79,14 +79,14 @@ spacing:
   base: 4
   scale_rem: [0, 0.25, 0.5, 0.75, 1, 1.5, 2, 3, 4, 6, 8, 12]
 radius:
-  sm: "0.25rem"
-  DEFAULT: "0.5rem"
-  md: "0.75rem"
-  lg: "1rem"
-  xl: "1.5rem"
-  2xl: "1.5rem"
+  # shadcn 표준 스킴 — --radius(0.5rem) 파생. sm/md/lg 만 오버라이드, xl/2xl 은 Tailwind 기본.
+  sm: "calc(var(--radius) - 4px)" # 4px
+  md: "calc(var(--radius) - 2px)" # 6px
+  lg: "var(--radius)" # 8px
+  xl: "0.75rem" # Tailwind 기본
+  2xl: "1rem" # Tailwind 기본
   full: "9999px"
-  base: "1rem" # --radius CSS 변수 기본값
+  base: "0.5rem" # --radius CSS 변수 기본값
 shadow:
   sm: "0 1px 2px 0 rgb(0 0 0 / 0.04)"
   md: "0 4px 20px rgba(0, 0, 0, 0.04)"
@@ -113,7 +113,7 @@ container:
 
 ## 디자인 원칙
 
-1. **토스풍 핀테크 톤** — 밝은 흰 배경, 견고한 squircle 라운드(표준 요소 16px·컨테이너/카드 24px), 단일 파랑 액센트(`#0064ff`). 그라데이션은 Hero 등 제한된 곳에서만, 색은 의미를 가질 때만.
+1. **shadcn 표준 + 브랜드 파랑** — 밝은 흰 배경, 컴팩트 라운드(표준 요소 8px·카드 12~16px), 단일 파랑 액센트(`#0064ff`)는 primary 액션에만. 컴포넌트는 shadcn/ui(new-york)를 정본으로 쓰고 임의 버튼/입력 스타일을 손으로 만들지 않는다. 그라데이션은 Hero 등 제한된 곳에서만, 색은 의미를 가질 때만.
 2. **정보 밀도 우선** — 채용 사이트는 한 화면에 많은 공고를 비교한다. 여백보다 스캔 가능성.
 3. **의미론적 색상** — 색은 장식이 아니라 신호. 비자 상태(녹/적/회), 점수 차원(5색)처럼 정보를 색으로 전달.
 4. **라이트/다크 동등** — 개발자 타겟이라 다크모드는 1급 시민. 모든 토큰을 두 스킴으로 정의.
@@ -148,19 +148,22 @@ container:
 
 ## Radius & Shadow
 
-- radius 토큰: `sm` 4px / 기본 8px / `md` 12px / `lg` 16px / `xl`·`2xl` 24px / `full`. CSS `--radius` 기본값 16px.
-- 표준 요소 `lg`(16px), 컨테이너·앱 카드 `xl`/`2xl`(24px), badge/pill `full`.
+- radius 토큰(shadcn 표준): `sm` 4px / `md` 6px / `lg` 8px(=`--radius`) / `xl` 12px / `2xl` 16px / `full`. CSS `--radius` 기본값 8px.
+- 표준 요소(버튼·입력) `md`~`lg`(6~8px), 카드 `xl`(12px), badge/pill `full`.
 - shadow 는 초연성(ambient) 소프트 섀도우 — `sm` 미세 / `md` hover·active / `lg` modal·overlay. 다크는 그림자보다 border 로 면을 구분.
 
 ## Components
 
-### Button
-- variants: `primary`(파랑 bg) / `secondary`(surface-2 bg) / `ghost`(투명, hover 시 accent) / `outline`(border) / `destructive`(red) / `link`(밑줄 링크).
-- sizes: `sm`(h-12, 48px 최소 터치 타깃) / `md`(h-[52px], 52px 표준) / `lg`·`xl`(h-14, 56px CTA) / `icon`(48×48). radius `lg`(16px squircle). 포커스 시 `ring` 2px. 220ms 스냅 트랜지션, `text-body-sm` `font-bold`.
-- 주의: `size` 에는 색/폰트 클래스를 넣지 않는다(tailwind-merge 가 variant 의 글자색을 같은 `text-*` 그룹으로 보고 지움).
+> **v0.3.0 (2026-07-07 shadcn 전환):** `components/ui/*` 는 shadcn/ui(new-york, Radix 기반) 생성 코드가 정본. 색은 shadcn 표준 토큰 스킴(HSL 채널 변수 — `bg-primary/90` 알파 모디파이어 지원)으로 매핑했고 브랜드 블루는 `--primary` 로 유지. 버튼·입력·다이얼로그를 손으로 스타일하지 말고 shadcn 컴포넌트(`Button`/`buttonVariants`, `Input`, `Dialog`, `DropdownMenu`, `Popover`, `Tabs`, `Badge`, `Card`, `Checkbox`)를 쓴다. 새 컴포넌트가 필요하면 `npx shadcn add`.
+
+### Button (shadcn)
+- variants: `default`(파랑 bg, hover `bg-primary/90`) / `secondary`(회색 bg) / `ghost`(투명, hover accent) / `outline`(border+bg-background) / `destructive` / `link`.
+- sizes: `sm`(h-8) / 기본(h-9, 표준) / `lg`(h-10, 주요 CTA) / `icon`(36×36). radius `md`(6px). 포커스 `ring` 1px. `text-sm font-medium`.
+- 아이콘 전용 액션은 `variant="ghost" size="icon"` + `aria-label` 필수.
+- 링크를 버튼처럼 보이게 할 때는 `buttonVariants()` + `cn()` 조합.
 
 ### Card
-- bg `surface`, border 1px `border`, radius `2xl`(24px), padding `p-6`, shadow `sm`(라이트).
+- shadcn Card(`bg-card`, border 1px, radius `xl`(12px), shadow) 또는 동일 토큰. 내부 패딩 `p-6`.
 - 공고 리스트의 JobCard 가 핵심 반복 단위.
 
 ### Badge (VisaBadge)

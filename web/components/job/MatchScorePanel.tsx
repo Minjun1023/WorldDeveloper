@@ -3,7 +3,8 @@
 import { Check, Lock } from "lucide-react";
 import Link from "next/link";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 import { ScoreRadar } from "@/components/recommend/ScoreRadar";
 import { useMatchScore } from "@/lib/use-match-score";
@@ -40,7 +41,7 @@ export function MatchScorePanel({ jobId, loggedIn = true }: { jobId: string; log
         <p className="mt-1 text-caption text-muted-foreground">
           잠시 후 다시 시도해 주세요.
         </p>
-        <Button type="button" size="sm" variant="outline" className="mt-3" onClick={retry}>
+        <Button type="button" variant="outline" className="mt-3" onClick={retry}>
           다시 시도
         </Button>
       </div>
@@ -72,10 +73,7 @@ export function MatchScorePanel({ jobId, loggedIn = true }: { jobId: string; log
             <Lock className="h-4 w-4" aria-hidden="true" />
           </span>
           <p className="text-body-sm font-semibold">내 프로필과 얼마나 맞을까요?</p>
-          <Link
-            href={cta.href}
-            className="rounded-lg bg-primary px-4 py-2 text-body-sm font-bold text-primary-foreground hover:opacity-90"
-          >
+          <Link href={cta.href} className={cn(buttonVariants({ variant: "default" }))}>
             {cta.label}
           </Link>
         </div>

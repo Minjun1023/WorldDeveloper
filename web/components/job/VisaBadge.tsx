@@ -18,7 +18,7 @@ export function VisaBadge({
     if (remoteViable) {
       return (
         <Badge
-          variant="muted"
+          variant="secondary"
           className="shrink-0"
           title="한국에서 가능한 원격 근무라 비자 스폰서십이 필요 없어요."
         >
@@ -28,7 +28,7 @@ export function VisaBadge({
     }
     return (
       <Badge
-        variant="muted"
+        variant="secondary"
         className="shrink-0"
         title="이 공고 본문에는 비자 스폰서십 언급이 없어요. 회사에 직접 확인해 보세요."
       >
@@ -38,11 +38,12 @@ export function VisaBadge({
   }
 
   if (status === "no_sponsor") {
+    // 새 Badge 의 destructive 는 솔리드 배경 — 여기는 틴트 배경 + 붉은 텍스트가 의도라 outline 변형으로 표현.
     return (
       <Badge
-        variant="destructive"
-        style={{ backgroundColor: "color-mix(in srgb, var(--destructive) 12%, transparent)" }}
-        className="shrink-0"
+        variant="outline"
+        style={{ backgroundColor: "color-mix(in srgb, hsl(var(--destructive)) 12%, transparent)" }}
+        className="shrink-0 border-destructive/30 text-destructive"
       >
         스폰서 불가
       </Badge>

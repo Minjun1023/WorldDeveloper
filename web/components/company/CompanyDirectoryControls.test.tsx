@@ -23,21 +23,21 @@ describe("CompanyDirectoryControls", () => {
     expect(screen.getByRole("button", { name: "정렬" })).toBeInTheDocument();
   });
 
-  it("분야 모달에서 옵션(카운트 표기) 선택 시 tag 로 update 한다", async () => {
+  it("분야 메뉴에서 옵션(카운트 표기) 선택 시 tag 로 update 한다", async () => {
     render(<CompanyDirectoryControls tagOptions={tags} />);
     await userEvent.click(screen.getByRole("button", { name: "분야 필터" }));
-    // 라벨(좌) + 카운트(우, 콤마) 분리 표시 — 괄호 없음
-    const opt = screen.getByRole("button", { name: /fintech/ });
+    // shadcn DropdownMenu(Radix) — 옵션은 role="menuitem". 라벨(좌) + 카운트(우, 콤마) 분리 표시, 괄호 없음.
+    const opt = await screen.findByRole("menuitem", { name: /fintech/ });
     expect(opt).toHaveTextContent("40");
     expect(opt).not.toHaveTextContent("(40)");
     await userEvent.click(opt);
     expect(updateMock).toHaveBeenCalledWith({ tag: "fintech" });
   });
 
-  it("정렬 모달에서 '이름순' 선택 시 sort=name 으로 update 한다", async () => {
+  it("정렬 메뉴에서 '이름순' 선택 시 sort=name 으로 update 한다", async () => {
     render(<CompanyDirectoryControls tagOptions={tags} />);
     await userEvent.click(screen.getByRole("button", { name: "정렬" }));
-    await userEvent.click(screen.getByRole("button", { name: "이름순" }));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "이름순" }));
     expect(updateMock).toHaveBeenCalledWith({ sort: "name" });
   });
 });

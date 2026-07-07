@@ -1,4 +1,5 @@
-import type { DropdownOption } from "@/components/ui/dropdown";
+// 옛 ui/dropdown 삭제(shadcn 전환)로 옵션 타입을 로컬 정의.
+type DropdownOption = { value: string; label: string; count?: number };
 
 export const DISCIPLINES: DropdownOption[] = [
   { value: "backend", label: "백엔드" },
