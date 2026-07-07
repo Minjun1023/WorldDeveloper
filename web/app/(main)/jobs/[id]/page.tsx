@@ -31,12 +31,12 @@ export const dynamic = "force-dynamic";
 // fetchJob 은 no-store 라 generateMetadata + 본문에서 두 번 때리지 않도록 요청 단위 dedupe.
 const getJob = cache((id: string) => fetchJob(id));
 
-// 공유·검색 유입용 페이지별 메타 — "직함 — 회사 | WorldDev".
+// 공유·검색 유입용 페이지별 메타 — "직함 — 회사 | DevPass".
 export async function generateMetadata({ params }: { params: { id: string } }) {
   const result = await getJob(params.id);
   if (!result.ok) return {};
   const job = result.data;
-  const title = `${job.title_ko ?? job.title} — ${job.company.display_name} | WorldDev`;
+  const title = `${job.title_ko ?? job.title} — ${job.company.display_name} | DevPass`;
   const description = `${job.company.display_name}의 ${job.title_ko ?? job.title} 채용 공고. 비자 스폰서십 여부와 연봉·기술 스택을 확인하세요.`;
   return { title, description, openGraph: { title, description } };
 }

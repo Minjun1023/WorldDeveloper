@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# dev.sh — WorldDeveloper 로컬 개발 환경 한 번에 띄우기
+# dev.sh — DevPass(구 WorldDeveloper) 로컬 개발 환경 한 번에 띄우기
 #
 #   ./dev.sh            DB + Mailhog + AI + 백엔드 + 프론트 모두 실행
 #   ./dev.sh --stop     실행 중인 앱 프로세스 + DB 컨테이너 정리

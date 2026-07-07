@@ -1,10 +1,11 @@
 "use client";
 
-import { Globe, Menu } from "lucide-react";
+import { Menu } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
+import { BrandMark } from "@/components/BrandMark";
 import { AccountMenu } from "@/components/auth/AccountMenu";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -57,10 +58,10 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center gap-2">
             <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary text-white">
-              <Globe className="h-[16px] w-[16px]" aria-hidden="true" />
+              <BrandMark className="h-[16px] w-[16px]" />
             </span>
             <span className="text-base font-bold tracking-tight text-foreground">
-              World<span className="text-primary">Dev</span>
+              Dev<span className="text-primary">Pass</span>
             </span>
           </Link>
           <nav className="hidden items-center gap-1 text-[13px] md:flex">

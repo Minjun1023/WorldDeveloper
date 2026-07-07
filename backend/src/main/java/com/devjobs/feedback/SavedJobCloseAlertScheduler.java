@@ -75,7 +75,7 @@ public class SavedJobCloseAlertScheduler {
         if (email == null) return false;
 
         mail.sendSearchDigest(email,
-            "[WorldDev] 저장하신 공고 " + closed.size() + "건이 마감됐어요",
+            "[DevPass] 저장하신 공고 " + closed.size() + "건이 마감됐어요",
             buildBody(s, closed));
         savedRepo.markClosedNotified(s.getUserId(), closed.stream().map(JobEntity::getId).toList());
         return true;

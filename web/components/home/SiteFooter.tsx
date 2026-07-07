@@ -1,5 +1,7 @@
 import Link from "next/link";
 
+import { BrandMark } from "@/components/BrandMark";
+
 // 랜딩 전용 리치 푸터(4컬럼 + 워터마크). Readdy 목업 대응.
 // 카피는 실데이터에 맞춰 정직하게: "유럽 전용"이 아닌 글로벌 진출, 추천은 회원 전용.
 const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
@@ -46,10 +48,10 @@ export function SiteFooter() {
           <div>
             <Link href="/" className="flex items-center gap-2">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-white">
-                <GlobeMark />
+                <BrandMark className="h-[18px] w-[18px]" />
               </span>
               <span className="text-lg font-bold tracking-tight text-foreground">
-                World<span className="text-primary">Dev</span>
+                Dev<span className="text-primary">Pass</span>
               </span>
             </Link>
             <p className="mt-3 max-w-xs text-body-sm leading-relaxed text-muted-foreground">
@@ -93,7 +95,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-2 border-t border-border pt-6 text-caption text-muted-foreground sm:flex-row">
-          <span>© {new Date().getFullYear()} WorldDev. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} DevPass. All rights reserved.</span>
           <span>Made for Korean developers heading abroad.</span>
         </div>
       </div>
@@ -107,27 +109,9 @@ export function SiteFooter() {
         className="pointer-events-none select-none px-4 text-center font-bold leading-none tracking-tighter text-foreground opacity-[0.04]"
         style={{ fontSize: "clamp(3rem, 14vw, 11rem)" }}
       >
-        WORLDDEV
+        DEVPASS
       </div>
     </footer>
-  );
-}
-
-function GlobeMark() {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-      className="h-[18px] w-[18px]"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
-    </svg>
   );
 }
 

@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "공고 검색 — 비자 스폰서십 해외 개발자 채용 | WorldDev",
+  title: "공고 검색 — 비자 스폰서십 해외 개발자 채용 | DevPass",
   description: "비자 스폰서십이 검증된 해외 개발자 공고를 국가·직무·연봉으로 검색하세요.",
 };
 

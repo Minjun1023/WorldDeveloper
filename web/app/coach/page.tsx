@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "AI 이력서 코치 | WorldDev",
+  title: "AI 이력서 코치 | DevPass",
   description: "해외 지원용 이력서를 공고에 맞춰 AI 가 코치해드려요.",
 };
 

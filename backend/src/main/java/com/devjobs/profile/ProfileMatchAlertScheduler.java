@@ -84,7 +84,7 @@ public class ProfileMatchAlertScheduler {
         if (email == null) return false;
 
         mail.sendSearchDigest(email,
-            "[WorldDev] 프로필에 맞는 새 공고 " + fresh.size() + "건",
+            "[DevPass] 프로필에 맞는 새 공고 " + fresh.size() + "건",
             buildBody(s, fresh));
         s.setLastNotifiedAt(OffsetDateTime.now());
         alertRepo.save(s);

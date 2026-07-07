@@ -23,7 +23,7 @@ const PAGE_SIZE = 12; // 공고 12개(3열 × 4행) 단위로 페이지네이션
 // fetchCompany 는 no-store 라 generateMetadata + 본문 이중 호출을 요청 단위로 dedupe.
 const getCompany = cache((slug: string, page: number) => fetchCompany(slug, page));
 
-// 공유·검색 유입용 페이지별 메타 — "회사명 채용 공고 | WorldDev".
+// 공유·검색 유입용 페이지별 메타 — "회사명 채용 공고 | DevPass".
 export async function generateMetadata({
   params,
   searchParams,
@@ -34,7 +34,7 @@ export async function generateMetadata({
   const page = Math.max(1, Number(searchParams.page) || 1);
   const data = await getCompany(params.slug, page);
   if (!data) return {};
-  const title = `${data.company.display_name} 채용 공고 ${data.total.toLocaleString()}개 | WorldDev`;
+  const title = `${data.company.display_name} 채용 공고 ${data.total.toLocaleString()}개 | DevPass`;
   const description = `${data.company.display_name}의 비자 스폰서십 검증 공고와 기업 정보를 확인하세요.`;
   return { title, description, openGraph: { title, description } };
 }

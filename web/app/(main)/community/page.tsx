@@ -34,7 +34,7 @@ import { cn } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export const metadata = {
-  title: "커뮤니티 — WorldDeveloper",
+  title: "커뮤니티 — DevPass",
   description: "해외취업을 준비하는 개발자들이 비자·면접·연봉·정착 정보를 나누는 공간.",
 };
 

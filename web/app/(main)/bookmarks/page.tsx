@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "북마크 | WorldDev",
+  title: "북마크 | DevPass",
   description: "저장한 공고와 관심 기업을 한곳에서 관리하세요.",
 };
 

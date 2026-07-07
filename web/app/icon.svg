@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
-  <!-- 브랜드 파비콘 — SiteNav 로고 마크(파랑 스쿼클 + 지구본)와 동일 모티프 -->
+  <!-- DevPass 파비콘 — 'D' 레터마크 (components/BrandMark.tsx 와 동일 지오메트리 2배 스케일) -->
   <rect width="48" height="48" rx="11" fill="#0064ff"/>
-  <g fill="none" stroke="#ffffff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-    <circle cx="24" cy="24" r="12.5"/>
-    <path d="M24 11.5a18.8 18.8 0 0 0 0 25 18.8 18.8 0 0 0 0-25"/>
-    <path d="M11.5 24h25"/>
-  </g>
+  <path
+    fill="#ffffff"
+    fill-rule="evenodd"
+    d="M12 10 H23 A14 14 0 0 1 23 38 H12 Z M18 16 V32 H23 A8 8 0 0 0 23 16 Z"
+  />
 </svg>
