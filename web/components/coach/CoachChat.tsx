@@ -385,7 +385,9 @@ export function CoachChat({
   const noJobs = loggedIn && !jobsLoading && jobs.length === 0;
 
   return (
-    <div className="relative flex h-full flex-col">
+    // h-full 이 아니라 flex-1 — 레일 접힘 시 위에 CoachRailReopen 바가 오면 h-full(부모 전체 높이)은
+    // 바 높이만큼 아래로 넘쳐 하단이 잘리고, 빈 상태의 세로 중앙 정렬도 보이는 영역 기준보다 아래로 밀린다.
+    <div className="relative flex min-h-0 flex-1 flex-col">
       {/* 옅은 파랑 배경 글로우 */}
       <div
         aria-hidden="true"
