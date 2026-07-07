@@ -28,11 +28,28 @@ rsync -az --delete \
   -e "ssh ${SSH_OPTS[*]}" \
   "$REPO_ROOT/" "$SERVER:$REMOTE_DIR/"
 
-echo "[2/3] 재빌드·재기동 (docker compose up -d --build --remove-orphans) ..."
+echo "[2/4] 이미지 선빌드 (docker compose build) ..."
+# 빌드(수 분~수십 분)를 컨테이너 재시작과 분리 — 빌드 동안 기존 스택이 계속 서빙한다.
 ssh "${SSH_OPTS[@]}" "$SERVER" \
-  "cd $REMOTE_DIR/deploy && sudo docker compose -f docker-compose.prod.yml up -d --build --remove-orphans"
+  "cd $REMOTE_DIR/deploy && sudo docker compose -f docker-compose.prod.yml build"
 
-echo "[3/3] 상태 확인 ..."
+echo "[3/4] 재기동 (docker compose up -d --remove-orphans) ..."
+# 이미지가 이미 준비됐으므로 바뀐 서비스만 수 초 내 교체된다(백엔드 부팅 시간은 별도).
+ssh "${SSH_OPTS[@]}" "$SERVER" \
+  "cd $REMOTE_DIR/deploy && sudo docker compose -f docker-compose.prod.yml up -d --remove-orphans"
+
+echo "[4/4] 스모크 체크 — 백엔드 준비 대기 후 전 체인 검증 ..."
+# /api/jobs/popular = Caddy→web→backend→postgres 전 체인. 백엔드 다운이면 BFF 가 502 를 반환한다.
+for i in $(seq 1 36); do
+  code=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 8 "$SITE/api/jobs/popular" || true)
+  [ "$code" = "200" ] && break
+  sleep 5
+done
+[ "$code" = "200" ] || { echo "[실패] 백엔드 스모크 체크 실패 (마지막 응답: $code)"; exit 1; }
+home=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 10 "$SITE/" || true)
+[ "$home" = "200" ] || { echo "[실패] 홈 $home"; exit 1; }
+echo "스모크 통과 (api 200 · 홈 200)"
+
 ssh "${SSH_OPTS[@]}" "$SERVER" \
   "sudo docker compose -f $REMOTE_DIR/deploy/docker-compose.prod.yml ps --format 'table {{.Service}}\t{{.Status}}'"
 
