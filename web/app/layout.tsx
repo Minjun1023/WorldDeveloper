@@ -13,10 +13,26 @@ const hankenGrotesk = Hanken_Grotesk({
   display: "swap",
 });
 
+// OG 절대 URL 기준 — 정식 도메인 연결 시 NEXT_PUBLIC_SITE_URL 만 바꾸면 전체 반영.
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://152.67.215.221.sslip.io";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: "DevPass — 한국 개발자의 해외 취업, 비자 스폰서십 공고 모음",
   description:
     "비자 스폰서십이 명시된 공고만 모아, 5축 점수로 한국 개발자의 해외 취업을 돕습니다.",
+  // 링크 공유 미리보기(카톡·슬랙·트위터) — 이미지는 app/opengraph-image.tsx 가 동적 생성.
+  openGraph: {
+    type: "website",
+    siteName: "DevPass",
+    locale: "ko_KR",
+    title: "DevPass — 한국 개발자의 해외 취업, 비자 스폰서십 공고 모음",
+    description:
+      "비자 스폰서십이 명시된 공고만 모아, 5축 점수로 한국 개발자의 해외 취업을 돕습니다.",
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 export default function RootLayout({

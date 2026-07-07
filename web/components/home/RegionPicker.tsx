@@ -90,7 +90,7 @@ export function RegionPicker({
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
         className={cn(
-          "flex w-full items-center justify-between gap-2 rounded-md border border-border bg-surface px-3 py-2 text-body-sm",
+          "flex w-full items-center justify-between gap-2 rounded-md border border-border bg-card px-3 py-2 text-body-sm",
           value ? "text-foreground" : "text-muted-foreground",
         )}
       >
@@ -102,7 +102,7 @@ export function RegionPicker({
       </button>
 
       {open && (
-        <div className="absolute left-0 z-40 mt-1 w-[min(92vw,33rem)] overflow-hidden rounded-lg border border-border bg-surface shadow-lg">
+        <div className="absolute left-0 z-40 mt-1 w-[min(92vw,33rem)] overflow-hidden rounded-lg border border-border bg-card shadow-lg">
           <div className="border-b border-border p-2.5">
             <div className="flex items-center gap-2 rounded-md border border-border px-2.5">
               <Search className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />

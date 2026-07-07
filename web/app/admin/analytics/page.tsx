@@ -20,7 +20,7 @@ type Summary = {
 
 function Stat({ label, value, sub }: { label: string; value: number; sub?: string }) {
   return (
-    <div className="rounded-xl border border-border bg-surface p-5">
+    <div className="rounded-xl border border-border bg-card p-5">
       <p className="text-caption text-muted-foreground">{label}</p>
       <p className="mt-1 text-h2 font-bold tabular-nums">{value.toLocaleString("ko-KR")}</p>
       {sub && <p className="text-caption text-muted-foreground">{sub}</p>}
@@ -84,7 +84,7 @@ export default async function AdminAnalyticsPage() {
         {d.top_jobs_week.length === 0 ? (
           <p className="text-body-sm text-muted-foreground">아직 조회 데이터가 없어요.</p>
         ) : (
-          <ol className="divide-y divide-border rounded-xl border border-border bg-surface">
+          <ol className="divide-y divide-border rounded-xl border border-border bg-card">
             {d.top_jobs_week.map((j, i) => (
               <li key={j.job_id} className="flex items-center justify-between gap-3 px-4 py-3">
                 <span className="flex min-w-0 items-center gap-3">

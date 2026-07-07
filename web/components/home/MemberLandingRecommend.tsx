@@ -20,7 +20,7 @@ export function MemberLandingRecommend() {
   if (loading) return <p className="text-body-sm text-muted-foreground">맞춤 공고를 불러오는 중…</p>;
   if (needsProfile) {
     return (
-      <div className="rounded-lg border border-border bg-surface p-6 text-center">
+      <div className="rounded-lg border border-border bg-card p-6 text-center">
         <p className="text-body-sm text-muted-foreground">프로필을 작성하면 맞춤 공고를 받을 수 있어요.</p>
         <Link href="/me/profile" className={cn(buttonVariants(), "mt-3")}>
           프로필 작성하기

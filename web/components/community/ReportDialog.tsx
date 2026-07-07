@@ -98,7 +98,7 @@ export function ReportDialog({
         if (e.target === ref.current) handleClose();
       }}
       className={cn(
-        "m-auto w-[min(92vw,30rem)] rounded-lg border border-border bg-surface p-0 text-foreground shadow-lg",
+        "m-auto w-[min(92vw,30rem)] rounded-lg border border-border bg-card p-0 text-foreground shadow-lg",
         "backdrop:bg-black/40",
       )}
     >

@@ -5,7 +5,7 @@ import type { VisaGuide } from "@/lib/types";
 
 export function VisaGuideSection({ guide }: { guide: VisaGuide }) {
   return (
-    <section className="space-y-3 rounded-lg border border-border bg-surface-2 p-5">
+    <section className="space-y-3 rounded-lg border border-border bg-muted p-5">
       <div className="space-y-1">
         <h2 className="text-h3">비자 가이드</h2>
         <p className="text-body-sm text-muted-foreground">

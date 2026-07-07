@@ -278,7 +278,7 @@ export function CoachChat({
   // ChatGPT식 알약 컴포저: ＋(첨부 메뉴) + 입력 + 전송. 마이크·음성 없음.
   const composer = (
     <div ref={composerWrapRef} className="relative w-full">
-      <div className="flex items-center gap-2 rounded-[1.75rem] border border-border bg-surface px-2 py-2 pl-3 shadow-sm">
+      <div className="flex items-center gap-2 rounded-[1.75rem] border border-border bg-card px-2 py-2 pl-3 shadow-sm">
         <Button
           type="button"
           variant="secondary"
@@ -326,7 +326,7 @@ export function CoachChat({
 
       {/* ＋ 팝오버 메뉴 */}
       {menuOpen && (
-        <div className="absolute bottom-[3.5rem] left-0 z-30 min-w-[16rem] rounded-2xl border border-border bg-surface p-1.5 shadow-lg">
+        <div className="absolute bottom-[3.5rem] left-0 z-30 min-w-[16rem] rounded-2xl border border-border bg-card p-1.5 shadow-lg">
           <button
             type="button"
             aria-label="공고 첨부"
@@ -334,7 +334,7 @@ export function CoachChat({
               setMenuOpen(false);
               setJobModalOpen(true);
             }}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-surface-2"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-muted"
           >
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <Briefcase className="h-4 w-4" aria-hidden="true" />
@@ -351,7 +351,7 @@ export function CoachChat({
               setMenuOpen(false);
               setResumeModalOpen(true);
             }}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-surface-2"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-muted"
           >
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
               <FileText className="h-4 w-4" aria-hidden="true" />
@@ -397,7 +397,8 @@ export function CoachChat({
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {noJobs ? (
-          <div className="mx-auto w-full max-w-2xl px-4 py-6">
+          // 빈 상태 히어로와 동일하게 보이는 영역 세로 중앙 정렬.
+          <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col justify-center px-4 py-10">
             <NoJobs />
           </div>
         ) : started ? (
@@ -425,7 +426,7 @@ export function CoachChat({
 
             <div ref={threadRef} className="min-h-[260px] flex-1 space-y-4 overflow-y-auto">
               {hydratedAt && resume.trim().length === 0 && (
-                <div className="flex items-start gap-2 rounded-lg border border-border bg-surface-2 px-3 py-2.5 text-caption text-muted-foreground">
+                <div className="flex items-start gap-2 rounded-lg border border-border bg-muted px-3 py-2.5 text-caption text-muted-foreground">
                   <History className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
                   <span>
                     이전 상담을 이어갑니다
@@ -445,7 +446,7 @@ export function CoachChat({
                 ) : (
                   <div key={i} className="flex justify-start gap-2.5">
                     <CoachAvatar />
-                    <span className="inline-block max-w-[82%] whitespace-pre-wrap rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-2.5 text-body-sm text-foreground">
+                    <span className="inline-block max-w-[82%] whitespace-pre-wrap rounded-2xl rounded-bl-sm bg-muted px-3.5 py-2.5 text-body-sm text-foreground">
                       {m.content}
                     </span>
                   </div>
@@ -455,7 +456,7 @@ export function CoachChat({
               {pending && messages[messages.length - 1]?.role === "user" && (
                 <div className="flex justify-start gap-2.5">
                   <CoachAvatar />
-                  <span className="inline-flex items-center gap-1 rounded-2xl rounded-bl-sm bg-surface-2 px-3.5 py-3">
+                  <span className="inline-flex items-center gap-1 rounded-2xl rounded-bl-sm bg-muted px-3.5 py-3">
                     <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]" />
                     <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]" />
                     <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-muted-foreground" />
@@ -559,7 +560,7 @@ function CoachAvatar() {
 
 function NoJobs() {
   return (
-    <div className="rounded-2xl border border-border bg-surface p-10 text-center shadow-sm">
+    <div className="rounded-2xl border border-border bg-card p-10 text-center shadow-sm">
       <span className="bg-brand-gradient mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-sm">
         <Briefcase className="h-6 w-6" aria-hidden="true" />
       </span>

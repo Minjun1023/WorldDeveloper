@@ -25,7 +25,7 @@ export function RecentJobs() {
             <Link
               key={j.id}
               href={`/jobs/${encodeURIComponent(j.id)}`}
-              className="group flex w-48 sm:w-56 shrink-0 items-center gap-2.5 rounded-xl border border-border bg-surface p-3 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="group flex w-48 sm:w-56 shrink-0 items-center gap-2.5 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <CompanyLogo slug={j.slug} name={j.company} size={32} />
               <div className="min-w-0">

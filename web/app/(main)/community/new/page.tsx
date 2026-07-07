@@ -30,7 +30,7 @@ export default async function CommunityNewPage({ searchParams }: { searchParams:
           linkedCountry={str(searchParams.country)}
         />
       ) : (
-        <div className="rounded-xl border border-border bg-surface p-10 text-center">
+        <div className="rounded-xl border border-border bg-card p-10 text-center">
           <p className="text-body-sm text-muted-foreground">로그인하면 글을 쓸 수 있어요.</p>
           <Link href="/signin?callbackUrl=/community/new" className={cn(buttonVariants(), "mt-3")}>
             로그인

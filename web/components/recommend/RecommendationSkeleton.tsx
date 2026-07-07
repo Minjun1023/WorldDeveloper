@@ -6,11 +6,11 @@ function SkeletonCard() {
     <Card className="flex flex-col">
       <CardHeader>
         <div className="flex items-start gap-3">
-          <div className="h-10 w-10 shrink-0 rounded-md bg-surface-2" />
+          <div className="h-10 w-10 shrink-0 rounded-md bg-muted" />
           <div className="min-w-0 flex-1 space-y-2">
-            <div className="h-3 w-20 rounded bg-surface-2" />
-            <div className="h-4 w-3/4 rounded bg-surface-2" />
-            <div className="h-3 w-1/2 rounded bg-surface-2" />
+            <div className="h-3 w-20 rounded bg-muted" />
+            <div className="h-4 w-3/4 rounded bg-muted" />
+            <div className="h-3 w-1/2 rounded bg-muted" />
           </div>
         </div>
       </CardHeader>
@@ -18,15 +18,15 @@ function SkeletonCard() {
         <div className="space-y-2">
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="flex items-center gap-2">
-              <div className="h-2 w-12 shrink-0 rounded bg-surface-2" />
-              <div className="h-2 flex-1 rounded bg-surface-2" />
+              <div className="h-2 w-12 shrink-0 rounded bg-muted" />
+              <div className="h-2 flex-1 rounded bg-muted" />
             </div>
           ))}
         </div>
         <div className="flex gap-1.5">
-          <div className="h-5 w-12 rounded-full bg-surface-2" />
-          <div className="h-5 w-16 rounded-full bg-surface-2" />
-          <div className="h-5 w-10 rounded-full bg-surface-2" />
+          <div className="h-5 w-12 rounded-full bg-muted" />
+          <div className="h-5 w-16 rounded-full bg-muted" />
+          <div className="h-5 w-10 rounded-full bg-muted" />
         </div>
       </CardContent>
     </Card>

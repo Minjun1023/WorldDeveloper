@@ -30,8 +30,8 @@ function LockedPreview({ backdrop, tab }: { backdrop: React.ReactNode; tab: stri
       <div className="pointer-events-none select-none blur-[3px]" aria-hidden="true">
         {backdrop}
       </div>
-      <div className="absolute inset-0 flex items-start justify-center bg-surface/50 pt-16 backdrop-blur-[1px]">
-        <div className="rounded-lg border border-border bg-surface p-10 text-center shadow-md">
+      <div className="absolute inset-0 flex items-start justify-center bg-card/50 pt-16 backdrop-blur-[1px]">
+        <div className="rounded-lg border border-border bg-card p-10 text-center shadow-md">
           <p className="text-body-sm text-muted-foreground">로그인하면 이용할 수 있어요.</p>
           <Link
             href={`/signin?callbackUrl=${encodeURIComponent(`/bookmarks?tab=${tab}`)}`}
@@ -62,7 +62,7 @@ function TrackerSkeleton() {
       {BOARD_COLUMNS.map((label) => (
         <div
           key={label}
-          className="flex min-w-[14rem] flex-1 flex-col rounded-xl border border-border bg-surface-2 p-2 md:min-w-0"
+          className="flex min-w-[14rem] flex-1 flex-col rounded-xl border border-border bg-muted p-2 md:min-w-0"
         >
           <div className="mb-2 flex items-center gap-1.5 px-1 text-body-sm font-semibold">
             {label}
@@ -79,7 +79,7 @@ function CardsSkeleton() {
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
       {Array.from({ length: 6 }).map((_, i) => (
-        <div key={i} className="h-28 rounded-lg border border-border bg-surface" />
+        <div key={i} className="h-28 rounded-lg border border-border bg-card" />
       ))}
     </div>
   );

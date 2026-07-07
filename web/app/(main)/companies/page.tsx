@@ -128,18 +128,18 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
       {data && <CompanyDirectoryControls tagOptions={tagOptions} sizeOptions={sizeOptions} />}
 
       {!data ? (
-        <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
+        <div className="rounded-lg border border-border bg-card p-6 text-body-sm text-muted-foreground">
           기업 목록을 불러오지 못했습니다.
         </div>
       ) : visible.length === 0 ? (
-        <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
+        <div className="rounded-lg border border-border bg-card p-6 text-body-sm text-muted-foreground">
           {q ? `'${q}' 검색 결과가 없습니다.` : "해당 조건의 기업이 없습니다."}
         </div>
       ) : (
         <>
           <div className="overflow-hidden rounded-lg border border-border">
             {/* 컬럼 헤더 (md+) */}
-            <div className="hidden items-center gap-3 border-b border-border bg-surface-2 px-4 py-2.5 text-caption font-medium text-muted-foreground md:flex">
+            <div className="hidden items-center gap-3 border-b border-border bg-muted px-4 py-2.5 text-caption font-medium text-muted-foreground md:flex">
               <span className="h-9 w-9 shrink-0" aria-hidden="true" />
               <span className="flex-1">기업</span>
               <span className="hidden w-44 shrink-0 lg:block">분야</span>
@@ -157,7 +157,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                 >
                   <Link
                     href={`/companies/${c.slug}`}
-                    className="group flex flex-1 items-center gap-3 px-4 py-3.5 transition-colors hover:bg-surface-2"
+                    className="group flex flex-1 items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted"
                   >
                   <CompanyLogo slug={c.slug} name={c.display_name} size={36} />
                   <div className="min-w-0 flex-1">
@@ -186,7 +186,7 @@ export default async function CompaniesPage({ searchParams }: { searchParams: Se
                         <span
                           key={t}
                           title={tagDesc(t)}
-                          className="truncate rounded-full bg-surface-2 px-2 py-0.5 text-caption text-muted-foreground"
+                          className="truncate rounded-full bg-muted px-2 py-0.5 text-caption text-muted-foreground"
                         >
                           {tagLabel(t)}
                         </span>

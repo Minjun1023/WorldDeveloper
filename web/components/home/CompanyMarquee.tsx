@@ -10,7 +10,7 @@ export function CompanyMarquee({ companies }: { companies: CompanySummary[] }) {
   const loop = [...companies, ...companies];
 
   return (
-    <section className="border-b border-border bg-surface py-10 sm:py-12">
+    <section className="border-b border-border bg-card py-10 sm:py-12">
       <p className="text-center text-body-sm text-muted-foreground">
         디렉터리에 수록된 비자 스폰서 기업
       </p>

@@ -39,7 +39,7 @@ export function MemberRecommend() {
 
   if (needsProfile) {
     return (
-      <div className="rounded-lg border border-border bg-surface p-6 text-center">
+      <div className="rounded-lg border border-border bg-card p-6 text-center">
         <p className="text-body-sm text-muted-foreground">프로필을 작성하면 맞춤 공고를 추천해드려요.</p>
         <Link href="/me/profile" className={cn(buttonVariants(), "mt-3")}>
           프로필 작성하기
@@ -51,7 +51,7 @@ export function MemberRecommend() {
   return (
     <div className="space-y-6">
       {/* 추천은 내 프로필 기준. 조건 수정은 프로필 페이지에서. */}
-      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 rounded-2xl border border-border bg-card p-6 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-body-sm text-muted-foreground">
           내 프로필(스택·지역·레벨·연봉·관심 도메인) 기준으로 매칭합니다. 조건을 바꾸려면 프로필을 수정하세요.
         </p>

@@ -60,7 +60,7 @@ export function ProfileFields({
 
   return (
     <div className="space-y-5">
-      <section className="rounded-2xl border border-border bg-surface p-6">
+      <section className="rounded-2xl border border-border bg-card p-6">
         <SectionHead
           icon={<Code2 className="h-[18px] w-[18px]" aria-hidden="true" />}
           title="기술 · 경력"
@@ -119,7 +119,7 @@ export function ProfileFields({
         </div>
       </section>
 
-      <section className="rounded-2xl border border-border bg-surface p-6">
+      <section className="rounded-2xl border border-border bg-card p-6">
         <SectionHead
           icon={<SlidersHorizontal className="h-[18px] w-[18px]" aria-hidden="true" />}
           title="선호 근무조건"

@@ -90,7 +90,7 @@ export function RecommendationCard({
           {score.deal_breakers.slice(0, 2).map((d, i) => (
             <span
               key={i}
-              className="rounded-full bg-surface-2 px-3 py-1.5 text-caption font-medium text-destructive"
+              className="rounded-full bg-muted px-3 py-1.5 text-caption font-medium text-destructive"
             >
               {d}
             </span>
@@ -113,7 +113,7 @@ export function RecommendationCard({
             {techTags.map((t) => (
               <span
                 key={t}
-                className="rounded-full bg-surface-2 px-2.5 py-1 text-caption font-medium lowercase text-muted-foreground"
+                className="rounded-full bg-muted px-2.5 py-1 text-caption font-medium lowercase text-muted-foreground"
               >
                 {t}
               </span>

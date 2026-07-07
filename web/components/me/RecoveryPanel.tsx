@@ -56,7 +56,7 @@ export function RecoveryPanel({
   }
 
   return (
-    <div className="mt-3 space-y-3 rounded-md border border-border bg-surface-2 p-4">
+    <div className="mt-3 space-y-3 rounded-md border border-border bg-muted p-4">
       {!result ? (
         <>
           <p className="text-body-sm text-muted-foreground">

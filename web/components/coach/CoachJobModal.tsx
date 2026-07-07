@@ -45,7 +45,7 @@ export function CoachJobModal({
       onClick={(e) => {
         if (e.target === ref.current) onClose();
       }}
-      className="m-auto w-[min(92vw,34rem)] rounded-2xl border border-border bg-surface p-0 text-foreground shadow-lg backdrop:bg-black/40"
+      className="m-auto w-[min(92vw,34rem)] rounded-2xl border border-border bg-card p-0 text-foreground shadow-lg backdrop:bg-black/40"
     >
       <div className="flex items-center justify-between border-b border-border p-5">
         <h2 id={titleId} className="text-h3 font-semibold">공고 첨부</h2>
@@ -79,7 +79,7 @@ export function CoachJobModal({
                 selectedId === j.id ? "border-primary bg-primary/10" : "border-border hover:border-primary/40 hover:bg-accent",
               )}
             >
-              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-muted-foreground">
+              <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
                 <Briefcase className="h-4 w-4" aria-hidden="true" />
               </span>
               <span className="min-w-0">

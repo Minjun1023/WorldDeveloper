@@ -29,7 +29,7 @@ export function JobRow({
   const techTags = filterTechTags(job.tags, job.company);
 
   return (
-    <div className="group relative flex items-start gap-4 rounded-xl border border-border bg-surface p-4 transition-all hover:border-primary/40 hover:shadow-sm">
+    <div className="group relative flex items-start gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-sm">
       <Link
         href={`/jobs/${encodeURIComponent(job.id)}`}
         aria-label={job.title_ko ?? job.title}
@@ -71,7 +71,7 @@ export function JobRow({
             {techTags.slice(0, 4).map((t) => (
               <span
                 key={t}
-                className="rounded-md bg-surface-2 px-2 py-0.5 font-mono text-caption lowercase text-muted-foreground"
+                className="rounded-md bg-muted px-2 py-0.5 font-mono text-caption lowercase text-muted-foreground"
               >
                 {t}
               </span>

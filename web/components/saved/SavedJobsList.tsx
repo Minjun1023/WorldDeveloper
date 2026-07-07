@@ -35,7 +35,7 @@ export function SavedJobsList() {
   if (jobs === null) return <p className="text-body-sm text-muted-foreground">불러오는 중…</p>;
   if (jobs.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-surface p-6 text-center">
+      <div className="rounded-lg border border-border bg-card p-6 text-center">
         <p className="text-body-sm text-muted-foreground">아직 저장한 공고가 없어요.</p>
         <Link href="/recommend" className="mt-3 inline-block text-body-sm text-primary">맞춤 추천 보러 가기 →</Link>
       </div>

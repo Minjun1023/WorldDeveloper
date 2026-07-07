@@ -28,7 +28,7 @@ function GoogleIcon() {
 
 export function OAuthButtons({ backendPublicUrl }: { backendPublicUrl: string }) {
   const cls =
-    "inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-border bg-surface text-body-sm font-medium text-foreground transition-colors hover:bg-accent";
+    "inline-flex h-11 items-center justify-center gap-2 rounded-lg border border-border bg-card text-body-sm font-medium text-foreground transition-colors hover:bg-accent";
   return (
     <div className="grid grid-cols-2 gap-2">
       <a href={`${backendPublicUrl}/oauth2/authorization/google`} className={cls}>

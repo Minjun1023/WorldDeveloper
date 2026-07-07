@@ -80,7 +80,7 @@ export function JobSummary({ jobId, initialData }: { jobId: string; initialData?
               type="button"
               onClick={() => setCollapsed((c) => !c)}
               aria-expanded={!collapsed}
-              className="inline-flex items-center gap-1 rounded-md border border-primary/20 bg-surface px-2.5 py-1 text-caption font-semibold text-primary hover:bg-primary/10"
+              className="inline-flex items-center gap-1 rounded-md border border-primary/20 bg-card px-2.5 py-1 text-caption font-semibold text-primary hover:bg-primary/10"
             >
               <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", collapsed && "-rotate-90")} aria-hidden="true" />
               {collapsed ? "펼치기" : "접기"}

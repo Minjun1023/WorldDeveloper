@@ -36,7 +36,7 @@ export function VerifyMethodology() {
   return (
     <div className="grid gap-5 md:grid-cols-3">
       {STEPS.map((s) => (
-        <div key={s.step} className="rounded-xl border border-border bg-surface p-6">
+        <div key={s.step} className="rounded-xl border border-border bg-card p-6">
           <div className="flex items-center gap-3">
             {/* 배경은 액센트색 10% 알파 — 하드코딩 파스텔(bg)과 달리 다크모드에서도 자연스럽다. */}
             <span

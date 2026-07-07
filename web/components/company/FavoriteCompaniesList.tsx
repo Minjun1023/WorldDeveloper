@@ -44,7 +44,7 @@ export function FavoriteCompaniesList() {
   if (items === null) return <p className="text-body-sm text-muted-foreground">불러오는 중…</p>;
   if (items.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-surface p-6 text-center">
+      <div className="rounded-lg border border-border bg-card p-6 text-center">
         <p className="text-body-sm text-muted-foreground">아직 관심 기업이 없어요.</p>
         <Link href="/companies" className="mt-3 inline-block text-body-sm text-primary">
           기업 둘러보러 가기 →
@@ -65,7 +65,7 @@ export function FavoriteCompaniesList() {
         <Link
           key={c.slug}
           href={`/companies/${c.slug}`}
-          className={`group flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-surface-2 ${
+          className={`group flex items-center gap-3 px-4 py-3.5 transition-colors hover:bg-muted ${
             i > 0 ? "border-t border-border" : ""
           }`}
         >
@@ -82,7 +82,7 @@ export function FavoriteCompaniesList() {
             {(c.tags ?? []).slice(0, 2).map((t) => (
               <span
                 key={t}
-                className="truncate rounded-full bg-surface-2 px-2 py-0.5 text-caption text-muted-foreground"
+                className="truncate rounded-full bg-muted px-2 py-0.5 text-caption text-muted-foreground"
               >
                 {tagLabel(t)}
               </span>

@@ -47,7 +47,7 @@ export function AccountMenu({ loggedIn }: { loggedIn: boolean }) {
         </svg>
       </button>
       {open && (
-        <div role="menu" className="absolute right-0 mt-2 w-40 rounded-lg border border-border bg-surface p-1 shadow-lg">
+        <div role="menu" className="absolute right-0 mt-2 w-40 rounded-lg border border-border bg-card p-1 shadow-lg">
           <Link
             href="/me/profile"
             role="menuitem"

@@ -71,7 +71,7 @@ export function CompanyInfo({
   const description = profile?.description ?? fallbackBlurb;
 
   return (
-    <section className="rounded-2xl border border-border bg-surface p-6">
+    <section className="rounded-2xl border border-border bg-card p-6">
       <h2 className="text-h3">회사 정보</h2>
 
       {description && (

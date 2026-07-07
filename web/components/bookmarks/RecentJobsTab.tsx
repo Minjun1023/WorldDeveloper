@@ -20,7 +20,7 @@ export function RecentJobsTab() {
   if (jobs === null) return null;
   if (jobs.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-surface p-6 text-center">
+      <div className="rounded-lg border border-border bg-card p-6 text-center">
         <p className="text-body-sm text-muted-foreground">아직 열어본 공고가 없어요.</p>
         <Link href="/search" className="mt-3 inline-block text-body-sm text-primary">
           공고 둘러보러 가기 →
@@ -47,7 +47,7 @@ export function RecentJobsTab() {
           <Link
             key={j.id}
             href={`/jobs/${encodeURIComponent(j.id)}`}
-            className="group flex flex-col gap-2 rounded-lg border border-border bg-surface p-4 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="group flex flex-col gap-2 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <CompanyLogo slug={j.slug} name={j.company} size={36} />
             <div className="min-w-0">

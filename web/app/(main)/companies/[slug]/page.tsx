@@ -61,7 +61,7 @@ export default async function CompanyDetailPage({
     <div className="space-y-8">
       <BackButton fallbackHref="/companies" label="기업 목록으로" />
       {/* 히어로 카드 */}
-      <header className="rounded-2xl border border-border bg-surface p-6">
+      <header className="rounded-2xl border border-border bg-card p-6">
         <div className="flex items-start gap-4">
           <CompanyLogo slug={company.slug} name={company.display_name} size={64} />
           <div className="min-w-0 flex-1 space-y-3">
@@ -124,7 +124,7 @@ export default async function CompanyDetailPage({
           <span className="text-body-sm text-muted-foreground">{company.job_count}개</span>
         </div>
         {total === 0 ? (
-          <p className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
+          <p className="rounded-lg border border-border bg-card p-6 text-body-sm text-muted-foreground">
             현재 공고가 없습니다.
           </p>
         ) : (

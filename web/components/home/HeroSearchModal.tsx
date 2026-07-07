@@ -206,14 +206,14 @@ export function HeroSearchModal({
     >
       <div
         ref={panelRef}
-        className="overflow-hidden rounded-2xl border border-border bg-surface shadow-[0_12px_32px_rgba(0,0,0,0.18)]"
+        className="overflow-hidden rounded-2xl border border-border bg-card shadow-[0_12px_32px_rgba(0,0,0,0.18)]"
         style={panelStyle}
         onMouseDown={(e) => e.stopPropagation()}
       >
         {/* 검색 바 — 인플레이스 모드(onApply)에선 검색어 입력 없이 지역·직무만 고르는 선택 모달. */}
         <div className="flex flex-col gap-2 p-3 sm:flex-row sm:items-stretch">
           {!onApply && (
-            <div className="flex flex-1 items-center gap-2 rounded-lg border-2 border-transparent bg-surface-2 px-4 transition-colors focus-within:border-primary focus-within:bg-surface">
+            <div className="flex flex-1 items-center gap-2 rounded-lg border-2 border-transparent bg-muted px-4 transition-colors focus-within:border-primary focus-within:bg-card">
               <Search className="h-5 w-5 shrink-0 text-hint" aria-hidden="true" />
               <input
                 ref={inputRef}
@@ -258,7 +258,7 @@ export function HeroSearchModal({
             type="button"
             onClick={onClose}
             aria-label="닫기"
-            className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-surface-2 hover:text-foreground sm:inline-flex"
+            className="hidden h-12 w-12 shrink-0 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-muted hover:text-foreground sm:inline-flex"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -285,7 +285,7 @@ export function HeroSearchModal({
                     onChange={(e) => setCountryQuery(e.target.value)}
                     placeholder="국가 검색 (예: 미국)"
                     aria-label="국가 검색"
-                    className="h-9 w-full rounded-lg border border-border bg-surface px-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="h-9 w-full rounded-lg border border-border bg-card px-3 text-body-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
                 </div>
                 <ul className="max-h-64 overflow-y-auto p-2 pt-1">
@@ -424,7 +424,7 @@ function FieldButton({
       className={cn(
         "flex h-12 items-center justify-between gap-2 rounded-lg border-2 px-4 text-body transition-colors",
         grow ? "flex-1" : "sm:w-52",
-        open ? "border-primary bg-surface" : "border-transparent bg-surface-2 hover:bg-accent",
+        open ? "border-primary bg-card" : "border-transparent bg-muted hover:bg-accent",
       )}
     >
       <span className={cn("flex min-w-0 items-center gap-2", selected ? "text-foreground" : "text-hint")}>
@@ -472,7 +472,7 @@ function Row({
       onClick={onClick}
       className={cn(
         "flex w-full items-center justify-between gap-2 rounded-lg px-3.5 py-2.5 text-left text-body-sm transition-colors",
-        selected ? "bg-primary-tint font-semibold text-primary" : "text-foreground hover:bg-surface-2",
+        selected ? "bg-primary-tint font-semibold text-primary" : "text-foreground hover:bg-muted",
       )}
     >
       <span className="truncate">{label}</span>

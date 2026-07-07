@@ -46,11 +46,6 @@ const config: Config = {
         border: "hsl(var(--border) / <alpha-value>)",
         input: "hsl(var(--input) / <alpha-value>)",
         ring: "hsl(var(--ring) / <alpha-value>)",
-        // 레거시 별칭(bg-surface 등) — 사용처 소진 후 제거 예정.
-        surface: {
-          DEFAULT: "hsl(var(--surface) / <alpha-value>)",
-          2: "hsl(var(--surface-2) / <alpha-value>)",
-        },
         // 앱 전용 토큰 — hex 변수 직참조(알파 모디파이어 미지원, 기존과 동일).
         hint: "var(--hint)",
         section: "var(--section-muted)",

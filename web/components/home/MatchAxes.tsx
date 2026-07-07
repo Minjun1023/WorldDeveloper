@@ -44,7 +44,7 @@ export function MatchAxes() {
           {AXES.map((a) => (
             <div
               key={a.label}
-              className="rounded-full border border-border bg-surface px-4 py-2.5 text-body-sm"
+              className="rounded-full border border-border bg-card px-4 py-2.5 text-body-sm"
             >
               <span className="font-bold text-primary">{a.label}</span>
               <span className="text-muted-foreground"> · {a.desc}</span>
@@ -55,7 +55,7 @@ export function MatchAxes() {
 
       {/* 우: 오각형 레이더 */}
       <div className="flex justify-center">
-        <div className="rounded-2xl border border-border bg-surface p-6 shadow-md sm:p-8">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-md sm:p-8">
           <ScoreRadar score={SAMPLE} size={260} />
         </div>
       </div>

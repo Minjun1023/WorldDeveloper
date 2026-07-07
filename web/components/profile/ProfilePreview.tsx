@@ -71,7 +71,7 @@ export function ProfilePreview({ profile }: { profile: RecommendProfile }) {
           type="button"
           onClick={refresh}
           disabled={loading}
-          className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1.5 text-caption font-semibold text-muted-foreground transition-colors hover:bg-accent disabled:opacity-60"
+          className="mt-3 inline-flex items-center gap-1.5 rounded-md border border-border bg-card px-3 py-1.5 text-caption font-semibold text-muted-foreground transition-colors hover:bg-accent disabled:opacity-60"
         >
           <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
           갱신
@@ -79,7 +79,7 @@ export function ProfilePreview({ profile }: { profile: RecommendProfile }) {
       </div>
 
       {/* 5축 반영 */}
-      <div className="rounded-2xl border border-border bg-surface p-4">
+      <div className="rounded-2xl border border-border bg-card p-4">
         <div className="mb-2.5 flex items-center justify-between">
           <p className="text-caption font-medium uppercase tracking-wide text-muted-foreground">5축 반영</p>
           <span className="text-caption font-semibold text-foreground">{reflected}/{DIM_TOTAL} 입력됨</span>

@@ -38,7 +38,7 @@ export default async function CommunityPostPage({ params }: { params: { id: stri
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div className="min-w-0 space-y-5">
           {/* 글 카드 */}
-          <article className="space-y-4 rounded-2xl border border-border bg-surface p-6">
+          <article className="space-y-4 rounded-2xl border border-border bg-card p-6">
             <header className="space-y-3">
               <div className="flex flex-wrap items-center gap-2 text-caption text-muted-foreground">
                 <span className={cn("rounded-full px-2 py-0.5 font-medium", categoryStyle(post.category).chip)}>{categoryLabel(post.category)}</span>
@@ -89,7 +89,7 @@ export default async function CommunityPostPage({ params }: { params: { id: stri
                   <Link
                     key={t}
                     href={`/community?tag=${encodeURIComponent(t)}`}
-                    className="rounded-full bg-surface-2 px-2.5 py-0.5 text-caption text-muted-foreground transition-colors hover:text-foreground"
+                    className="rounded-full bg-muted px-2.5 py-0.5 text-caption text-muted-foreground transition-colors hover:text-foreground"
                   >
                     #{t}
                   </Link>
@@ -118,7 +118,7 @@ export default async function CommunityPostPage({ params }: { params: { id: stri
           </article>
 
           {/* 댓글 카드 */}
-          <div className="rounded-2xl border border-border bg-surface p-6">
+          <div className="rounded-2xl border border-border bg-card p-6">
             <CommentSection postId={post.id} initialComments={post.comments} loggedIn={loggedIn} />
           </div>
         </div>

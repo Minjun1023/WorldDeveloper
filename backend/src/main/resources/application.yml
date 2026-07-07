@@ -45,6 +45,9 @@ spring:
     redis:
       host: ${SPRING_DATA_REDIS_HOST:localhost}
       port: ${SPRING_DATA_REDIS_PORT:6379}
+      # JPA 리포지토리를 Redis 후보로 스캔하는 시작 로그 노이즈 제거 — Redis 리포지토리 미사용(레이트리밋은 템플릿만 씀).
+      repositories:
+        enabled: false
 
   mail:
     host: ${MAIL_HOST:}

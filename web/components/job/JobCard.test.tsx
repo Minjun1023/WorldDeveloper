@@ -31,6 +31,6 @@ describe("JobCard", () => {
     );
     expect(screen.queryByText("5년+")).not.toBeInTheDocument();
     expect(screen.queryByText("정규직")).not.toBeInTheDocument();
-    expect(container.querySelector('[class*="bg-surface-2"]')).toBeNull();
+    expect(container.querySelector('[class*="bg-muted"]')).toBeNull();
   });
 });
