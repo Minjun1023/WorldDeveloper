@@ -3,10 +3,16 @@ import { describe, expect, it } from "vitest";
 import { VISA_GUIDES, getVisaGuide, guideForLocation } from "@/lib/visa-guide";
 
 describe("visa-guide", () => {
-  it("핵심 6개국 가이드를 모두 보유", () => {
+  it("핵심 11개국 가이드를 모두 보유", () => {
     expect(VISA_GUIDES.map((g) => g.slug).sort()).toEqual(
-      ["germany", "ireland", "japan", "netherlands", "uk", "us"],
+      ["australia", "canada", "france", "germany", "india", "ireland", "japan", "netherlands", "singapore", "uk", "us"],
     );
+  });
+
+  it("모든 가이드의 regionCode 가 검색 region 값(ISO 코드)과 일치하는 형식", () => {
+    for (const g of VISA_GUIDES) {
+      expect(g.regionCode).toMatch(/^[a-z]{2}$/);
+    }
   });
 
   it("모든 가이드는 최소 1개 공식 출처와 면책 대상 필드를 가짐", () => {

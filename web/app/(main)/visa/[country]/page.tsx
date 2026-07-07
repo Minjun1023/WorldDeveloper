@@ -89,8 +89,9 @@ export default function VisaGuideCountryPage({ params }: { params: { country: st
       )}
 
       <div className="border-t border-border pt-5">
-        <Link href={`/search?region=${g.slug}&visa=sponsors`} className={cn(buttonVariants())}>
-          {g.country} 스폰서 공고 보기 →
+        {/* 검색 region 값은 ISO 코드(gb·nl·jp…) — slug(uk·netherlands…)와 달라 regionCode 로 링크 */}
+        <Link href={`/search?region=${g.regionCode}&visa=sponsors`} className={cn(buttonVariants())}>
+          {g.country} 스폰서 공고 보기
         </Link>
       </div>
 

@@ -36,7 +36,7 @@ export default function VisaGuideIndexPage() {
             <p className="mt-2 text-body-sm font-semibold text-foreground">{g.visaName}</p>
             <p className="mt-1 line-clamp-2 text-body-sm text-muted-foreground">{g.summary}</p>
             <span className="mt-3 inline-block text-body-sm font-semibold text-primary">
-              자세히 보기 →
+              자세히 보기
             </span>
           </Link>
         ))}
@@ -45,7 +45,7 @@ export default function VisaGuideIndexPage() {
       <p className="text-body-sm text-muted-foreground">
         찾는 나라가 없나요? 우리는 스폰서십이 확인된 공고를 우선 다루며, 국가는 계속 늘려가고 있어요.{" "}
         <Link href="/search?visa=sponsors" className="font-semibold text-primary hover:underline">
-          비자 스폰서 공고 보기 →
+          비자 스폰서 공고 보기
         </Link>
       </p>
     </div>
