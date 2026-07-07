@@ -21,6 +21,7 @@ const NAV_LINKS = [
   { href: "/bookmarks", label: "북마크" },
   // 커뮤니티: 콘텐츠가 쌓일 때까지 내비에서 숨김(라우트는 유지 — 직접 URL 접근 가능).
   { href: "/companies", label: "기업" },
+  { href: "/visa", label: "비자 가이드" },
   { href: "/coach", label: "이력서 코치" },
 ];
 
