@@ -86,7 +86,8 @@ export function MemberLandingRecommend({ teaserJobs = [] }: { teaserJobs?: Job[]
           ))}
         </div>
 
-        {/* 좌우 화살표 — 오버플로가 있을 때만, 끝에서는 비활성 */}
+        {/* 좌우 화살표 — 카드와 겹치지 않도록 트랙 바깥(-left/right-10 = 버튼 36px + 여백 4px)에 배치.
+            바깥 여백이 없는 좁은 화면(lg 미만)에선 숨김 — 터치/트랙패드 스와이프로 대체. */}
         {hasOverflow && (
           <>
             <Button
@@ -96,7 +97,7 @@ export function MemberLandingRecommend({ teaserJobs = [] }: { teaserJobs?: Job[]
               aria-label="이전 추천 보기"
               disabled={!canPrev}
               onClick={() => slide(-1)}
-              className="absolute -left-3 top-1/2 z-10 h-9 w-9 -translate-y-1/2 rounded-full bg-background shadow-md"
+              className="absolute -left-10 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 rounded-full bg-background shadow-md lg:inline-flex"
             >
               <ChevronLeft aria-hidden="true" />
             </Button>
@@ -107,7 +108,7 @@ export function MemberLandingRecommend({ teaserJobs = [] }: { teaserJobs?: Job[]
               aria-label="다음 추천 보기"
               disabled={!canNext}
               onClick={() => slide(1)}
-              className="absolute -right-3 top-1/2 z-10 h-9 w-9 -translate-y-1/2 rounded-full bg-background shadow-md"
+              className="absolute -right-10 top-1/2 z-10 hidden h-9 w-9 -translate-y-1/2 rounded-full bg-background shadow-md lg:inline-flex"
             >
               <ChevronRight aria-hidden="true" />
             </Button>
