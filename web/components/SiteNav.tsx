@@ -17,7 +17,7 @@ import { cn } from "@/lib/utils";
 const NAV_LINKS = [
   { href: "/", label: "홈" },
   { href: "/search", label: "공고 검색" },
-  { href: "/recommend", label: "맞춤 추천" },
+  // 맞춤 추천: 홈 랜딩 캐러셀이 전체 추천을 담당하게 되어 내비에서 내림(라우트는 유지).
   { href: "/bookmarks", label: "북마크" },
   // 커뮤니티: 콘텐츠가 쌓일 때까지 내비에서 숨김(라우트는 유지 — 직접 URL 접근 가능).
   { href: "/companies", label: "기업" },

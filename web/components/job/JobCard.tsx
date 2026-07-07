@@ -23,6 +23,7 @@ export function JobCard({
   showSave = false,
   loggedIn = false,
   matchScore,
+  matchReasons,
 }: {
   job: Job;
   hideVisaBadge?: boolean;
@@ -33,6 +34,8 @@ export function JobCard({
   loggedIn?: boolean;
   // 맞춤 추천 맥락에서 카드 안에 매칭 점수(0~100)를 표기 — 홈 추천 미리보기 등 opt-in.
   matchScore?: number;
+  // 맞춤 추천 사유 칩("비자 스폰서십 명시" 등) — 추천 맥락 opt-in.
+  matchReasons?: string[];
 }) {
   const salary = formatSalary(job.salary);
   const salaryKrw = formatSalaryKrw(job.salary);
@@ -106,6 +109,20 @@ export function JobCard({
             </span>
           )}
         </div>
+
+        {/* 추천 사유 칩 (맞춤 추천 맥락 opt-in) */}
+        {matchReasons && matchReasons.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-1.5">
+            {matchReasons.map((r) => (
+              <span
+                key={r}
+                className="rounded-full bg-primary/10 px-2 py-0.5 text-caption font-medium text-primary"
+              >
+                {r}
+              </span>
+            ))}
+          </div>
+        )}
 
         {/* 신호 배지(비자·원격 — 명부검증 방패는 위 회사명 옆 인라인으로 분리) */}
         {hasBadges && (
