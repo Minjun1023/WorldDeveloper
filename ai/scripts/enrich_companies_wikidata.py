@@ -14,6 +14,8 @@
 사용:
     python enrich_companies_wikidata.py --input slug_name.tsv --out company-facts.ts
 입력 TSV: 각 줄 `slug<TAB or |>display_name`.
+slug 는 **DB 회사 slug(=ATS token)** 를 쓸 것 — companies.json 의 registry key 와
+다른 회사가 있다(예: abnormal→abnormalsecurity). 프론트는 company.slug 로 조회한다.
 """
 from __future__ import annotations
 

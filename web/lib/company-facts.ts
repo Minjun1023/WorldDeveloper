@@ -22,6 +22,9 @@ export interface CompanyFacts {
 }
 
 export const COMPANY_FACTS: Record<string, CompanyFacts> = {
+  "ASOS": { wikidataId: "Q211951", industry: "clothing industry", founded: "2000", hq: "London", country: "United Kingdom", website: "https://www.asos.com" },
+  "ServiceNow": { wikidataId: "Q7455653", employees: 10371, employeesYear: "2019", industry: "enterprise software", founded: "2004", hq: "Santa Clara", country: "United States", website: "https://www.servicenow.com" },
+  "Visa": { wikidataId: "Q328840", employees: 31600, employeesYear: "2024", industry: "financial services", founded: "1958", hq: "San Francisco", country: "United States", website: "https://corporate.visa.com/" },
   "adyen": { wikidataId: "Q4686934", industry: "mobile payment industry", founded: "2006", hq: "Amsterdam", country: "Netherlands", website: "https://www.adyen.com/" },
   "affirm": { wikidataId: "Q65085822", industry: "fintech", founded: "2012", hq: "San Francisco", country: "United States", website: "https://www.affirm.com/" },
   "airbnb": { wikidataId: "Q63327", employees: 5597, employeesYear: "2020", industry: "tourism industry", founded: "2008", hq: "New York City", country: "United States", website: "https://www.airbnb.com/" },
@@ -33,7 +36,6 @@ export const COMPANY_FACTS: Record<string, CompanyFacts> = {
   "angellist": { wikidataId: "Q4762034", founded: "2010", hq: "San Francisco", country: "United States", website: "https://angel.co/" },
   "anyscale": { wikidataId: "Q116413452", industry: "software industry", hq: "San Francisco", country: "United States", website: "https://www.anyscale.com/" },
   "appier": { wikidataId: "Q56272861", industry: "technology industry", founded: "2012", hq: "Taipei", website: "https://www.appier.com/" },
-  "asos": { wikidataId: "Q211951", industry: "clothing industry", founded: "2000", hq: "London", country: "United Kingdom", website: "https://www.asos.com" },
   "beamery": { wikidataId: "Q116675044", website: "https://beamery.com/" },
   "benchling": { wikidataId: "Q63417942", founded: "2012", hq: "San Francisco", country: "United States", website: "https://www.benchling.com/" },
   "betterup": { wikidataId: "Q106143931", founded: "2013", hq: "San Francisco", country: "United States", website: "https://www.betterup.com/" },
@@ -91,7 +93,6 @@ export const COMPANY_FACTS: Record<string, CompanyFacts> = {
   "rubrik": { wikidataId: "Q55632076", employees: 2500, employeesYear: "2022", industry: "computer storage media", founded: "2013", hq: "Palo Alto", country: "United States", website: "https://www.rubrik.com/" },
   "salesloft": { wikidataId: "Q7404299", founded: "2011", hq: "Atlanta", country: "United States", website: "http://www.salesloft.com/" },
   "semgrep": { wikidataId: "Q124512828", website: "https://semgrep.dev/" },
-  "servicenow": { wikidataId: "Q7455653", employees: 10371, employeesYear: "2019", industry: "enterprise software", founded: "2004", hq: "Santa Clara", country: "United States", website: "https://www.servicenow.com" },
   "singlestore": { wikidataId: "Q15275385", founded: "2013", hq: "San Francisco", country: "United States", website: "http://www.memsql.com/" },
   "spotify": { wikidataId: "Q689141", founded: "2006", website: "https://www.spotify.com" },
   "squarespace": { wikidataId: "Q7582097", founded: "2004", hq: "New York City", country: "United States", website: "https://www.squarespace.com" },
@@ -104,7 +105,6 @@ export const COMPANY_FACTS: Record<string, CompanyFacts> = {
   "twilio": { wikidataId: "Q7858039", industry: "Voice over IP", founded: "2008", hq: "San Francisco", country: "United States", website: "http://www.twilio.com/" },
   "twitch": { wikidataId: "Q4555537", founded: "2011", hq: "San Francisco", country: "United States", website: "https://www.twitch.tv/" },
   "verkada": { wikidataId: "Q106059747", hq: "San Mateo", country: "United States", website: "https://verkada.com/" },
-  "visa": { wikidataId: "Q328840", employees: 31600, employeesYear: "2024", industry: "financial services", founded: "1958", hq: "San Francisco", country: "United States", website: "https://corporate.visa.com/" },
   "wayflyer": { wikidataId: "Q131425534", industry: "banking system", hq: "Dublin" },
   "woven-by-toyota": { wikidataId: "Q105653997", industry: "automotive industry", founded: "2021", hq: "Chūō", country: "Japan", website: "https://www.woven-planet.global/" },
 };

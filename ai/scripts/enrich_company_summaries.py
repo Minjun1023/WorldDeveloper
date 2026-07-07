@@ -4,6 +4,9 @@
 company-facts.ts 에 이미 검수된 Wikidata QID 를 **재사용**한다 — 새 이름 매칭이
 없으므로 오매칭 위험 0. QID → sitelink(kowiki 우선, 없으면 enwiki) → REST 요약.
 
+키는 company-facts.ts 의 키를 그대로 상속한다 — 즉 DB 회사 slug(=ATS token).
+registry key(companies.json 의 키)와 다른 회사가 있으니 새 키를 만들 때 주의.
+
 - 동음이의(disambiguation) 문서는 채택하지 않음(틀린 소개보다 미표시가 낫다).
 - 요약은 첫 문단 플레인 텍스트를 문장 경계에서 최대 ~450자 로 자른다.
 - 출처(CC BY-SA) 표기를 위해 문서 URL 을 함께 저장한다.

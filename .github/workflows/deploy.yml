@@ -75,6 +75,15 @@ jobs:
           [ "$home" = "200" ] || { echo "홈 응답 $home"; exit 1; }
           echo "스모크 통과: api 200 · 홈 200"
 
+      # 200 체크를 넘어 핵심 사용자 여정 검증 — 검색→상세, 기업 드롭다운, 커뮤니티 등
+      # 읽기 전용 7개 시나리오(web/e2e/smoke.spec.ts). 실패 시 워크플로 빨간불.
+      - name: E2E 스모크 (Playwright)
+        run: |
+          cd web
+          npm ci
+          npx playwright install --with-deps chromium
+          E2E_BASE_URL="https://${{ secrets.DEPLOY_HOST }}.sslip.io" npm run e2e
+
       - name: 상태 확인
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10000 \
