@@ -9,6 +9,7 @@ import { deadlineLabel, postedRelativeLabel } from "@/lib/jobDates";
 import { fallbackMetaChip } from "@/lib/jobMeta";
 import { formatSalary, formatSalaryKrw } from "@/lib/salary";
 import { filterTechTags } from "@/lib/techTags";
+import { TIER_LABEL, TIER_NOTE, visaEvidenceTier } from "@/lib/visa-evidence";
 import type { Job } from "@/lib/types";
 
 import { RemoteBadge } from "./RemoteBadge";
@@ -55,7 +56,11 @@ export function JobCard({
     showRestrictedRemote &&
     !showRemote &&
     (job.remote?.eligibility === "region_restricted" || job.is_remote === true);
-  const hasBadges = showVisa || showRemote || showRestricted;
+  // sponsors 근거 등급 — 본문 직접 명시(레어·최강 신호)는 강조, 간접(회사 이력 전파)은 중립 마커로
+  // 정직하게 구분. 대다수(명부 검증)는 배지 생략 — 84% 에 배지를 달면 변별력이 없어 노이즈.
+  const evidenceTier = visaEvidenceTier(job.visa);
+  const showEvidenceTier = evidenceTier === "direct" || evidenceTier === "indirect";
+  const hasBadges = showVisa || showRemote || showRestricted || showEvidenceTier;
 
   return (
     <div className="group relative h-full">
@@ -127,6 +132,22 @@ export function JobCard({
         {/* 신호 배지(비자·원격 — 명부검증 방패는 위 회사명 옆 인라인으로 분리) */}
         {hasBadges && (
           <div className="mt-3 flex flex-wrap gap-1.5">
+            {evidenceTier === "direct" && (
+              <span
+                title={TIER_NOTE.direct}
+                className="shrink-0 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-caption font-medium text-primary"
+              >
+                {TIER_LABEL.direct}
+              </span>
+            )}
+            {evidenceTier === "indirect" && (
+              <span
+                title={TIER_NOTE.indirect}
+                className="shrink-0 rounded-full border border-border bg-muted px-2 py-0.5 text-caption font-medium text-muted-foreground"
+              >
+                {TIER_LABEL.indirect}
+              </span>
+            )}
             {showVisa && <VisaBadge status={job.visa?.status} remoteViable={showRemote} />}
             <RemoteBadge
               eligibility={job.remote?.eligibility}

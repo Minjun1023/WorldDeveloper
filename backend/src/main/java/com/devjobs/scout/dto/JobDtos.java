@@ -16,7 +16,10 @@ public final class JobDtos {
 
     // registerVerified: 비자 근거가 정부 공식 명부(UK Home Office / US USCIS) 대조인가.
     // 키워드/추론 스폰서와 구분되는 최상위 신뢰 신호 — 프론트가 "명부 검증" 골드 마커에 사용.
-    public record VisaDto(String status, List<String> evidence, boolean registerVerified) {}
+    // evidenceTier: sponsors 근거 등급(register/direct/indirect) — 목록 응답이 evidence 배열을
+    // 생략해도(페이로드 절감) 프론트가 근거 강도를 구분해 표기할 수 있게 서버가 계산해 내려준다.
+    public record VisaDto(String status, List<String> evidence, boolean registerVerified,
+                          String evidenceTier) {}
 
     public record RemoteDto(String eligibility, List<String> evidence) {}
 

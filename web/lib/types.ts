@@ -19,6 +19,8 @@ export interface JobVisa {
   evidence?: string[];
   // 정부 공식 명부(UK Home Office / US USCIS) 대조로 확인된 스폰서인가 (최상위 신뢰 신호).
   register_verified?: boolean;
+  // sponsors 근거 등급(서버 계산) — 목록 응답이 evidence 배열을 생략해도 근거 강도를 구분 표기.
+  evidence_tier?: "register" | "direct" | "indirect" | null;
 }
 
 export interface JobRemote {
