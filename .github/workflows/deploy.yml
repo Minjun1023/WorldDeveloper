@@ -46,11 +46,34 @@ jobs:
             -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10000" \
             ./ "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}:~/WorldDeveloper/"
 
-      - name: 재빌드·재기동 (docker compose up -d --build --remove-orphans)
+      # 빌드(수 분~수십 분)와 재시작을 분리 — 빌드 동안 기존 스택이 계속 서빙해
+      # 다운타임을 '이미지 교체 + 백엔드 부팅' 수십 초로 줄인다. (기존엔 build 포함 up 한 방)
+      - name: 이미지 선빌드 (docker compose build)
         run: |
           ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10000 \
             "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            "cd ~/WorldDeveloper/deploy && sudo docker compose -f docker-compose.prod.yml up -d --build --remove-orphans"
+            "cd ~/WorldDeveloper/deploy && sudo docker compose -f docker-compose.prod.yml build"
+
+      - name: 재기동 (docker compose up -d --remove-orphans)
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -o ServerAliveInterval=30 -o ServerAliveCountMax=10000 \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd ~/WorldDeveloper/deploy && sudo docker compose -f docker-compose.prod.yml up -d --remove-orphans"
+
+      # /api/jobs/popular = Caddy→web→backend→postgres 전 체인 검증(백엔드 다운이면 BFF 가 502).
+      # 여기서 실패하면 워크플로가 빨간불 — '배포 성공 = rsync 성공'이 아니라 '사이트가 실제로 뜸'을 보장.
+      - name: 배포 후 스모크 체크
+        run: |
+          SITE="https://${{ secrets.DEPLOY_HOST }}.sslip.io"
+          for i in $(seq 1 36); do
+            code=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 8 "$SITE/api/jobs/popular" || true)
+            [ "$code" = "200" ] && break
+            sleep 5
+          done
+          [ "$code" = "200" ] || { echo "백엔드 스모크 실패 (마지막 응답: $code)"; exit 1; }
+          home=$(curl -sk -o /dev/null -w '%{http_code}' --max-time 10 "$SITE/" || true)
+          [ "$home" = "200" ] || { echo "홈 응답 $home"; exit 1; }
+          echo "스모크 통과: api 200 · 홈 200"
 
       - name: 상태 확인
         run: |
