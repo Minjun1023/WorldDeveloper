@@ -7,7 +7,7 @@ import type { HomeStats } from "@/components/home/HeroStats";
 import { MatchAxes } from "@/components/home/MatchAxes";
 import { MemberLandingRecommend } from "@/components/home/MemberLandingRecommend";
 import { PopularJobs } from "@/components/home/PopularJobs";
-import { SampleRecommend } from "@/components/home/SampleRecommend";
+import { LockedRecommendPreview } from "@/components/home/LockedRecommendPreview";
 import { SectionHeader } from "@/components/home/SectionHeader";
 import { StatsBand } from "@/components/home/StatsBand";
 import { JobRow } from "@/components/job/JobRow";
@@ -88,9 +88,13 @@ export default async function HomePage() {
       {/* 디렉터리에 수록된 비자 스폰서 기업 — 로고 마퀴 */}
       <CompanyMarquee companies={marqueeCompanies} />
 
-      {/* 맞춤 추천 — 로그인: 실제 추천, 비로그인: 컴팩트 CTA 배너 */}
+      {/* 맞춤 추천 — 로그인: 실제 추천(프로필 미작성 시 잠금 티저), 비로그인: 잠금 티저 → 로그인 유도 */}
       <Section>
-        {session ? <MemberLandingRecommend /> : <SampleRecommend />}
+        {session ? (
+          <MemberLandingRecommend teaserJobs={sponsorJobs.slice(0, 3)} />
+        ) : (
+          <LockedRecommendPreview mode="signin" jobs={sponsorJobs.slice(0, 3)} />
+        )}
       </Section>
 
       {/* 인기 TOP 공고 (연회색) — 지역·직무 드롭다운별 인기(최근 7일 조회수) 정렬. 데이터 적으면 최신순 fallback. */}
