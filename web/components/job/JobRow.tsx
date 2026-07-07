@@ -7,6 +7,7 @@ import { postedRelativeLabel } from "@/lib/jobDates";
 import { locationDisplayParts } from "@/lib/jobLocation";
 import { formatSalary, formatSalaryKrw } from "@/lib/salary";
 import { filterTechTags } from "@/lib/techTags";
+import { TIER_LABEL, TIER_NOTE, visaEvidenceTier } from "@/lib/visa-evidence";
 import type { Job } from "@/lib/types";
 
 // 검색/최신 공고 행 — Figma 카드: 아바타 + 한글제목·영문 + 🏢회사·📍위치·연봉 + 기술칩 + 우측 게시일·하트.
@@ -27,6 +28,9 @@ export function JobRow({
   const loc = locationDisplayParts(job).join(" · ");
   const salary = formatSalaryKrw(job.salary) ?? formatSalary(job.salary);
   const techTags = filterTechTags(job.tags, job.company);
+  // sponsors 근거 등급 — 본문 직접 명시는 강조, 간접(회사 이력 전파)은 중립 마커로 정직하게 구분.
+  // 대다수(명부 검증)는 배지 생략 — 84% 에 배지를 달면 변별력이 없어 노이즈.
+  const evidenceTier = visaEvidenceTier(job.visa);
 
   return (
     <div className="group relative flex items-start gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-sm">
@@ -66,8 +70,24 @@ export function JobRow({
           {salary && <span className="shrink-0 font-bold tabular-nums text-primary">{salary}</span>}
         </div>
 
-        {techTags.length > 0 && (
+        {(techTags.length > 0 || evidenceTier === "direct" || evidenceTier === "indirect") && (
           <div className="mt-2 flex flex-wrap gap-1">
+            {evidenceTier === "direct" && (
+              <span
+                title={TIER_NOTE.direct}
+                className="rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-caption font-medium text-primary"
+              >
+                {TIER_LABEL.direct}
+              </span>
+            )}
+            {evidenceTier === "indirect" && (
+              <span
+                title={TIER_NOTE.indirect}
+                className="rounded-full border border-border bg-muted px-2 py-0.5 text-caption font-medium text-muted-foreground"
+              >
+                {TIER_LABEL.indirect}
+              </span>
+            )}
             {techTags.slice(0, 4).map((t) => (
               <span
                 key={t}

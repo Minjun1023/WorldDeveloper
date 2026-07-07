@@ -5,6 +5,7 @@ import { cache } from "react";
 import { BackButton } from "@/components/BackButton";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { InterviewPrepSection } from "@/components/job/InterviewPrepSection";
+import { VisaEvidenceNote } from "@/components/job/VisaEvidenceNote";
 import { VisaGuideSection } from "@/components/job/VisaGuideSection";
 import { OtherJobsCarousel } from "@/components/job/OtherJobsCarousel";
 import { JobDescription } from "@/components/job/JobDescription";
@@ -107,6 +108,9 @@ export default async function JobDetailPage({ params }: { params: { id: string }
 
               <JobFactCards job={job} />
             </header>
+
+            {/* sponsors 판정 근거의 등급·문장 공개 — 간접 근거는 경고 톤 캐비앳 */}
+            <VisaEvidenceNote visa={job.visa} />
 
             {job.description && <JobSummary jobId={job.id} initialData={initialSummary} />}
             {job.description && <JobDescription original={job.description} />}

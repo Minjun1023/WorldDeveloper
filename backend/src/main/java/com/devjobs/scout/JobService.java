@@ -499,16 +499,34 @@ public class JobService {
                 || e.contains("Employer Data Hub") || e.contains("erkende referenten")));
     }
 
+    // sponsors 근거 등급 — register(정부 명부) > direct(공고 본문 명시) > indirect(같은 회사
+    // 다른 공고에서 전파). 근거가 아예 없으면 null(주장하지 않음). 프론트 배지/캐비앳 표기에 사용.
+    static String evidenceTier(String status, List<String> evidence) {
+        if (!"sponsors".equals(status)) {
+            return null;
+        }
+        if (isRegisterVerified(evidence)) {
+            return "register";
+        }
+        if (evidence == null || evidence.isEmpty()) {
+            return null;
+        }
+        boolean allIndirect = evidence.stream().allMatch(e -> e != null && e.contains("다른 공고"));
+        return allIndirect ? "indirect" : "direct";
+    }
+
     private JobDetailDto toDetailDto(JobEntity j) {
         CompanyEntity c = j.getCompany();
         CompanyDto company = c != null
             ? new CompanyDto(c.getSlug(), c.getDisplayName(), c.getTags())
             : new CompanyDto(j.getCompanySlug(), j.getCompanySlug(), List.of());
 
+        String visaStatus = j.getVisaStatus() == null ? "unclear" : j.getVisaStatus();
         VisaDto visa = new VisaDto(
-            j.getVisaStatus() == null ? "unclear" : j.getVisaStatus(),
+            visaStatus,
             j.getVisaEvidence(),
-            isRegisterVerified(j.getVisaEvidence()));
+            isRegisterVerified(j.getVisaEvidence()),
+            evidenceTier(visaStatus, j.getVisaEvidence()));
 
         RemoteDto remote = new RemoteDto(j.getRemoteEligibility(), j.getRemoteEvidence());
 
@@ -592,10 +610,13 @@ public class JobService {
         // 목록 응답은 evidence 배열을 싣지 않는다 — 카드는 배지(status/eligibility/registerVerified)만
         // 렌더하고 근거 텍스트는 상세에서만 쓴다. registerVerified 는 evidence 로 계산하되 배열은 null →
         // non_null 직렬화로 JSON 에서 생략(공고당 수백 B 절감). 상세는 toDetailDto 가 전문 유지.
+        // 근거 '등급'(evidenceTier)은 가벼운 문자열이라 목록에도 실어 카드가 근거 강도를 구분 표기.
+        String listVisaStatus = j.getVisaStatus() == null ? "unclear" : j.getVisaStatus();
         VisaDto visa = new VisaDto(
-            j.getVisaStatus() == null ? "unclear" : j.getVisaStatus(),
+            listVisaStatus,
             null,
-            isRegisterVerified(j.getVisaEvidence()));
+            isRegisterVerified(j.getVisaEvidence()),
+            evidenceTier(listVisaStatus, j.getVisaEvidence()));
 
         RemoteDto remote = new RemoteDto(j.getRemoteEligibility(), null);
 
