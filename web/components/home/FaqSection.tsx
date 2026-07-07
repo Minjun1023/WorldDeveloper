@@ -24,7 +24,7 @@ export function FaqSection() {
   return (
     <div className="mx-auto max-w-2xl space-y-2">
       {FAQS.map((f) => (
-        <details key={f.q} className="group overflow-hidden rounded-xl border border-border bg-surface">
+        <details key={f.q} className="group overflow-hidden rounded-xl border border-border bg-card">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-4 py-3.5 text-body-sm font-semibold text-foreground transition-colors hover:bg-accent">
             {f.q}
             <span

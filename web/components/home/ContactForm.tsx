@@ -27,7 +27,7 @@ export function ContactForm() {
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-3 rounded-lg border border-border bg-surface p-5 sm:p-6">
+    <form onSubmit={onSubmit} className="space-y-3 rounded-lg border border-border bg-card p-5 sm:p-6">
       <div className="space-y-1.5">
         <label htmlFor="contact-email" className="text-body-sm font-medium text-foreground">
           이메일

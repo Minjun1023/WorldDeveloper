@@ -63,7 +63,7 @@ export default function VisaGuideCountryPage({ params }: { params: { country: st
               href={l.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between gap-3 rounded-xl border border-border bg-surface p-4 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <span className="text-body-sm font-semibold text-foreground">{l.label}</span>
               <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />

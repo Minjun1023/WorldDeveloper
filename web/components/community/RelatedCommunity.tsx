@@ -46,7 +46,7 @@ export function RelatedCommunity({
   if (items === null || items.length === 0) return null;
 
   return (
-    <section className="rounded-xl border border-border bg-surface p-5">
+    <section className="rounded-xl border border-border bg-card p-5">
       <div className="flex items-center justify-between gap-2">
         <h2 className="text-h3">
           {title}

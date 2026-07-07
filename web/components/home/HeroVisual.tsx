@@ -25,7 +25,7 @@ export function HeroVisual({
           <Link
             key={c.slug}
             href={`/companies/${c.slug}`}
-            className="group flex items-center gap-2.5 rounded-xl border border-border bg-surface p-3 transition-all hover:border-primary/50 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="group flex items-center gap-2.5 rounded-xl border border-border bg-card p-3 transition-all hover:border-primary/50 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
             <CompanyLogo slug={c.slug} name={c.display_name} size={32} />
             <span className="truncate text-caption font-semibold text-foreground transition-colors group-hover:text-primary">

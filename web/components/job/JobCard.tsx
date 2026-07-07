@@ -118,7 +118,7 @@ export function JobCard({
             {techTags.slice(0, 4).map((t) => (
               <span
                 key={t}
-                className="rounded-md bg-surface-2 px-2 py-0.5 font-mono text-caption lowercase text-muted-foreground"
+                className="rounded-md bg-muted px-2 py-0.5 font-mono text-caption lowercase text-muted-foreground"
               >
                 {t}
               </span>
@@ -132,7 +132,7 @@ export function JobCard({
         {/* 기술 태그가 없을 때: 레벨/고용형태 중립 칩으로 레이아웃 유지 */}
         {metaChip && (
           <div className="mt-3 flex flex-wrap items-center gap-1.5">
-            <span className="rounded-md bg-surface-2 px-2 py-0.5 text-caption text-muted-foreground">
+            <span className="rounded-md bg-muted px-2 py-0.5 text-caption text-muted-foreground">
               {metaChip}
             </span>
           </div>

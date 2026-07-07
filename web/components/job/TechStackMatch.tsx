@@ -9,7 +9,7 @@ export function TechStackMatch({ tags, skills }: { tags: string[]; skills?: stri
   const matched = skillSet ? tags.filter((t) => skillSet.has(norm(t))) : [];
 
   return (
-    <section className="rounded-lg border border-border bg-surface p-5">
+    <section className="rounded-lg border border-border bg-card p-5">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/10 text-primary">

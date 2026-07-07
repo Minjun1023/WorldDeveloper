@@ -69,7 +69,7 @@ export function CoachConversationRail({
         <button
           type="button"
           onClick={onNew}
-          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-2.5 text-body-sm font-semibold text-foreground transition-colors hover:bg-accent"
+          className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-border bg-card px-3 py-2.5 text-body-sm font-semibold text-foreground transition-colors hover:bg-accent"
         >
           <Plus className="h-4 w-4" aria-hidden="true" /> 새 상담
         </button>

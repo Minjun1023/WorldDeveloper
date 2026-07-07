@@ -131,7 +131,7 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
               <div
                 id="mobile-nav"
                 role="menu"
-                className="absolute right-0 z-50 mt-2 w-56 rounded-lg border border-border bg-surface p-2 shadow-lg"
+                className="absolute right-0 z-50 mt-2 w-56 rounded-lg border border-border bg-card p-2 shadow-lg"
               >
                 {NAV_LINKS.map((l) => {
                   const active = isActive(l.href);

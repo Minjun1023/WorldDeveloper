@@ -44,7 +44,7 @@ export function RecentJobsList({ serverJobs }: { serverJobs: RecentJob[] | null 
       </section>
 
       {jobs === null ? null : jobs.length === 0 ? (
-        <div className="rounded-lg border border-border bg-surface p-6 text-center">
+        <div className="rounded-lg border border-border bg-card p-6 text-center">
           <p className="text-body-sm text-muted-foreground">아직 열어본 공고가 없어요.</p>
           <Link href="/search" className={cn(buttonVariants(), "mt-3")}>
             공고 둘러보기
@@ -56,7 +56,7 @@ export function RecentJobsList({ serverJobs }: { serverJobs: RecentJob[] | null 
             <Link
               key={j.id}
               href={`/jobs/${encodeURIComponent(j.id)}`}
-              className="group flex items-center gap-4 rounded-xl border border-border bg-surface px-4 py-4 shadow-sm transition-all hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="group flex items-center gap-4 rounded-xl border border-border bg-card px-4 py-4 shadow-sm transition-all hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <CompanyLogo slug={j.slug} name={j.company} size={40} />
               <div className="min-w-0 flex-1">

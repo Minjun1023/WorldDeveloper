@@ -55,7 +55,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
   }
   if (!result.ok) {
     return (
-      <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
+      <div className="rounded-lg border border-border bg-card p-6 text-body-sm text-muted-foreground">
         공고를 불러오지 못했습니다 ({result.error}).
         <div className="mt-3">
           <Link href="/search" className="text-primary hover:underline">
@@ -90,7 +90,7 @@ export default async function JobDetailPage({ params }: { params: { id: string }
         <div className="lg:grid lg:grid-cols-[1fr_340px] lg:gap-8">
           <article className="min-w-0 space-y-5">
             {/* 헤더 카드: 회사 → 제목 → '한눈에' 칩 → 비자 근거 한 줄 */}
-            <header className="space-y-4 rounded-2xl border border-border bg-surface p-6">
+            <header className="space-y-4 rounded-2xl border border-border bg-card p-6">
               <div className="flex items-start gap-4">
                 <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={48} />
                 <div className="min-w-0 flex-1 space-y-1">

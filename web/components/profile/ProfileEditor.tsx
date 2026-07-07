@@ -117,7 +117,7 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
 
       <header className="flex flex-wrap items-end justify-end gap-4">
         {ready && (
-          <div className="flex items-center gap-3 rounded-xl border border-border bg-surface px-4 py-2.5 shadow-sm">
+          <div className="flex items-center gap-3 rounded-xl border border-border bg-card px-4 py-2.5 shadow-sm">
             <span className="text-body-sm font-bold tabular-nums">
               {reflected}/{DIM_TOTAL}
             </span>
@@ -125,7 +125,7 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
               {Array.from({ length: DIM_TOTAL }).map((_, i) => (
                 <span
                   key={i}
-                  className={cn("h-1.5 w-4 rounded-full", i < reflected ? "bg-primary" : "bg-surface-2")}
+                  className={cn("h-1.5 w-4 rounded-full", i < reflected ? "bg-primary" : "bg-muted")}
                 />
               ))}
             </div>

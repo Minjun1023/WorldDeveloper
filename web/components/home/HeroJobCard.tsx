@@ -31,13 +31,13 @@ export function HeroJobCard({ job }: { job?: Job | null }) {
   const chips = [...techTags, ...(salary ? [salary] : [])];
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-6 shadow-lg">
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-lg">
       {/* 헤더: 회사 로고 + 직무 + 검증 배지 */}
       <div className="flex items-start gap-3">
         {job ? (
           <CompanyLogo slug={job.company.slug} name={companyName} size={48} />
         ) : (
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-surface-2 text-h3 font-bold text-muted-foreground">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-md bg-muted text-h3 font-bold text-muted-foreground">
             S
           </span>
         )}
@@ -58,7 +58,7 @@ export function HeroJobCard({ job }: { job?: Job | null }) {
       <div className="mt-6 flex items-end justify-between">
         <span className="flex items-center gap-1.5 text-body-sm font-medium text-muted-foreground">
           매칭 점수
-          <span className="rounded-full bg-surface-2 px-1.5 py-0.5 text-[11px] font-semibold text-hint">
+          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[11px] font-semibold text-hint">
             예시
           </span>
         </span>
@@ -75,7 +75,7 @@ export function HeroJobCard({ job }: { job?: Job | null }) {
               <span className="text-muted-foreground">{b.label}</span>
               <span className="font-bold tabular-nums text-foreground">{b.v}</span>
             </div>
-            <div className="mt-1 h-1.5 rounded-full bg-surface-2">
+            <div className="mt-1 h-1.5 rounded-full bg-muted">
               <div className="h-full rounded-full bg-primary" style={{ width: `${b.v}%` }} />
             </div>
           </div>
@@ -88,7 +88,7 @@ export function HeroJobCard({ job }: { job?: Job | null }) {
           {chips.map((t) => (
             <span
               key={t}
-              className="rounded-full bg-surface-2 px-3 py-1 text-caption font-medium text-muted-foreground"
+              className="rounded-full bg-muted px-3 py-1 text-caption font-medium text-muted-foreground"
             >
               {t}
             </span>

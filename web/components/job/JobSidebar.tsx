@@ -27,13 +27,13 @@ export function JobSidebar({ job, loggedIn, companyJobCount }: {
     <div className="space-y-4 lg:sticky lg:top-20 lg:self-start">
       <MatchScorePanel jobId={job.id} loggedIn={loggedIn} />
 
-      <div className="rounded-2xl border border-border bg-surface p-4">
+      <div className="rounded-2xl border border-border bg-card p-4">
         <ApplyButton
           jobId={job.id}
           applyUrl={job.apply_url}
           loggedIn={loggedIn}
           className={cn(buttonVariants({ variant: "default", size: "lg" }), "w-full")}
-          disabledClassName="flex h-11 w-full items-center justify-center rounded-lg bg-surface-2 px-6 text-body-sm font-semibold text-muted-foreground"
+          disabledClassName="flex h-11 w-full items-center justify-center rounded-lg bg-muted px-6 text-body-sm font-semibold text-muted-foreground"
         />
         <div className="mt-2 flex gap-2">
           <SaveJobButton jobId={job.id} loggedIn={loggedIn} />
@@ -43,7 +43,7 @@ export function JobSidebar({ job, loggedIn, companyJobCount }: {
 
       <Link
         href={`/companies/${job.company.slug}`}
-        className="block rounded-2xl border border-border bg-surface p-4 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="block rounded-2xl border border-border bg-card p-4 transition-colors hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         <div className="flex items-start gap-2.5">
           <CompanyLogo slug={job.company.slug} name={job.company.display_name} size={40} />

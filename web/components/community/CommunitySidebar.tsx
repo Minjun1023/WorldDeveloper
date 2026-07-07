@@ -27,7 +27,7 @@ export async function CommunitySidebar({ facets }: { facets: CommunityFacets }) 
   return (
     <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
       {countries.length > 0 && (
-        <section className="rounded-xl border border-border bg-surface p-4">
+        <section className="rounded-xl border border-border bg-card p-4">
           <h2 className="text-body-sm font-semibold text-foreground">국가</h2>
           <ul className="mt-3 grid grid-cols-2 gap-x-3 gap-y-0.5">
             {countries.map((c) => (
@@ -49,7 +49,7 @@ export async function CommunitySidebar({ facets }: { facets: CommunityFacets }) 
       )}
 
       {visaTags.length > 0 && (
-        <section className="rounded-xl border border-border bg-surface p-4">
+        <section className="rounded-xl border border-border bg-card p-4">
           <h2 className="text-body-sm font-semibold text-foreground">비자 종류</h2>
           <div className="mt-3 flex flex-wrap gap-1.5">
             {visaTags.map((t) => (
@@ -67,7 +67,7 @@ export async function CommunitySidebar({ facets }: { facets: CommunityFacets }) 
       )}
 
       {popular.length > 0 && (
-        <section className="rounded-xl border border-border bg-surface p-4">
+        <section className="rounded-xl border border-border bg-card p-4">
           <h2 className="text-body-sm font-semibold text-foreground">인기 글</h2>
           <ul className="mt-3 space-y-2.5">
             {popular.map((p, i) => (
@@ -82,7 +82,7 @@ export async function CommunitySidebar({ facets }: { facets: CommunityFacets }) 
         </section>
       )}
 
-      <section className="rounded-xl border border-border bg-surface p-4">
+      <section className="rounded-xl border border-border bg-card p-4">
         <h2 className="text-body-sm font-semibold text-foreground">준비에 도움되는 것</h2>
         <ul className="mt-2 space-y-0.5">
           {GUIDES.map((g) => {
@@ -102,7 +102,7 @@ export async function CommunitySidebar({ facets }: { facets: CommunityFacets }) 
         </ul>
       </section>
 
-      <section className="rounded-xl border border-border bg-surface p-4">
+      <section className="rounded-xl border border-border bg-card p-4">
         <h2 className="text-body-sm font-semibold text-foreground">커뮤니티 안내</h2>
         <ul className="mt-3 space-y-2 text-caption leading-relaxed text-muted-foreground">
           {GUIDELINES.map((g) => (

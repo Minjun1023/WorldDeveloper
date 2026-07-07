@@ -105,7 +105,7 @@ export function FilterSidebar({
       className={
         plain
           ? "h-fit"
-          : "h-fit rounded-2xl border border-border bg-surface p-4 lg:sticky lg:top-4"
+          : "h-fit rounded-2xl border border-border bg-card p-4 lg:sticky lg:top-4"
       }
     >
       <div

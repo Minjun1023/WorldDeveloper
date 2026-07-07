@@ -65,7 +65,7 @@ export function CommentSection({
         {comments.map((c) => (
           <li
             key={c.id}
-            className={cn("rounded-lg border p-3.5", c.mine ? "border-primary/30 bg-primary/5" : "border-border bg-surface")}
+            className={cn("rounded-lg border p-3.5", c.mine ? "border-primary/30 bg-primary/5" : "border-border bg-card")}
           >
             <div className="mb-1.5 flex items-center gap-2 text-caption text-muted-foreground">
               <CommunityAvatar name={c.author_handle} size={20} />
@@ -80,7 +80,7 @@ export function CommentSection({
       </ul>
 
       {loggedIn ? (
-        <form onSubmit={submit} className="space-y-2 rounded-lg border border-border bg-surface p-3.5">
+        <form onSubmit={submit} className="space-y-2 rounded-lg border border-border bg-card p-3.5">
           <textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
@@ -104,7 +104,7 @@ export function CommentSection({
           )}
         </form>
       ) : (
-        <p className="rounded-lg border border-border bg-surface-2 p-4 text-center text-body-sm text-muted-foreground">
+        <p className="rounded-lg border border-border bg-muted p-4 text-center text-body-sm text-muted-foreground">
           <Link
             href={`/signin?callbackUrl=/community/${postId}`}
             className={cn(buttonVariants({ variant: "link" }), "h-auto p-0")}

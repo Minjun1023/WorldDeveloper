@@ -27,7 +27,7 @@ export function MatchScorePanel({ jobId, loggedIn = true }: { jobId: string; log
   if (state === "loading") {
     return (
       <div
-        className="h-40 animate-pulse rounded-2xl border border-border bg-surface-2"
+        className="h-40 animate-pulse rounded-2xl border border-border bg-muted"
         aria-hidden
       />
     );
@@ -36,7 +36,7 @@ export function MatchScorePanel({ jobId, loggedIn = true }: { jobId: string; log
   // 백엔드 응답 실패/지연 시: 패널을 숨기지 않고 다시 시도할 수 있게 안내.
   if (state === "error") {
     return (
-      <div className="rounded-2xl border border-border bg-surface p-6 text-center">
+      <div className="rounded-2xl border border-border bg-card p-6 text-center">
         <p className="text-body-sm font-semibold">매칭 점수를 불러오지 못했어요</p>
         <p className="mt-1 text-caption text-muted-foreground">
           잠시 후 다시 시도해 주세요.
@@ -55,7 +55,7 @@ export function MatchScorePanel({ jobId, loggedIn = true }: { jobId: string; log
         : { href: "/me/profile?welcome=1", label: "프로필 작성하고 매칭 보기" };
 
     return (
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-surface p-6 text-center">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 text-center">
         {/* 흐린 예시 점수 배경 — 낮은 불투명도로 깔아 CTA 텍스트와 겹쳐도 읽힘을 해치지 않는다. */}
         <div className="pointer-events-none select-none opacity-30 blur-[6px]" aria-hidden>
           <div className="text-5xl font-extrabold">
@@ -63,12 +63,12 @@ export function MatchScorePanel({ jobId, loggedIn = true }: { jobId: string; log
           </div>
           <div className="mt-3 space-y-2">
             {AXES.map((a) => (
-              <div key={a.key} className="h-2 rounded-full bg-surface-2" />
+              <div key={a.key} className="h-2 rounded-full bg-muted" />
             ))}
           </div>
         </div>
         {/* CTA 오버레이 — 반투명 배경 + 잠금 아이콘으로 '의도된 잠금 상태'임을 명확히. */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-surface/60 p-5">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2.5 bg-card/60 p-5">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
             <Lock className="h-4 w-4" aria-hidden="true" />
           </span>
@@ -88,7 +88,7 @@ export function MatchScorePanel({ jobId, loggedIn = true }: { jobId: string; log
     total >= 85 ? "매우 높은 일치도" : total >= 70 ? "높은 일치도" : total >= 50 ? "보통 일치도" : "일치도 낮음";
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-6">
+    <div className="rounded-2xl border border-border bg-card p-6">
       <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">내 프로필과 매칭도</p>
       <div className="mt-3 flex items-end gap-2">
         <span className="text-4xl font-extrabold leading-none tabular-nums text-foreground">{total}</span>

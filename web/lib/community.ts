@@ -40,7 +40,7 @@ export const CATEGORY_STYLE: Record<string, { chip: string; dot: string }> = {
   qna: { chip: "bg-slate-500/10 text-slate-700 dark:text-slate-300", dot: "bg-slate-500" },
 };
 export function categoryStyle(key: string): { chip: string; dot: string } {
-  return CATEGORY_STYLE[key] ?? { chip: "bg-surface-2 text-foreground", dot: "bg-muted-foreground" };
+  return CATEGORY_STYLE[key] ?? { chip: "bg-muted text-foreground", dot: "bg-muted-foreground" };
 }
 
 // linked_country(=비자 가이드 국가 슬러그) → 한국어 라벨. 국기는 flags.regionFlag 재사용(모르면 "").

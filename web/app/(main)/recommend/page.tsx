@@ -21,7 +21,7 @@ export default async function RecommendPage() {
       {session ? (
         <MemberRecommend />
       ) : (
-        <div className="rounded-lg border border-border bg-surface p-6 text-center">
+        <div className="rounded-lg border border-border bg-card p-6 text-center">
           <h2 className="text-h3">로그인하고 맞춤 공고 추천 받기</h2>
           <p className="mx-auto mt-2 max-w-md text-body-sm text-muted-foreground">
             가입 시 입력한 프로필로 비자 스폰서 공고를 자동 추천해드려요. 공고 검색은 로그인 없이도 가능합니다.

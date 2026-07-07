@@ -25,7 +25,7 @@ export function TrackPicker() {
         <Link
           key={t.href}
           href={t.href}
-          className="group flex flex-1 flex-col rounded-lg border border-border bg-surface px-5 py-4 text-left transition-colors hover:border-primary/60 sm:max-w-xs"
+          className="group flex flex-1 flex-col rounded-lg border border-border bg-card px-5 py-4 text-left transition-colors hover:border-primary/60 sm:max-w-xs"
         >
           <span className="font-semibold text-foreground group-hover:text-primary">
             {t.title}

@@ -82,7 +82,7 @@ export function CoachResumeModal({
       onClick={(e) => {
         if (e.target === ref.current) onClose();
       }}
-      className="m-auto w-[min(92vw,34rem)] rounded-2xl border border-border bg-surface p-0 text-foreground shadow-lg backdrop:bg-black/40"
+      className="m-auto w-[min(92vw,34rem)] rounded-2xl border border-border bg-card p-0 text-foreground shadow-lg backdrop:bg-black/40"
     >
       <div className="flex items-center justify-between border-b border-border p-5">
         <h2 id={titleId} className="text-h3 font-semibold">
@@ -94,7 +94,7 @@ export function CoachResumeModal({
       </div>
 
       <div className="space-y-3 p-5">
-        <div className="flex gap-1 rounded-lg bg-surface-2 p-1">
+        <div className="flex gap-1 rounded-lg bg-muted p-1">
           {([
             { key: "file", label: "파일 업로드" },
             { key: "paste", label: "직접 붙여넣기" },

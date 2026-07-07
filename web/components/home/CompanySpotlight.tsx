@@ -52,7 +52,7 @@ export function CompanySpotlight({ companies }: { companies: CompanySummary[] })
                     {c.tags.slice(0, 2).map((t) => (
                       <span
                         key={t}
-                        className="rounded-md bg-surface-2 px-2 py-0.5 font-mono text-caption lowercase text-muted-foreground"
+                        className="rounded-md bg-muted px-2 py-0.5 font-mono text-caption lowercase text-muted-foreground"
                       >
                         {t}
                       </span>

@@ -95,7 +95,7 @@ export function Pagination({
           onChange={(e) => setInput(e.target.value.replace(/[^0-9]/g, ""))}
           aria-label="이동할 페이지 번호"
           placeholder="페이지"
-          className="h-9 w-16 rounded-lg border border-input bg-surface px-2 text-center tabular-nums text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="h-9 w-16 rounded-lg border border-input bg-card px-2 text-center tabular-nums text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         />
         <span className="tabular-nums">/ {totalPages}</span>
         <button

@@ -22,7 +22,7 @@ export function SearchBar() {
         if (q) pushRecentSearch(q);
         update({ q: q || null });
       }}
-      className="flex items-center gap-2 rounded-2xl border border-border bg-surface p-2 shadow-lg"
+      className="flex items-center gap-2 rounded-2xl border border-border bg-card p-2 shadow-lg"
     >
       <Search className="ml-2 h-5 w-5 shrink-0 text-muted-foreground" aria-hidden="true" />
       {/* min-w-0: flex 아이템의 min-width:auto 기본값 때문에 긴 placeholder 가

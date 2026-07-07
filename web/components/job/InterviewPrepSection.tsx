@@ -11,7 +11,7 @@ export function InterviewPrepSection({ prep }: { prep: InterviewPrep }) {
   const stage = prep.stages[active];
 
   return (
-    <section className="space-y-4 rounded-lg border border-border bg-surface-2 p-5">
+    <section className="space-y-4 rounded-lg border border-border bg-muted p-5">
       <div className="space-y-1">
         <h2 className="text-h3">인터뷰 준비</h2>
         <p className="text-body-sm text-muted-foreground">
@@ -56,7 +56,7 @@ export function InterviewPrepSection({ prep }: { prep: InterviewPrep }) {
               "rounded-md px-3 py-1.5 text-body-sm transition-colors",
               i === active
                 ? "bg-primary text-primary-foreground"
-                : "bg-surface text-muted-foreground hover:text-foreground",
+                : "bg-card text-muted-foreground hover:text-foreground",
             )}
           >
             {s.label}
@@ -65,7 +65,7 @@ export function InterviewPrepSection({ prep }: { prep: InterviewPrep }) {
       </div>
 
       {stage && (
-        <div className="space-y-4 rounded-md border border-border bg-surface p-4">
+        <div className="space-y-4 rounded-md border border-border bg-card p-4">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline">{stage.duration}</Badge>
             <span className="text-body-sm text-muted-foreground">{stage.focus}</span>

@@ -193,7 +193,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_280px]">
         <div className="min-w-0 space-y-6">
           {items.length === 0 ? (
-            <div className="rounded-xl border border-border bg-surface p-6 text-center sm:p-12">
+            <div className="rounded-xl border border-border bg-card p-6 text-center sm:p-12">
               <div className="mx-auto mb-4 grid h-12 w-12 place-items-center rounded-full bg-primary/10">
                 <MessageSquare className="h-6 w-6 text-primary" aria-hidden="true" />
               </div>
@@ -226,7 +226,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
             <ul className="space-y-2.5">
               {items.map((p) => (
                 <li key={p.id}>
-                  <Link href={`/community/${p.id}`} className="group block rounded-xl border border-border bg-surface p-4 transition-all hover:border-primary/40 hover:shadow-sm">
+                  <Link href={`/community/${p.id}`} className="group block rounded-xl border border-border bg-card p-4 transition-all hover:border-primary/40 hover:shadow-sm">
                     <div className="flex flex-wrap items-center gap-2 text-caption text-muted-foreground">
                       <span className={cn("rounded-full px-2 py-0.5 font-medium", categoryStyle(p.category).chip)}>{categoryLabel(p.category)}</span>
                       {p.linked_country && (
@@ -245,7 +245,7 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
                     {p.tags.length > 0 && (
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {p.tags.map((t) => (
-                          <span key={t} className="rounded-full bg-surface-2 px-2 py-0.5 text-caption text-muted-foreground">#{t}</span>
+                          <span key={t} className="rounded-full bg-muted px-2 py-0.5 text-caption text-muted-foreground">#{t}</span>
                         ))}
                       </div>
                     )}

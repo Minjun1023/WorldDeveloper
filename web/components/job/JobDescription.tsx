@@ -11,7 +11,7 @@ export function JobDescription({ original }: { original: string }) {
   const safeHtml = stripOrphanHeadings(purified);
 
   return (
-    <section className="space-y-2 rounded-lg border border-border bg-surface p-5">
+    <section className="space-y-2 rounded-lg border border-border bg-card p-5">
       <h2 className="text-h3">상세 설명</h2>
       <div className="job-desc text-body text-foreground/90" dangerouslySetInnerHTML={{ __html: safeHtml }} />
     </section>

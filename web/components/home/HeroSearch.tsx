@@ -24,7 +24,7 @@ export function HeroSearch({ regions = [] }: { regions?: RegionCount[] }) {
         type="button"
         onClick={openModal}
         aria-haspopup="dialog"
-        className="mt-8 flex w-full max-w-2xl items-center rounded-lg border border-border bg-surface p-2.5 text-left transition-colors hover:border-primary/40"
+        className="mt-8 flex w-full max-w-2xl items-center rounded-lg border border-border bg-card p-2.5 text-left transition-colors hover:border-primary/40"
       >
         <span className="flex h-11 min-w-0 flex-1 items-center gap-2 px-2 text-hint">
           <Search className="h-5 w-5 shrink-0" aria-hidden="true" />

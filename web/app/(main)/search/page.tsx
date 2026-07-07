@@ -75,7 +75,7 @@ export default async function SearchPage({
             ) : (
               <span />
             )}
-            {/* 검색 조건 알림(SearchAlertButton)은 관심 기업 알림으로 대체되어 UI 에서 내림 —
+            {/* 검색 조건 알림 UI 는 관심 기업 알림으로 대체되어 제거(컴포넌트 삭제) —
                 백엔드 구독/발송 인프라와 기존 구독자 메일은 유지된다. */}
             <div className="flex items-center gap-2">
               <SortToggle />
@@ -83,14 +83,14 @@ export default async function SearchPage({
           </div>
 
           {!result.ok ? (
-            <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
+            <div className="rounded-lg border border-border bg-card p-6 text-body-sm text-muted-foreground">
               백엔드에 연결할 수 없습니다 ({result.error}).
               <br />
               <code className="font-mono text-foreground">cd backend &amp;&amp; ./gradlew bootRun</code>{" "}
               으로 실행하세요.
             </div>
           ) : result.data.items.length === 0 ? (
-            <div className="rounded-lg border border-border bg-surface p-6 text-body-sm text-muted-foreground">
+            <div className="rounded-lg border border-border bg-card p-6 text-body-sm text-muted-foreground">
               조건에 맞는 공고가 없습니다. 필터를 조정해보세요.
             </div>
           ) : (

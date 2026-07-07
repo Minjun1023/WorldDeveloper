@@ -55,12 +55,12 @@ export function AlertToggleCard({
 
   const on = notify === true;
   return (
-    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-surface px-4 py-3">
+    <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card px-4 py-3">
       <div className="min-w-0">
         <p className="text-body-sm font-medium text-foreground">{title}</p>
         <p className="mt-0.5 text-caption text-muted-foreground">{description}</p>
       </div>
-      {/* 구독 중(on) 상태는 variant 에 없는 시맨틱이라 tint 오버라이드 — SearchAlertButton 과 동일 패턴 */}
+      {/* 구독 중(on) 상태는 variant 에 없는 시맨틱이라 tint 오버라이드 */}
       <Button
         type="button"
         variant="outline"

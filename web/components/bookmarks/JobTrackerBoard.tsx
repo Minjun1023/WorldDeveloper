@@ -35,13 +35,13 @@ type Column = {
 
 const COLUMNS: Column[] = [
   { key: "prep", label: "지원 준비중", statuses: ["interested"], canonical: "interested",
-    tint: "bg-surface-2", head: "text-foreground" },
+    tint: "bg-muted", head: "text-foreground" },
   { key: "applied", label: "지원완료", statuses: ["applied"], canonical: "applied",
     tint: "bg-blue-50 dark:bg-blue-950/30", head: "text-blue-600 dark:text-blue-400" },
   { key: "interview", label: "면접", statuses: ["phone_screen", "take_home", "onsite"], canonical: "onsite",
     tint: "bg-fuchsia-50 dark:bg-fuchsia-950/30", head: "text-fuchsia-600 dark:text-fuchsia-400" },
   { key: "rejected", label: "불합격", statuses: ["rejected"], canonical: "rejected",
-    tint: "bg-surface-2", head: "text-muted-foreground" },
+    tint: "bg-muted", head: "text-muted-foreground" },
   { key: "offer", label: "합격", statuses: ["offer", "accepted"], canonical: "offer",
     tint: "bg-green-50 dark:bg-green-950/30", head: "text-green-600 dark:text-green-400" },
 ];
@@ -204,7 +204,7 @@ function ColumnDrop({
 }
 
 // 카드 외곽 공통 스타일 — 제자리 카드(JobChip)와 드래그 오버레이(CardSurface)가 동일하게 쓴다.
-const CARD_CHROME = "rounded-lg border border-border bg-surface p-3";
+const CARD_CHROME = "rounded-lg border border-border bg-card p-3";
 
 function CardContent({ job }: { job: Job }) {
   return (
