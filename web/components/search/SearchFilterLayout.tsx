@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { FilterSidebar } from "@/components/search/FilterSidebar";
+import { Button } from "@/components/ui/button";
 import type { RegionCount } from "@/lib/api";
 
 // 검색 필터 + 결과 레이아웃.
@@ -41,19 +42,15 @@ export function SearchFilterLayout({
   }, [sheetOpen]);
 
   const filterButton = (extra: string, onClick: () => void) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-2 text-body-sm font-medium text-foreground transition-colors hover:bg-accent ${extra}`}
-    >
-      <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+    <Button type="button" variant="outline" onClick={onClick} className={extra}>
+      <SlidersHorizontal aria-hidden="true" />
       필터
       {activeCount > 0 && (
         <span className="rounded-full bg-primary px-1.5 text-caption font-semibold text-primary-foreground">
           {activeCount}
         </span>
       )}
-    </button>
+    </Button>
   );
 
   return (
@@ -91,26 +88,24 @@ export function SearchFilterLayout({
           >
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
               <span className="text-body font-bold text-foreground">필터</span>
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="icon"
                 onClick={() => setSheetOpen(false)}
                 aria-label="필터 닫기"
-                className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                className="[&_svg]:size-5"
               >
-                <X className="h-5 w-5" aria-hidden="true" />
-              </button>
+                <X aria-hidden="true" />
+              </Button>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto p-4">
               <FilterSidebar regions={regions} plain />
             </div>
             <div className="border-t border-border p-4">
-              <button
-                type="button"
-                onClick={() => setSheetOpen(false)}
-                className="w-full rounded-lg bg-primary py-3 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-              >
+              <Button type="button" size="lg" onClick={() => setSheetOpen(false)} className="w-full">
                 결과 보기
-              </button>
+              </Button>
             </div>
           </div>
         </div>

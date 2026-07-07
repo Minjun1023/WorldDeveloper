@@ -28,7 +28,7 @@ export function RemoteBadge({
       <Badge
         variant="outline"
         className="shrink-0 border-primary/30 text-primary"
-        style={{ backgroundColor: "color-mix(in srgb, var(--primary) 12%, transparent)" }}
+        style={{ backgroundColor: "color-mix(in srgb, hsl(var(--primary)) 12%, transparent)" }}
       >
         {LABEL[eligibility]}
       </Badge>

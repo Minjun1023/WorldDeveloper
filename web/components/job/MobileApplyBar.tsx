@@ -1,6 +1,8 @@
 import { ApplyButton } from "@/components/job/ApplyButton";
 import { MobileMatchScore } from "@/components/job/MobileMatchScore";
 import { SaveJobButton } from "@/components/job/SaveJobButton";
+import { buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 // 모바일 하단 고정 지원바(lg 미만). safe-area 패딩.
 export function MobileApplyBar({ jobId, applyUrl, loggedIn }: { jobId: string; applyUrl?: string; loggedIn: boolean }) {
@@ -14,7 +16,7 @@ export function MobileApplyBar({ jobId, applyUrl, loggedIn }: { jobId: string; a
           jobId={jobId}
           applyUrl={applyUrl}
           loggedIn={loggedIn}
-          className="flex h-11 flex-1 items-center justify-center gap-1.5 rounded-lg bg-primary text-body-sm font-bold text-primary-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className={cn(buttonVariants({ variant: "default", size: "lg" }), "flex-1")}
           disabledClassName="flex h-11 flex-1 cursor-not-allowed items-center justify-center rounded-lg bg-surface-2 text-body-sm font-semibold text-muted-foreground"
         />
       </div>

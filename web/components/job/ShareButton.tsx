@@ -3,6 +3,8 @@
 import { Share2 } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
+
 // 공유: 가능하면 네이티브 공유 시트(navigator.share — 모바일에서 카톡·메시지 등으로 바로 공유).
 // 미지원(대부분 데스크톱) 또는 사용자가 취소하면 주소 복사로 폴백한다.
 export function ShareButton({ title }: { title?: string } = {}) {
@@ -34,13 +36,9 @@ export function ShareButton({ title }: { title?: string } = {}) {
   }
 
   return (
-    <button
-      type="button"
-      onClick={share}
-      className="flex h-10 flex-1 items-center justify-center gap-1.5 rounded-lg border border-border text-body-sm font-semibold hover:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-    >
-      <Share2 className="h-4 w-4" aria-hidden="true" />
+    <Button type="button" variant="outline" onClick={share} className="flex-1">
+      <Share2 aria-hidden="true" />
       {copied ? "주소 복사됨" : "공유"}
-    </button>
+    </Button>
   );
 }

@@ -3,13 +3,13 @@
 import { Bookmark } from "lucide-react";
 import Link from "next/link";
 
+import { Button, buttonVariants } from "@/components/ui/button";
 import { useSaveJob } from "@/lib/saved-jobs";
 import { cn } from "@/lib/utils";
 
 // 잡 행/카드용 관심(저장) 하트. 공유 스토어(useSaveJob)를 읽어 상세·검색·추천 어디서 토글하든
 // 동기화된다(initialSaved 는 로드 전 표시값). JobRow 의 stretched-link 위에 떠야 하므로 relative z-10.
-const BTN =
-  "relative z-10 inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+const BTN = "relative z-10 shrink-0 [&_svg]:size-[18px]";
 
 export function SaveHeartButton({
   jobId,
@@ -29,16 +29,18 @@ export function SaveHeartButton({
         aria-label="관심 공고로 저장 (로그인 필요)"
         title="저장하려면 로그인하세요"
         onClick={(e) => e.stopPropagation()}
-        className={cn(BTN, "text-muted-foreground hover:text-primary")}
+        className={cn(buttonVariants({ variant: "ghost", size: "icon" }), BTN, "text-muted-foreground hover:text-primary")}
       >
-        <Bookmark className="h-[18px] w-[18px]" aria-hidden="true" />
+        <Bookmark aria-hidden="true" />
       </Link>
     );
   }
 
   return (
-    <button
+    <Button
       type="button"
+      variant="ghost"
+      size="icon"
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -49,7 +51,7 @@ export function SaveHeartButton({
       title={saved ? "저장됨 (클릭해 해제)" : "관심 공고로 저장"}
       className={cn(BTN, saved ? "text-primary" : "text-muted-foreground hover:text-primary")}
     >
-      <Bookmark className={cn("h-[18px] w-[18px]", saved && "fill-current")} aria-hidden="true" />
-    </button>
+      <Bookmark className={cn(saved && "fill-current")} aria-hidden="true" />
+    </Button>
   );
 }

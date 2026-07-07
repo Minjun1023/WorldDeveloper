@@ -25,7 +25,7 @@ export function Hero({
           <div className="min-w-0">
             <span
               className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-caption font-semibold text-primary"
-              style={{ backgroundColor: "color-mix(in srgb, var(--primary) 12%, transparent)" }}
+              style={{ backgroundColor: "color-mix(in srgb, hsl(var(--primary)) 12%, transparent)" }}
             >
               <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
               비자 스폰서십 검증 · 5축 매칭

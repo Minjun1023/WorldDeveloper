@@ -17,6 +17,7 @@ import Link from "next/link";
 
 import { CommunityAvatar } from "@/components/community/CommunityAvatar";
 import { CommunitySidebar } from "@/components/community/CommunitySidebar";
+import { buttonVariants } from "@/components/ui/button";
 import {
   CATEGORIES,
   categoryLabel,
@@ -105,17 +106,14 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
       {/* 헤더 — 시각적 제목은 제거(디자인), 스크린리더용 제목만 유지 */}
       <h1 className="sr-only">커뮤니티</h1>
       <div className="flex flex-wrap items-center justify-end gap-3">
-        <Link
-          href="/community/new"
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-body-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          <PenSquare className="h-4 w-4" aria-hidden="true" />
+        <Link href="/community/new" className={cn(buttonVariants(), "shrink-0")}>
+          <PenSquare aria-hidden="true" />
           글쓰기
         </Link>
       </div>
 
-      {/* 카테고리 탭(아이콘 + 카운트) */}
-      <nav className="flex flex-wrap gap-1.5">
+      {/* 카테고리 탭(아이콘 + 카운트) — shadcn Tabs 트리거 룩(muted 트랙 + 활성 세그먼트 부양) */}
+      <nav className="inline-flex flex-wrap items-center gap-0.5 self-start rounded-lg bg-muted p-1 text-muted-foreground">
         <Tab href={qs({ sort, q, unanswered })} active={!category} icon={LayoutGrid} count={totalCount}>
           전체
         </Tab>
@@ -213,14 +211,14 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
                     <Link
                       key={p.label}
                       href={`/community/new?category=${p.category}`}
-                      className="rounded-full border border-border bg-surface px-3.5 py-1.5 text-caption text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                      className={cn(buttonVariants({ variant: "outline", size: "sm" }))}
                     >
                       {p.label}
                     </Link>
                   ))}
                 </div>
               )}
-              <Link href="/community/new" className="mt-6 inline-flex rounded-lg bg-primary px-5 py-2.5 text-body-sm font-semibold text-primary-foreground hover:opacity-90">
+              <Link href="/community/new" className={cn(buttonVariants(), "mt-6")}>
                 글쓰기
               </Link>
             </div>
@@ -272,15 +270,15 @@ export default async function CommunityPage({ searchParams }: { searchParams: Se
           {(page > 1 || has_more) && (
             <nav className="flex items-center justify-center gap-3 pt-2" aria-label="페이지 이동">
               {page > 1 ? (
-                <Link href={qs({ category, sort, q, country, tag, unanswered, page: page - 1 })} className="rounded-lg border border-border px-4 py-2 text-body-sm text-foreground transition-colors hover:bg-accent">← 이전</Link>
+                <Link href={qs({ category, sort, q, country, tag, unanswered, page: page - 1 })} className={cn(buttonVariants({ variant: "outline" }))}>← 이전</Link>
               ) : (
-                <span className="rounded-lg border border-border px-4 py-2 text-body-sm text-muted-foreground opacity-40">← 이전</span>
+                <span className={cn(buttonVariants({ variant: "outline" }), "pointer-events-none text-muted-foreground opacity-40")}>← 이전</span>
               )}
               <span className="text-body-sm tabular-nums text-muted-foreground">{page} 페이지</span>
               {has_more ? (
-                <Link href={qs({ category, sort, q, country, tag, unanswered, page: page + 1 })} className="rounded-lg border border-border px-4 py-2 text-body-sm text-foreground transition-colors hover:bg-accent">다음 →</Link>
+                <Link href={qs({ category, sort, q, country, tag, unanswered, page: page + 1 })} className={cn(buttonVariants({ variant: "outline" }))}>다음 →</Link>
               ) : (
-                <span className="rounded-lg border border-border px-4 py-2 text-body-sm text-muted-foreground opacity-40">다음 →</span>
+                <span className={cn(buttonVariants({ variant: "outline" }), "pointer-events-none text-muted-foreground opacity-40")}>다음 →</span>
               )}
             </nav>
           )}
@@ -309,14 +307,14 @@ function Tab({
     <Link
       href={href}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-body-sm font-medium transition-colors",
-        active ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground",
+        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1 text-sm font-medium transition-all",
+        active ? "bg-background text-foreground shadow" : "hover:text-foreground",
       )}
     >
       {Icon && <Icon className="h-3.5 w-3.5" />}
       {children}
       {typeof count === "number" && count > 0 && (
-        <span className={cn("tabular-nums text-caption", active ? "text-primary-foreground/80" : "text-muted-foreground/70")}>{count}</span>
+        <span className={cn("tabular-nums text-caption", active ? "text-muted-foreground" : "text-muted-foreground/70")}>{count}</span>
       )}
     </Link>
   );

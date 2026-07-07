@@ -6,7 +6,9 @@ export const metadata = {
 import Link from "next/link";
 
 import { MemberRecommend } from "@/components/recommend/MemberRecommend";
+import { buttonVariants } from "@/components/ui/button";
 import { getSession } from "@/lib/session-server";
+import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +26,7 @@ export default async function RecommendPage() {
           <p className="mx-auto mt-2 max-w-md text-body-sm text-muted-foreground">
             가입 시 입력한 프로필로 비자 스폰서 공고를 자동 추천해드려요. 공고 검색은 로그인 없이도 가능합니다.
           </p>
-          <Link href="/signin" className="mt-4 inline-block rounded-lg bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground">
+          <Link href="/signin" className={cn(buttonVariants(), "mt-4")}>
             로그인 / 회원가입
           </Link>
         </div>

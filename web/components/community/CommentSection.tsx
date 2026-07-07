@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import { CommunityAvatar } from "@/components/community/CommunityAvatar";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import type { CommunityComment } from "@/lib/community";
 import { cn } from "@/lib/utils";
 
@@ -93,7 +93,7 @@ export function CommentSection({
               <input type="checkbox" checked={anonymous} onChange={(e) => setAnonymous(e.target.checked)} className="h-3.5 w-3.5" />
               익명
             </label>
-            <Button type="submit" size="sm" disabled={!body.trim() || pending}>
+            <Button type="submit" disabled={!body.trim() || pending}>
               {pending ? "등록 중…" : "댓글 등록"}
             </Button>
           </div>
@@ -105,7 +105,10 @@ export function CommentSection({
         </form>
       ) : (
         <p className="rounded-lg border border-border bg-surface-2 p-4 text-center text-body-sm text-muted-foreground">
-          <Link href={`/signin?callbackUrl=/community/${postId}`} className="font-medium text-primary hover:underline">
+          <Link
+            href={`/signin?callbackUrl=/community/${postId}`}
+            className={cn(buttonVariants({ variant: "link" }), "h-auto p-0")}
+          >
             로그인
           </Link>
           하면 댓글을 남길 수 있어요.

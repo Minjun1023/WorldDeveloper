@@ -136,7 +136,7 @@ export function TagInput({
         {showMenu && (
           <ul
             id={`${id}-listbox`}
-            className="absolute left-0 right-0 top-[calc(100%+4px)] z-30 max-h-64 overflow-y-auto rounded-md border border-border bg-surface py-1 shadow-md"
+            className="absolute left-0 right-0 top-[calc(100%+4px)] z-30 max-h-64 overflow-y-auto rounded-md border border-border bg-popover py-1 text-popover-foreground shadow-md"
             role="listbox"
           >
             {matches.map((s, i) => (

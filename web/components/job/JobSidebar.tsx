@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ApplyButton } from "@/components/job/ApplyButton";
+import { buttonVariants } from "@/components/ui/button";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
 import { RelatedCommunity } from "@/components/community/RelatedCommunity";
 import { MatchScorePanel } from "@/components/job/MatchScorePanel";
@@ -10,6 +11,7 @@ import { COMPANY_FACTS } from "@/lib/company-facts";
 import { headquartersLabel, industryLabel } from "@/lib/company-facts-format";
 import { companyProfile } from "@/lib/company-profiles";
 import type { JobDetail } from "@/lib/types";
+import { cn } from "@/lib/utils";
 
 export function JobSidebar({ job, loggedIn, companyJobCount }: {
   job: JobDetail; loggedIn: boolean; companyJobCount?: number;
@@ -30,7 +32,7 @@ export function JobSidebar({ job, loggedIn, companyJobCount }: {
           jobId={job.id}
           applyUrl={job.apply_url}
           loggedIn={loggedIn}
-          className="flex h-11 w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-6 text-body-sm font-bold text-primary-foreground hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className={cn(buttonVariants({ variant: "default", size: "lg" }), "w-full")}
           disabledClassName="flex h-11 w-full items-center justify-center rounded-lg bg-surface-2 px-6 text-body-sm font-semibold text-muted-foreground"
         />
         <div className="mt-2 flex gap-2">

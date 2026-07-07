@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { CompanyLogo } from "@/components/company/CompanyLogo";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { viewedAgoLabel } from "@/lib/jobDates";
 import { clearRecentJobs, getRecentJobs, type RecentJob } from "@/lib/recent";
+import { cn } from "@/lib/utils";
 
 // 최근 본 공고 목록.
 // - serverJobs !== null: 로그인 유저 → 계정 기준 서버 기록(job_views)을 그대로 표시. 기기 무관·기록 지우기 없음.
@@ -26,26 +28,25 @@ export function RecentJobsList({ serverJobs }: { serverJobs: RecentJob[] | null 
       <section className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-h1">최근 본 공고</h1>
         {!isServer && jobs && jobs.length > 0 && (
-          <button
+          <Button
             type="button"
+            variant="ghost"
+            size="sm"
             onClick={() => {
               clearRecentJobs();
               setLocalJobs([]);
             }}
-            className="shrink-0 rounded-md px-3 py-1.5 text-body-sm text-muted-foreground hover:text-destructive"
+            className="shrink-0"
           >
             기록 지우기
-          </button>
+          </Button>
         )}
       </section>
 
       {jobs === null ? null : jobs.length === 0 ? (
         <div className="rounded-lg border border-border bg-surface p-6 text-center">
           <p className="text-body-sm text-muted-foreground">아직 열어본 공고가 없어요.</p>
-          <Link
-            href="/search"
-            className="mt-3 inline-block rounded-lg bg-primary px-5 py-2.5 text-body-sm font-medium text-primary-foreground"
-          >
+          <Link href="/search" className={cn(buttonVariants(), "mt-3")}>
             공고 둘러보기
           </Link>
         </div>
