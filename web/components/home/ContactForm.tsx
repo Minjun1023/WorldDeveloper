@@ -11,7 +11,7 @@ export const CONTACT_EMAIL = "worlddev61@gmail.com";
 // 입력값으로 mailto 링크를 구성. 백엔드 메일 발송 인프라가 아직 없어(런칭 시점 연기),
 // 사용자의 메일 앱에서 문의 메일을 바로 작성하도록 mailto로 처리한다.
 export function buildMailtoHref(email: string, message: string): string {
-  const subject = encodeURIComponent("[WorldDeveloper] 문의");
+  const subject = encodeURIComponent("[DevPass] 문의");
   const from = email.trim() ? `보낸 사람: ${email.trim()}\n\n` : "";
   const body = encodeURIComponent(`${from}${message.trim()}`);
   return `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;

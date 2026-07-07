@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "맞춤 공고 추천 | WorldDev",
+  title: "맞춤 공고 추천 | DevPass",
   description: "내 프로필 기반 5축 매칭 점수로 승인 확률 높은 해외 공고를 추천받으세요.",
 };
 

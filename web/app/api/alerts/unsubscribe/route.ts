@@ -22,7 +22,7 @@ export async function GET(req: Request) {
     ? `<h1>알림이 해지되었습니다</h1><p>'${escapeHtml(label)}' 검색의 이메일 알림을 더 이상 보내지 않아요.</p><p><a href="/search">공고 검색으로 가기</a></p>`
     : `<h1>해지 처리에 실패했어요</h1><p>링크가 만료됐거나 이미 해지된 알림일 수 있어요.</p><p><a href="/">홈으로</a></p>`;
   return new Response(
-    `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>알림 해지 — WorldDev</title><style>body{font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;color:#191f28;text-align:center;padding:0 24px}h1{font-size:22px}a{color:#0064ff}</style></head><body>${body}</body></html>`,
+    `<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>알림 해지 — DevPass</title><style>body{font-family:system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;color:#191f28;text-align:center;padding:0 24px}h1{font-size:22px}a{color:#0064ff}</style></head><body>${body}</body></html>`,
     { status: ok ? 200 : 400, headers: { "content-type": "text/html; charset=utf-8" } },
   );
 }

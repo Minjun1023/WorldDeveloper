@@ -81,7 +81,7 @@ public class SearchAlertScheduler {
         if (email == null) return false;
 
         mail.sendSearchDigest(email,
-            "[WorldDev] '" + s.getLabel() + "' 새 공고 " + count + "건",
+            "[DevPass] '" + s.getLabel() + "' 새 공고 " + count + "건",
             buildBody(s, latest, count));
         s.setLastNotifiedAt(OffsetDateTime.now());
         repo.save(s);

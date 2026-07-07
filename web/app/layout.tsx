@@ -14,7 +14,7 @@ const hankenGrotesk = Hanken_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "WorldDeveloper — 한국 개발자의 해외 취업, 비자 스폰서십 공고 모음",
+  title: "DevPass — 한국 개발자의 해외 취업, 비자 스폰서십 공고 모음",
   description:
     "비자 스폰서십이 명시된 공고만 모아, 5축 점수로 한국 개발자의 해외 취업을 돕습니다.",
 };

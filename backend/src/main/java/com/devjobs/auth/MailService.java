@@ -52,7 +52,7 @@ public class MailService {
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setFrom(from);
         msg.setTo(email);
-        msg.setSubject("[WorldDeveloper] 이메일 인증번호");
+        msg.setSubject("[DevPass] 이메일 인증번호");
         msg.setText("인증번호: " + code + "\n\n회원가입 화면에 위 6자리 번호를 입력해 이메일을 인증하세요 (10분 이내 유효).");
         sender.send(msg);
     }
@@ -65,7 +65,7 @@ public class MailService {
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setFrom(from);
         msg.setTo(email);
-        msg.setSubject("[WorldDeveloper] 비밀번호 재설정 인증번호");
+        msg.setSubject("[DevPass] 비밀번호 재설정 인증번호");
         msg.setText("인증번호: " + code + "\n\n비밀번호 재설정 화면에 위 6자리 번호를 입력하세요 (10분 이내 유효). "
             + "본인이 요청하지 않았다면 이 메일을 무시하세요.");
         sender.send(msg);

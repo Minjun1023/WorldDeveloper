@@ -86,7 +86,7 @@ public class FavoriteCompanyAlertScheduler {
         if (email == null) return false;
 
         mail.sendSearchDigest(email,
-            "[WorldDev] 관심 기업 새 공고 " + fresh.size() + "건",
+            "[DevPass] 관심 기업 새 공고 " + fresh.size() + "건",
             buildBody(s, fresh));
         s.setLastNotifiedAt(OffsetDateTime.now());
         alertRepo.save(s);

@@ -1,7 +1,7 @@
 import { ContactForm } from "@/components/home/ContactForm";
 
 export const metadata = {
-  title: "문의 — WorldDeveloper",
+  title: "문의 — DevPass",
   description: "제품·공고·제휴 관련 문의를 남겨주세요. 메일로 회신드려요.",
 };
 

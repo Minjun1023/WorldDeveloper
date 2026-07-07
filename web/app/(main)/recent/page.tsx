@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "최근 본 공고 | WorldDev",
+  title: "최근 본 공고 | DevPass",
   description: "최근에 열어본 해외 개발자 공고 목록입니다.",
 };
 

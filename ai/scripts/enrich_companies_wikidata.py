@@ -25,7 +25,7 @@ import time
 import urllib.parse
 import urllib.request
 
-UA = "WorldDeveloper/1.0 (company directory enrichment; hello@worlddeveloper.dev)"
+UA = "DevPass/1.0 (company directory enrichment; hello@devpass.kr)"
 API = "https://www.wikidata.org/w/api.php?"
 ENTITYDATA = "https://www.wikidata.org/wiki/Special:EntityData/{}.json"
 

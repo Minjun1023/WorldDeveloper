@@ -60,7 +60,7 @@ export function SiteNav({ loggedIn }: { loggedIn: boolean }) {
               <Globe className="h-[16px] w-[16px]" aria-hidden="true" />
             </span>
             <span className="text-base font-bold tracking-tight text-foreground">
-              World<span className="text-primary">Dev</span>
+              Dev<span className="text-primary">Pass</span>
             </span>
           </Link>
           <nav className="hidden items-center gap-1 text-[13px] md:flex">

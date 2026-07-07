@@ -16,7 +16,7 @@ export function AuthBrandPanel({ heading, subtitle }: { heading: string; subtitl
         <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/20">
           <Globe className="h-[18px] w-[18px]" aria-hidden="true" />
         </span>
-        <span className="text-lg font-bold tracking-tight">WorldDev</span>
+        <span className="text-lg font-bold tracking-tight">DevPass</span>
       </Link>
       <div>
         <h2 className="text-display text-white">{heading}</h2>

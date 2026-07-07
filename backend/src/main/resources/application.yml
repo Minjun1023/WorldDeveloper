@@ -73,7 +73,7 @@ spring:
 
 app:
   base-url: ${APP_BASE_URL:http://localhost:3000}
-  mail-from: ${MAIL_FROM:no-reply@worlddeveloper.local}
+  mail-from: ${MAIL_FROM:no-reply@devpass.local}
   # 운영 배포에서 true 로 설정 — JWT/내부/DB 시크릿이 dev 기본값이면 부팅 거부(fail-fast).
   # 로컬/CI 기본 false(기본값 사용 허용).
   require-secure-secrets: ${APP_REQUIRE_SECURE_SECRETS:false}

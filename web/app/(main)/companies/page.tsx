@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "기업 디렉터리 — 비자 스폰서 검증 기업 | WorldDev",
+  title: "기업 디렉터리 — 비자 스폰서 검증 기업 | DevPass",
   description: "정부 명부로 검증된 비자 스폰서 기업들을 분야·규모별로 둘러보세요.",
 };
 

@@ -93,7 +93,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-12 flex flex-col items-center justify-between gap-2 border-t border-border pt-6 text-caption text-muted-foreground sm:flex-row">
-          <span>© {new Date().getFullYear()} WorldDev. All rights reserved.</span>
+          <span>© {new Date().getFullYear()} DevPass. All rights reserved.</span>
           <span>Made for Korean developers heading abroad.</span>
         </div>
       </div>
@@ -107,7 +107,7 @@ export function SiteFooter() {
         className="pointer-events-none select-none px-4 text-center font-bold leading-none tracking-tighter text-foreground opacity-[0.04]"
         style={{ fontSize: "clamp(3rem, 14vw, 11rem)" }}
       >
-        WORLDDEV
+        DEVPASS
       </div>
     </footer>
   );

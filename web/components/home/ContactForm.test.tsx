@@ -7,7 +7,7 @@ describe("buildMailtoHref", () => {
   it("문의 주소·제목·본문(보낸 사람 포함)을 인코딩해 mailto를 만든다", () => {
     const href = buildMailtoHref("me@example.com", "급여 정보 문의합니다");
     expect(href.startsWith(`mailto:${CONTACT_EMAIL}?`)).toBe(true);
-    expect(href).toContain(`subject=${encodeURIComponent("[WorldDeveloper] 문의")}`);
+    expect(href).toContain(`subject=${encodeURIComponent("[DevPass] 문의")}`);
     // 본문에 보낸 사람 + 메시지가 인코딩되어 들어간다.
     expect(href).toContain(encodeURIComponent("보낸 사람: me@example.com"));
     expect(href).toContain(encodeURIComponent("급여 정보 문의합니다"));
