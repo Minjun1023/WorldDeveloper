@@ -24,7 +24,7 @@ export function SampleRecommend() {
         </div>
       </div>
       <Link href="/signin?callbackUrl=/recommend" className={cn(buttonVariants(), "shrink-0")}>
-        맞춤 추천 받기 →
+        맞춤 추천 받기
       </Link>
     </div>
   );
