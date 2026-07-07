@@ -124,12 +124,12 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {/* 방법론: 어떻게 검증하나요? (연회색) */}
+      {/* 방법론: 비자 검증 3단계 (연회색) — 이 서비스의 핵심 차별점 설명 + 비자 가이드 CTA */}
       <Section muted id="methodology">
         <div className="mb-6 text-center">
-          <h2 className="text-h2">어떻게 검증하나요?</h2>
+          <h2 className="text-h2">비자 검증, 어떻게 하나요?</h2>
           <p className="mx-auto mt-1.5 max-w-xl text-body-sm text-muted-foreground">
-            3단계 교차검증 방법론
+            여기 있는 공고는 전부 비자 스폰서십 검증을 거칩니다 — 3단계 교차검증 방법론
           </p>
         </div>
         <VerifyMethodology />
