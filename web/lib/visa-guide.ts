@@ -11,6 +11,7 @@ export type VisaGuide = {
   country: string; // 한국어 국가명
   flag: string;
   visaName: string; // 대표 취업 비자/재류자격
+  hook: string; // 인덱스 카드용 한 줄 특징(초압축) — 예: "추첨·연간 상한제"
   summary: string; // 1~2문장 개요
   points: string[]; // 핵심 포인트(보수적·안정적 사실)
   official: GuideLink[]; // 공식 출처
@@ -29,6 +30,7 @@ export const VISA_GUIDES: VisaGuide[] = [
     country: "영국",
     flag: "🇬🇧",
     visaName: "Skilled Worker 비자",
+    hook: "스폰서 명부 공개",
     summary:
       "영국에서 외국인 개발자를 채용하려면 고용주가 Home Office의 스폰서 라이선스를 보유해야 하고, 채용 시 고용주가 '스폰서십 증명서(Certificate of Sponsorship)'를 발급합니다.",
     points: [
@@ -54,6 +56,7 @@ export const VISA_GUIDES: VisaGuide[] = [
     country: "미국",
     flag: "🇺🇸",
     visaName: "H-1B (전문직, Specialty Occupation)",
+    hook: "추첨·연간 상한제",
     summary:
       "미국의 대표적인 전문직 취업 비자는 고용주가 후원하는 H-1B로, 학사 이상 학위가 필요한 전공 관련 직무에 적용됩니다. 연간 발급 한도(캡)와 추첨 절차가 있습니다.",
     points: [
@@ -85,6 +88,7 @@ export const VISA_GUIDES: VisaGuide[] = [
     country: "네덜란드",
     flag: "🇳🇱",
     visaName: "Highly Skilled Migrant (kennismigrant)",
+    hook: "인정 스폰서만 신청",
     summary:
       "네덜란드는 IND(이민청)가 '인정 스폰서(recognised sponsor)'로 등록한 고용주만 highly skilled migrant 거주허가를 신청할 수 있습니다.",
     points: [
@@ -112,6 +116,7 @@ export const VISA_GUIDES: VisaGuide[] = [
     country: "독일",
     flag: "🇩🇪",
     visaName: "EU Blue Card / 전문인력 취업비자",
+    hook: "학위+최소연봉 기준",
     summary:
       "독일은 대학 학위를 가진 전문인력을 위한 EU Blue Card가 대표적입니다. 고용계약과 최소 연봉 기준을 충족하면 신청할 수 있습니다.",
     points: [
@@ -137,6 +142,7 @@ export const VISA_GUIDES: VisaGuide[] = [
     country: "아일랜드",
     flag: "🇮🇪",
     visaName: "Critical Skills Employment Permit",
+    hook: "노동시장 테스트 면제",
     summary:
       "아일랜드는 IT·엔지니어링 등 부족직종을 위한 Critical Skills Employment Permit이 대표적입니다. 고용 제안과 연봉 기준을 충족해야 합니다.",
     points: [
@@ -162,6 +168,7 @@ export const VISA_GUIDES: VisaGuide[] = [
     country: "일본",
     flag: "🇯🇵",
     visaName: "기술·인문지식·국제업무 (Engineer/Specialist in Humanities/International Services)",
+    hook: "고용주가 COE 신청",
     summary:
       "일본의 개발 직무에는 보통 '기술·인문지식·국제업무' 재류자격이 적용됩니다. 일반적으로 고용주가 재류자격인정증명서(Certificate of Eligibility)를 신청합니다.",
     points: [
@@ -180,6 +187,7 @@ export const VISA_GUIDES: VisaGuide[] = [
     country: "캐나다",
     flag: "🇨🇦",
     visaName: "Global Talent Stream / 고용주 스폰서 취업허가",
+    hook: "GTS 2주 처리",
     summary:
       "캐나다는 IT 인력을 위한 Global Talent Stream(GTS)으로 취업허가를 빠르게 처리하는 경로가 대표적입니다. 영주는 Express Entry 등 별도 제도로 진행됩니다.",
     points: [
@@ -205,6 +213,7 @@ export const VISA_GUIDES: VisaGuide[] = [
     country: "인도",
     flag: "🇮🇳",
     visaName: "Employment Visa (E 비자)",
+    hook: "고용주 스폰서 필수",
     summary:
       "인도에서 외국인이 일하려면 고용주 스폰서 기반의 Employment Visa 가 필요합니다. 숙련 직무·최소 연봉 요건이 적용됩니다.",
     points: [
@@ -224,6 +233,7 @@ export const VISA_GUIDES: VisaGuide[] = [
     country: "프랑스",
     flag: "🇫🇷",
     visaName: "Talent Passport (Passeport Talent)",
+    hook: "최대 4년 체류증",
     summary:
       "프랑스는 고급 인력을 위한 복수년 체류증 'Talent Passport'가 대표적입니다. 자격·급여 요건을 충족하는 채용이면 고용주 스폰서십 절차가 비교적 단순합니다.",
     points: [
@@ -242,6 +252,7 @@ export const VISA_GUIDES: VisaGuide[] = [
     country: "싱가포르",
     flag: "🇸🇬",
     visaName: "Employment Pass (EP)",
+    hook: "COMPASS 점수제",
     summary:
       "싱가포르의 전문직 취업 비자는 고용주가 신청하는 Employment Pass 입니다. 최소 급여 기준과 보완성 평가(COMPASS) 점수제를 통과해야 합니다.",
     points: [
@@ -263,6 +274,7 @@ export const VISA_GUIDES: VisaGuide[] = [
     country: "오스트레일리아",
     flag: "🇦🇺",
     visaName: "Skills in Demand (subclass 482, 구 TSS)",
+    hook: "고용주 지명 필수",
     summary:
       "호주는 고용주 스폰서 기반의 Skills in Demand 비자(subclass 482)가 대표적입니다. 고용주의 스폰서 승인·직무 지명(nomination)과 직종·급여 요건을 충족해야 합니다.",
     points: [
