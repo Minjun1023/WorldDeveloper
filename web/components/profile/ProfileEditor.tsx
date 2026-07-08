@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { ProfileFields } from "@/components/profile/ProfileFields";
 import { ProfilePreview } from "@/components/profile/ProfilePreview";
+import { ProfileWizard } from "@/components/profile/ProfileWizard";
 import { WithdrawSection } from "@/components/profile/WithdrawSection";
 import { Button } from "@/components/ui/button";
 import { DIM_TOTAL, reflectedCount } from "@/lib/profile-dimensions";
@@ -28,12 +29,15 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
   const [saved, setSaved] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // 최초 작성(프로필 없음)일 때만 MBTI식 단계 모달로 안내. 이후 수정은 기존 폼.
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   useEffect(() => {
     fetch("/api/me/profile", { cache: "no-store" })
       .then((r) => r.json())
       .then((d) => {
         if (d?.exists && d.profile) setProfile({ ...EMPTY, ...d.profile });
+        else setWizardOpen(true);
       })
       .catch(() => {})
       .finally(() => setReady(true));
@@ -56,7 +60,7 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
     return () => window.removeEventListener("beforeunload", onBeforeUnload);
   }, [dirty]);
 
-  async function save() {
+  async function save(override?: RecommendProfile) {
     setSaving(true);
     setSaved(false);
     setError(null);
@@ -64,7 +68,7 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
       const res = await fetch("/api/me/profile", {
         method: "PUT",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(profile),
+        body: JSON.stringify(override ?? profile),
       });
       if (!res.ok) {
         const msg = (await res.json().catch(() => null))?.message;
@@ -86,10 +90,29 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
     }
   }
 
+  // 위저드 완료 → 초안을 폼 상태에 반영하고 즉시 저장. 실패 시 폼에 값·에러가 남아 이어서 고칠 수 있다.
+  async function completeWizard(draft: RecommendProfile) {
+    setProfile(draft);
+    setDirty(true);
+    await save(draft);
+    setWizardOpen(false);
+  }
+
   const reflected = reflectedCount(profile);
 
   return (
     <div className="space-y-6">
+      {/* 최초 작성 위저드 — 닫으면(X/Esc) 기존 폼으로 이어서 작성 가능 */}
+      {ready && (
+        <ProfileWizard
+          open={wizardOpen}
+          onOpenChange={setWizardOpen}
+          initial={profile}
+          onComplete={completeWizard}
+          saving={saving}
+          ctaLabel={welcome ? "저장하고 추천 보기" : "저장"}
+        />
+      )}
       {/* 가입 직후 환영 배너 — 프로필의 '왜'를 설명하고, 건너뛸 자유도 함께 준다. */}
       {welcome && (
         <div className="flex flex-col gap-3 rounded-2xl border border-primary/20 bg-primary-tint px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
@@ -143,7 +166,7 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
               카드 위로 겹쳐 보이던 버그를 막는다. */}
           <div className="space-y-3 lg:sticky lg:top-20 lg:self-start">
             <ProfilePreview profile={profile} />
-            <Button onClick={save} disabled={saving} className="w-full">
+            <Button onClick={() => save()} disabled={saving} className="w-full">
               {saving ? "저장 중…" : "저장"}
             </Button>
             {dirty && !saved && (
