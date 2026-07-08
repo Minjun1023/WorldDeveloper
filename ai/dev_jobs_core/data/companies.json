@@ -1157,8 +1157,8 @@
     "ats": "lever",
     "token": "neon",
     "tags": ["database", "devtools"],
-    "domain": "neonrated.com",
-    "hq": "New York",
+    "domain": "neon.tech",
+    "hq": "San Francisco, USA",
     "size": "201-1000"
   },
   "nextdoor": {
@@ -2469,7 +2469,7 @@
     "token": "moneytree",
     "tags": ["fintech", "japan", "asia"],
     "hq": "Tokyo, Japan",
-    "domain": "moneytreeinc.com",
+    "domain": "getmoneytree.com",
     "size": "51-200"
   },
   "uzabase": {
