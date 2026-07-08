@@ -1,3 +1,4 @@
+import { CoachTeaser } from "@/components/home/CoachTeaser";
 import { CompanyMarquee } from "@/components/home/CompanyMarquee";
 import { CompanySpotlight } from "@/components/home/CompanySpotlight";
 import { CtaSection } from "@/components/home/CtaSection";
@@ -148,13 +149,18 @@ export default async function HomePage() {
         </Section>
       )}
 
-      {/* 5축 매칭 설명 (연회색) — 검증된 기업들과 FAQ 사이 */}
+      {/* 5축 매칭 데모 (연회색) */}
       <Section muted>
         <MatchAxes />
       </Section>
 
-      {/* FAQ (흰색) */}
-      <Section id="faq">
+      {/* AI 이력서 코치 티저 (흰색) — 5축 데모와 미러 배치로 기능 데모 2연작 */}
+      <Section>
+        <CoachTeaser />
+      </Section>
+
+      {/* FAQ (연회색) — 코치 티저(흰색)와 배경 교차 유지 */}
+      <Section muted id="faq">
         <div className="mb-6 text-center">
           <h2 className="text-h2">자주 묻는 질문</h2>
         </div>

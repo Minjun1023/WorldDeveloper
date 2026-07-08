@@ -24,6 +24,12 @@ export function StatsBand({ stats }: { stats: HomeStats }) {
           </div>
         ))}
       </div>
+      {/* 데이터 신선도 — 잡보드의 신뢰는 신선도에서 나온다. 전부 실제 파이프라인 사실(ETL 자정 배치·소스 12종·명부 재대조). */}
+      <div className="mx-auto max-w-container px-4 pb-5 text-center sm:text-left">
+        <p className="text-caption text-muted-foreground">
+          매일 00:00 KST 자동 수집 · Greenhouse·Lever·Ashby 등 12개 채용 소스 · 정부 스폰서 명부 매일 교차검증
+        </p>
+      </div>
     </section>
   );
 }
