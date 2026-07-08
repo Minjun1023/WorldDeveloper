@@ -7,13 +7,21 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn(), refresh: 
 
 import { ProfileEditor } from "@/components/profile/ProfileEditor";
 
-function routeFetch() {
+function routeFetch({ exists = false }: { exists?: boolean } = {}) {
   return vi.fn((url: string, init?: RequestInit) => {
     if (url === "/api/me/profile" && init?.method === "PUT") {
       return Promise.resolve({ ok: true, json: () => Promise.resolve({}) });
     }
     if (url === "/api/me/profile") {
-      return Promise.resolve({ ok: true, json: () => Promise.resolve({ exists: false }) });
+      return Promise.resolve({
+        ok: true,
+        json: () =>
+          Promise.resolve(
+            exists
+              ? { exists: true, profile: { skills: ["python"], seniority: "senior", remote_preference: "any", preferred_locations: [] } }
+              : { exists: false },
+          ),
+      });
     }
     if (url === "/api/recommend") {
       return Promise.resolve({
@@ -28,12 +36,47 @@ function routeFetch() {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("ProfileEditor", () => {
-  it("loads the form then saves via PUT /api/me/profile", async () => {
-    const f = routeFetch();
+  it("opens the step wizard when no profile exists, and saves after walking the steps", async () => {
+    const f = routeFetch({ exists: false });
+    vi.stubGlobal("fetch", f);
+    render(<ProfileEditor />);
+
+    // 프로필 없음 → 위저드 자동 오픈 (1번 질문)
+    expect(await screen.findByText("어떤 기술 스택을 쓰시나요?")).toBeInTheDocument();
+
+    // 다음으로 시니어리티 스텝 → 답변 카드 클릭 시 자동 진행
+    await userEvent.click(screen.getByRole("button", { name: "다음" }));
+    expect(await screen.findByText("지금 레벨은 어디쯤인가요?")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: /시니어/ }));
+    expect(await screen.findByText("경력은 몇 년차인가요?")).toBeInTheDocument();
+
+    // 남은 스텝은 '다음'으로 통과 → 요약 → 저장
+    for (const title of [
+      "어디에서 일하고 싶으세요?",
+      "원격과 이주, 어느 쪽인가요?",
+      "희망 연봉이 있나요?",
+      "한두 문장으로 소개해 주세요",
+      "준비 끝! 이렇게 반영돼요",
+    ]) {
+      await userEvent.click(screen.getByRole("button", { name: "다음" }));
+      expect(await screen.findByText(title)).toBeInTheDocument();
+    }
+    await userEvent.click(screen.getByRole("button", { name: "저장" }));
+
+    const putCall = f.mock.calls.find(
+      (c) => c[0] === "/api/me/profile" && (c[1] as RequestInit | undefined)?.method === "PUT",
+    );
+    expect(putCall).toBeTruthy();
+  });
+
+  it("keeps the plain form (no wizard) when a profile already exists, and saves via PUT", async () => {
+    const f = routeFetch({ exists: true });
     vi.stubGlobal("fetch", f);
     render(<ProfileEditor />);
 
     await screen.findByLabelText("기술 스택"); // 로드 완료 후 폼 렌더
+    expect(screen.queryByText("어떤 기술 스택을 쓰시나요?")).not.toBeInTheDocument();
+
     await userEvent.click(screen.getByRole("button", { name: "저장" }));
 
     const putCall = f.mock.calls.find(

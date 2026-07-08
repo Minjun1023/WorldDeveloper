@@ -9,7 +9,8 @@ import { LOCATION_VOCAB } from "@/lib/location-vocab";
 import { TECH_VOCAB } from "@/lib/tech-vocab";
 import type { RecommendProfile } from "@/lib/types";
 
-const SENIORITY = [
+// ProfileWizard(최초 작성 단계 모달)와 공유하는 어휘 — 두 UI가 같은 선택지를 쓰도록 export.
+export const SENIORITY = [
   { value: "entry", label: "신입" },
   { value: "junior", label: "주니어" },
   { value: "mid", label: "미들" },
@@ -19,7 +20,7 @@ const SENIORITY = [
 ];
 
 // 각 단계의 대략적 연차(회사·국가마다 다름 — 참고용). 선택 시 힌트로 보여준다.
-const SENIORITY_YEARS: Record<string, string> = {
+export const SENIORITY_YEARS: Record<string, string> = {
   entry: "0~1년차",
   junior: "1~3년차",
   mid: "3~5년차",
@@ -27,12 +28,12 @@ const SENIORITY_YEARS: Record<string, string> = {
   staff: "8~12년차",
   principal: "12년차+",
 };
-const REMOTE = [
+export const REMOTE = [
   { value: "any", label: "상관없음" },
   { value: "remote", label: "원격" },
   { value: "onsite", label: "이주" },
 ];
-const SALARY_MAX = 250000;
+export const SALARY_MAX = 250000;
 
 function SectionHead({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
