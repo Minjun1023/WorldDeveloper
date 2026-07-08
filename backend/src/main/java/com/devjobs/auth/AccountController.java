@@ -1,5 +1,6 @@
 package com.devjobs.auth;
 
+import com.devjobs.auth.dto.AuthDtos.ChangePasswordRequest;
 import com.devjobs.auth.dto.AuthDtos.WithdrawRequest;
 import java.util.Map;
 import java.util.UUID;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** 로그인 사용자 계정 관리(회원탈퇴). 인증 필요(/api/v1/me/**). */
+/** 로그인 사용자 계정 관리(회원탈퇴·비밀번호 변경). 인증 필요(/api/v1/me/**). */
 @RestController
 @RequestMapping("/api/v1/me/account")
 public class AccountController {
@@ -30,6 +31,16 @@ public class AccountController {
         String pw = body != null ? body.password() : null;
         String confirm = body != null ? body.confirm() : null;
         auth.withdraw(UUID.fromString(userId), pw, confirm);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/password")
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal String userId,
+                                            @RequestBody ChangePasswordRequest body) {
+        if (userId == null || "anonymousUser".equals(userId)) {
+            return ResponseEntity.status(401).body(Map.of("error", "unauthorized"));
+        }
+        auth.changePassword(UUID.fromString(userId), body.currentPassword(), body.newPassword());
         return ResponseEntity.noContent().build();
     }
 }

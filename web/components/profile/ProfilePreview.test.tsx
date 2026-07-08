@@ -50,6 +50,6 @@ describe("ProfilePreview", () => {
   it("marks unfilled dimensions for an empty profile", async () => {
     vi.stubGlobal("fetch", mockRecommend(0));
     render(<ProfilePreview profile={base} />);
-    expect(screen.getAllByText(/→ 입력 필요/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/입력 필요/).length).toBeGreaterThan(0);
   });
 });

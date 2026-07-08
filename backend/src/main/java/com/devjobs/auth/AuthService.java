@@ -164,6 +164,27 @@ public class AuthService {
     }
 
     /**
+     * 로그인 사용자의 비밀번호 변경. 현재 비밀번호 재확인 필수(세션 탈취 방어).
+     * OAuth 전용 계정(password_hash null)은 변경할 비밀번호가 없어 409.
+     */
+    @Transactional
+    public void changePassword(UUID userId, String currentPassword, String newPassword) {
+        PasswordPolicy.validate(newPassword);
+        UserEntity u = userRepo.findById(userId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "user_not_found"));
+        if (u.getPasswordHash() == null) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "oauth_only_account");
+        }
+        if (currentPassword == null || !passwordEncoder.matches(currentPassword, u.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "invalid_password"); // withdraw 와 동일 코드
+        }
+        if (passwordEncoder.matches(newPassword, u.getPasswordHash())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "same_password");
+        }
+        u.setPasswordHash(passwordEncoder.encode(newPassword));
+    }
+
+    /**
      * 회원탈퇴. 비번 계정은 현재 비번 재확인, OAuth 전용 계정은 'DELETE' 확인 문자열을 요구한다.
      * users 행만 삭제하면 연관 데이터는 FK ON DELETE CASCADE 로 정리된다(job_views 는 SET NULL).
      */
