@@ -1,7 +1,9 @@
 import Link from "next/link";
 
+import { buttonVariants } from "@/components/ui/button";
 import { fetchRegions } from "@/lib/api";
 import { GUIDE_DISCLAIMER, VISA_GUIDES } from "@/lib/visa-guide";
+import { cn } from "@/lib/utils";
 
 export const metadata = {
   title: "비자 가이드 — 국가별 스폰서십 개요",
@@ -86,15 +88,26 @@ export default async function VisaGuideIndexPage() {
         </div>
       </section>
 
-      <p className="text-body-sm text-muted-foreground">
-        찾는 나라가 없나요? 우리는 스폰서십이 확인된 공고를 우선 다루며, 국가는 계속 늘려가고 있어요.{" "}
-        <Link href="/search?visa=sponsors" className="font-semibold text-primary hover:underline">
+      {/* 전폭 한 줄 텍스트 대신 세로 스택 카드 — 제목/설명/버튼 순 */}
+      <section className="rounded-xl border border-border bg-card p-6">
+        <h2 className="text-body font-bold text-foreground">찾는 나라가 없나요?</h2>
+        <p className="mt-1 max-w-md text-body-sm text-muted-foreground">
+          우리는 스폰서십이 확인된 공고를 우선 다루며, 국가는 계속 늘려가고 있어요.
+        </p>
+        <Link href="/search?visa=sponsors" className={cn(buttonVariants({ variant: "outline" }), "mt-4")}>
           비자 스폰서 공고 보기
         </Link>
-      </p>
+      </section>
 
-      {/* 면책 — 하단 각주 */}
-      <p className="border-t border-border pt-4 text-caption text-muted-foreground">{GUIDE_DISCLAIMER}</p>
+      {/* 면책 — 하단 각주 (전폭 한 줄 대신 문장 단위 세로 배치) */}
+      <div className="space-y-1 border-t border-border pt-4">
+        {GUIDE_DISCLAIMER.split(". ").map((s, i, arr) => (
+          <p key={i} className="text-caption text-muted-foreground">
+            {s}
+            {i < arr.length - 1 ? "." : ""}
+          </p>
+        ))}
+      </div>
     </div>
   );
 }
