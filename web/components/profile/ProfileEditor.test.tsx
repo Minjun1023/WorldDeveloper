@@ -36,13 +36,14 @@ function routeFetch({ exists = false }: { exists?: boolean } = {}) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("ProfileEditor", () => {
-  it("opens the step wizard when no profile exists, and saves after walking the steps", async () => {
+  it("shows the full-page step wizard when no profile exists, and saves after walking the steps", async () => {
     const f = routeFetch({ exists: false });
     vi.stubGlobal("fetch", f);
     render(<ProfileEditor />);
 
-    // 프로필 없음 → 위저드 자동 오픈 (1번 질문)
+    // 프로필 없음 → 폼 대신 전면 위저드 (1번 질문). 폼의 저장 버튼은 없어야 한다.
     expect(await screen.findByText("어떤 기술 스택을 쓰시나요?")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "저장" })).not.toBeInTheDocument();
 
     // 다음으로 시니어리티 스텝 → 답변 카드 클릭 시 자동 진행
     await userEvent.click(screen.getByRole("button", { name: "다음" }));
@@ -67,6 +68,19 @@ describe("ProfileEditor", () => {
       (c) => c[0] === "/api/me/profile" && (c[1] as RequestInit | undefined)?.method === "PUT",
     );
     expect(putCall).toBeTruthy();
+    // 저장 후 위저드가 닫히고 폼으로 전환된다.
+    expect(await screen.findByText("저장됐어요.")).toBeInTheDocument();
+  });
+
+  it("falls back to the plain form when the wizard skip link is clicked", async () => {
+    vi.stubGlobal("fetch", routeFetch({ exists: false }));
+    render(<ProfileEditor />);
+
+    expect(await screen.findByText("어떤 기술 스택을 쓰시나요?")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "단계 없이 폼으로 한 번에 작성하기" }));
+
+    expect(await screen.findByLabelText("기술 스택")).toBeInTheDocument();
+    expect(screen.queryByText("어떤 기술 스택을 쓰시나요?")).not.toBeInTheDocument();
   });
 
   it("keeps the plain form (no wizard) when a profile already exists, and saves via PUT", async () => {
