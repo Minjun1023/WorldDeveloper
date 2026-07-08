@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { BrandMark } from "@/components/BrandMark";
 
-// 랜딩 전용 리치 푸터(4컬럼 + 워터마크). Readdy 목업 대응.
+// 전 페이지 공통 리치 푸터(4컬럼). 워터마크는 장식 소음이라 제거(2026-07).
 // 카피는 실데이터에 맞춰 정직하게: "유럽 전용"이 아닌 글로벌 진출, 추천은 회원 전용.
 const COLUMNS: { title: string; links: { label: string; href: string }[] }[] = [
   {
@@ -98,18 +98,6 @@ export function SiteFooter() {
           <span>© {new Date().getFullYear()} DevPass. All rights reserved.</span>
           <span>Made for Korean developers heading abroad.</span>
         </div>
-      </div>
-
-      {/* 하단 워터마크 — Readdy 목업의 거대 텍스트.
-          color 알파(text-foreground/[0.03])는 --foreground 가 완전한 hex 라 Tailwind 가
-          유효한 rgb(.. / alpha) 로 못 만들어 무시되고 100% 불투명해진다. 대신 요소 opacity 로
-          처리하면 라이트/다크 모두에서 옅은 워터마크로 동작한다. */}
-      <div
-        aria-hidden="true"
-        className="pointer-events-none select-none px-4 text-center font-bold leading-none tracking-tighter text-foreground opacity-[0.04]"
-        style={{ fontSize: "clamp(3rem, 14vw, 11rem)" }}
-      >
-        DEVPASS
       </div>
     </footer>
   );
