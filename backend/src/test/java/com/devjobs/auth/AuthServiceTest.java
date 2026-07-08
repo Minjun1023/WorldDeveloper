@@ -219,4 +219,50 @@ class AuthServiceTest {
         org.junit.jupiter.api.Assertions.assertTrue(authService.checkEmail("fresh-mail@example.com").available());
         org.junit.jupiter.api.Assertions.assertFalse(authService.checkEmail("bad-email").valid());
     }
+
+    @Test
+    void changePasswordUpdatesHashAndAllowsLoginWithNewPassword() {
+        authService.register("chpw@example.com", "Password123", "C");
+        UserEntity u = userRepo.findByEmail("chpw@example.com").orElseThrow();
+        u.markEmailVerified(java.time.OffsetDateTime.now());
+        userRepo.save(u);
+
+        authService.changePassword(u.getId(), "Password123", "NewPassword456");
+
+        assertNotNull(authService.login("chpw@example.com", "NewPassword456").token());
+        assertThrows(ResponseStatusException.class,
+            () -> authService.login("chpw@example.com", "Password123")); // 옛 비번 무효
+    }
+
+    @Test
+    void changePasswordRejectsWrongCurrentPassword() {
+        authService.register("chpw-wrong@example.com", "Password123", "W");
+        UserEntity u = userRepo.findByEmail("chpw-wrong@example.com").orElseThrow();
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+            () -> authService.changePassword(u.getId(), "WrongPass999", "NewPassword456"));
+        assertEquals(HttpStatus.FORBIDDEN, ex.getStatusCode());
+    }
+
+    @Test
+    void changePasswordRejectsOAuthOnlyAccount() {
+        AuthService.OAuthUpsertResult r =
+            authService.oauthUpsert("google", "g-chpw", "chpw-oauth@example.com", "O");
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+            () -> authService.changePassword(r.user().getId(), null, "NewPassword456"));
+        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+    }
+
+    @Test
+    void changePasswordRejectsWeakOrSameNewPassword() {
+        authService.register("chpw-weak@example.com", "Password123", "K");
+        UserEntity u = userRepo.findByEmail("chpw-weak@example.com").orElseThrow();
+
+        assertThrows(ResponseStatusException.class,
+            () -> authService.changePassword(u.getId(), "Password123", "short")); // 정책 위반
+        ResponseStatusException same = assertThrows(ResponseStatusException.class,
+            () -> authService.changePassword(u.getId(), "Password123", "Password123")); // 기존과 동일
+        assertEquals(HttpStatus.BAD_REQUEST, same.getStatusCode());
+    }
 }

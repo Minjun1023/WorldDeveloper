@@ -4,6 +4,7 @@ import { Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { PasswordChangeSection } from "@/components/profile/PasswordChangeSection";
 import { ProfileFields } from "@/components/profile/ProfileFields";
 import { ProfilePreview } from "@/components/profile/ProfilePreview";
 import { ProfileWizard } from "@/components/profile/ProfileWizard";
@@ -180,6 +181,7 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
             {error && <p className="text-center text-body-sm text-destructive">{error}</p>}
           </div>
           </div>
+          <PasswordChangeSection />
           <WithdrawSection />
         </>
       )}

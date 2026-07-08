@@ -13,6 +13,7 @@ public final class AuthDtos {
     public record ForgotPasswordRequest(String email) {}
     public record ResetPasswordRequest(String email, String code, String newPassword) {}
     public record WithdrawRequest(String password, String confirm) {}
+    public record ChangePasswordRequest(String currentPassword, String newPassword) {}
 
     /** login / exchange 응답: 세션 JWT + 사용자 식별 정보 */
     public record AuthResult(String token, String userId, String email, String displayName) {}

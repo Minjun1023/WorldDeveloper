@@ -96,7 +96,7 @@ export function ProfilePreview({ profile }: { profile: RecommendProfile }) {
                 />
                 <span className={cn("font-medium", !s.active && "text-muted-foreground")}>{d.label}</span>
                 <span className={cn("ml-auto text-caption font-medium", s.active ? "text-foreground/70" : "text-muted-foreground")}>
-                  {s.active ? s.note : `→ ${s.note}`}
+                  {s.note}
                 </span>
               </li>
             );
