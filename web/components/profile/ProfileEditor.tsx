@@ -29,7 +29,7 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
   const [saved, setSaved] = useState(false);
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  // 최초 작성(프로필 없음)일 때만 MBTI식 단계 모달로 안내. 이후 수정은 기존 폼.
+  // 최초 작성(프로필 없음)일 때만 MBTI식 전면 위저드로 안내. 이후 수정은 기존 폼.
   const [wizardOpen, setWizardOpen] = useState(false);
 
   useEffect(() => {
@@ -100,19 +100,21 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
 
   const reflected = reflectedCount(profile);
 
+  // 최초 작성: 폼 대신 전면 위저드가 페이지를 차지한다(모달 아님 — 페이지 전환 느낌).
+  if (ready && wizardOpen) {
+    return (
+      <ProfileWizard
+        initial={profile}
+        onComplete={completeWizard}
+        onSkip={() => setWizardOpen(false)}
+        saving={saving}
+        ctaLabel={welcome ? "저장하고 추천 보기" : "저장"}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
-      {/* 최초 작성 위저드 — 닫으면(X/Esc) 기존 폼으로 이어서 작성 가능 */}
-      {ready && (
-        <ProfileWizard
-          open={wizardOpen}
-          onOpenChange={setWizardOpen}
-          initial={profile}
-          onComplete={completeWizard}
-          saving={saving}
-          ctaLabel={welcome ? "저장하고 추천 보기" : "저장"}
-        />
-      )}
       {/* 가입 직후 환영 배너 — 프로필의 '왜'를 설명하고, 건너뛸 자유도 함께 준다. */}
       {welcome && (
         <div className="flex flex-col gap-3 rounded-2xl border border-primary/20 bg-primary-tint px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
