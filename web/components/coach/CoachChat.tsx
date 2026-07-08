@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { Button, buttonVariants } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import { CoachJobModal, type PickJob } from "./CoachJobModal";
@@ -469,17 +469,16 @@ export function CoachChat({
                 붙여넣은 공고·이력서만 보고 답해요. 이력서는 저장되지 않아요.
               </p>
             ) : (
-              <div className="mt-4 flex flex-col items-center gap-3">
-                <p className="flex items-center gap-1.5 text-caption text-muted-foreground">
-                  <Info className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                  <span>
-                    <span className="font-semibold text-foreground">로그인 시 이용 가능</span> · 이력서는 저장되지 않아요.
-                  </span>
-                </p>
-                <Link href={SIGNIN} className={cn(buttonVariants())}>
-                  로그인하고 시작
-                </Link>
-              </div>
+              // 헤더에 로그인 버튼이 이미 있어 별도 CTA 버튼은 중복 — 캡션의 텍스트 링크로만 안내.
+              <p className="mt-4 flex items-center justify-center gap-1.5 text-caption text-muted-foreground">
+                <Info className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
+                <span>
+                  <Link href={SIGNIN} className="font-semibold text-foreground underline underline-offset-2 hover:text-primary">
+                    로그인
+                  </Link>{" "}
+                  시 이용 가능 · 이력서는 저장되지 않아요.
+                </span>
+              </p>
             )}
           </div>
         )}
