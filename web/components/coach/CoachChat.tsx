@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 import { CoachJobModal, type PickJob } from "./CoachJobModal";
@@ -568,17 +568,12 @@ function NoJobs() {
       <p className="mx-auto mt-1.5 max-w-md text-body-sm text-muted-foreground">
         먼저 공고를 저장하거나 맞춤 추천을 받아보세요. 코치는 고른 공고 하나에 맞춰 이력서를 봐드려요.
       </p>
+      {/* 추천의 진입점은 프로필(작성/수정 → 홈 추천 갱신) — 내비에서 내린 /recommend 대신 프로필로. */}
       <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-        <Link
-          href="/recommend"
-          className="bg-brand-gradient rounded-xl px-5 py-2.5 text-body-sm font-semibold text-white transition-opacity hover:opacity-90"
-        >
+        <Link href="/me/profile" className={cn(buttonVariants())}>
           맞춤 추천 받기
         </Link>
-        <Link
-          href="/search"
-          className="rounded-xl border border-border px-5 py-2.5 text-body-sm font-medium text-foreground transition-colors hover:bg-accent"
-        >
+        <Link href="/search" className={cn(buttonVariants({ variant: "outline" }))}>
           공고 검색하기
         </Link>
       </div>
