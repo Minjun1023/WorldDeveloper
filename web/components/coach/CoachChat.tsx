@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUp, Briefcase, FileText, History, Info, Plus, RefreshCw, Sparkles } from "lucide-react";
+import { Briefcase, FileText, History, Info, Plus, RefreshCw, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -278,10 +278,11 @@ export function CoachChat({
   // ChatGPT식 알약 컴포저: ＋(첨부 메뉴) + 입력 + 전송. 마이크·음성 없음.
   const composer = (
     <div ref={composerWrapRef} className="relative w-full">
+      {/* 전송 버튼 없음 — Enter 로 전송(IME 조합 안전 처리). ＋는 배경 없는 ghost. */}
       <div className="flex items-center gap-2 rounded-[1.75rem] border border-border bg-card px-2 py-2 pl-3 shadow-sm">
         <Button
           type="button"
-          variant="secondary"
+          variant="ghost"
           size="icon"
           onClick={openMenu}
           aria-label="공고·이력서 첨부"
@@ -305,23 +306,9 @@ export function CoachChat({
           }}
           rows={1}
           aria-label="코치에게 보낼 메시지"
-          placeholder={
-            jobId
-              ? "메시지를 입력하세요 — 이 공고에 맞춰 답해드려요 (Enter 전송, Shift+Enter 줄바꿈)"
-              : "메시지를 입력하세요 — 이력서 전반을 코치해드려요. 공고를 붙이면 맞춤 분석 (Enter 전송)"
-          }
+          placeholder="메시지를 입력하세요."
           className="block max-h-40 min-h-[40px] flex-1 resize-none bg-transparent py-2 text-body-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
-        <Button
-          type="button"
-          size="icon"
-          onClick={send}
-          disabled={pending}
-          aria-label="보내기"
-          className="shrink-0 [&_svg]:size-5"
-        >
-          <ArrowUp aria-hidden="true" />
-        </Button>
       </div>
 
       {/* ＋ 팝오버 메뉴 */}
@@ -382,8 +369,6 @@ export function CoachChat({
     </div>
   );
 
-  const noJobs = loggedIn && !jobsLoading && jobs.length === 0;
-
   return (
     // h-full 이 아니라 flex-1 — 레일 접힘 시 위에 CoachRailReopen 바가 오면 h-full(부모 전체 높이)은
     // 바 높이만큼 아래로 넘쳐 하단이 잘리고, 빈 상태의 세로 중앙 정렬도 보이는 영역 기준보다 아래로 밀린다.
@@ -395,13 +380,10 @@ export function CoachChat({
         style={{ background: "radial-gradient(60% 60% at 50% 0%, color-mix(in srgb, hsl(var(--primary)) 11%, transparent), transparent)" }}
       />
 
+      {/* 저장 공고가 없어도 채팅은 바로 가능(일반 이력서 상담) — 공고 없음 안내는
+          '공고 첨부' 모달(CoachJobModal)이 담당한다. 페이지 게이트 없음. */}
       <div className="min-h-0 flex-1 overflow-y-auto">
-        {noJobs ? (
-          // 빈 상태 히어로와 동일하게 보이는 영역 세로 중앙 정렬.
-          <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col justify-center px-4 py-10">
-            <NoJobs />
-          </div>
-        ) : started ? (
+        {started ? (
           // 대화 진행 — 헤더(공고 칩 + 새 상담) + 메시지 스레드. 컴포저는 하단 바.
           <div className="mx-auto flex h-full w-full max-w-3xl flex-col gap-4 px-4 py-4">
             <div className="flex items-center justify-between gap-3">
@@ -494,11 +476,8 @@ export function CoachChat({
                     <span className="font-semibold text-foreground">로그인 시 이용 가능</span> · 이력서는 저장되지 않아요.
                   </span>
                 </p>
-                <Link
-                  href={SIGNIN}
-                  className="bg-brand-gradient rounded-xl px-5 py-2.5 text-body-sm font-semibold text-white transition-opacity hover:opacity-90"
-                >
-                  로그인하고 시작 →
+                <Link href={SIGNIN} className={cn(buttonVariants())}>
+                  로그인하고 시작
                 </Link>
               </div>
             )}
@@ -507,7 +486,7 @@ export function CoachChat({
       </div>
 
       {/* 하단 고정 컴포저 — 대화 진행 중에만(빈 상태는 컴포저가 중앙). */}
-      {!noJobs && started && (
+      {started && (
         <div className="shrink-0 border-t border-border">
           <div className="mx-auto w-full max-w-3xl px-4 py-3">{composer}</div>
         </div>
@@ -558,26 +537,3 @@ function CoachAvatar() {
   );
 }
 
-function NoJobs() {
-  return (
-    <div className="rounded-2xl border border-border bg-card p-10 text-center shadow-sm">
-      <span className="bg-brand-gradient mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-sm">
-        <Briefcase className="h-6 w-6" aria-hidden="true" />
-      </span>
-      <p className="text-body font-medium text-foreground">상담할 공고가 없어요</p>
-      {/* 코치 후보 = 저장(북마크)한 공고 — 프로필 저장만으론 후보가 안 생기므로 '저장' 단계를 분명히 안내. */}
-      <p className="mx-auto mt-1.5 max-w-md text-body-sm text-muted-foreground">
-        코치는 <span className="font-semibold text-foreground">저장한 공고</span>에 맞춰 이력서를
-        봐드려요. 홈의 맞춤 추천이나 검색에서 마음에 드는 공고를 하트(저장)로 담아 주세요.
-      </p>
-      <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-        <Link href="/" className={cn(buttonVariants())}>
-          맞춤 추천에서 저장하기
-        </Link>
-        <Link href="/search" className={cn(buttonVariants({ variant: "outline" }))}>
-          공고 검색하기
-        </Link>
-      </div>
-    </div>
-  );
-}

@@ -66,13 +66,11 @@ async function attach(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("CoachChat", () => {
-  it("보내기 버튼은 항상 활성 — 미완성 전송 시 안내로 응답한다", async () => {
+  it("빈 입력으로 Enter 전송 시 안내로 응답한다 (전송 버튼 없음 — Enter 전송)", async () => {
     vi.stubGlobal("fetch", mockFetch({ convStatus: 204 }));
     render(<CoachChat initialJobs={jobs as never} />);
-    const user = userEvent.setup();
-    const send = screen.getByRole("button", { name: /보내기/ });
-    expect(send).toBeEnabled();
-    await user.click(send);
+    expect(screen.queryByRole("button", { name: /보내기/ })).not.toBeInTheDocument();
+    fireEvent.keyDown(screen.getByPlaceholderText(/메시지/), { key: "Enter" });
     expect(await screen.findByText(/무엇이 궁금하신가요/)).toBeInTheDocument();
   });
 
@@ -82,7 +80,7 @@ describe("CoachChat", () => {
     render(<CoachChat initialJobs={jobs as never} />);
     const user = userEvent.setup();
     await user.type(screen.getByPlaceholderText(/메시지/), "이 회사 어때요?");
-    await user.click(screen.getByRole("button", { name: /보내기/ }));
+    fireEvent.keyDown(screen.getByPlaceholderText(/메시지/), { key: "Enter" });
     expect(await screen.findByText("이 회사 어때요?")).toBeInTheDocument();
     expect(await screen.findByText("일반 조언입니다.")).toBeInTheDocument();
     const postCall = fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach/stream");
@@ -97,7 +95,7 @@ describe("CoachChat", () => {
     render(<CoachChat initialJobs={jobs as never} />);
     const user = userEvent.setup();
     await attach(user);
-    await user.click(screen.getByRole("button", { name: /보내기/ }));
+    fireEvent.keyDown(screen.getByPlaceholderText(/메시지/), { key: "Enter" });
     expect(await screen.findByText("이력서 평가입니다.")).toBeInTheDocument();
     const postCall = fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach/stream");
     const body = JSON.parse((postCall![1] as RequestInit).body as string);
@@ -128,7 +126,7 @@ describe("CoachChat", () => {
     const user = userEvent.setup();
     await attach(user);
     await user.type(screen.getByPlaceholderText(/메시지/), "어떻게?");
-    await user.click(screen.getByRole("button", { name: /보내기/ }));
+    fireEvent.keyDown(screen.getByPlaceholderText(/메시지/), { key: "Enter" });
     expect(await screen.findByText("Go 경험을 위로 올리세요.")).toBeInTheDocument();
     const postCall = fetchMock.mock.calls.find((c) => String(c[0]) === "/api/me/coach/stream");
     const body = JSON.parse((postCall![1] as RequestInit).body as string);
@@ -194,7 +192,7 @@ describe("CoachChat", () => {
     render(<CoachChat loggedIn={false} initialJobs={jobs as never} />);
     const user = userEvent.setup();
     await user.type(screen.getByPlaceholderText(/메시지/), "도와줘");
-    await user.click(screen.getByRole("button", { name: /보내기/ }));
+    fireEvent.keyDown(screen.getByPlaceholderText(/메시지/), { key: "Enter" });
     expect(push).toHaveBeenCalledWith("/signin?callbackUrl=/coach");
   });
 });

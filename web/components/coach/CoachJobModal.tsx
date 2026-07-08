@@ -1,8 +1,10 @@
 "use client";
 
 import { Briefcase, X } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useId, useRef, useState } from "react";
 
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export type PickJob = { id: string; title: string; company: { display_name: string }; location?: string };
@@ -54,6 +56,29 @@ export function CoachJobModal({
         </button>
       </div>
       <div className="space-y-3 p-5">
+        {/* 코치 후보 = 저장(북마크)한 공고. 하나도 없으면 검색창 대신 저장 유도 안내를 띄운다
+            — 페이지 게이트(NoJobs) 대신 여기서 안내하는 구조. */}
+        {!jobsLoading && jobs.length === 0 ? (
+          <div className="py-6 text-center">
+            <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Briefcase className="h-5 w-5" aria-hidden="true" />
+            </span>
+            <p className="text-body font-semibold text-foreground">상담할 공고가 없어요</p>
+            <p className="mx-auto mt-1.5 max-w-sm text-body-sm text-muted-foreground">
+              코치는 <span className="font-semibold text-foreground">저장한 공고</span> 중에서
+              골라요. 맞춤 추천이나 검색에서 마음에 드는 공고를 하트(저장)로 담아 주세요.
+            </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+              <Link href="/" className={cn(buttonVariants({ size: "sm" }))}>
+                맞춤 추천에서 저장하기
+              </Link>
+              <Link href="/search" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+                공고 검색하기
+              </Link>
+            </div>
+          </div>
+        ) : (
+        <>
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -64,7 +89,7 @@ export function CoachJobModal({
         <div className="flex max-h-[50vh] flex-col gap-1.5 overflow-y-auto">
           {jobsLoading && <p className="px-1 text-body-sm text-muted-foreground">공고 불러오는 중…</p>}
           {!jobsLoading && filtered.length === 0 && (
-            <p className="px-1 text-body-sm text-muted-foreground">저장한 공고가 없어요.</p>
+            <p className="px-1 text-body-sm text-muted-foreground">검색 결과가 없어요.</p>
           )}
           {filtered.map((j) => (
             <button
@@ -92,6 +117,8 @@ export function CoachJobModal({
             </button>
           ))}
         </div>
+        </>
+        )}
       </div>
     </dialog>
   );

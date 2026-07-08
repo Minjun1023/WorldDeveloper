@@ -69,7 +69,7 @@ export function MemberLandingRecommend({ teaserJobs = [] }: { teaserJobs?: Job[]
         title="맞춤 추천 공고"
         subtitle="프로필 기반 5축 매칭"
         actions={
-          <Link href="/me/profile" className={cn(buttonVariants({ variant: "outline", size: "sm" }))}>
+          <Link href="/me/profile" className={cn(buttonVariants({ size: "sm" }))}>
             갱신하기
           </Link>
         }

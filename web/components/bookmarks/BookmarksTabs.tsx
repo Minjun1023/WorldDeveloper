@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 // 탭이 최상단. 공고 관리·북마크 전체·관심 기업은 로그인 필요, 최근 본 공고는 공개.
 const TABS = [
   { key: "tracker", label: "공고 관리" },
-  { key: "all", label: "북마크 전체" },
+  { key: "all", label: "관심 공고" },
   { key: "companies", label: "관심 기업" },
   { key: "recent", label: "최근 본 공고" },
 ] as const;
