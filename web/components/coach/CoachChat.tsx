@@ -565,13 +565,14 @@ function NoJobs() {
         <Briefcase className="h-6 w-6" aria-hidden="true" />
       </span>
       <p className="text-body font-medium text-foreground">상담할 공고가 없어요</p>
+      {/* 코치 후보 = 저장(북마크)한 공고 — 프로필 저장만으론 후보가 안 생기므로 '저장' 단계를 분명히 안내. */}
       <p className="mx-auto mt-1.5 max-w-md text-body-sm text-muted-foreground">
-        먼저 공고를 저장하거나 맞춤 추천을 받아보세요. 코치는 고른 공고 하나에 맞춰 이력서를 봐드려요.
+        코치는 <span className="font-semibold text-foreground">저장한 공고</span>에 맞춰 이력서를
+        봐드려요. 홈의 맞춤 추천이나 검색에서 마음에 드는 공고를 하트(저장)로 담아 주세요.
       </p>
-      {/* 추천의 진입점은 프로필(작성/수정 → 홈 추천 갱신) — 내비에서 내린 /recommend 대신 프로필로. */}
       <div className="mt-5 flex flex-wrap items-center justify-center gap-3">
-        <Link href="/me/profile" className={cn(buttonVariants())}>
-          맞춤 추천 받기
+        <Link href="/" className={cn(buttonVariants())}>
+          맞춤 추천에서 저장하기
         </Link>
         <Link href="/search" className={cn(buttonVariants({ variant: "outline" }))}>
           공고 검색하기
