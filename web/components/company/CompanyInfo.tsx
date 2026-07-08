@@ -81,9 +81,18 @@ export function CompanyInfo({
       )}
 
       {wiki && (
-        <p className="mt-3 text-body-sm leading-relaxed text-foreground/80">
-          {wiki.extract}
-        </p>
+        <div className="mt-3">
+          <p className="text-body-sm leading-relaxed text-foreground/80">{wiki.extract}</p>
+          {/* CC BY-SA 조건: 위키백과 원문 링크로 출처를 반드시 표기한다. */}
+          <a
+            href={wiki.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-1 inline-block text-caption text-muted-foreground hover:text-primary hover:underline"
+          >
+            출처: 위키백과 (CC BY-SA)
+          </a>
+        </div>
       )}
 
       <dl className="mt-4 grid gap-2 sm:grid-cols-2">

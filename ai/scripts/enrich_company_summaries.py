@@ -95,7 +95,7 @@ def _clip(text: str) -> str:
 
 
 def fetch_summary(lang: str, title: str):
-    """REST 요약. (extract, url) 또는 None(동음이의·빈 요약)."""
+    """REST 요약. (extract, url, canonical_title) 또는 None(동음이의·빈 요약)."""
     url = SUMMARY.format(lang=lang, title=urllib.parse.quote(title.replace(" ", "_"), safe="_()"))
     try:
         d = _get(url)
@@ -109,7 +109,16 @@ def fetch_summary(lang: str, title: str):
         return None
     page = d.get("content_urls", {}).get("desktop", {}).get("page") \
         or f"https://{lang}.wikipedia.org/wiki/{urllib.parse.quote(title.replace(' ', '_'))}"
-    return _clip(extract), page
+    # 제목은 REST 가 리다이렉트를 해소한 실제 문서 제목을 쓴다
+    # (sitelink 가 반달/리다이렉트 제목일 수 있음 — 예: pixiv sitelink 'Crooc').
+    real_title = (d.get("titles", {}).get("normalized") or d.get("title") or title).strip()
+    return _clip(extract), page, real_title
+
+
+# ko 문서 품질이 불량(기계번역 스텁 등)해서 en 을 우선하는 회사. 사람 검수로 추가.
+_PREFER_EN = {
+    "cyberagent-group",  # ko 문서가 비문 스텁 — en 은 정상
+}
 
 
 def main() -> int:
@@ -131,13 +140,14 @@ def main() -> int:
             print(f"[{i}/{len(slug_qid)}] {slug:18} NO-SITELINK", file=sys.stderr)
             continue
         got = None
-        for lang in ("ko", "en"):  # 한국어 문서 우선
+        langs = ("en", "ko") if slug in _PREFER_EN else ("ko", "en")  # 기본 한국어 우선
+        for lang in langs:
             if lang not in rec:
                 continue
             got = fetch_summary(lang, rec[lang])
             if got:
                 summaries[slug] = {
-                    "lang": lang, "title": rec[lang],
+                    "lang": lang, "title": got[2],
                     "extract": got[0], "url": got[1],
                 }
                 break
@@ -159,6 +169,7 @@ def _write_ts(path: str, summaries: dict[str, dict]) -> None:
         "// 회사 소개 요약 — Wikipedia REST 요약 API(CC BY-SA)에서 보강한 데이터.",
         "// scripts/enrich_company_summaries.py 로 생성하고, 사람이 git diff 로 검수한다.",
         "// company-facts.ts 의 검수된 QID·sitelink 만 재사용 — 새 이름 매칭 없음(오매칭 0).",
+        "// 키는 DB 회사 slug(=ATS token) — companies.json 의 registry key 가 아님에 주의.",
         "// CC BY-SA 라이선스: 표시 시 문서 링크(url)로 출처를 함께 노출할 것.",
         "",
         "export interface CompanySummary {",

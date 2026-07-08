@@ -42,17 +42,17 @@ export function CompanyDirectoryControls({
   const [q, setQ] = useState(sp.get("q") ?? "");
 
   // 입력 디바운스 — 멈춘 뒤 350ms 후에만 q 갱신(키 입력마다 서버 라운드트립 방지).
+  // 입력값이 URL 의 q 와 다를 때만 push 한다. firstRender 가드 방식은 StrictMode 의
+  // 이중 effect 실행을 못 막아, 상세 → 뒤로가기 복귀 시 q:null push 로 page 파라미터가
+  // 삭제되는(항상 1페이지로 리셋) 버그가 있었다.
   const updateRef = useRef(update);
   updateRef.current = update;
-  const firstRender = useRef(true);
+  const spQ = sp.get("q") ?? "";
   useEffect(() => {
-    if (firstRender.current) {
-      firstRender.current = false;
-      return;
-    }
+    if (q.trim() === spQ) return; // URL 과 이미 일치 — 마운트/뒤로가기 복원 시 오발사 방지
     const id = setTimeout(() => updateRef.current({ q: q.trim() || null }), 350);
     return () => clearTimeout(id);
-  }, [q]);
+  }, [q, spQ]);
 
   const tagLabel = tag ? tagOptions.find((o) => o.value === tag)?.label ?? tag : "분야 전체";
   const sizeLabel = size ? sizeOptions.find((o) => o.value === size)?.label ?? size : "규모 전체";
