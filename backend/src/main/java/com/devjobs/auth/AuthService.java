@@ -4,7 +4,6 @@ import java.time.OffsetDateTime;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,7 +21,6 @@ public class AuthService {
     private final MailService mailService;
     private final JwtService jwtService;
     private final AlertSignupDefaults alertDefaults;
-    private final String appBaseUrl;
 
     public AuthService(UserRepository userRepo,
                        UserIdentityRepository identityRepo,
@@ -30,8 +28,7 @@ public class AuthService {
                        PasswordEncoder passwordEncoder,
                        MailService mailService,
                        JwtService jwtService,
-                       AlertSignupDefaults alertDefaults,
-                       @Value("${app.base-url}") String appBaseUrl) {
+                       AlertSignupDefaults alertDefaults) {
         this.userRepo = userRepo;
         this.identityRepo = identityRepo;
         this.tokenRepo = tokenRepo;
@@ -39,7 +36,6 @@ public class AuthService {
         this.mailService = mailService;
         this.jwtService = jwtService;
         this.alertDefaults = alertDefaults;
-        this.appBaseUrl = appBaseUrl;
     }
 
     private static String normalize(String email) {
