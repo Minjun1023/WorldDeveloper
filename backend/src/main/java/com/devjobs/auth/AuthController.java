@@ -56,7 +56,8 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<Void> register(@RequestBody RegisterRequest r, HttpServletRequest req) {
         rateLimit("register", req);
-        UUID userId = auth.register(r.email(), r.password(), r.displayName());
+        boolean emailAlerts = r.emailAlerts() == null || r.emailAlerts(); // 미전송(구 클라이언트)은 허용
+        UUID userId = auth.register(r.email(), r.password(), r.displayName(), emailAlerts);
         if (userId != null && r.profile() != null
                 && r.profile().skills() != null && !r.profile().skills().isEmpty()) {
             profileService.upsert(userId, r.profile());

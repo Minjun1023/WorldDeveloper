@@ -21,6 +21,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final MailService mailService;
     private final JwtService jwtService;
+    private final AlertSignupDefaults alertDefaults;
     private final String appBaseUrl;
 
     public AuthService(UserRepository userRepo,
@@ -29,6 +30,7 @@ public class AuthService {
                        PasswordEncoder passwordEncoder,
                        MailService mailService,
                        JwtService jwtService,
+                       AlertSignupDefaults alertDefaults,
                        @Value("${app.base-url}") String appBaseUrl) {
         this.userRepo = userRepo;
         this.identityRepo = identityRepo;
@@ -36,6 +38,7 @@ public class AuthService {
         this.passwordEncoder = passwordEncoder;
         this.mailService = mailService;
         this.jwtService = jwtService;
+        this.alertDefaults = alertDefaults;
         this.appBaseUrl = appBaseUrl;
     }
 
@@ -43,8 +46,14 @@ public class AuthService {
         return email == null ? null : email.trim().toLowerCase(Locale.ROOT);
     }
 
+    /** 기존 시그니처 호환 — 이메일 알림 기본 허용. */
     @Transactional
     public UUID register(String email, String rawPassword, String displayName) {
+        return register(email, rawPassword, displayName, true);
+    }
+
+    @Transactional
+    public UUID register(String email, String rawPassword, String displayName, boolean emailAlerts) {
         PasswordPolicy.validate(rawPassword);
         if (!EmailFormat.isValid(email)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "invalid_email");
@@ -62,6 +71,7 @@ public class AuthService {
         }
         UserEntity u = new UserEntity(norm, passwordEncoder.encode(rawPassword), name);
         userRepo.save(u);
+        alertDefaults.apply(u.getId(), emailAlerts); // 동의창의 이메일 알림 수신값 반영
         issueAndSendVerification(u);
         return u.getId();
     }
@@ -243,6 +253,7 @@ public class AuthService {
             user = new UserEntity(norm, null, displayName); // OAuth 전용: password_hash = null
             user.markEmailVerified(OffsetDateTime.now());    // 공급자 검증분
             userRepo.save(user);
+            alertDefaults.apply(user.getId(), true); // OAuth 가입도 기본 허용 — 프로필에서 수신 거부 가능
         }
         identityRepo.save(new UserIdentityEntity(user.getId(), provider, providerSub));
         return new OAuthUpsertResult(user, newAccount);

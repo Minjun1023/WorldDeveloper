@@ -8,7 +8,6 @@ import { usePathname } from "next/navigation";
 // leaf 라벨을 현재 위치로 덧붙인다. 매핑되지 않은 경로(또는 홈)에서는 표시하지 않는다.
 const SECTIONS: Record<string, { label: string; href: string; leaf?: string }> = {
   search: { label: "공고 검색", href: "/search" },
-  recommend: { label: "맞춤 추천", href: "/recommend" },
   bookmarks: { label: "북마크", href: "/bookmarks" },
   community: { label: "커뮤니티", href: "/community" },
   companies: { label: "기업", href: "/companies", leaf: "기업 상세" },

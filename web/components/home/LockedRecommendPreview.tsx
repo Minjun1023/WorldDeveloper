@@ -13,7 +13,7 @@ const COPY = {
   signin: {
     title: "로그인하면 나에게 맞는 공고를 추천해드려요",
     sub: "스택·지역·레벨·연봉·의미 5축 매칭으로 승인 확률 높은 공고를 골라드려요.",
-    href: "/signin?callbackUrl=/recommend",
+    href: "/signin?callbackUrl=/",
   },
   profile: {
     title: "프로필을 작성하면 5축 매칭 추천을 받을 수 있어요",

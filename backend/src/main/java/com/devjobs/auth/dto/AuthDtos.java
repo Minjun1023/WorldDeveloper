@@ -4,8 +4,10 @@ public final class AuthDtos {
 
     private AuthDtos() {}
 
+    // emailAlerts: 가입 동의창의 '이메일 알림 수신' 체크값. null(구 클라이언트)은 허용으로 간주.
     public record RegisterRequest(String email, String password, String displayName,
-                                  com.devjobs.profile.dto.ProfileDto.Profile profile) {}
+                                  com.devjobs.profile.dto.ProfileDto.Profile profile,
+                                  Boolean emailAlerts) {}
     public record LoginRequest(String email, String password) {}
     public record VerifyRequest(String email, String code) {}
     public record ResendRequest(String email) {}

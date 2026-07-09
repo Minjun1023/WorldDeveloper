@@ -16,25 +16,39 @@ type Terms = {
   privacy: boolean;
   age14: boolean;
   marketing: boolean;
+  emailAlerts: boolean;
 };
 
-const INITIAL: Terms = { tos: false, privacy: false, age14: false, marketing: false };
+// emailAlerts 만 기본 체크 — 알림(관심 공고·관심 기업·맞춤 공고)은 기본 허용 정책(2026-07).
+// 가입 후 프로필 정보의 '이메일 알림'에서 언제든 수신 거부할 수 있다.
+const INITIAL: Terms = { tos: false, privacy: false, age14: false, marketing: false, emailAlerts: true };
 
-export function TermsAgreement({ onChange }: { onChange: (requiredAccepted: boolean) => void }) {
+export function TermsAgreement({
+  onChange,
+  onEmailAlertsChange,
+}: {
+  onChange: (requiredAccepted: boolean) => void;
+  // 이메일 알림 수신 동의값(가입 요청의 email_alerts 로 전달).
+  onEmailAlertsChange?: (allowed: boolean) => void;
+}) {
   const [terms, setTerms] = useState<Terms>(INITIAL);
   const [openDoc, setOpenDoc] = useState<TermsKey | null>(null);
 
-  const allChecked = terms.tos && terms.privacy && terms.age14 && terms.marketing;
+  const allChecked = terms.tos && terms.privacy && terms.age14 && terms.marketing && terms.emailAlerts;
   const requiredAccepted = terms.tos && terms.privacy && terms.age14;
 
   useEffect(() => {
     onChange(requiredAccepted);
   }, [requiredAccepted, onChange]);
 
+  useEffect(() => {
+    onEmailAlertsChange?.(terms.emailAlerts);
+  }, [terms.emailAlerts, onEmailAlertsChange]);
+
   const toggle = (key: keyof Terms) => setTerms((t) => ({ ...t, [key]: !t[key] }));
   const toggleAll = () => {
     const next = !allChecked;
-    setTerms({ tos: next, privacy: next, age14: next, marketing: next });
+    setTerms({ tos: next, privacy: next, age14: next, marketing: next, emailAlerts: next });
   };
 
   return (
@@ -50,6 +64,7 @@ export function TermsAgreement({ onChange }: { onChange: (requiredAccepted: bool
           <TermsRow label="(필수) 서비스 이용약관 동의" checked={terms.tos} onToggle={() => toggle("tos")} docKey="service" onView={setOpenDoc} />
           <TermsRow label="(필수) 개인정보 수집 및 이용 동의" checked={terms.privacy} onToggle={() => toggle("privacy")} docKey="privacy" onView={setOpenDoc} />
           <TermsRow label="(선택) 마케팅 정보 수신 및 프로모션 안내 동의" checked={terms.marketing} onToggle={() => toggle("marketing")} docKey="marketing" onView={setOpenDoc} />
+          <TermsRow label="(선택) 이메일 알림 수신 동의 — 관심 공고·관심 기업·맞춤 공고" checked={terms.emailAlerts} onToggle={() => toggle("emailAlerts")} />
           <TermsRow label="만 14세 이상입니다." checked={terms.age14} onToggle={() => toggle("age14")} />
         </div>
       </div>
