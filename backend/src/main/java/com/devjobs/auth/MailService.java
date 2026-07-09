@@ -2,7 +2,6 @@ package com.devjobs.auth;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.lang.Nullable;
 import org.springframework.mail.SimpleMailMessage;
@@ -23,8 +22,8 @@ public class MailService {
     private final boolean enabled;
     private final boolean requireSecure;  // 운영(=true)에선 인증번호를 로그로 노출하지 않음
 
-    // Spring 빈 생성용 (JavaMailSender 는 optional — host 미설정 시 없을 수 있음)
-    @Autowired
+    // Spring 빈 생성용 (JavaMailSender 는 optional — host 미설정 시 없을 수 있음).
+    // 생성자가 하나뿐이라 @Autowired 는 생략(Spring 4.3+ 자동 주입).
     public MailService(@Nullable JavaMailSender sender,
                        @Value("${app.mail-from}") String from,
                        @Value("${spring.mail.host:}") String host,
