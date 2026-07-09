@@ -2,8 +2,10 @@
 // TTL 안에서만 유효(만료 시 null → 재요청). 저장/반응/숨김 상태도 함께 캐시해 토글 상태를 즉시 복원.
 // 프로필 변경 시 clearRecommendCache 로 무효화(편집 후 신선한 추천).
 
-import type { Reaction } from "@/components/recommend/InteractiveJobCard";
 import type { RecommendResponse } from "@/lib/types";
+
+// 추천 카드 반응(좋아요/싫어요) — /recommend 전용 카드 삭제(2026-07) 후 타입만 이곳으로 이동.
+export type Reaction = "like" | "dislike" | null;
 
 // 버전 접두사 — 추천 결과 형태/로직이 바뀌면 올려 기존 캐시를 일괄 무효화한다.
 // v2: dislike 백필 수정 + 랜딩 삭제버튼 제거로 과거(개수 줄어든) 캐시를 버림.

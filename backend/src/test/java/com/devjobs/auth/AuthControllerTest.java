@@ -45,6 +45,15 @@ class AuthControllerTest {
     }
 
     @Test
+    void registerAcceptsEmailAlertsFlag() throws Exception {
+        // email_alerts=false 로 가입 — 필드가 계약대로 수용되고 200 반환(수신 거부 반영은 서비스 테스트에서 검증).
+        mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
+                .content(json(Map.of("email", "ctrl-alerts@example.com", "password", "Password123",
+                    "display_name", "C3", "email_alerts", false))))
+            .andExpect(status().isOk());
+    }
+
+    @Test
     void loginUnverifiedReturns403() throws Exception {
         mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
                 .content(json(Map.of("email", "ctrl-unv@example.com", "password", "Password123", "display_name", "C2"))))

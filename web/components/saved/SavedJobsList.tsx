@@ -37,7 +37,7 @@ export function SavedJobsList() {
     return (
       <div className="rounded-lg border border-border bg-card p-6 text-center">
         <p className="text-body-sm text-muted-foreground">아직 저장한 공고가 없어요.</p>
-        <Link href="/recommend" className="mt-3 inline-block text-body-sm text-primary">맞춤 추천 보러 가기 →</Link>
+        <Link href="/" className="mt-3 inline-block text-body-sm text-primary">홈에서 맞춤 추천 보기</Link>
       </div>
     );
   }

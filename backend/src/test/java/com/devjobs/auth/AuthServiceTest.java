@@ -13,6 +13,8 @@ import org.springframework.web.server.ResponseStatusException;
 import com.devjobs.auth.dto.AuthDtos.AuthResult;
 import org.springframework.http.HttpStatus;
 
+import java.util.UUID;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -41,6 +43,9 @@ class AuthServiceTest {
     @Autowired UserRepository userRepo;
     @Autowired EmailVerificationTokenRepository tokenRepo;
     @Autowired UserIdentityRepository identityRepo;
+    @Autowired com.devjobs.profile.ProfileMatchAlertRepository matchAlertRepo;
+    @Autowired com.devjobs.feedback.SavedJobCloseAlertRepository savedAlertRepo;
+    @Autowired com.devjobs.company.FavoriteCompanyAlertRepository companyAlertRepo;
 
     @Test
     void registerCreatesUnverifiedUserAndSendsMail() {
@@ -218,6 +223,34 @@ class AuthServiceTest {
         org.junit.jupiter.api.Assertions.assertFalse(authService.checkEmail("taken-mail@example.com").available());
         org.junit.jupiter.api.Assertions.assertTrue(authService.checkEmail("fresh-mail@example.com").available());
         org.junit.jupiter.api.Assertions.assertFalse(authService.checkEmail("bad-email").valid());
+    }
+
+    @Test
+    void registerWithDefaultConsentTurnsOnMatchAlerts() {
+        UUID id = authService.register("alerts-on@example.com", "Password123", "A1", true);
+
+        assertTrue(matchAlertRepo.findById(id).orElseThrow().isNotify(), "동의 → 매칭 알림 켬 행 생성");
+        // saved/company 는 행 없음=켬 이 기본이라 행을 만들지 않는다.
+        assertTrue(savedAlertRepo.findById(id).isEmpty());
+        assertTrue(companyAlertRepo.findById(id).isEmpty());
+    }
+
+    @Test
+    void registerWithDeclinedConsentTurnsOffOptOutAlerts() {
+        UUID id = authService.register("alerts-off@example.com", "Password123", "A2", false);
+
+        assertFalse(savedAlertRepo.findById(id).orElseThrow().isNotify(), "거부 → 관심 공고 알림 끔 기록");
+        assertFalse(companyAlertRepo.findById(id).orElseThrow().isNotify(), "거부 → 관심 기업 알림 끔 기록");
+        assertTrue(matchAlertRepo.findById(id).isEmpty(), "매칭 알림은 행 없음=꺼짐 그대로");
+    }
+
+    @Test
+    void oauthSignupDefaultsEmailAlertsOn() {
+        AuthService.OAuthUpsertResult r =
+            authService.oauthUpsert("google", "g-alerts", "alerts-oauth@example.com", "O");
+
+        assertTrue(r.newAccount());
+        assertTrue(matchAlertRepo.findById(r.user().getId()).orElseThrow().isNotify());
     }
 
     @Test

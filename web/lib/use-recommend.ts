@@ -2,12 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 
-import type { Reaction } from "@/components/recommend/InteractiveJobCard";
 import { recordEvents } from "@/lib/feedback";
-import { readRecommendCache, writeRecommendCache } from "@/lib/recommend-cache";
+import { readRecommendCache, writeRecommendCache, type Reaction } from "@/lib/recommend-cache";
 import type { RecommendResponse } from "@/lib/types";
 
-// 맞춤 추천 데이터/상태를 캐시와 함께 관리하는 공유 훅(랜딩 미리보기 · /recommend 작업공간 공용).
+// 맞춤 추천 데이터/상태를 캐시와 함께 관리하는 훅 — 홈 랜딩 맞춤 추천 섹션에서 사용.
+// (/recommend 전용 페이지는 홈과 중복이라 삭제 — 2026-07)
 //
 // 동작:
 //  - 마운트 시 캐시 적중(TTL 이내) → 즉시 표시, 재요청 0(로딩 없음).

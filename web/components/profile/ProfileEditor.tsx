@@ -4,6 +4,7 @@ import { Sparkles } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
+import { NotificationSettingsSection } from "@/components/profile/NotificationSettingsSection";
 import { PasswordChangeSection } from "@/components/profile/PasswordChangeSection";
 import { ProfileFields } from "@/components/profile/ProfileFields";
 import { ProfilePreview } from "@/components/profile/ProfilePreview";
@@ -79,9 +80,9 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
       clearRecommendCache(); // 프로필 변경 → 추천 캐시 무효화(다음 방문 시 신선하게 재계산)
       setSaved(true);
       setDirty(false);
-      // 환영 모드(가입 직후): 저장 즉시 첫 가치 경험(맞춤 추천)으로 이동.
+      // 환영 모드(가입 직후): 저장 즉시 첫 가치 경험(홈 랜딩의 맞춤 추천 섹션)으로 이동.
       if (welcome) {
-        router.push("/recommend");
+        router.push("/");
         return;
       }
     } catch (e) {
@@ -181,6 +182,7 @@ export function ProfileEditor({ welcome = false }: { welcome?: boolean }) {
             {error && <p className="text-center text-body-sm text-destructive">{error}</p>}
           </div>
           </div>
+          <NotificationSettingsSection />
           <PasswordChangeSection />
           <WithdrawSection />
         </>

@@ -28,6 +28,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
   const [nameAvail, setNameAvail] = useState<Avail>("idle");
   const [emailAvail, setEmailAvail] = useState<Avail>("idle");
   const [termsOk, setTermsOk] = useState(false);
+  const [emailAlerts, setEmailAlerts] = useState(true); // 이메일 알림 수신 — 기본 허용(동의창에서 해제 가능)
   const [remember, setRemember] = useState(true);
   // 이메일 인증번호(코드) 입력 단계 → 인증 완료 시 프로필 단계
   const [code, setCode] = useState("");
@@ -120,6 +121,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
           password,
           display_name: displayName.trim(),
           profile: null,
+          email_alerts: emailAlerts,
         }),
       });
       if (!res.ok) throw new Error("가입에 실패했어요. 입력을 확인해 주세요.");
@@ -408,7 +410,7 @@ export function CredentialsForm({ mode, callbackUrl = "/" }: { mode: Mode; callb
         )}
       </div>
 
-      <TermsAgreement onChange={setTermsOk} />
+      <TermsAgreement onChange={setTermsOk} onEmailAlertsChange={setEmailAlerts} />
 
       {error && <p className="text-destructive text-body-sm">{error}</p>}
 
