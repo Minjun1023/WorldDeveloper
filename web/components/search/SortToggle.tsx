@@ -27,7 +27,7 @@ export function SortToggle() {
   const options = hasQuery ? OPTIONS : OPTIONS.filter((o) => o.key !== "relevance");
 
   return (
-    // shadcn Tabs 트리거 룩 — muted 트랙 + 활성 세그먼트는 background 로 떠오름 (북마크/커뮤니티 탭과 동일)
+    // shadcn Tabs 트리거 룩 — muted 트랙 + 활성 세그먼트는 background 로 떠오름 (북마크 탭과 동일)
     <div className="inline-flex items-center rounded-lg bg-muted p-1 text-muted-foreground">
       {options.map((o) => {
         const active = effective === o.key;

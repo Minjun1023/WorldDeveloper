@@ -1,9 +1,14 @@
 package com.devjobs.profile;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import com.devjobs.auth.UserEntity;
+import com.devjobs.auth.UserRepository;
 import com.devjobs.strategist.dto.RecommendDtos.RecommendRequest;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -42,6 +47,31 @@ class ProfileServiceTest {
         assertThat(ProfileService.toRecommendRequest(profile(), null, 20).topK()).isEqualTo(20);
         assertThat(ProfileService.toRecommendRequest(profile(), null, 100).topK()).isEqualTo(30); // 상한
         assertThat(ProfileService.toRecommendRequest(profile(), null, 0).topK()).isEqualTo(1); // 하한
+    }
+
+    @Test
+    void nicknameResolvesHandleThenDisplayNameThenAuto() {
+        UserProfileRepository repo = mock(UserProfileRepository.class);
+        UserRepository userRepo = mock(UserRepository.class);
+        ProfileService svc = new ProfileService(repo, userRepo);
+        UUID id = UUID.randomUUID();
+
+        UserProfileEntity p = new UserProfileEntity(id);
+        p.setSkills(List.of("python"));
+        when(repo.findById(id)).thenReturn(Optional.of(p));
+
+        // 1) 커스텀 핸들을 직접 설정하면 그게 우선
+        p.setHandle("mychosen");
+        when(userRepo.findById(id)).thenReturn(Optional.of(new UserEntity("a@b.com", null, "김민준")));
+        assertThat(svc.get(id).nickname()).isEqualTo("mychosen");
+
+        // 2) 핸들이 없으면 실명(가입/소셜로그인 displayName)
+        p.setHandle(null);
+        assertThat(svc.get(id).nickname()).isEqualTo("김민준");
+
+        // 3) 실명도 없으면 자동 익명 닉네임(동물 이름) — non-blank
+        when(userRepo.findById(id)).thenReturn(Optional.of(new UserEntity("a@b.com", null, null)));
+        assertThat(svc.get(id).nickname()).isNotBlank();
     }
 
     @Test

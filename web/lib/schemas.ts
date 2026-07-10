@@ -18,11 +18,11 @@ export const recommendProfileSchema = z.object({
 
 export type RecommendProfileData = z.infer<typeof recommendProfileSchema>;
 
-/** GET /api/v1/me/profile 응답: 프로필 없음이면 exists=false 이고 profile 생략. community_handle 은 항상. */
+/** GET /api/v1/me/profile 응답: 프로필 없음이면 exists=false 이고 profile 생략. nickname 은 항상. */
 export const profileResponseSchema = z.object({
   exists: z.boolean(),
   profile: recommendProfileSchema.nullish(),
-  community_handle: z.string().nullish(),
+  nickname: z.string().nullish(),
 });
 
 export type ProfileResponseData = z.infer<typeof profileResponseSchema>;
