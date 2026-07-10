@@ -32,9 +32,15 @@ def _rows(path: str):
 
         wb = load_workbook(path, read_only=True, data_only=True)
         ws = wb.active
-        rows = ws.iter_rows(values_only=True)
-        headers = [str(h).strip() if h is not None else "" for h in next(rows, [])]
-        for r in rows:
+        # ESDC 파일은 첫 행이 제목(“Employers Who Were Issued…”)이라 헤더가 아래에 있다.
+        # 'employer' 셀을 가진 첫 행을 헤더로 찾는다(제목/공백 행 스킵).
+        headers: list[str] | None = None
+        for r in ws.iter_rows(values_only=True):
+            cells = [str(c).strip() if c is not None else "" for c in r]
+            if headers is None:
+                if any(c.lower() == "employer" for c in cells):
+                    headers = cells
+                continue
             yield {headers[i]: r[i] for i in range(min(len(headers), len(r)))}
         wb.close()
         return
