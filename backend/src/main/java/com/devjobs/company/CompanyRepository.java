@@ -9,16 +9,14 @@ import org.springframework.data.repository.query.Param;
 public interface CompanyRepository extends JpaRepository<CompanyEntity, String> {
 
     // 회사별 active 공고 수가 있는 회사만 (디렉터리). 반환: [slug, count, verified]
-    // verified = 공고 중 하나라도 정부 명부 근거(Home Office/USCIS)를 가진 경우
-    //            (JobService.isRegisterVerified 와 동일 앵커).
+    // verified = 공고 중 하나라도 정부 명부 근거(UK/US/NL/CA)를 가진 경우.
+    // 앵커는 JobService.isRegisterVerified 와 동일해야 한다(스폰서 라이선스=UK, Employer Data
+    // Hub=US, erkende referenten=NL, LMIA=CA). 과거 UK/US만 체크해 NL 을 누락하던 것을 정렬.
     @Query(value = """
         SELECT c.slug, count(j.id) AS job_count,
           bool_or(
             jsonb_typeof(j.visa_evidence) = 'array'
-            AND EXISTS (
-              SELECT 1 FROM jsonb_array_elements_text(j.visa_evidence) ev
-              WHERE ev LIKE '%Home Office%' OR ev LIKE '%USCIS%'
-            )
+            AND j.visa_evidence::text ~ '스폰서 라이선스|Employer Data Hub|erkende referenten|LMIA'
           ) AS verified
         FROM companies c
         JOIN jobs j ON j.company_slug = c.slug AND j.is_active = true AND (j.closes_at IS NULL OR j.closes_at > now())
