@@ -1,5 +1,7 @@
 package com.devjobs.profile;
 
+import com.devjobs.auth.UserEntity;
+import com.devjobs.auth.UserRepository;
 import com.devjobs.strategist.AiClient;
 import com.devjobs.strategist.dto.RecommendDtos.RecommendRequest;
 import com.devjobs.profile.dto.ProfileDto;
@@ -22,20 +24,38 @@ public class ProfileService {
     private static final Pattern HANDLE_RE = Pattern.compile("^[\\p{L}\\p{N}_-]{2,20}$");
 
     private final UserProfileRepository repo;
+    private final UserRepository userRepo;
 
-    public ProfileService(UserProfileRepository repo) {
+    public ProfileService(UserProfileRepository repo, UserRepository userRepo) {
         this.repo = repo;
+        this.userRepo = userRepo;
     }
 
     @Transactional(readOnly = true)
     public ProfileDto.ProfileResponse get(UUID userId) {
         Optional<UserProfileEntity> e = repo.findById(userId);
-        String stored = e.map(UserProfileEntity::getHandle).orElse(null);
-        String nickname = (stored != null && !stored.isBlank()) ? stored : UserHandle.generate(userId);
+        String nickname = resolveNickname(userId, e.orElse(null));
         if (e.isEmpty() || e.get().getSkills().isEmpty()) {
             return new ProfileDto.ProfileResponse(false, null, nickname);
         }
         return new ProfileDto.ProfileResponse(true, toDto(e.get()), nickname);
+    }
+
+    /**
+     * 표시 닉네임 결정: 커스텀 핸들(직접 설정) → 실명(가입/소셜로그인 displayName) → 자동 닉네임.
+     * 실명이 있으면(소셜·이메일 가입 모두) 그대로 노출하고, 이름이 아예 없을 때만 익명 닉네임으로 폴백한다.
+     */
+    private String resolveNickname(UUID userId, UserProfileEntity profile) {
+        String handle = profile != null ? profile.getHandle() : null;
+        String displayName = userRepo.findById(userId).map(UserEntity::getDisplayName).orElse(null);
+        return firstNonBlank(handle, displayName, UserHandle.generate(userId));
+    }
+
+    private static String firstNonBlank(String... values) {
+        for (String v : values) {
+            if (v != null && !v.isBlank()) return v;
+        }
+        return null; // UserHandle.generate 는 항상 non-blank 라 도달하지 않음
     }
 
     // 입력 상한 — 무제한 배열/텍스트 저장(행 비대·저장 폭탄) 방지. 실사용 최대치의 넉넉한 배수.
