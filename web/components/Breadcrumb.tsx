@@ -9,7 +9,6 @@ import { usePathname } from "next/navigation";
 const SECTIONS: Record<string, { label: string; href: string; leaf?: string }> = {
   search: { label: "공고 검색", href: "/search" },
   bookmarks: { label: "북마크", href: "/bookmarks" },
-  community: { label: "커뮤니티", href: "/community" },
   companies: { label: "기업", href: "/companies", leaf: "기업 상세" },
   coach: { label: "이력서 코치", href: "/coach" },
   jobs: { label: "공고", href: "/search", leaf: "공고 상세" },

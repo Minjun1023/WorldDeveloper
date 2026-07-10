@@ -3,7 +3,6 @@ import Link from "next/link";
 import { ApplyButton } from "@/components/job/ApplyButton";
 import { buttonVariants } from "@/components/ui/button";
 import { CompanyLogo } from "@/components/company/CompanyLogo";
-import { RelatedCommunity } from "@/components/community/RelatedCommunity";
 import { MatchScorePanel } from "@/components/job/MatchScorePanel";
 import { SaveJobButton } from "@/components/job/SaveJobButton";
 import { ShareButton } from "@/components/job/ShareButton";
@@ -68,14 +67,6 @@ export function JobSidebar({ job, loggedIn, companyJobCount }: {
           <span className="text-caption font-medium text-primary">더보기</span>
         </div>
       </Link>
-
-      {/* 라운지 역노출 — 이 회사/공고 관련 글 (우측 레일) */}
-      <RelatedCommunity
-        filter={{ company: job.company.slug }}
-        writeParams={{ jobId: job.id, company: job.company.slug, category: "interview" }}
-        title="이 회사 관련 라운지 글"
-        writeLabel="글쓰기"
-      />
     </div>
   );
 }

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-// 전역 404 — notFound() 호출(jobs/visa/community/companies 상세 등)과
+// 전역 404 — notFound() 호출(jobs/visa/companies 상세 등)과
 // 매칭되지 않는 경로 진입 시 표시. Next 기본 무스타일 404 대체.
 export default function NotFound() {
   return (
