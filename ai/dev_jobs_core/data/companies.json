@@ -318,6 +318,7 @@
   "stripe": {
     "ats": "greenhouse",
     "token": "stripe",
+    "ca_sponsor": true,
     "tags": ["fintech", "payments"],
     "uk_sponsor": true,
     "h1b_sponsor": true,
@@ -405,6 +406,7 @@
   "doordash": {
     "ats": "greenhouse",
     "token": "doordash",
+    "ca_sponsor": true,
     "tags": ["delivery", "marketplace"],
     "h1b_sponsor": true,
     "domain": "doordash.com",
@@ -474,6 +476,7 @@
   "snowflake": {
     "ats": "greenhouse",
     "token": "snowflake",
+    "ca_sponsor": true,
     "tags": ["data", "saas"],
     "uk_sponsor": true,
     "h1b_sponsor": true,
@@ -561,6 +564,7 @@
   "okta": {
     "ats": "greenhouse",
     "token": "okta",
+    "ca_sponsor": true,
     "tags": ["security", "saas"],
     "h1b_sponsor": true,
     "ind_sponsor": true,
@@ -580,6 +584,7 @@
   "atlassian": {
     "ats": "greenhouse",
     "token": "atlassian",
+    "ca_sponsor": true,
     "tags": ["productivity", "saas"],
     "uk_sponsor": true,
     "h1b_sponsor": true,
@@ -592,6 +597,7 @@
   "shopify": {
     "ats": "greenhouse",
     "token": "shopify",
+    "ca_sponsor": true,
     "tags": ["ecommerce", "remote-first"],
     "uk_sponsor": true,
     "h1b_sponsor": true,
@@ -662,6 +668,7 @@
   "netflix": {
     "ats": "lever",
     "token": "netflix",
+    "ca_sponsor": true,
     "tags": ["consumer", "streaming"],
     "uk_sponsor": true,
     "h1b_sponsor": true,
@@ -1010,6 +1017,7 @@
   "cohere": {
     "ats": "ashby",
     "token": "cohere",
+    "ca_sponsor": true,
     "tags": ["ai", "ml"],
     "uk_sponsor": true,
     "h1b_sponsor": true,
@@ -1053,6 +1061,7 @@
   "faire": {
     "ats": "greenhouse",
     "token": "faire",
+    "ca_sponsor": true,
     "tags": ["marketplace"],
     "uk_sponsor": true,
     "h1b_sponsor": true,
@@ -1356,6 +1365,7 @@
   "webflow": {
     "ats": "greenhouse",
     "token": "webflow",
+    "ca_sponsor": true,
     "tags": ["devtools", "nocode"],
     "uk_sponsor": true,
     "size": "201-1000"
@@ -1720,6 +1730,7 @@
   "wealthsimple": {
     "ats": "ashby",
     "token": "wealthsimple",
+    "ca_sponsor": true,
     "tags": ["fintech"],
     "h1b_sponsor": true,
     "domain": "wealthsimple.com",
