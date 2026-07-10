@@ -487,16 +487,18 @@ public class JobService {
     }
 
     // 비자 근거가 정부 공식 명부 대조면 true. ETL reclassify 가 남기는 근거 문자열의 안정적
-    // 앵커("Home Office"=UK 스폰서 명부, "USCIS"=US H-1B Data Hub)로 판별 — 언어 무관.
+    // 앵커로 판별 — 언어 무관.
     static boolean isRegisterVerified(List<String> evidence) {
         if (evidence == null) {
             return false;
         }
-        // 정부 명부(UK/US/NL) register 단계가 남기는 고유 문구로 판정 — 키워드 evidence 스니펫과
-        // 충돌하지 않는 앵커. JobRepository 의 정렬/필터 SQL 과 동일 기준이어야 한다.
+        // 정부 명부(UK/US/NL/CA) register 단계가 남기는 고유 문구로 판정 — 키워드 evidence 스니펫과
+        // 충돌하지 않는 앵커. JobRepository·CompanyRepository 의 정렬/필터 SQL 과 동일 기준이어야 한다.
+        // 스폰서 라이선스=UK, Employer Data Hub=US H-1B, erkende referenten=NL IND, LMIA=CA.
         return evidence.stream().anyMatch(e ->
             e != null && (e.contains("스폰서 라이선스")
-                || e.contains("Employer Data Hub") || e.contains("erkende referenten")));
+                || e.contains("Employer Data Hub") || e.contains("erkende referenten")
+                || e.contains("LMIA")));
     }
 
     // sponsors 근거 등급 — register(정부 명부) > direct(공고 본문 명시) > indirect(같은 회사

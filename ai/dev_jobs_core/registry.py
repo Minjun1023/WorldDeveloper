@@ -72,6 +72,16 @@ def ind_sponsor_slugs() -> set[str]:
     }
 
 
+def ca_sponsor_slugs() -> set[str]:
+    """캐나다 LMIA 승인 고용주로 큐레이션된 회사(ca_sponsor=true)의 토큰 집합."""
+    registry = _load()
+    return {
+        info["token"]
+        for info in registry.values()
+        if info.get("ca_sponsor") is True
+    }
+
+
 def search_by_tag(tags: list[str]) -> list[dict]:
     """태그로 회사 검색 (OR 조건). 예: ["fintech", "europe"]."""
     registry = _load()

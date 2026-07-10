@@ -4,11 +4,17 @@ from __future__ import annotations
 import asyncio
 import logging
 
+from dev_jobs_core.analyzers.ca_location import is_ca_location
 from dev_jobs_core.analyzers.nl_location import is_nl_location
 from dev_jobs_core.analyzers.uk_location import is_uk_location
 from dev_jobs_core.analyzers.us_location import is_us_location
 from dev_jobs_core.analyzers.visa import classify_visa
-from dev_jobs_core.registry import h1b_sponsor_slugs, ind_sponsor_slugs, uk_sponsor_slugs
+from dev_jobs_core.registry import (
+    ca_sponsor_slugs,
+    h1b_sponsor_slugs,
+    ind_sponsor_slugs,
+    uk_sponsor_slugs,
+)
 
 from ..db import (
     fetch_sponsor_jobs_for_companies,
@@ -75,6 +81,23 @@ def match_ind_register(jobs: list[dict], ind_slugs: set[str]) -> dict[str, tuple
     return out
 
 
+CA_EVIDENCE = "회사가 캐나다 LMIA 승인 고용주 (ESDC Positive LMIA 고용주 명부)"
+
+
+def match_ca_register(jobs: list[dict], ca_slugs: set[str]) -> dict[str, tuple[str, list[str]]]:
+    """unclear 공고 중 (회사가 캐나다 LMIA 승인 고용주 + 캐나다 소재)인 것을 sponsors 로 매핑.
+
+    순수 함수(DB/네트워크 없음). 입력 jobs 는 fetch_unclear_jobs 형식 dict.
+    """
+    out: dict[str, tuple[str, list[str]]] = {}
+    for j in jobs:
+        if j.get("company_slug") in ca_slugs and is_ca_location(
+            j.get("location"), j.get("is_remote", False)
+        ):
+            out[j["id"]] = ("sponsors", [CA_EVIDENCE])
+    return out
+
+
 def register_evidence_updates(
     jobs: list[dict], slugs: set[str], isloc, evidence: str
 ) -> dict[str, list[str]]:
@@ -135,6 +158,12 @@ async def reclassify_unclear_visa(limit: int | None = None, use_llm: bool = True
         results.update(ind_hits)
         remaining = [j for j in remaining if j["id"] not in ind_hits]
 
+        # 1.8) CA LMIA 승인 고용주 매칭 (무료·사실 기반, LLM 앞)
+        ca_hits = match_ca_register(remaining, ca_sponsor_slugs())
+        by_ca_register = len(ca_hits)
+        results.update(ca_hits)
+        remaining = [j for j in remaining if j["id"] not in ca_hits]
+
         # 2) LLM (동시성 제한 + 설명 캐시)
         cache: dict[str, tuple[str, list[str]] | None] = {}
         sem = asyncio.Semaphore(_LLM_CONCURRENCY)
@@ -173,6 +202,7 @@ async def reclassify_unclear_visa(limit: int | None = None, use_llm: bool = True
             (uk_slugs, is_uk_location, UK_EVIDENCE),
             (h1b_sponsor_slugs(), is_us_location, H1B_EVIDENCE),
             (ind_sponsor_slugs(), is_nl_location, IND_EVIDENCE),
+            (ca_sponsor_slugs(), is_ca_location, CA_EVIDENCE),
         ):
             stamp_jobs = fetch_sponsor_jobs_for_companies(conn, list(slugs))
             for jid, ev in register_evidence_updates(stamp_jobs, slugs, isloc, evid).items():
@@ -187,6 +217,7 @@ async def reclassify_unclear_visa(limit: int | None = None, use_llm: bool = True
             "by_uk_register": by_uk_register,
             "by_h1b_register": by_h1b_register,
             "by_ind_register": by_ind_register,
+            "by_ca_register": by_ca_register,
             "by_llm": by_llm,
             "by_company": by_company,
             "by_register_stamp": by_register_stamp,

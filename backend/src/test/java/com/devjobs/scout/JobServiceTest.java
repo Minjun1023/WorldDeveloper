@@ -22,6 +22,18 @@ class JobServiceTest {
     }
 
     @Test
+    void nlIndEvidenceIsRegisterVerified() {
+        assertTrue(JobService.isRegisterVerified(
+            List.of("회사가 IND 인정 스폰서 (네덜란드 이민청 erkende referenten 명부)")));
+    }
+
+    @Test
+    void caLmiaEvidenceIsRegisterVerified() {
+        assertTrue(JobService.isRegisterVerified(
+            List.of("회사가 캐나다 LMIA 승인 고용주 (ESDC Positive LMIA 고용주 명부)")));
+    }
+
+    @Test
     void inferredEvidenceIsNotRegisterVerified() {
         assertFalse(JobService.isRegisterVerified(List.of("같은 회사의 다른 공고에 비자 스폰서 명시")));
         assertFalse(JobService.isRegisterVerified(List.of("We offer relocation and visa support.")));

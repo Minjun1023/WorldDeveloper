@@ -141,7 +141,7 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
     String SEARCH_EXTRAS = """
           AND (:verifiedOnly = false
                OR (visa_status = 'sponsors'
-                   AND visa_evidence::text ~ '스폰서 라이선스|Employer Data Hub|erkende referenten'))
+                   AND visa_evidence::text ~ '스폰서 라이선스|Employer Data Hub|erkende referenten|LMIA'))
           AND (CAST(:minSalary AS integer) IS NULL OR salary_max_usd >= CAST(:minSalary AS integer))
           AND (:completeOnly = false
                OR (location IS NOT NULL AND btrim(location) <> ''
@@ -157,7 +157,7 @@ public interface JobRepository extends JpaRepository<JobEntity, String> {
           CASE WHEN :visaPriority THEN
             (CASE
                WHEN visa_status = 'sponsors'
-                    AND visa_evidence::text ~ '스폰서 라이선스|Employer Data Hub|erkende referenten' THEN 0
+                    AND visa_evidence::text ~ '스폰서 라이선스|Employer Data Hub|erkende referenten|LMIA' THEN 0
                WHEN visa_status = 'sponsors' THEN 1
                WHEN visa_status = 'no_sponsor' THEN 3
                ELSE 2 END)
