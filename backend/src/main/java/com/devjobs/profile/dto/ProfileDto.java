@@ -17,10 +17,10 @@ public final class ProfileDto {
         String handle
     ) {}
 
-    // community_handle = 실제 표시되는 닉네임(handle 미설정 시 자동 닉네임). 항상 존재.
+    // nickname = 실제 표시되는 익명 닉네임(사용자가 handle 미설정 시 자동 닉네임). 항상 존재.
     public record ProfileResponse(
         boolean exists,
         Profile profile,
-        @JsonProperty("community_handle") String communityHandle
+        @JsonProperty("nickname") String nickname
     ) {}
 }

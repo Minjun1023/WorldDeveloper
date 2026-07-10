@@ -31,11 +31,11 @@ public class ProfileService {
     public ProfileDto.ProfileResponse get(UUID userId) {
         Optional<UserProfileEntity> e = repo.findById(userId);
         String stored = e.map(UserProfileEntity::getHandle).orElse(null);
-        String communityHandle = (stored != null && !stored.isBlank()) ? stored : UserHandle.generate(userId);
+        String nickname = (stored != null && !stored.isBlank()) ? stored : UserHandle.generate(userId);
         if (e.isEmpty() || e.get().getSkills().isEmpty()) {
-            return new ProfileDto.ProfileResponse(false, null, communityHandle);
+            return new ProfileDto.ProfileResponse(false, null, nickname);
         }
-        return new ProfileDto.ProfileResponse(true, toDto(e.get()), communityHandle);
+        return new ProfileDto.ProfileResponse(true, toDto(e.get()), nickname);
     }
 
     // 입력 상한 — 무제한 배열/텍스트 저장(행 비대·저장 폭탄) 방지. 실사용 최대치의 넉넉한 배수.
