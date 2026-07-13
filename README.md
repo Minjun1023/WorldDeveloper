@@ -4,6 +4,8 @@
 
 **Live:** https://152.67.215.221.sslip.io · Next.js + Spring Boot + FastAPI 폴리글랏 모노레포 · OCI 단일 VM에 Docker Compose 배포(GitHub Actions CD).
 
+**데모 계정:** `demo@devpass.io` / `DevPass2026` — 회원가입 없이 로그인해 5축 매칭 추천과 AI 이력서 코치를 바로 체험할 수 있어요.
+
 ![홈](docs/screenshots/v3/home.png)
 
 ---
@@ -45,7 +47,7 @@ DevPass는 이 지점을 공략한다:
 | 서비스 | 스택 | 책임 |
 |---|---|---|
 | **web** | Next.js 14 (App Router), TypeScript, Tailwind | SSR UI + 서버 라우트가 세션·시크릿을 쥐고 백엔드를 프록시(BFF). 클라이언트엔 토큰 비노출 |
-| **backend** | Spring Boot 3, Java 17, JPA, Spring Security | 인증(이메일+OAuth), 공고/추천/코치/커뮤니티 API, 5축 매칭 스코어링, 분석 |
+| **backend** | Spring Boot 3, Java 17, JPA, Spring Security | 인증(이메일+OAuth), 공고/추천/코치 API, 5축 매칭 스코어링, 일일 AI 크레딧, 분석 |
 | **ai** | FastAPI, Python 3.12, sentence-transformers | 임베딩 추론(`paraphrase-multilingual-MiniLM`, 384d), OpenAI 요약/코치 프록시 |
 | **etl-worker** | 위 ai 이미지 재사용 | 수집 스케줄러를 웹 서비스와 분리 — 수집 중에도 API 응답이 멈추지 않게 함 |
 
@@ -67,7 +69,7 @@ DevPass는 이 지점을 공략한다:
 
 ## 엔지니어링 하이라이트
 
-**테스트 & CI** — web `vitest` 52파일 · backend JUnit 41파일 · ai/MCP `pytest` 51파일(364 케이스). GitHub Actions가 변경된 레이어만 골라 검증한다(web: 타입체크 + 테스트 + 빌드 / backend: gradle test / ai: pytest + import). 모든 변경은 PR + CI 통과 후 머지.
+**테스트 & CI** — web `vitest` 52파일 · backend JUnit 42파일 · ai/MCP `pytest` 56파일. GitHub Actions가 변경된 레이어만 골라 검증한다(web: 타입체크 + 테스트 + 빌드 / backend: gradle test / ai: pytest + import). 모든 변경은 PR + CI 통과 후 머지.
 
 **보안 (defense-in-depth)**
 - 이메일/비밀번호 재설정 코드 시도 횟수 잠금 — 6자리 코드 브루트포스 차단
@@ -91,9 +93,10 @@ DevPass는 이 지점을 공략한다:
 - **공고 검색·필터** — 지역(국가)·기술 스택·비자 등급 필터, Postgres 전문 검색(tsvector)
 - **맞춤 추천** — 프로필 5축 매칭 + pgvector 의미 검색, 점수 근거 공개, 다양성 제약(회사 편중 방지)
 - **AI 이력서 코치** — 공고 grounding 기반 문장 리라이트, PDF 이력서 업로드 추출, 토큰 스트리밍
+- **일일 AI 크레딧** — 코치·요약·추천 파싱 등 유료 AI 경로에 계정별 하루 사용량 상한(KST 자정 리셋, 서비스 실패 시 자동 환불)
 - **인기 TOP 공고** — 조회 로그 기반 지역·직무별 인기 공고(데이터 희소 시 최신순 fallback)
 - **인증** — 이메일(6자리 코드 인증) + GitHub/Google OAuth, JWT 세션
-- **지원 관리** — 북마크, 칸반 지원 트래커(키보드 접근성 지원), 커뮤니티, 회사 디렉터리
+- **지원 관리** — 북마크, 칸반 지원 트래커(키보드 접근성 지원), 회사 디렉터리
 - **분석** — 조회/가입/재방문 퍼널(운영자 대시보드), 고유 열람자 기준 중복 제거
 
 ### 화면
@@ -111,7 +114,7 @@ DevPass는 이 지점을 공략한다:
 ## 모노레포 구조
 
 ```
-WorldDeveloper/
+devpass/
 ├── web/        Next.js 14 (App Router, TypeScript) — UI + BFF
 ├── backend/    Spring Boot 3 (Java 17) — REST API · 인증 · 스코어링 · Flyway 마이그레이션
 ├── ai/         FastAPI (Python 3.12) — 임베딩 · ETL worker · LLM 프록시
@@ -121,7 +124,7 @@ WorldDeveloper/
 └── docs/       설계 문서
 ```
 
-규모: Java 130파일 · TS/TSX 284파일 · Python 95파일 · DB 마이그레이션 29개(Flyway) · 테스트 web 52 / backend 41 / ai 51 파일.
+규모: Java 189파일 · TS/TSX 314파일 · Python 145파일 · DB 마이그레이션 42개(Flyway) · 테스트 web 52 / backend 42 / ai 56 파일.
 
 ---
 
