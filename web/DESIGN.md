@@ -205,10 +205,6 @@ container:
 - 회사 카드 그리드. 로고 자리(이니셜 박스, `accent` 배경 + `primary` 글자) + 회사명 + 공고 수(`caption`).
 - 클릭 → `/companies/[slug]`.
 
-### NlRecommend (클라이언트)
-- 자연어 한 문장 입력 + "추천 받기" 버튼. 결과는 `RecommendationCard` + `ScoreBreakdownBars` 재사용.
-- 상태: 미입력(입력창+예시) / 로딩(스켈레톤) / 결과 / 에러(섹션 내 안내). 마지막 입력 `localStorage` 기억.
-
 ## 구현 매핑
 
 | DESIGN.md 토큰 | 구현 위치 |
