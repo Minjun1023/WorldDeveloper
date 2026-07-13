@@ -24,7 +24,7 @@ openssl rand -base64 32
 
 ## 2. Railway (backend + ai)
 
-프로젝트 생성 → **GitHub repo(WorldDeveloper) 연결** → service 2개 추가:
+프로젝트 생성 → **GitHub repo(devpass) 연결** → service 2개 추가:
 
 ### backend service
 - **Root Directory**: `backend`
