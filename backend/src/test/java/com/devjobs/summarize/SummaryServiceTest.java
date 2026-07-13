@@ -34,6 +34,7 @@ class SummaryServiceTest {
     private JobRepository jobRepo;
     private AiClient ai;
     private RateLimiter rateLimiter;
+    private com.devjobs.credits.AiCreditService credits;
     private SummaryService service;
 
     @BeforeEach
@@ -43,7 +44,9 @@ class SummaryServiceTest {
         ai = Mockito.mock(AiClient.class);
         rateLimiter = Mockito.mock(RateLimiter.class);
         when(rateLimiter.tryAcquire(anyString(), anyInt())).thenReturn(true);
-        service = new SummaryService(repo, jobRepo, ai, new ObjectMapper(), rateLimiter, 20);
+        credits = Mockito.mock(com.devjobs.credits.AiCreditService.class);
+        Mockito.when(credits.tryConsume(Mockito.any(), Mockito.anyString())).thenReturn(true);
+        service = new SummaryService(repo, jobRepo, ai, new ObjectMapper(), rateLimiter, credits, 20);
     }
 
     @Test

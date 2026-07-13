@@ -51,6 +51,8 @@ export function CoachChat({
   const [error, setError] = useState<string | null>(null);
   const [hydratedAt, setHydratedAt] = useState<string | null>(null);
   const [jobs, setJobs] = useState<PickJob[]>(initialJobs ?? []);
+  // 오늘 잔여 코치 크레딧(일일 한도) — 컴포저 아래 캡션 표시용. 실패 시 미표시(기능 영향 없음).
+  const [credits, setCredits] = useState<{ remaining: number; daily: number } | null>(null);
   const [jobsLoading, setJobsLoading] = useState(initialJobs === undefined && loggedIn);
   const threadRef = useRef<HTMLDivElement>(null);
   const composerWrapRef = useRef<HTMLDivElement>(null);
@@ -64,6 +66,25 @@ export function CoachChat({
   const started = messages.length > 0;
   const hasResume = resume.trim().length > 0;
   const attachmentCount = (jobId ? 1 : 0) + (hasResume ? 1 : 0);
+
+  async function refreshCredits() {
+    if (!loggedIn) return;
+    try {
+      const res = await fetch("/api/me/coach/credits");
+      if (!res.ok) return;
+      const d = (await res.json()) as { remaining?: number; daily?: number };
+      if (typeof d.remaining === "number" && typeof d.daily === "number") {
+        setCredits({ remaining: d.remaining, daily: d.daily });
+      }
+    } catch {
+      /* 표시용 정보 — 실패 무시 */
+    }
+  }
+
+  useEffect(() => {
+    refreshCredits();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loggedIn]);
 
   // picker 공고 = 북마크(저장) + 지원상태. 지원준비중(interested) 먼저. 비로그인은 조회하지 않는다.
   useEffect(() => {
@@ -244,7 +265,14 @@ export function CoachChat({
         body: JSON.stringify({ job_id: jobId, resume, messages: next }),
       });
       if (res.status === 503) throw new Error("상담 기능이 아직 설정되지 않았어요.");
-      if (!res.ok || !res.body) throw new Error(`오류 (HTTP ${res.status})`);
+      if (!res.ok || !res.body) {
+        // 백엔드 에러 body 의 message(한국어 안내 — 예: 일일 크레딧 소진, 요청 과다)를 우선 노출.
+        const serverMsg = await res
+          .json()
+          .then((d: { error?: string; message?: string }) => d?.error || d?.message || null)
+          .catch(() => null);
+        throw new Error(serverMsg || `오류 (HTTP ${res.status})`);
+      }
       // 응답을 청크 단위로 받아 어시스턴트 말풍선을 실시간으로 채운다(체감 지연 개선).
       const reader = res.body.getReader();
       const decoder = new TextDecoder();
@@ -272,6 +300,7 @@ export function CoachChat({
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setPending(false);
+      void refreshCredits(); // 차감(또는 환불) 반영
     }
   }
 
@@ -310,6 +339,18 @@ export function CoachChat({
           className="block max-h-40 min-h-[40px] flex-1 resize-none bg-transparent py-2 text-body-sm leading-relaxed text-foreground placeholder:text-muted-foreground focus:outline-none"
         />
       </div>
+
+      {/* 오늘 잔여 상담 횟수 — 소진 임박(≤5)이면 강조. 조회 실패 시 표시하지 않는다. */}
+      {loggedIn && credits && (
+        <p
+          className={cn(
+            "mt-1.5 text-right text-caption",
+            credits.remaining <= 5 ? "text-destructive" : "text-muted-foreground",
+          )}
+        >
+          오늘 남은 상담 {credits.remaining}/{credits.daily}회
+        </p>
+      )}
 
       {/* ＋ 팝오버 메뉴 */}
       {menuOpen && (

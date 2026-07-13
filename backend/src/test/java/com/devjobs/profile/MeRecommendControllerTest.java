@@ -23,6 +23,7 @@ class MeRecommendControllerTest {
     private static final String USER_ID_STRING = UUID.randomUUID().toString();
 
     private ProfileService profileService;
+    private com.devjobs.credits.AiCreditService creditService;
     private RecommendService recommendService;
     private MeRecommendController controller;
 
@@ -54,8 +55,10 @@ class MeRecommendControllerTest {
         AiClient aiClient = mock(AiClient.class);
         RateLimiter rateLimiter = mock(RateLimiter.class);
         FeedbackService feedbackService = mock(FeedbackService.class);
+        creditService = mock(com.devjobs.credits.AiCreditService.class);
+        when(creditService.tryConsume(any(), org.mockito.ArgumentMatchers.anyString())).thenReturn(true);
         controller = new MeRecommendController(
-            profileService, recommendService, aiClient, rateLimiter, feedbackService);
+            profileService, recommendService, aiClient, rateLimiter, feedbackService, creditService);
     }
 
     @Test

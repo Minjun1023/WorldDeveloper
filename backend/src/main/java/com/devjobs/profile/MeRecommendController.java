@@ -1,5 +1,6 @@
 package com.devjobs.profile;
 
+import com.devjobs.credits.AiCreditService;
 import com.devjobs.feedback.FeedbackService;
 import com.devjobs.strategist.AiClient;
 import com.devjobs.strategist.RateLimiter;
@@ -30,15 +31,17 @@ public class MeRecommendController {
     private final AiClient aiClient;
     private final RateLimiter rateLimiter;
     private final FeedbackService feedbackService;
+    private final AiCreditService creditService;
 
     public MeRecommendController(ProfileService profileService, RecommendService recommendService,
                                  AiClient aiClient, RateLimiter rateLimiter,
-                                 FeedbackService feedbackService) {
+                                 FeedbackService feedbackService, AiCreditService creditService) {
         this.profileService = profileService;
         this.recommendService = recommendService;
         this.aiClient = aiClient;
         this.rateLimiter = rateLimiter;
         this.feedbackService = feedbackService;
+        this.creditService = creditService;
     }
 
     @PostMapping
@@ -58,10 +61,16 @@ public class MeRecommendController {
             return ResponseEntity.status(429).header("Retry-After", "3600")
                 .body(Map.of("error", "요청이 많아요. 잠시 후 다시 시도해 주세요."));
         }
+        // note 파싱은 LLM 폴백 가능(유료) — 일일 크레딧으로 계정당 하루 비용 상한.
+        if (hasNote && !creditService.tryConsume(id, AiCreditService.KIND_NOTE)) {
+            return ResponseEntity.status(429)
+                .body(Map.of("error", "오늘의 조건 파싱 횟수를 모두 사용했어요. 내일 다시 이용할 수 있어요."));
+        }
         AiClient.ParseResult.Profile note = null;
         if (hasNote) {
             AiClient.ParseResult parsed = aiClient.parseProfile(noteText);
             if (parsed != null) note = parsed.profile();
+            else creditService.refund(id, AiCreditService.KIND_NOTE); // 서비스 귀책 실패 — 환불
         }
         int topK = req != null && req.topK() != null ? req.topK() : ProfileService.DEFAULT_TOP_K;
         RecommendRequest rr = ProfileService.toRecommendRequest(profileOpt.get(), note, topK);

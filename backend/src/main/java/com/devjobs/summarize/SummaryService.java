@@ -35,16 +35,18 @@ public class SummaryService {
     private final AiClient ai;
     private final ObjectMapper mapper;
     private final RateLimiter rateLimiter;
+    private final com.devjobs.credits.AiCreditService creditService;
     private final int summaryCapacity;
 
     public SummaryService(JobSummaryRepository repo, JobRepository jobRepo, AiClient ai, ObjectMapper mapper,
-                          RateLimiter rateLimiter,
+                          RateLimiter rateLimiter, com.devjobs.credits.AiCreditService creditService,
                           @Value("${app.ratelimit.summary-capacity:20}") int summaryCapacity) {
         this.repo = repo;
         this.jobRepo = jobRepo;
         this.ai = ai;
         this.mapper = mapper;
         this.rateLimiter = rateLimiter;
+        this.creditService = creditService;
         this.summaryCapacity = summaryCapacity;
     }
 
@@ -53,8 +55,14 @@ public class SummaryService {
         return repo.findByJobIdAndLang(jobId, lang).map(e -> toDto(e, true));
     }
 
+    /** 기존 시그니처 호환(익명 취급). */
     @Transactional
     public Optional<SummaryDto> getOrCreate(String jobId, String lang, String clientKey) {
+        return getOrCreate(jobId, lang, clientKey, null);
+    }
+
+    @Transactional
+    public Optional<SummaryDto> getOrCreate(String jobId, String lang, String clientKey, java.util.UUID userId) {
         Optional<JobSummaryEntity> cached = repo.findByJobIdAndLang(jobId, lang);
         if (cached.isPresent()) {
             return Optional.of(toDto(cached.get(), true));
@@ -71,10 +79,22 @@ public class SummaryService {
         if (!rateLimiter.tryAcquire("summary:" + clientKey, summaryCapacity)) {
             throw new SummaryRateLimitedException();
         }
+        // 로그인 사용자는 일일 크레딧도 적용(계정당 하루 비용 상한). 익명은 IP 고정창만.
+        boolean consumedCredit = false;
+        if (userId != null) {
+            if (!creditService.tryConsume(userId, com.devjobs.credits.AiCreditService.KIND_SUMMARY)) {
+                throw new SummaryRateLimitedException();
+            }
+            consumedCredit = true;
+        }
 
         String src = job.getDescriptionText() != null ? job.getDescriptionText() : job.getDescription();
         AiClient.AiSummary s = ai.summarize(job.getTitle(), src);
         if (s == null) {
+            // 서비스 귀책 실패 — 크레딧 환불(사용자 과금 방지).
+            if (consumedCredit) {
+                creditService.refund(userId, com.devjobs.credits.AiCreditService.KIND_SUMMARY);
+            }
             throw new SummaryUnavailableException();
         }
 

@@ -14,8 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1/recommend")
 public class RecommendController {
 
-    // 공개(비인증) 엔드포인트라 임베딩(AI 비용) 경로를 보호하기 위한 입력 상한.
-    // 자매 엔드포인트(NlRecommend)와 동일하게 레이트리밋도 적용한다.
+    // 공개(비인증) 엔드포인트라 임베딩(AI 비용) 경로를 보호하기 위한 입력 상한 + 레이트리밋.
     private static final int MAX_SKILLS = 50;
     private static final int MAX_BIO_LEN = 2_000;
     private static final int MAX_RESUME_LEN = 20_000;
