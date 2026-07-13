@@ -238,4 +238,4 @@ search   recommend  interested  applied  phone_screen/onsite  offer/accepted/rej
 
 ## 관련 프로젝트
 
-이 MCP 서버의 코어 모듈(`sources/`, `analyzers/`, `recommender/`)은 별도의 웹 서비스(`WorldDeveloper/`)에서 재사용된다. 전체 사이트 설계는 `WorldDeveloper/DESIGN.md` 참고.
+이 MCP 서버의 코어 모듈(`sources/`, `analyzers/`, `recommender/`)은 별도의 웹 서비스(`devpass/`)에서 재사용된다. 전체 사이트 설계는 `devpass/DESIGN.md` 참고.
