@@ -101,7 +101,7 @@ DevPass는 이 지점을 공략한다:
 
 ### 화면
 
-| 맞춤 추천 (5축 레이더) | AI 이력서 코치 |
+| 맞춤 추천 (프로필 기반 5축 매칭) | AI 이력서 코치 |
 |---|---|
 | ![추천](docs/screenshots/v3/recommend.png) | ![코치](docs/screenshots/v3/coach.png) |
 
