@@ -7,6 +7,7 @@ import com.devjobs.coach.dto.CoachDtos.ConversationListResponse;
 import com.devjobs.coach.dto.CoachDtos.ConversationResponse;
 import com.devjobs.coach.dto.CoachDtos.ConversationSummary;
 import com.devjobs.company.CompanyService;
+import com.devjobs.credits.AiCreditService;
 import com.devjobs.company.dto.CompanyDtos.CompanyDetail;
 import com.devjobs.profile.ProfileService;
 import com.devjobs.profile.UserProfileEntity;
@@ -63,10 +64,12 @@ public class CoachChatController {
     private final AiClient aiClient;
     private final RateLimiter rateLimiter;
     private final CoachConversationService conversationService;
+    private final AiCreditService creditService;
 
     public CoachChatController(JobService jobService, CompanyService companyService, ProfileService profileService,
                               CoachService coachService, AiClient aiClient, RateLimiter rateLimiter,
-                              CoachConversationService conversationService) {
+                              CoachConversationService conversationService,
+                              AiCreditService creditService) {
         this.jobService = jobService;
         this.companyService = companyService;
         this.profileService = profileService;
@@ -74,13 +77,20 @@ public class CoachChatController {
         this.aiClient = aiClient;
         this.rateLimiter = rateLimiter;
         this.conversationService = conversationService;
+        this.creditService = creditService;
     }
 
     @PostMapping
-    public ResponseEntity<CoachReply> coach(@AuthenticationPrincipal String userId, @RequestBody CoachRequest req) {
+    public ResponseEntity<?> coach(@AuthenticationPrincipal String userId, @RequestBody CoachRequest req) {
         validate(req);
         if (!rateLimiter.tryAcquire("chat:" + userId)) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "요청이 많아요. 잠시 후 다시.");
+        }
+        // 일일 크레딧(계정 단위 비용 상한) — 시간당 리밋과 별개. 소진 시 KST 자정 리셋 안내.
+        // 관례(RecommendController 429)대로 명시적 {"error": ...} body — FE 가 그대로 노출한다.
+        if (!creditService.tryConsume(UUID.fromString(userId), AiCreditService.KIND_COACH)) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(Map.of("error", "오늘의 코치 크레딧을 모두 사용했어요. 내일 다시 이용할 수 있어요."));
         }
         // 공고는 선택사항: 비워두면 일반 이력서/커리어 코칭. job_id 가 주어졌는데 없으면 그대로 404.
         boolean hasJob = req.job_id() != null && !req.job_id().isBlank();
@@ -103,6 +113,8 @@ public class CoachChatController {
             .map(m -> new AiClient.CoachChatMessage(m.role(), m.content())).toList();
         var result = aiClient.coachChat(context, req.resume() == null ? "" : req.resume(), aiMsgs);
         if (result == null) {
+            // 서비스 귀책 실패 — 사용자 크레딧을 깎지 않는다.
+            creditService.refund(UUID.fromString(userId), AiCreditService.KIND_COACH);
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "상담 기능을 사용할 수 없어요.");
         }
         // 대화 저장(best-effort) — 공고 단위로만 저장한다(스키마 PK=user+job). 공고 없는 일반 코칭은 저장하지 않는다.
@@ -125,6 +137,13 @@ public class CoachChatController {
         validate(req);
         if (!rateLimiter.tryAcquire("chat:" + userId)) {
             throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS, "요청이 많아요. 잠시 후 다시.");
+        }
+        // 일일 크레딧(계정 단위 비용 상한) — 시간당 리밋과 별개. 소진 시 KST 자정 리셋.
+        // 스트림 시그니처(async) 유지를 위해 예외 방식 — 운영에선 server.error.include-message 로
+        // 안내문이 error body(message)에 실리고, FE 는 error||message 둘 다 읽는다.
+        if (!creditService.tryConsume(UUID.fromString(userId), AiCreditService.KIND_COACH)) {
+            throw new ResponseStatusException(HttpStatus.TOO_MANY_REQUESTS,
+                "오늘의 코치 크레딧을 모두 사용했어요. 내일 다시 이용할 수 있어요.");
         }
         boolean hasJob = req.job_id() != null && !req.job_id().isBlank();
         JobDetailDto job = null;
@@ -157,6 +176,14 @@ public class CoachChatController {
                     throw new UncheckedIOException(e);
                 }
             });
+            // 스트림이 아무것도 못 받았으면(AI 미연결 등 서비스 귀책) 크레딧 환불.
+            if (full == null) {
+                try {
+                    creditService.refund(uid, AiCreditService.KIND_COACH);
+                } catch (Exception e) {
+                    log.warn("coach 크레딧 환불 실패(무시): {}", e.toString());
+                }
+            }
             // 공고 단위로만 저장(PK=user+job). 스트림 완료 후 누적 전체를 저장한다(best-effort).
             if (persist && full != null && !full.isBlank()) {
                 try {
@@ -216,6 +243,14 @@ public class CoachChatController {
             return new ConversationSummary(s.jobId(), company, title, s.lastActiveAt(), s.preview());
         }).toList();
         return ResponseEntity.ok(new ConversationListResponse(withLabels));
+    }
+
+    /** 오늘 잔여 코치 크레딧 — FE 컴포저 옆 "오늘 남은 상담 N회" 표시용. */
+    @GetMapping("/credits")
+    public ResponseEntity<Map<String, Integer>> credits(@AuthenticationPrincipal String userId) {
+        return ResponseEntity.ok(Map.of(
+            "remaining", creditService.remaining(UUID.fromString(userId), AiCreditService.KIND_COACH),
+            "daily", creditService.dailyLimit(AiCreditService.KIND_COACH)));
     }
 
     @DeleteMapping("/conversation")

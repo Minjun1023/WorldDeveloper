@@ -103,8 +103,20 @@ ai:
 jwt:
   secret: ${JWT_SECRET:dev-local-jwt-secret-change-me-min-32-bytes!!}
 
+# 계정별 AI 크레딧(일일, KST 자정 리셋) — 유료 AI 경로의 사용자당 하루 비용 상한.
+app.credits:
+  coach-daily: ${COACH_DAILY_CREDITS:30}
+  # 공고 AI 요약(캐시 미스만 과금·로그인 사용자만 적용, 익명은 IP 시간창만)
+  summary-daily: ${SUMMARY_DAILY_CREDITS:30}
+  # 맞춤 추천의 자연어 조건(note) 파싱 — LLM 폴백 가능 경로
+  note-daily: ${NOTE_DAILY_CREDITS:20}
+
 server:
   port: ${PORT:8080}
+  # ResponseStatusException 의 reason(한국어 사용자 안내문)을 에러 응답 body 에 포함 —
+  # 프론트가 "오늘 크레딧 소진" 같은 구체 안내를 표시할 수 있게 한다.
+  error:
+    include-message: always
   # 배포/재시작 시 진행 중 요청을 마치고 종료(기본 immediate 는 스트리밍 코치 응답을 끊는다).
   shutdown: graceful
   # 리버스 프록시(운영) 뒤에서 X-Forwarded-* 를 해석 — rate limit 의 클라이언트 IP 인식 전제.

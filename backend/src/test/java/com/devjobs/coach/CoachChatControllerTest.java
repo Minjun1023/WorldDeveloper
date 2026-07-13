@@ -189,6 +189,89 @@ class CoachChatControllerTest {
         assertThat(conversationRepo.findByUserIdAndJobId(userId, "")).isEmpty();
     }
 
+    // --- 일일 크레딧(계정별 AI 비용 상한): 소진 429 / 정상 1차감 / AI 미연결 환불 ---
+
+    @Test
+    void creditsEndpointReturnsFullAllowanceForFreshUser() throws Exception {
+        UUID userId = insertUser();
+        // 미사용 상태 → remaining == daily (기본 한도값에 의존하지 않는 검증).
+        var res = mvc.perform(get("/api/v1/me/coach/credits")
+                .header("Authorization", "Bearer " + jwtService.issue(userId.toString())))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.remaining").isNumber())
+            .andExpect(jsonPath("$.daily").isNumber())
+            .andReturn();
+        var json = om.readTree(res.getResponse().getContentAsString());
+        assertThat(json.get("remaining").asInt()).isEqualTo(json.get("daily").asInt());
+    }
+
+    @Test
+    void coachOkConsumesOneCredit() throws Exception {
+        when(rateLimiter.tryAcquire(anyString())).thenReturn(true);
+        when(profileService.load(any())).thenReturn(Optional.empty());
+        when(aiClient.coachChat(anyString(), anyString(), anyList()))
+            .thenReturn(new CoachChatResult("답변", "gpt-4o-mini"));
+
+        UUID userId = insertUser();
+        var body = Map.of("job_id", "", "resume", "",
+            "messages", List.of(Map.of("role", "user", "content", "코칭 해줘")));
+        mvc.perform(post("/api/v1/me/coach")
+                .header("Authorization", "Bearer " + jwtService.issue(userId.toString()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(body)))
+            .andExpect(status().isOk());
+
+        Integer used = jdbc.queryForObject(
+            "SELECT used FROM user_ai_credits WHERE user_id = ? AND kind = 'coach'",
+            Integer.class, userId);
+        assertThat(used).isEqualTo(1);
+    }
+
+    @Test
+    void coachCreditExhaustedReturns429WithGuide() throws Exception {
+        when(rateLimiter.tryAcquire(anyString())).thenReturn(true);
+
+        UUID userId = insertUser();
+        // 오늘(KST) 사용량을 한도 이상으로 채워 소진 상태를 만든다(한도 기본값과 무관하게 확실히 초과).
+        jdbc.update(
+            "INSERT INTO user_ai_credits (user_id, kind, day, used) "
+            + "VALUES (?, 'coach', (now() AT TIME ZONE 'Asia/Seoul')::date, 999999)", userId);
+
+        var body = Map.of("job_id", "", "resume", "",
+            "messages", List.of(Map.of("role", "user", "content", "코칭 해줘")));
+        mvc.perform(post("/api/v1/me/coach")
+                .header("Authorization", "Bearer " + jwtService.issue(userId.toString()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(body)))
+            .andExpect(status().isTooManyRequests())
+            .andExpect(jsonPath("$.error").value(
+                org.hamcrest.Matchers.containsString("크레딧")));
+        // AI 는 호출되지 않아야 한다(비용 0).
+        verify(aiClient, org.mockito.Mockito.never()).coachChat(anyString(), anyString(), anyList());
+    }
+
+    @Test
+    void coachAiDownRefundsCredit() throws Exception {
+        when(rateLimiter.tryAcquire(anyString())).thenReturn(true);
+        when(profileService.load(any())).thenReturn(Optional.empty());
+        when(aiClient.coachChat(anyString(), anyString(), anyList())).thenReturn(null); // AI 미연결
+
+        UUID userId = insertUser();
+        var body = Map.of("job_id", "", "resume", "",
+            "messages", List.of(Map.of("role", "user", "content", "코칭 해줘")));
+        mvc.perform(post("/api/v1/me/coach")
+                .header("Authorization", "Bearer " + jwtService.issue(userId.toString()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json(body)))
+            .andExpect(status().isServiceUnavailable());
+
+        // 서비스 귀책 실패 — 차감했던 크레딧이 환불되어 0 이어야 한다.
+        Integer used = jdbc.queryForObject(
+            "SELECT used FROM user_ai_credits WHERE user_id = ? AND kind = 'coach'",
+            Integer.class, userId);
+        assertThat(used).isEqualTo(0);
+    }
+
     @Test
     void noJobContextTellsAiNotToGuessJobKeywords() throws Exception {
         // 회귀(#255): 공고 없이 보내면 모델이 '공고 맞춤 키워드'를 지어내던 환각.
